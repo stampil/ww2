@@ -9,6 +9,14 @@
     "databaseDown": "The API answers, the database does not.",
     "apiDown": "The API is not answering."
   },
+  "takeoff": {
+    "title": "D.520 takeoff",
+    "livery": "Livery",
+    "liveries": {
+      "french": "French",
+      "german": "German"
+    }
+  },
   "footer": "Made with care, in France.",
   "localeName": "English"
 }

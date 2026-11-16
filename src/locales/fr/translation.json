@@ -9,6 +9,14 @@
     "databaseDown": "L'API répond, la base de données non.",
     "apiDown": "L'API ne répond pas."
   },
+  "takeoff": {
+    "title": "Décollage du D.520",
+    "livery": "Livrée",
+    "liveries": {
+      "french": "Française",
+      "german": "Allemande"
+    }
+  },
   "footer": "Conçu avec soin, en France.",
   "localeName": "Français"
 }

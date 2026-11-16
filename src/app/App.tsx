@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import TakeoffView from './TakeoffView'
 import { useApiStatus } from './useApiStatus'
 
 function App() {
@@ -42,6 +43,8 @@ function App() {
           <span>{t(`status.${apiStatus}`)}</span>
         </div>
       </section>
+
+      <TakeoffView />
 
       <footer className="footer">
         <span>{t('footer')}</span>

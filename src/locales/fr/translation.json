@@ -1,0 +1,14 @@
+{
+  "language": "Langue",
+  "eyebrow": "Projet prêt à démarrer",
+  "title": "Bonjour, le monde.",
+  "description": "Une base React, TypeScript et Vite, avec les traductions déjà en place.",
+  "status": {
+    "checking": "Vérification de l'API…",
+    "ready": "L'API et la base de données répondent.",
+    "databaseDown": "L'API répond, la base de données non.",
+    "apiDown": "L'API ne répond pas."
+  },
+  "footer": "Conçu avec soin, en France.",
+  "localeName": "Français"
+}

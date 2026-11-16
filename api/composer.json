@@ -1,0 +1,24 @@
+{
+    "name": "stampil/ww2",
+    "description": "French Touch, a French squadron management game: the API",
+    "type": "project",
+    "require": {
+        "php": "^8.3",
+        "laminas/laminas-httphandlerrunner": "^2.15",
+        "league/route": "^7.0",
+        "nyholm/psr7": "^1.8",
+        "nyholm/psr7-server": "^1.1",
+        "vlucas/phpdotenv": "^5.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ww2\\": "src/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.3.0"
+        },
+        "sort-packages": true
+    }
+}

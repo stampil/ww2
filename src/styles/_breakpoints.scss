@@ -1,0 +1,16 @@
+@use 'sass:map';
+
+// Material Design 3 window size classes: the compact class (under 600px) is the base, without a query.
+$breakpoints: (
+  'medium': 600px,
+  'expanded': 840px,
+  'large': 1200px,
+  'extra-large': 1600px,
+);
+
+// Styles that apply from the given window size class and above (mobile first).
+@mixin from($window-size-class) {
+  @media (min-width: map.get($breakpoints, $window-size-class)) {
+    @content;
+  }
+}

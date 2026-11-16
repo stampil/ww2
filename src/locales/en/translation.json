@@ -1,0 +1,14 @@
+{
+  "language": "Language",
+  "eyebrow": "Project ready to begin",
+  "title": "Hello, world.",
+  "description": "A React, TypeScript, and Vite foundation, with translations ready to go.",
+  "status": {
+    "checking": "Checking the API…",
+    "ready": "The API and the database are answering.",
+    "databaseDown": "The API answers, the database does not.",
+    "apiDown": "The API is not answering."
+  },
+  "footer": "Made with care, in France.",
+  "localeName": "English"
+}

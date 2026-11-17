@@ -6,8 +6,10 @@ export const GROUP_WAIT_SECONDS = 10
 export const DEPARTURE_STAGGER_SECONDS = 0.5
 // A new group reaches the slots only this long after the previous group has started to roll, so the slots are empty.
 const CLEARANCE_SECONDS = 3
+// An aircraft reaches its slot at least this long after the one in front of it, so none has to pass another.
+const ARRIVAL_SPACING_SECONDS = 2.5
 
-/** The aircraft waiting at the start of the runway to leave together; times are seconds on the clock of the scene. */
+/** The aircraft waiting on the runway to leave together, one behind the other; times are seconds on the clock of the scene. */
 export class DepartureGroup {
   private readonly arrivals: number[]
 
@@ -26,10 +28,11 @@ export class DepartureGroup {
     return this.arrivals.length < GROUP_SIZE && orderSeconds < this.releaseSeconds
   }
 
-  /** Takes one more aircraft in; returns the slot it stands in: 0 for the lead, then the right, then the left. */
-  add(arrivalSeconds: number): number {
+  /** Takes one more aircraft in, in the slot behind the last: 0 is the lead, at the front. It arrives after the aircraft in front of it. */
+  add(naturalArrivalSeconds: number): { slot: number; arrivalSeconds: number } {
+    const arrivalSeconds = Math.max(naturalArrivalSeconds, Math.max(...this.arrivals) + ARRIVAL_SPACING_SECONDS)
     this.arrivals.push(arrivalSeconds)
-    return this.arrivals.length - 1
+    return { slot: this.arrivals.length - 1, arrivalSeconds }
   }
 
   startSecondsOf(slot: number): number {
@@ -47,7 +50,7 @@ export class DepartureQueue {
   /** The aircraft is sent out at `orderSeconds` and would reach the start of the runway at `naturalArrivalSeconds`; it arrives later if the slots are not yet empty. */
   join(orderSeconds: number, naturalArrivalSeconds: number): Assignment {
     if (this.latest !== undefined && this.latest.canTake(orderSeconds)) {
-      return { group: this.latest, slot: this.latest.add(naturalArrivalSeconds), arrivalSeconds: naturalArrivalSeconds }
+      return { group: this.latest, ...this.latest.add(naturalArrivalSeconds) }
     }
     const slotsEmptySeconds = this.latest === undefined ? naturalArrivalSeconds : this.latest.releaseSeconds + CLEARANCE_SECONDS
     const arrivalSeconds = Math.max(naturalArrivalSeconds, slotsEmptySeconds)

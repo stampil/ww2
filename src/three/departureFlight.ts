@@ -14,13 +14,11 @@ export type FlightPose = {
 }
 
 const DEGREES = Math.PI / 180
-/** Where the lead aircraft stands at the start of the runway, from its first end. */
-export const DEPARTURE_START_X_METERS = 6
 const ACCELERATION_METERS_PER_SECOND_SQUARED = 6
-const LIFTOFF_SPEED_METERS_PER_SECOND = 45
+const LIFTOFF_SPEED_METERS_PER_SECOND = 30
 const STRAIGHT_CLIMB_SECONDS = 1.5
-const TURN_SECONDS = 7
-const RETURN_SECONDS = 7
+const TURN_SECONDS = 8
+const RETURN_SECONDS = 16
 const TURN_ANGLE_RADIANS = 180 * DEGREES
 const BANK_RADIANS = 25 * DEGREES
 const BANK_RAMP_SECONDS = 1.2
@@ -29,7 +27,7 @@ const LIFTOFF_PITCH_RADIANS = 8 * DEGREES
 const TAIL_LIFT_START_SHARE = 0.3
 const TAIL_LIFT_END_SHARE = 0.5
 const ROTATION_SECONDS = 1
-const CLIMB_RATE_METERS_PER_SECOND = 4
+const CLIMB_RATE_METERS_PER_SECOND = 8
 const CLIMB_RAMP_SECONDS = 1
 const IDLE_ENGINE = 0.3
 const ENGINE_SPOOL_SECONDS = 1.5
@@ -38,6 +36,9 @@ const GEAR_RETRACT_SECONDS = 2
 const FLAP_RETRACT_DELAY_SECONDS = 2
 const FLAP_RETRACT_SECONDS = 3
 const RUDDER_TURN_SHARE = 0.4
+// The camera swings in front of the aircraft once it has left the ground, stays there, and swings back above the base.
+const FRONT_VIEW_SWING_SECONDS = 2
+const FRONT_VIEW_HOLD_SECONDS = 5
 
 /** The altitude gained when the climb rate grows smoothly from zero to its steady value. */
 function climbedMeters(flightSeconds: number): number {
@@ -47,14 +48,21 @@ function climbedMeters(flightSeconds: number): number {
   return CLIMB_RATE_METERS_PER_SECOND * (flightSeconds - CLIMB_RAMP_SECONDS / 2)
 }
 
-/** The departure of the lead aircraft from the start of the runway, heading east: roll, climb, a half turn to the right, and back on the far side. */
+/** The departure of an aircraft that starts to roll at `startX` on the runway, heading east: roll, climb, a half turn to the right, and back on the far side. */
 export class DepartureFlight {
   readonly durationSeconds: number
   private readonly rollSeconds = LIFTOFF_SPEED_METERS_PER_SECOND / ACCELERATION_METERS_PER_SECOND_SQUARED
   private readonly turnRadius = (LIFTOFF_SPEED_METERS_PER_SECOND * TURN_SECONDS) / TURN_ANGLE_RADIANS
 
-  constructor() {
+  constructor(private readonly startX: number) {
     this.durationSeconds = this.rollSeconds + STRAIGHT_CLIMB_SECONDS + TURN_SECONDS + RETURN_SECONDS
+  }
+
+  /** How far the camera has swung from above the base (0) to in front of the aircraft (1), at a time counted from the start of the roll. */
+  frontViewShare(time: number): number {
+    const swingInStart = this.rollSeconds
+    const swingOutStart = swingInStart + FRONT_VIEW_SWING_SECONDS + FRONT_VIEW_HOLD_SECONDS
+    return smoothStep(swingInStart, swingInStart + FRONT_VIEW_SWING_SECONDS, time) * (1 - smoothStep(swingOutStart, swingOutStart + FRONT_VIEW_SWING_SECONDS, time))
   }
 
   pose(time: number): FlightPose {
@@ -66,7 +74,7 @@ export class DepartureFlight {
     const turnedRadians = (TURN_ANGLE_RADIANS * turnSeconds) / TURN_SECONDS
 
     const x =
-      DEPARTURE_START_X_METERS +
+      this.startX +
       (ACCELERATION_METERS_PER_SECOND_SQUARED * rolledSeconds * rolledSeconds) / 2 +
       LIFTOFF_SPEED_METERS_PER_SECOND * (straightSeconds - returnSeconds) +
       this.turnRadius * Math.sin(turnedRadians)

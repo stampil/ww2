@@ -53,6 +53,9 @@ export const AIRCRAFT_CONTROLS: AircraftControl[] = [
 ]
 type ExteriorControl = Exclude<AircraftControl, 'openCanopy'>
 
+/** The wingspan of the model, measured on it. */
+export const D520_SPAN_METERS = 10.18
+
 // Where the wheels touch the ground, measured on the model: y ahead of the thrust axis, z below it.
 const MAIN_WHEEL_CONTACT = { y: 1.985, z: -2.08 }
 const TAIL_WHEEL_CONTACT = { y: -3.36, z: -0.8 }

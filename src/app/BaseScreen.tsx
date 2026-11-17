@@ -6,7 +6,6 @@ import BaseChoice from './BaseChoice'
 import BaseMap from './BaseMap'
 import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
-import DepartureView from './DepartureView'
 import type { Departure } from './DepartureView'
 import { busyCrews, unavailableCrews } from './flights'
 import GameWindow from './GameWindow'
@@ -108,7 +107,7 @@ function BaseScreen({ player }: { player: Player }) {
     setErrorCode(launchErrorCode)
     if (launchErrorCode === null) {
       setOpenBuilding(null)
-      if (!window.matchMedia(REDUCED_MOTION_QUERY).matches) {
+      if (aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches) {
         const leaving = departing.map((aircraft) => ({ aircraftId: aircraft.id, stand: aircraft.stand }))
         setDepartures((current) => [...current, ...leaving])
       }
@@ -162,11 +161,12 @@ function BaseScreen({ player }: { player: Player }) {
           servicedAircraftIds={servicedAircraftIds}
           parkedAircraft={parkedAircraft}
           aircraftSprite={aircraftSprite}
+          departures={departures}
+          onDeparted={removeDeparture}
           alerts={alerts}
           openBuilding={openBuilding}
           onSelect={setOpenBuilding}
         />
-        {departures.length > 0 && <DepartureView plan={plan} departures={departures} onDeparted={removeDeparture} />}
       </div>
 
       {openBuilding === null && guide}

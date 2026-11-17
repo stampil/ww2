@@ -358,16 +358,11 @@ button.base-sprite {
   }
 }
 
-// The squadron taking off, in 3D, over the lower right corner of the stage; the map around it stays within reach.
+// The base in 3D over its flat map, the same size, while the squadron takes off; the map stays within reach through it.
 .departure-view {
-  @include frame;
   position: absolute;
-  right: 0.5rem;
-  bottom: 0.5rem;
-  z-index: 3;
-  width: min(28rem, calc(100% - 1rem));
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
+  inset: 0;
+  z-index: 2;
   pointer-events: none;
 
   canvas {

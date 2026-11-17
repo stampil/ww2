@@ -7,7 +7,7 @@ namespace Ww2\Mission;
 use Random\Randomizer;
 
 /**
- * Draws a new mission: a type at random, then each figure within the range of that type.
+ * Draws a new mission: a type at random among those given, then each figure within the range of that type.
  */
 final class MissionGenerator
 {
@@ -15,9 +15,11 @@ final class MissionGenerator
     {
     }
 
-    public function draw(): Mission
+    /**
+     * @param non-empty-list<MissionType> $types the types the mission may be of
+     */
+    public function draw(array $types): Mission
     {
-        $types = MissionType::cases();
         $type = $types[$this->random->getInt(0, count($types) - 1)];
         $profile = $type->profile();
         $aircraftCount = $profile->aircraftCount->draw($this->random);

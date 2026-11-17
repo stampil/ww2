@@ -36,16 +36,6 @@ final class MissionStore
         );
     }
 
-    public function offerCount(int $playerId): int
-    {
-        $rows = $this->database->fetchAll(
-            'SELECT COUNT(*) AS total FROM missions WHERE player_id = :player_id AND return_game_second IS NULL',
-            ['player_id' => $playerId],
-        );
-
-        return (int) $rows[0]['total'];
-    }
-
     /**
      * @return list<Mission> the missions not launched yet, the oldest first
      */
@@ -70,14 +60,15 @@ final class MissionStore
         return null;
     }
 
-    public function launch(int $missionId, int $returnGameSecond, int $fuelLoaded, int $ammunitionLoaded): void
+    public function launch(int $missionId, int $returnGameSecond, int $fuelLoaded, int $ammunitionLoaded, int $windSpeed): void
     {
         $this->database->execute(
-            'UPDATE missions SET return_game_second = :return_game_second, fuel_loaded = :fuel_loaded, ammunition_loaded = :ammunition_loaded WHERE id = :id',
+            'UPDATE missions SET return_game_second = :return_game_second, fuel_loaded = :fuel_loaded, ammunition_loaded = :ammunition_loaded, wind_speed = :wind_speed WHERE id = :id',
             [
                 'return_game_second' => $returnGameSecond,
                 'fuel_loaded' => $fuelLoaded,
                 'ammunition_loaded' => $ammunitionLoaded,
+                'wind_speed' => $windSpeed,
                 'id' => $missionId,
             ],
         );
@@ -98,7 +89,7 @@ final class MissionStore
     public function flightsOf(int $playerId, int $gameSeconds): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT ' . self::MISSION_COLUMNS . ', fuel_loaded, ammunition_loaded, return_game_second
+            'SELECT ' . self::MISSION_COLUMNS . ', fuel_loaded, ammunition_loaded, wind_speed, return_game_second
              FROM missions WHERE player_id = :player_id AND return_game_second IS NOT NULL ORDER BY return_game_second, id',
             ['player_id' => $playerId],
         );
@@ -120,6 +111,7 @@ final class MissionStore
                 $mission,
                 (int) $row['fuel_loaded'],
                 (int) $row['ammunition_loaded'],
+                (int) $row['wind_speed'],
                 max(0, (int) $row['return_game_second'] - $gameSeconds),
                 $crewsByMission[$mission->id] ?? [],
             );
@@ -137,6 +129,31 @@ final class MissionStore
         }
 
         return null;
+    }
+
+    public function addReport(int $playerId, MissionReport $report): void
+    {
+        $this->database->execute(
+            'INSERT INTO mission_reports (player_id, report) VALUES (:player_id, :report)',
+            ['player_id' => $playerId, 'report' => json_encode($report->toArray(), JSON_THROW_ON_ERROR)],
+        );
+    }
+
+    /**
+     * @return list<array<string, mixed>> the latest reports, the newest first, each with its id
+     */
+    public function reportsOf(int $playerId, int $limit): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT id, report FROM mission_reports WHERE player_id = :player_id ORDER BY id DESC LIMIT ' . $limit,
+            ['player_id' => $playerId],
+        );
+        $reports = [];
+        foreach ($rows as $row) {
+            $reports[] = ['id' => (int) $row['id'], ...json_decode((string) $row['report'], true, flags: JSON_THROW_ON_ERROR)];
+        }
+
+        return $reports;
     }
 
     /**

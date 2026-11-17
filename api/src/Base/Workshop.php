@@ -10,7 +10,7 @@ use Ww2\Database\Database;
 
 /**
  * The workshop: a few benches that make spare parts for the aircraft, helped by mechanics who halve the time.
- * Its times run on the game clock, so a pause stops them.
+ * Its times run on the game clock.
  */
 final class Workshop
 {

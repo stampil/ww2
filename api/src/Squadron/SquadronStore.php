@@ -56,6 +56,29 @@ final class SquadronStore
         );
     }
 
+    public function updatePilotGauges(int $pilotId, int $fatigue, int $stress): void
+    {
+        $this->database->execute(
+            'UPDATE pilots SET fatigue = :fatigue, stress = :stress WHERE id = :id',
+            ['fatigue' => $fatigue, 'stress' => $stress, 'id' => $pilotId],
+        );
+    }
+
+    public function removePilot(int $pilotId): void
+    {
+        $this->database->execute('DELETE FROM pilots WHERE id = :id', ['id' => $pilotId]);
+    }
+
+    public function setAircraftDurability(int $aircraftId, int $durability): void
+    {
+        $this->database->execute('UPDATE aircraft SET durability = :durability WHERE id = :id', ['durability' => $durability, 'id' => $aircraftId]);
+    }
+
+    public function removeAircraft(int $aircraftId): void
+    {
+        $this->database->execute('DELETE FROM aircraft WHERE id = :id', ['id' => $aircraftId]);
+    }
+
     /**
      * @return list<Pilot>
      */

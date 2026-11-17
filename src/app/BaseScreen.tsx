@@ -20,7 +20,7 @@ const RESOURCES = ['supplies', 'fuel', 'ammunition', 'materials', 'commandPoints
 function BaseScreen({ player }: { player: Player }) {
   const { t } = useTranslation()
   const { base, jobs, flights, gameTime, buy, produce, launchMission, receiveSquadron } = useBase(player)
-  const squadron = useSquadron(player)
+  const squadron = useSquadron(player, base?.headquarters.reports[0]?.id ?? null)
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
 
@@ -70,7 +70,9 @@ function BaseScreen({ player }: { player: Player }) {
           {openBuilding === 'headquarters' && (
             <HeadquartersPanel
               squadron={squadron}
+              weather={base.headquarters.weather}
               offers={base.headquarters.offers}
+              reports={base.headquarters.reports}
               flights={flights}
               busy={busy}
               onLaunch={(missionId, pilotIds, aircraftIds, fuel, ammunition) =>

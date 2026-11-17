@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS missions (
     reward_command_points TINYINT UNSIGNED NOT NULL,
     fuel_loaded SMALLINT UNSIGNED NULL,
     ammunition_loaded SMALLINT UNSIGNED NULL,
+    wind_speed TINYINT UNSIGNED NULL,
     return_game_second INT UNSIGNED NULL,
     FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci

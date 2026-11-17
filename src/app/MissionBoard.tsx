@@ -3,18 +3,19 @@ import { useTranslation } from 'react-i18next'
 import { formatDuration } from './formatDuration'
 import type { BusyCrews } from './flights'
 import MissionBriefing from './MissionBriefing'
-import type { Offer } from './useBase'
+import type { Base, Offer } from './useBase'
 import type { Squadron } from './useSquadron'
 
 type Props = {
+  weather: Base['headquarters']['weather']
   offers: Offer[]
   squadron: Squadron
   busy: BusyCrews
   onLaunch: (missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number) => void
 }
 
-/** The missions on the table, and the briefing of the one being prepared. */
-function MissionBoard({ offers, squadron, busy, onLaunch }: Props) {
+/** The weather, the missions on the table, and the briefing of the one being prepared. */
+function MissionBoard({ weather, offers, squadron, busy, onLaunch }: Props) {
   const { t } = useTranslation()
   const [preparedId, setPreparedId] = useState<number | null>(null)
   const prepared = offers.find((offer) => offer.id === preparedId)
@@ -22,6 +23,7 @@ function MissionBoard({ offers, squadron, busy, onLaunch }: Props) {
   return (
     <>
       <h4>{t('base.mission.title')}</h4>
+      <p className="squadron-hint">{t('base.mission.weather', { windSpeed: weather.windSpeed })}</p>
       <ul className="cards">
         {offers.map((offer) => (
           <li key={offer.id} className="card">

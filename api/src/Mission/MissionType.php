@@ -16,6 +16,16 @@ enum MissionType: string
     case AirCombat = 'airCombat';
     case Bombing = 'bombing';
 
+    /**
+     * @param list<AircraftCategory> $categories the categories of the aircraft a squadron has
+     */
+    public function isFlyableBy(array $categories): bool
+    {
+        $required = $this->profile()->category;
+
+        return $required === null || in_array($required, $categories, true);
+    }
+
     public function profile(): MissionProfile
     {
         return match ($this) {

@@ -28,6 +28,17 @@ export type Flight = {
   crews: { pilotId: number; aircraftId: number }[]
 }
 
+/** What a mission did to each crew, and what it paid; the newest report comes first. */
+export type Report = {
+  id: number
+  type: MissionType
+  success: boolean
+  windSpeed: number
+  suppliesWon: number
+  commandPointsWon: number
+  crews: { pilotName: string; aircraftName: string; damage: number; aircraftLost: boolean; pilotKilled: boolean }[]
+}
+
 export type Base = {
   terrainPlan: string
   resources: { supplies: number; fuel: number; ammunition: number; materials: number; commandPoints: number }
@@ -41,7 +52,7 @@ export type Base = {
     jobs: { id: number; part: Part; remainingSeconds: number; hasMechanic: boolean }[]
     readyParts: Record<Part, number>
   }
-  headquarters: { offers: Offer[]; flights: Flight[] }
+  headquarters: { weather: { windSpeed: number }; offers: Offer[]; flights: Flight[]; reports: Report[] }
 }
 
 type ErrorPayload = { reason_phrase: string }

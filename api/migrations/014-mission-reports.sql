@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS mission_reports (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    player_id INT UNSIGNED NOT NULL,
+    report TEXT NOT NULL,
+    FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci

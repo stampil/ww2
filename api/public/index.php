@@ -26,7 +26,9 @@ use Ww2\Http\SessionController;
 use Ww2\Http\SquadronController;
 use Ww2\Http\TerrainPatchController;
 use Ww2\Mission\MissionGenerator;
+use Ww2\Mission\MissionResolver;
 use Ww2\Mission\MissionStore;
+use Ww2\Mission\WeatherForecast;
 use Ww2\Http\TerrainController;
 use Ww2\Squadron\SquadronFounder;
 use Ww2\Squadron\SquadronStore;
@@ -48,7 +50,7 @@ $founder = new SquadronFounder($database, $squadrons);
 $bases = new BaseStore($database);
 $clocks = new GameClockStore($database);
 $baseFounder = new BaseFounder($bases, $clocks);
-$headquarters = new Headquarters($database, $bases, new MissionStore($database), $squadrons, $clocks, new MissionGenerator());
+$headquarters = new Headquarters($database, $bases, new MissionStore($database), $squadrons, $clocks, new MissionGenerator(), new WeatherForecast(), new MissionResolver());
 $baseController = new BaseController($bases, new Warehouse($database, $bases), new Workshop($database, $bases, $clocks), $headquarters, $clocks, $session);
 
 $router = new Router();

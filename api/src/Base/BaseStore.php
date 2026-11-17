@@ -83,6 +83,14 @@ final class BaseStore
         );
     }
 
+    public function addRewards(int $playerId, int $supplies, int $commandPoints): void
+    {
+        $this->database->execute(
+            'UPDATE base_resources SET supplies = supplies + :supplies, command_points = command_points + :command_points WHERE player_id = :player_id',
+            ['supplies' => $supplies, 'command_points' => $commandPoints, 'player_id' => $playerId],
+        );
+    }
+
     public function spendFuelAndAmmunition(int $playerId, int $fuel, int $ammunition): void
     {
         $this->database->execute(

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ww2\Mission;
 
 /**
- * A mission under way: who flies it, what each aircraft carries, and the game seconds left before it is back.
+ * A mission under way: who flies it, what each aircraft carries, the wind it left in, and the game seconds left before it is back.
  */
 final readonly class Flight
 {
@@ -16,6 +16,7 @@ final readonly class Flight
         public Mission $mission,
         public int $fuelLoaded,
         public int $ammunitionLoaded,
+        public int $windSpeed,
         public int $remainingSeconds,
         public array $crews,
     ) {

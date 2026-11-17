@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { RUNWAY_TILE_COUNT, TILE_SIZE_METERS } from './airfield'
+import { TILE_SIZE_METERS } from './airfield'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
 import { renderTileImage, TILE_IMAGE_PIXELS } from './tileImages'
@@ -7,23 +7,16 @@ import type { TerrainTextures } from './tileImages'
 import { BUSHES } from './tiles'
 import type { Tile } from './tiles'
 
-const COLUMNS = 14
-const ROWS = 9
-const RUNWAY_FIRST_COLUMN = 2
-const RUNWAY_ROW = 4
+const TERRAIN_URL = '/api/terrain'
 const GRASS_URL = '/textures/herbe.png'
 const CONCRETE_URL = '/textures/beton.png'
 const GROUND_CELLS = 200
 const GROUND_DEPTH_METERS = 0.1
 const BUSH_TURN_STEP_RADIANS = 2.4
-const BUSH_POSITIONS = [
-  { row: 1, column: 3 },
-  { row: 7, column: 1 },
-  { row: 6, column: 9 },
-  { row: 2, column: 11 },
-  { row: 7, column: 4 },
-  { row: 7, column: 12 },
-]
+
+type Runway = { row: number; firstColumn: number }
+/** What the API sends for a seed: the runway and the tiles, rows from the north and columns from the west. */
+type TerrainMap = { columns: number; runway: Runway; tiles: Tile[][] }
 
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -34,31 +27,9 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   })
 }
 
-/** The airfield of the proof of concept: a runway of four tiles, a taxiway leaving it to an apron, and a few bushes. */
-function buildTileMap(): Tile[][] {
-  const tiles: Tile[][] = []
-  for (let row = 0; row < ROWS; row += 1) {
-    const rowTiles: Tile[] = []
-    for (let column = 0; column < COLUMNS; column += 1) {
-      rowTiles.push({ kind: 'grass', quarterTurns: 0 })
-    }
-    tiles.push(rowTiles)
-  }
-  for (const position of BUSH_POSITIONS) {
-    tiles[position.row][position.column] = { kind: 'bushes', quarterTurns: 0 }
-  }
-  const lastRunwayColumn = RUNWAY_FIRST_COLUMN + RUNWAY_TILE_COUNT - 1
-  tiles[RUNWAY_ROW][RUNWAY_FIRST_COLUMN] = { kind: 'runwayEnd', quarterTurns: 2 }
-  tiles[RUNWAY_ROW][RUNWAY_FIRST_COLUMN + 1] = { kind: 'runwayTaxiwayJunction', quarterTurns: 0 }
-  tiles[RUNWAY_ROW][RUNWAY_FIRST_COLUMN + 2] = { kind: 'runwayStraight', quarterTurns: 0 }
-  tiles[RUNWAY_ROW][lastRunwayColumn] = { kind: 'runwayEnd', quarterTurns: 0 }
-  tiles[RUNWAY_ROW + 1][RUNWAY_FIRST_COLUMN + 1] = { kind: 'taxiwayStraight', quarterTurns: 0 }
-  tiles[RUNWAY_ROW + 2][RUNWAY_FIRST_COLUMN + 1] = { kind: 'taxiwayEndApron', quarterTurns: 0 }
-  return tiles
-}
-
-function tileCenter(row: number, column: number): THREE.Vector2 {
-  return new THREE.Vector2((column - RUNWAY_FIRST_COLUMN + 0.5) * TILE_SIZE_METERS, (RUNWAY_ROW - row) * TILE_SIZE_METERS)
+/** The world has its origin on the left end of the runway, at the middle of its row; x grows to the east, y to the north. */
+function tileCenter(runway: Runway, row: number, column: number): THREE.Vector2 {
+  return new THREE.Vector2((column - runway.firstColumn + 0.5) * TILE_SIZE_METERS, (runway.row - row) * TILE_SIZE_METERS)
 }
 
 /** One 3D bush on every spot where the bushes tile paints one, as wide as the painted one, turned differently each time. */
@@ -71,11 +42,17 @@ function bushesOnTile(center: THREE.Vector2, tileNumber: number): BushPlacement[
   }))
 }
 
-/** The ground: a map of 2D tiles, one textured square each, so any tile can be moved or turned, on a vast grass plain. */
+/**
+ * The ground: the map of 2D tiles that the API makes for a seed, one textured square each, so any tile can be moved or
+ * turned, on a vast grass plain.
+ */
 export class Terrain {
   readonly object = new THREE.Group()
 
-  constructor(private readonly maxAnisotropy: number) {
+  constructor(
+    private readonly seed: number,
+    private readonly maxAnisotropy: number,
+  ) {
     void this.build()
   }
 
@@ -83,10 +60,12 @@ export class Terrain {
     const [grass, concrete] = await Promise.all([loadImage(GRASS_URL), loadImage(CONCRETE_URL)])
     const textures: TerrainTextures = { grass, concrete }
     this.addGrassPlain(grass)
+    const response = await fetch(`${TERRAIN_URL}?seed=${this.seed}`)
+    const map = (await response.json()) as TerrainMap
     const geometry = new THREE.PlaneGeometry(TILE_SIZE_METERS, TILE_SIZE_METERS)
     const materials = new Map<string, THREE.MeshBasicMaterial>()
     const bushPlacements: BushPlacement[] = []
-    buildTileMap().forEach((rowTiles, row) => {
+    map.tiles.forEach((rowTiles, row) => {
       rowTiles.forEach((tile, column) => {
         const key = `${tile.kind}:${tile.quarterTurns}`
         let material = materials.get(key)
@@ -97,11 +76,11 @@ export class Terrain {
           materials.set(key, material)
         }
         const mesh = new THREE.Mesh(geometry, material)
-        const center = tileCenter(row, column)
+        const center = tileCenter(map.runway, row, column)
         mesh.position.set(center.x, center.y, 0)
         this.object.add(mesh)
         if (tile.kind === 'bushes') {
-          bushPlacements.push(...bushesOnTile(center, row * COLUMNS + column))
+          bushPlacements.push(...bushesOnTile(center, row * map.columns + column))
         }
       })
     })

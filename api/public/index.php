@@ -12,6 +12,8 @@ use Nyholm\Psr7Server\ServerRequestCreator;
 use Ww2\Database\DatabaseSettings;
 use Ww2\Database\PdoDatabase;
 use Ww2\Http\HealthController;
+use Ww2\Http\TerrainController;
+use Ww2\Terrain\TerrainGenerator;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -28,6 +30,7 @@ $router = new Router();
 $router->setStrategy(new JsonStrategy($psr17Factory));
 $router->group('/api', function (RouteGroup $routes) use ($database): void {
     $routes->get('/health', new HealthController($database));
+    $routes->get('/terrain', new TerrainController(new TerrainGenerator()));
 });
 
 $response = $router->dispatch($requestCreator->fromGlobals());

@@ -17,6 +17,8 @@ const FOG_NEAR_METERS = 200
 // The average color of public/textures/herbe.png, for the fog and for what lies beyond the far plane.
 const GRASS_COLOR = 0x6d7231
 const WORLD_UP = new THREE.Vector3(0, 0, 1)
+// The seed of the terrain of the proof of concept: the API gives the same airfield for the same seed.
+const TERRAIN_SEED = 1940
 const TOP_DOWN_ORIENTATION = new THREE.Quaternion()
 const LIGHT_COLOR = 0xffffff
 const AMBIENT_LIGHT_INTENSITY = 1.3
@@ -51,7 +53,7 @@ export class TakeoffScene {
 
     this.scene.background = new THREE.Color(GRASS_COLOR)
     this.scene.fog = new THREE.Fog(GRASS_COLOR, FOG_NEAR_METERS, CAMERA_FAR_METERS)
-    this.scene.add(new Terrain(this.renderer.capabilities.getMaxAnisotropy()).object)
+    this.scene.add(new Terrain(TERRAIN_SEED, this.renderer.capabilities.getMaxAnisotropy()).object)
     this.scene.add(this.aircraft.object)
     this.scene.add(new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY))
     const sun = new THREE.DirectionalLight(LIGHT_COLOR, SUN_LIGHT_INTENSITY)

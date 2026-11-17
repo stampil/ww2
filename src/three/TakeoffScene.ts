@@ -4,8 +4,8 @@ import { LiveryTextures } from './liveries'
 import type { Livery } from './liveries'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
 import { Terrain } from './Terrain'
-import { takeoffPose } from './takeoffPose'
-import type { TakeoffPose } from './takeoffPose'
+import { Takeoff } from './Takeoff'
+import type { TakeoffPose } from './Takeoff'
 
 const CAMERA_HEIGHT_METERS = 60
 const CAMERA_FIELD_OF_VIEW_DEGREES = 30
@@ -35,7 +35,8 @@ export class TakeoffScene {
   private readonly aircraft = new D520Model()
   private readonly liveries: LiveryTextures
   private readonly resizeObserver: ResizeObserver
-  private readonly startMilliseconds = performance.now()
+  private takeoff: Takeoff | undefined
+  private startMilliseconds = 0
   private previousElapsedSeconds = 0
   private readonly topPosition = new THREE.Vector3()
   private readonly frontPosition = new THREE.Vector3()
@@ -53,8 +54,12 @@ export class TakeoffScene {
 
     this.scene.background = new THREE.Color(GRASS_COLOR)
     this.scene.fog = new THREE.Fog(GRASS_COLOR, FOG_NEAR_METERS, CAMERA_FAR_METERS)
-    this.scene.add(new Terrain(TERRAIN_SEED, this.renderer.capabilities.getMaxAnisotropy()).object)
+    const terrain = new Terrain(TERRAIN_SEED, this.renderer.capabilities.getMaxAnisotropy())
+    void terrain.runwayLengthMeters.then((runwayLengthMeters) => this.startTakeoff(runwayLengthMeters))
+    this.scene.add(terrain.object)
+    this.aircraft.object.visible = false
     this.scene.add(this.aircraft.object)
+    this.camera.position.set(0, 0, CAMERA_HEIGHT_METERS)
     this.scene.add(new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY))
     const sun = new THREE.DirectionalLight(LIGHT_COLOR, SUN_LIGHT_INTENSITY)
     sun.position.copy(SUN_POSITION)
@@ -81,9 +86,20 @@ export class TakeoffScene {
     this.liveries.dispose()
   }
 
+  /** The aircraft appears and takes off along the runway that the terrain has. */
+  private startTakeoff(runwayLengthMeters: number): void {
+    this.takeoff = new Takeoff(runwayLengthMeters)
+    this.startMilliseconds = performance.now()
+    this.aircraft.object.visible = true
+  }
+
   private renderFrame(): void {
+    if (this.takeoff === undefined) {
+      this.renderer.render(this.scene, this.camera)
+      return
+    }
     const elapsedSeconds = (performance.now() - this.startMilliseconds) / MILLISECONDS_PER_SECOND
-    const pose = takeoffPose(elapsedSeconds)
+    const pose = this.takeoff.pose(elapsedSeconds)
     this.aircraft.setState(pose.state)
     this.aircraft.update(elapsedSeconds - this.previousElapsedSeconds)
     this.previousElapsedSeconds = elapsedSeconds

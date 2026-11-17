@@ -12,7 +12,7 @@ const GROUND_CELLS = 200
 const GROUND_DEPTH_METERS = 0.1
 const BUSH_TURN_STEP_RADIANS = 2.4
 
-type Runway = { row: number; firstColumn: number }
+type Runway = { row: number; firstColumn: number; length: number }
 /** What the API sends for a seed: the runway and the tiles, rows from the north and columns from the west. */
 type TerrainMap = { columns: number; runway: Runway; tiles: Tile[][] }
 
@@ -37,15 +37,17 @@ function bushesOnTile(center: THREE.Vector2, tileNumber: number): BushPlacement[
  */
 export class Terrain {
   readonly object = new THREE.Group()
+  /** The length of the runway in meters, known once the terrain has come from the API. */
+  readonly runwayLengthMeters: Promise<number>
 
   constructor(
     private readonly seed: number,
     private readonly maxAnisotropy: number,
   ) {
-    void this.build()
+    this.runwayLengthMeters = this.build()
   }
 
-  private async build(): Promise<void> {
+  private async build(): Promise<number> {
     const textures = await loadTerrainTextures()
     this.addGrassPlain(textures.grass)
     const response = await fetch(`${TERRAIN_URL}?seed=${this.seed}`)
@@ -73,6 +75,7 @@ export class Terrain {
       })
     })
     this.object.add(new Bushes(bushPlacements).object)
+    return map.runway.length * TILE_SIZE_METERS
   }
 
   /** The grass texture repeated far past the tiles, in step with the grass of the tiles, so the ground never ends. */

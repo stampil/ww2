@@ -8,7 +8,7 @@ use Random\Engine\Xoshiro256StarStar;
 use Random\Randomizer;
 
 /**
- * Makes an airfield from a seed: a straight runway whose middle tiles may each have an exit, taxiways, then grass and bushes.
+ * Makes an airfield from a seed: a straight runway of three to six tiles whose middle tiles may each have an exit, taxiways, then grass and bushes.
  * Every tile touches its neighbours with the same edge kind, so any seed gives a valid terrain.
  */
 final class TerrainGenerator
@@ -17,7 +17,8 @@ final class TerrainGenerator
     private const ROWS = 9;
     private const RUNWAY_ROW = 4;
     private const RUNWAY_FIRST_COLUMN = 2;
-    private const RUNWAY_LENGTH = 4;
+    private const MIN_RUNWAY_LENGTH = 3;
+    private const MAX_RUNWAY_LENGTH = 6;
     private const MIN_TAXIWAY_CELLS = 2;
     private const MAX_TAXIWAY_CELLS = 4;
     private const MIN_LATERAL_CELLS = 1;
@@ -33,7 +34,7 @@ final class TerrainGenerator
     public function generate(int $seed): TileMap
     {
         $random = new Randomizer(new Xoshiro256StarStar($seed));
-        $runway = new Runway(self::RUNWAY_ROW, self::RUNWAY_FIRST_COLUMN, self::RUNWAY_LENGTH);
+        $runway = new Runway(self::RUNWAY_ROW, self::RUNWAY_FIRST_COLUMN, $random->getInt(self::MIN_RUNWAY_LENGTH, self::MAX_RUNWAY_LENGTH));
         $network = $this->layTaxiways($random, $runway);
 
         $tiles = [];

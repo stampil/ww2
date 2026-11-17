@@ -69,29 +69,18 @@
   },
   "combat": {
     "title": "Combat aérien",
-    "hint": "Tu es aux commandes face à un {{enemy}} : place-toi derrière lui et tire pour l'abattre avant la fin du temps.",
-    "controls": "Pilote avec les flèches ou en tenant le doigt sur la vue ; tire avec la barre d'espace ou le bouton.",
+    "hint": "Tu es aux commandes face à un {{enemy}} : place-toi derrière lui et garde-le dans le viseur : au bout d'une seconde ton avion tire seul et il est abattu, avant la fin du temps.",
+    "controls": "Pilote avec les flèches ou en tenant le doigt sur la vue. La tête du pilote, au milieu du tableau de bord, se tourne vers l'ennemi.",
     "toast": "Chasseurs ennemis en vue : {{pilot}} peut prendre les commandes.",
     "toastResume": "Combat en cours : {{pilot}}.",
     "take": "Piloter",
-    "enemy": "Ennemi",
-    "ammunition": "Munitions : {{count}}",
-    "fire": "Tirer",
+    "lock": "Verrouillage",
     "starting": "Mise en route…",
     "won": "Avion ennemi abattu !",
     "escaped": "L'ennemi s'est échappé.",
     "enemies": {
       "bf109": "Messerschmitt Bf 109",
       "vichyD520": "Dewoitine D.520 de Vichy"
-    },
-    "pilot": {
-      "fire": "Feu !",
-      "behind": "Il est derrière toi !",
-      "left": "Tourne à gauche !",
-      "right": "Tourne à droite !",
-      "up": "Monte !",
-      "down": "Descends !",
-      "ahead": "Droit devant"
     }
   },
   "duel": {

@@ -4,11 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { CockpitCombatScene } from '../three/CockpitCombatScene'
 import type { CockpitEnemy, CockpitOutcome, CockpitStatus } from '../three/CockpitCombatScene'
 import GameWindow from './GameWindow'
-import PilotHead from './PilotHead'
 import type { FlightAlert } from './useBase'
 
 const ENEMIES: CockpitEnemy[] = ['bf109', 'vichyD520']
-const ROUNDS_PER_AMMUNITION = 5
+const PERCENT = 100
 const PERCENT_TO_SHARE = 0.01
 const SECONDS_PER_MINUTE = 60
 const STEERING_KEYS: Record<string, { x: number; y: number }> = {
@@ -21,12 +20,10 @@ const STEERING_KEYS: Record<string, { x: number; y: number }> = {
   ArrowDown: { x: 0, y: -1 },
   KeyS: { x: 0, y: -1 },
 }
-const FIRING_KEYS = ['Space', 'Enter']
 
 type Props = {
   alert: FlightAlert
-  /** What the flight carries, the maneuverability of the aircraft and the accuracy of the pilot: they set the rounds, the turns and the aim. */
-  ammunitionLoaded: number
+  /** The maneuverability of the aircraft and the accuracy of the pilot: they set the turns and the width of the gunsight. */
   maneuverability: number
   accuracy: number
   onStart: (alertId: number) => Promise<void>
@@ -35,10 +32,10 @@ type Props = {
 }
 
 /**
- * A dogfight flown in real time from the cockpit, as in Wings: the player steers with the arrow keys or a finger, fires with the space bar or the button,
- * and the head of the pilot shows which way to turn. The browser plays it and tells the server how it ended.
+ * A dogfight flown in real time from the cockpit, as in Wings: the player steers with the arrow keys or a finger and keeps the enemy in the gunsight, which fires by itself,
+ * while the head of the pilot in the cockpit turns toward the enemy. The browser plays it and tells the server how it ended.
  */
-function CockpitCombatWindow({ alert, ammunitionLoaded, maneuverability, accuracy, onStart, onFinish, onClose }: Props) {
+function CockpitCombatWindow({ alert, maneuverability, accuracy, onStart, onFinish, onClose }: Props) {
   const { t } = useTranslation()
   const viewRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<CockpitCombatScene | null>(null)
@@ -67,7 +64,7 @@ function CockpitCombatWindow({ alert, ammunitionLoaded, maneuverability, accurac
     }
     const scene = new CockpitCombatScene(
       viewRef.current!,
-      { enemy, ammunition: ammunitionLoaded * ROUNDS_PER_AMMUNITION, agility: maneuverability * PERCENT_TO_SHARE, accuracy: accuracy * PERCENT_TO_SHARE },
+      { enemy, agility: maneuverability * PERCENT_TO_SHARE, accuracy: accuracy * PERCENT_TO_SHARE },
       setStatus,
       (result) => {
         setOutcome(result)
@@ -80,22 +77,20 @@ function CockpitCombatWindow({ alert, ammunitionLoaded, maneuverability, accurac
       let x = 0
       let y = 0
       pressed.forEach((code) => {
-        x += STEERING_KEYS[code]?.x ?? 0
-        y += STEERING_KEYS[code]?.y ?? 0
+        x += STEERING_KEYS[code].x
+        y += STEERING_KEYS[code].y
       })
       scene.setControls(x, y)
     }
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (STEERING_KEYS[event.code] !== undefined || FIRING_KEYS.includes(event.code)) {
+      if (STEERING_KEYS[event.code] !== undefined) {
         event.preventDefault()
         pressed.add(event.code)
-        scene.setFiring(FIRING_KEYS.some((code) => pressed.has(code)))
         steer()
       }
     }
     const onKeyUp = (event: KeyboardEvent): void => {
       pressed.delete(event.code)
-      scene.setFiring(FIRING_KEYS.some((code) => pressed.has(code)))
       steer()
     }
     window.addEventListener('keydown', onKeyDown)
@@ -140,29 +135,14 @@ function CockpitCombatWindow({ alert, ammunitionLoaded, maneuverability, accurac
           <div className="cockpit-hud">
             <div className="cockpit-hud-top">
               <span>
-                {t('combat.enemy')}
-                <span className="cockpit-health" aria-hidden="true">
-                  <span style={{ width: `${status.enemyHealth}%` }} />
+                {t('combat.lock')}
+                <span className="cockpit-lock" aria-hidden="true">
+                  <span style={{ width: `${status.lockShare * PERCENT}%` }} />
                 </span>
               </span>
-              <span>{t('combat.ammunition', { count: status.ammunition })}</span>
               <span>{clock}</span>
             </div>
-            <div className="cockpit-gunsight" data-in-sight={status.sight.isInSight} aria-hidden="true" />
-            <PilotHead sight={status.sight} />
-            <button
-              type="button"
-              className="cockpit-fire"
-              disabled={outcome !== null || status.ammunition === 0}
-              onPointerDown={(event) => {
-                event.stopPropagation()
-                sceneRef.current?.setFiring(true)
-              }}
-              onPointerUp={() => sceneRef.current?.setFiring(false)}
-              onPointerLeave={() => sceneRef.current?.setFiring(false)}
-            >
-              {t('combat.fire')}
-            </button>
+            <div className="cockpit-gunsight" style={{ height: `${status.sightDiameterPercent}%` }} data-in-sight={status.sight.isInSight} aria-hidden="true" />
           </div>
         )}
         {!isReady && <p className="cockpit-message">{t('combat.starting')}</p>}

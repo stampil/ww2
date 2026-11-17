@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { D520Model } from './D520Model'
 import { DESTROYED_LEVEL } from './damageStages'
 import { LiveryTextures } from './liveries'
+import { PilotHeadModel } from './PilotHeadModel'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
 import { SeededRandom } from './SeededRandom'
 import { createSkyDome, HORIZON_COLOR } from './Sky'
@@ -14,12 +15,12 @@ export type CockpitEnemy = 'bf109' | 'vichyD520'
 export type CockpitOutcome = 'won' | 'escaped'
 /** Where the enemy is, seen from the cockpit: degrees to the right and up of the nose, how far, and whether it is in the gunsight. */
 export type CockpitSight = { azimuthDegrees: number; elevationDegrees: number; distanceMeters: number; isInSight: boolean }
-export type CockpitStatus = { enemyHealth: number; ammunition: number; secondsLeft: number; sight: CockpitSight }
+/** How far the enemy has been kept in the gunsight, from 0 to 1, and how wide the gunsight is, as a share of the height of the view. */
+export type CockpitStatus = { lockShare: number; sightDiameterPercent: number; secondsLeft: number; sight: CockpitSight }
 /** `agility` and `accuracy` are the maneuverability of the aircraft and the accuracy of the pilot, from 0 to 1. */
-export type CockpitOptions = { enemy: CockpitEnemy; ammunition: number; agility: number; accuracy: number }
+export type CockpitOptions = { enemy: CockpitEnemy; agility: number; accuracy: number }
 
 type Flier = { position: THREE.Vector3; yaw: number; pitch: number; roll: number }
-type Bullet = { mesh: THREE.Mesh; velocity: THREE.Vector3; previous: THREE.Vector3; age: number; isActive: boolean }
 
 const DEGREES = Math.PI / 180
 const FIELD_OF_VIEW_DEGREES = 70
@@ -27,6 +28,9 @@ const CAMERA_NEAR_METERS = 0.05
 const CAMERA_FAR_METERS = 5000
 // The pilot's eyes, in the frame of the aircraft: behind the gunsight, under the canopy.
 const EYE = new THREE.Vector3(0, -0.2, 0.53)
+// The bust of the pilot, low in the middle of the instrument panel, in the frame of the aircraft.
+const HEAD_POSITION = new THREE.Vector3(0, 0.3, 0.1)
+const HEAD_SCALE = 2.3
 const START_ALTITUDE_METERS = 350
 const ENEMY_START = new THREE.Vector3(25, 160, START_ALTITUDE_METERS)
 const PLAYER_SPEED_METERS_PER_SECOND = 78
@@ -42,7 +46,7 @@ const MAX_FRAME_SECONDS = 0.05
 const COMBAT_SECONDS = 75
 const ESCAPE_DISTANCE_METERS = 1500
 const KILL_PAUSE_SECONDS = 2.5
-const OUT_OF_AMMUNITION_PAUSE_SECONDS = 1.5
+const PERCENT = 100
 const STATUS_INTERVAL_SECONDS = 0.1
 const FLYING = { engine: 1, gearRetraction: 1, flaps: 0, wheels: 0, aileron: 0, rudder: 0, elevator: 0 }
 
@@ -50,7 +54,6 @@ const ENEMIES: Record<CockpitEnemy, { speed: number; turnRate: number }> = {
   bf109: { speed: 68, turnRate: 0.75 },
   vichyD520: { speed: 62, turnRate: 0.6 },
 }
-const ENEMY_HIT_RADIUS_METERS = 4.5
 const ENEMY_DECISION_SECONDS = { min: 2, max: 4 }
 const ENEMY_HUNTED_DECISION_SECONDS = { min: 0.9, max: 1.7 }
 const ENEMY_TURN_DEGREES = { calm: 60, hunted: 110 }
@@ -69,22 +72,11 @@ const ENEMY_MAX_BANK_RADIANS = 45 * DEGREES
 const FALL_PITCH_RATE_RADIANS_PER_SECOND = 0.5
 const FALL_MAX_PITCH_RADIANS = 70 * DEGREES
 
-const MUZZLES = [new THREE.Vector3(-1.7, 2.5, 0.05), new THREE.Vector3(1.7, 2.5, 0.05)]
-const BULLET_POOL = 80
-const BULLET_SPEED_METERS_PER_SECOND = 480
-const BULLET_LIFE_SECONDS = 1.1
-const BULLET_LENGTH_METERS = 7
-const BULLET_WIDTH_METERS = 0.18
-const BULLET_COLOR = 0xffd24a
-const FIRE_INTERVAL_SECONDS = 0.09
-const MAX_SPREAD_DEGREES = 1.4
-const MIN_SPREAD_SHARE = 0.2
-const ENEMY_HEALTH = 100
-const DAMAGE_PER_HIT = 7
-const HEALTH_PER_DAMAGE_LEVEL = 14
-const MAX_DAMAGE_LEVEL_BEFORE_KILL = DESTROYED_LEVEL - 1
+// The guns fire by themselves once the enemy has been kept in the gunsight this long; a short slip out of it does not lose the aim.
+const LOCK_SECONDS = 1
+const LOCK_GRACE_SECONDS = 0.3
 
-const SIGHT_ANGLE_DEGREES = 4
+const SIGHT_ANGLE_DEGREES = { min: 4, max: 6 }
 const SIGHT_DISTANCE_METERS = { min: 30, max: 260 }
 
 const GROUND_SIZE_METERS = 8000
@@ -105,7 +97,6 @@ const LIGHT_COLOR = 0xffffff
 const AMBIENT_LIGHT_INTENSITY = 1.4
 const SUN_LIGHT_INTENSITY = 2.2
 const SUN_POSITION = new THREE.Vector3(-300, 200, 600)
-const NOSE_AXIS = new THREE.Vector3(0, 1, 0)
 
 function fractionOf(random: SeededRandom): number {
   return random.integer(0, RANDOM_RESOLUTION) / RANDOM_RESOLUTION
@@ -135,9 +126,9 @@ function place(object: THREE.Object3D, flier: Flier): void {
 }
 
 /**
- * A dogfight flown in real time from the cockpit of the D.520, as in Wings: the player turns to get behind an enemy fighter and fires at it, and sees it
- * take the damage. The aircraft keeps its speed; the player steers it. The accuracy of the pilot tightens the aim, the maneuverability of the aircraft quickens its turns.
- * Owns its WebGL canvas.
+ * A dogfight flown in real time from the cockpit of the D.520, as in Wings: the player turns to get behind an enemy fighter and keeps it in the gunsight, and after
+ * a second the guns fire by themselves and it blows up. The aircraft keeps its speed; the player steers it. The accuracy of the pilot widens the gunsight, the maneuverability
+ * of the aircraft quickens its turns. Owns its WebGL canvas.
  */
 export class CockpitCombatScene {
   private readonly renderer: THREE.WebGLRenderer
@@ -145,6 +136,7 @@ export class CockpitCombatScene {
   private readonly camera = new THREE.PerspectiveCamera(FIELD_OF_VIEW_DEGREES, 1, CAMERA_NEAR_METERS, CAMERA_FAR_METERS)
   private readonly resizeObserver: ResizeObserver
   private readonly player = new D520Model()
+  private readonly head = new PilotHeadModel()
   private readonly liveries: LiveryTextures
   private readonly playerFlight: Flier = { position: new THREE.Vector3(0, 0, START_ALTITUDE_METERS), yaw: 0, pitch: 0, roll: 0 }
   private readonly enemyFlight: Flier = { position: ENEMY_START.clone(), yaw: 0, pitch: 0, roll: 0 }
@@ -153,17 +145,14 @@ export class CockpitCombatScene {
   private readonly sky = createSkyDome()
   private readonly ground: THREE.Mesh
   private readonly clouds: THREE.Group[] = []
-  private readonly bullets: Bullet[] = []
   private previousMilliseconds = performance.now()
   private controlX = 0
   private controlY = 0
   private targetX = 0
   private targetY = 0
-  private isFiring = false
-  private fireCooldown = 0
-  private nextMuzzle = 0
-  private ammunition: number
-  private enemyHealth = ENEMY_HEALTH
+  private lockSeconds = 0
+  private outOfSightSeconds = 0
+  private damageLevel = 0
   private enemyLevel = 0
   private enemyDecisionSeconds = 0
   private enemyTargetYaw = 0
@@ -181,7 +170,6 @@ export class CockpitCombatScene {
     private readonly onStatus: (status: CockpitStatus) => void,
     private readonly onEnd: (outcome: CockpitOutcome) => void,
   ) {
-    this.ammunition = options.ammunition
     this.renderer = createRenderer(container, false)
     this.liveries = new LiveryTextures(this.renderer.capabilities.getMaxAnisotropy(), (livery, texture) => {
       if (livery === 'french') {
@@ -208,9 +196,11 @@ export class CockpitCombatScene {
     this.camera.position.copy(EYE)
     this.camera.rotation.set(Math.PI / 2, 0, 0)
     this.player.object.add(this.camera)
+    this.head.object.position.copy(HEAD_POSITION)
+    this.head.object.scale.setScalar(HEAD_SCALE)
+    this.player.object.add(this.head.object)
     this.scene.add(this.enemyRoot)
     void this.createEnemy()
-    this.createBullets()
     this.enemyTargetYaw = this.enemyFlight.yaw
 
     this.resizeObserver = new ResizeObserver(() => fitToContainer(this.renderer, this.camera, this.container))
@@ -223,10 +213,6 @@ export class CockpitCombatScene {
   setControls(x: number, y: number): void {
     this.targetX = clamp(x, -1, 1)
     this.targetY = clamp(y, -1, 1)
-  }
-
-  setFiring(isFiring: boolean): void {
-    this.isFiring = isFiring
   }
 
   dispose(): void {
@@ -310,36 +296,25 @@ export class CockpitCombatScene {
     }
   }
 
-  private createBullets(): void {
-    const geometry = new THREE.BoxGeometry(BULLET_WIDTH_METERS, BULLET_LENGTH_METERS, BULLET_WIDTH_METERS)
-    const material = new THREE.MeshBasicMaterial({ color: BULLET_COLOR, fog: false })
-    for (let index = 0; index < BULLET_POOL; index += 1) {
-      const mesh = new THREE.Mesh(geometry, material)
-      mesh.visible = false
-      this.scene.add(mesh)
-      this.bullets.push({ mesh, velocity: new THREE.Vector3(), previous: new THREE.Vector3(), age: 0, isActive: false })
-    }
-  }
-
   private renderFrame(): void {
     const now = performance.now()
     const deltaSeconds = Math.min((now - this.previousMilliseconds) / 1000, MAX_FRAME_SECONDS)
     this.previousMilliseconds = now
     if (!this.hasEnded) {
       this.movePlayer(deltaSeconds)
-      this.moveEnemy(deltaSeconds)
-      this.fire(deltaSeconds)
-      this.moveBullets(deltaSeconds)
-      this.checkEnd(deltaSeconds)
-    } else {
-      this.moveEnemy(deltaSeconds)
-      this.moveBullets(deltaSeconds)
     }
+    this.moveEnemy(deltaSeconds)
+    const sight = this.sight()
+    if (!this.hasEnded) {
+      this.updateLock(deltaSeconds, sight)
+      this.checkEnd(deltaSeconds)
+    }
+    this.head.look(sight.azimuthDegrees, sight.elevationDegrees, deltaSeconds)
     this.player.update(deltaSeconds)
     this.enemy?.update(deltaSeconds)
     this.moveWorld()
     if (!this.hasEnded) {
-      this.reportStatus(deltaSeconds)
+      this.reportStatus(deltaSeconds, sight)
     }
     this.renderer.render(this.scene, this.camera)
   }
@@ -421,70 +396,31 @@ export class CockpitCombatScene {
     return isBehind && distance < ENEMY_HUNTED_DISTANCE_METERS && angleFromTail < ENEMY_HUNTED_CONE_DEGREES * DEGREES
   }
 
-  private fire(deltaSeconds: number): void {
-    this.fireCooldown -= deltaSeconds
-    if (!this.isFiring || this.ammunition <= 0 || this.fireCooldown > 0) {
+  /** Counts the time the enemy is in the gunsight: it smokes more and more, and after a second it is shot down. */
+  private updateLock(deltaSeconds: number, sight: CockpitSight): void {
+    if (this.enemy === undefined || this.isEnemyDestroyed) {
       return
     }
-    const bullet = this.bullets.find((candidate) => !candidate.isActive)
-    if (bullet === undefined) {
-      return
-    }
-    this.fireCooldown = FIRE_INTERVAL_SECONDS
-    this.ammunition -= 1
-    this.player.object.updateMatrixWorld()
-    const muzzle = MUZZLES[this.nextMuzzle].clone()
-    this.nextMuzzle = (this.nextMuzzle + 1) % MUZZLES.length
-    bullet.previous.copy(this.player.object.localToWorld(muzzle))
-    bullet.mesh.position.copy(bullet.previous)
-    const spread = MAX_SPREAD_DEGREES * DEGREES * (1 - (1 - MIN_SPREAD_SHARE) * this.options.accuracy)
-    const direction = new THREE.Vector3((Math.random() * 2 - 1) * spread, 1, (Math.random() * 2 - 1) * spread).normalize()
-    direction.applyQuaternion(this.player.object.quaternion)
-    bullet.velocity.copy(direction).multiplyScalar(BULLET_SPEED_METERS_PER_SECOND).addScaledVector(forwardOf(this.playerFlight.yaw, this.playerFlight.pitch), PLAYER_SPEED_METERS_PER_SECOND)
-    bullet.mesh.quaternion.setFromUnitVectors(NOSE_AXIS, direction)
-    bullet.mesh.visible = true
-    bullet.age = 0
-    bullet.isActive = true
-  }
-
-  private moveBullets(deltaSeconds: number): void {
-    for (const bullet of this.bullets) {
-      if (!bullet.isActive) {
-        continue
-      }
-      bullet.age += deltaSeconds
-      bullet.previous.copy(bullet.mesh.position)
-      bullet.mesh.position.addScaledVector(bullet.velocity, deltaSeconds)
-      if (bullet.age > BULLET_LIFE_SECONDS) {
-        this.retire(bullet)
-      } else if (!this.isEnemyDestroyed && this.enemy !== undefined && this.hits(bullet)) {
-        this.retire(bullet)
-        this.damageEnemy()
+    if (sight.isInSight) {
+      this.outOfSightSeconds = 0
+      this.lockSeconds += deltaSeconds
+    } else {
+      this.outOfSightSeconds += deltaSeconds
+      if (this.outOfSightSeconds > LOCK_GRACE_SECONDS) {
+        this.lockSeconds = 0
       }
     }
-  }
-
-  /** Whether the stretch the bullet has just flown goes through the enemy. */
-  private hits(bullet: Bullet): boolean {
-    const segment = new THREE.Line3(bullet.previous, bullet.mesh.position)
-    const closest = segment.closestPointToPoint(this.enemyFlight.position, true, new THREE.Vector3())
-    return closest.distanceTo(this.enemyFlight.position) < ENEMY_HIT_RADIUS_METERS
-  }
-
-  private retire(bullet: Bullet): void {
-    bullet.isActive = false
-    bullet.mesh.visible = false
-  }
-
-  private damageEnemy(): void {
-    this.enemyHealth = Math.max(0, this.enemyHealth - DAMAGE_PER_HIT)
-    if (this.enemyHealth === 0) {
+    if (this.lockSeconds >= LOCK_SECONDS) {
       this.isEnemyDestroyed = true
       this.pauseSeconds = KILL_PAUSE_SECONDS
-      this.enemy!.destroy()
+      this.enemy.destroy()
       return
     }
-    this.enemy!.damage(Math.min(MAX_DAMAGE_LEVEL_BEFORE_KILL, Math.floor((ENEMY_HEALTH - this.enemyHealth) / HEALTH_PER_DAMAGE_LEVEL)))
+    const level = Math.floor((this.lockSeconds / LOCK_SECONDS) * DESTROYED_LEVEL)
+    if (level > this.damageLevel) {
+      this.damageLevel = level
+      this.enemy.damage(level)
+    }
   }
 
   private checkEnd(deltaSeconds: number): void {
@@ -497,17 +433,13 @@ export class CockpitCombatScene {
       return
     }
     const distance = this.playerFlight.position.distanceTo(this.enemyFlight.position)
-    const hasNoBulletLeft = this.ammunition <= 0 && !this.bullets.some((bullet) => bullet.isActive)
-    this.pauseSeconds = hasNoBulletLeft ? this.pauseSeconds + deltaSeconds : 0
-    if (this.secondsLeft === 0 || distance > ESCAPE_DISTANCE_METERS || this.pauseSeconds > OUT_OF_AMMUNITION_PAUSE_SECONDS) {
+    if (this.secondsLeft === 0 || distance > ESCAPE_DISTANCE_METERS) {
       this.end('escaped')
     }
   }
 
   private end(outcome: CockpitOutcome): void {
     this.hasEnded = true
-    this.isFiring = false
-    this.reportStatus(STATUS_INTERVAL_SECONDS)
     this.onEnd(outcome)
   }
 
@@ -526,13 +458,13 @@ export class CockpitCombatScene {
     }
   }
 
-  private reportStatus(deltaSeconds: number): void {
+  private reportStatus(deltaSeconds: number, sight: CockpitSight): void {
     this.statusCountdown -= deltaSeconds
     if (this.statusCountdown > 0) {
       return
     }
     this.statusCountdown = STATUS_INTERVAL_SECONDS
-    this.onStatus({ enemyHealth: this.enemyHealth, ammunition: this.ammunition, secondsLeft: this.secondsLeft, sight: this.sight() })
+    this.onStatus({ lockShare: Math.min(this.lockSeconds / LOCK_SECONDS, 1), sightDiameterPercent: (Math.tan(this.sightAngleDegrees() * DEGREES) / Math.tan((FIELD_OF_VIEW_DEGREES / 2) * DEGREES)) * PERCENT, secondsLeft: this.secondsLeft, sight })
   }
 
   private sight(): CockpitSight {
@@ -541,11 +473,12 @@ export class CockpitCombatScene {
     const azimuthDegrees = Math.atan2(local.x, local.y) / DEGREES
     const elevationDegrees = Math.atan2(local.z, Math.hypot(local.x, local.y)) / DEGREES
     const distanceMeters = toEnemy.length()
-    const isInSight =
-      Math.abs(azimuthDegrees) < SIGHT_ANGLE_DEGREES &&
-      Math.abs(elevationDegrees) < SIGHT_ANGLE_DEGREES &&
-      distanceMeters >= SIGHT_DISTANCE_METERS.min &&
-      distanceMeters <= SIGHT_DISTANCE_METERS.max
+    const isInSight = Math.hypot(azimuthDegrees, elevationDegrees) < this.sightAngleDegrees() && distanceMeters >= SIGHT_DISTANCE_METERS.min && distanceMeters <= SIGHT_DISTANCE_METERS.max
     return { azimuthDegrees, elevationDegrees, distanceMeters, isInSight }
+  }
+
+  /** The half angle of the gunsight: the better the pilot aims, the wider it is. */
+  private sightAngleDegrees(): number {
+    return SIGHT_ANGLE_DEGREES.min + (SIGHT_ANGLE_DEGREES.max - SIGHT_ANGLE_DEGREES.min) * this.options.accuracy
   }
 }

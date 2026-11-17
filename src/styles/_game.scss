@@ -525,7 +525,7 @@ button.base-sprite {
   font-variant-numeric: tabular-nums;
 }
 
-.cockpit-health {
+.cockpit-lock {
   display: inline-block;
   width: 6rem;
   height: 0.6rem;
@@ -537,7 +537,7 @@ button.base-sprite {
   span {
     display: block;
     height: 100%;
-    background: $alarm;
+    background: $go;
   }
 }
 
@@ -545,8 +545,7 @@ button.base-sprite {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 3.4rem;
-  height: 3.4rem;
+  aspect-ratio: 1;
   border: 2px solid rgba($text, 0.7);
   border-radius: 50%;
   transform: translate(-50%, -50%);
@@ -583,20 +582,6 @@ button.base-sprite {
   }
 }
 
-.cockpit-fire {
-  @include button;
-  position: absolute;
-  right: 0.75rem;
-  bottom: 0.75rem;
-  min-width: 6rem;
-  min-height: 3rem;
-  background: $alarm;
-  color: $text;
-  font-size: 1rem;
-  pointer-events: auto;
-  touch-action: none;
-}
-
 .cockpit-message {
   position: absolute;
   top: 50%;
@@ -629,79 +614,6 @@ button.base-sprite {
   &[data-outcome='escaped'] strong {
     color: $alarm;
   }
-}
-
-// The head of the pilot, at the lower left of the view: it turns toward the enemy, and its words say which way to turn.
-.pilot-head {
-  @include flex($direction: column, $align: center, $gap: 0.15rem);
-  position: absolute;
-  bottom: 0.5rem;
-  left: 0.75rem;
-  width: 6.5rem;
-
-  svg {
-    width: 100%;
-    height: auto;
-  }
-
-  &[data-direction='fire'] .pilot-head-words {
-    background: $alarm;
-    color: $text;
-  }
-}
-
-.pilot-head-words {
-  padding: 0.1rem 0.4rem;
-  background: rgba($outline, 0.7);
-  color: $gold;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-align: center;
-}
-
-.pilot-head-frame {
-  fill: rgba($outline, 0.45);
-  stroke: $frame;
-  stroke-width: 2;
-}
-
-.pilot-head-overalls {
-  fill: #4b5d6b;
-}
-
-.pilot-head-skin {
-  fill: #dcae85;
-}
-
-.pilot-head-cap {
-  fill: #6b6a4a;
-}
-
-.pilot-head-strap {
-  fill: #3a3426;
-}
-
-.pilot-head-goggles {
-  fill: #9fc3c9;
-  stroke: #1f1c15;
-  stroke-width: 1.5;
-}
-
-.pilot-head-eye {
-  fill: #f4f1e8;
-  stroke: #3a3426;
-  stroke-width: 0.6;
-}
-
-.pilot-head-pupil {
-  fill: #1a1612;
-}
-
-.pilot-head-mouth {
-  fill: none;
-  stroke: #6e3b2c;
-  stroke-width: 1.6;
-  stroke-linecap: round;
 }
 
 .game-tools {

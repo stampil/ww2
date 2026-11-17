@@ -289,7 +289,6 @@ function BaseScreen({ player }: { player: Player }) {
       {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
         <CockpitCombatWindow
           alert={duel.alert}
-          ammunitionLoaded={duel.flight.ammunitionLoaded}
           maneuverability={duelCrew.aircraft.model.maneuverability}
           accuracy={duelCrew.pilot.effectiveAccuracy}
           onStart={(alertId) => order(startAlert(alertId))}

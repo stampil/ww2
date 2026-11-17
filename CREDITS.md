@@ -5,7 +5,7 @@ French Touch reste un projet ouvert et gratuit. Ce fichier nomme les auteurs des
 ## Dans le dépôt
 
 - **Dewoitine D.520, modèle 3D, cockpit et textures** : Emmanuel Baranger (helijah), avion « D520 » de FlightGear, [FGAddon](https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/D520/), licence GNU GPL v2. Fichiers et changements : `public/models/d520/` (`ATTRIBUTION.txt`, `COPYING`). La texture `texture-vichy.png` en est une retouche faite avec un générateur d'images.
-- **Icône d'alerte** : « warning » de Material Icons, Google, licence Apache 2.0, [material-design-icons](https://github.com/google/material-design-icons). Tracé repris tel quel dans `src/app/MissionAlert.tsx`.
+- **Icônes de l'interface du jeu** : les icônes « filled » de Material Icons (Google, licence Apache 2.0, [material-design-icons](https://github.com/google/material-design-icons), paquet `@material-design-icons/svg`), tracés repris tels quels dans `src/app/iconPaths.ts`.
 - **Buisson 3D** : Quaternius, « Bush », via [Poly Pizza](https://poly.pizza/m/ooG6CkLyE8), domaine public (CC0). Fichier : `public/models/bush/` (`ATTRIBUTION.txt`).
 
 ## Plans trois vues, utilisés comme références (non distribués : dossier `ref/plans-libres/`, hors du dépôt)

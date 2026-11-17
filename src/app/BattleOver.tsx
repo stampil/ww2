@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import GameWindow from './GameWindow'
+import Icon from './Icon'
 import type { Battle } from './useBase'
 
 type Props = {
@@ -6,18 +8,21 @@ type Props = {
   onRestart: () => void
 }
 
-/** What the end of the battle says, won or lost, and the button that starts a new one. */
+/** What the end of the battle says, won or lost, in a window that stays until a new battle starts. */
 function BattleOver({ battle, onRestart }: Props) {
   const { t } = useTranslation()
 
   return (
-    <section className="battle-over" role="alert">
-      <h3>{t(`base.battle.${battle.status}.title`)}</h3>
-      <p>{t(`base.battle.${battle.status}.text`, { target: battle.target })}</p>
-      <button type="button" onClick={onRestart}>
-        {t('base.battle.restart')}
-      </button>
-    </section>
+    <GameWindow title={t(`base.battle.${battle.status}.title`)}>
+      <div className="battle-over">
+        <Icon name={battle.status === 'won' ? 'victory' : 'defeat'} />
+        <p>{t(`base.battle.${battle.status}.text`, { target: battle.target })}</p>
+        <button type="button" className="go" onClick={onRestart}>
+          <Icon name="battle" />
+          {t('base.battle.restart')}
+        </button>
+      </div>
+    </GameWindow>
   )
 }
 

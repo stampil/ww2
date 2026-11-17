@@ -1,7 +1,5 @@
 import type { TileKind } from '../three/tiles'
-import type { TerrainPlan } from './terrainPlan'
-
-export type Cell = { row: number; column: number }
+import type { Cell, TerrainPlan } from './terrainPlan'
 /** A cell of a path, with the cost of the whole path from its start up to this cell. */
 export type PathStep = { cell: Cell; cost: number }
 

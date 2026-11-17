@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import Pane from './Pane'
 import type { BaseEvent, ExplosionEvent, MissionReport, Part } from './useBase'
 
 function crewOutcomeKey(crew: MissionReport['crews'][number]): string {
@@ -62,12 +63,11 @@ function EventList({ events }: { events: BaseEvent[] }) {
   const { t } = useTranslation()
 
   return (
-    <>
-      <h4>{t('base.mission.reports')}</h4>
+    <Pane title={t('base.mission.reports')}>
       <ul className="reports">
         {events.map((event) => (event.kind === 'mission' ? <MissionReportItem key={event.id} report={event} /> : <ExplosionItem key={event.id} event={event} />))}
       </ul>
-    </>
+    </Pane>
   )
 }
 

@@ -1,4 +1,7 @@
 import { useTranslation } from 'react-i18next'
+import Gauge from './Gauge'
+import Icon from './Icon'
+import Pane from './Pane'
 import type { Base, Stock, UpgradeInfo, UpgradeName } from './useBase'
 import UpgradeCard from './UpgradeCard'
 
@@ -13,24 +16,40 @@ type Props = {
   onUpgrade: (upgrade: UpgradeName) => void
 }
 
-/** The stocks of the warehouse, each with a button to buy more of it. */
+/** The stocks of the warehouse, each with its gauge and a button to buy more of it. */
 function WarehousePanel({ resources, warehouse, onBuy, upgrade, onUpgrade }: Props) {
   const { t } = useTranslation()
 
   return (
-    <ul className="cards">
-      {STOCKS.map((stock) => (
-        <li key={stock} className="card">
-          <strong>{t(`base.resources.${stock}`)}</strong>
-          <meter min={0} max={warehouse.capacity} value={resources[stock]} />
-          <span>{t('base.stored', { stored: resources[stock], capacity: warehouse.capacity })}</span>
-          <button type="button" onClick={() => onBuy(stock, PURCHASE_STEP)}>
-            {t('base.buy', { quantity: PURCHASE_STEP, cost: PURCHASE_STEP * warehouse.prices[stock] })}
-          </button>
-        </li>
-      ))}
-      <UpgradeCard info={upgrade} commandPoints={resources.commandPoints} onBuy={onUpgrade} />
-    </ul>
+    <Pane title={t('base.stocks')}>
+      <ul className="cards">
+        {STOCKS.map((stock) => (
+          <li key={stock} className="card">
+            <div className="card-head">
+              <span className="portrait" aria-hidden="true">
+                <Icon name={stock} />
+              </span>
+              <div>
+                <strong>{t(`base.resources.${stock}`)}</strong>
+                <span>{t('base.stored', { stored: resources[stock], capacity: warehouse.capacity })}</span>
+              </div>
+            </div>
+            <Gauge label={t(`base.resources.${stock}`)} value={resources[stock]} max={warehouse.capacity} higherIsBetter />
+            <div className="card-actions">
+              <button type="button" onClick={() => onBuy(stock, PURCHASE_STEP)}>
+                {t('base.buy', { quantity: PURCHASE_STEP })}
+                <span className="price">
+                  <Icon name="supplies" />
+                  {PURCHASE_STEP * warehouse.prices[stock]}
+                  <span className="visually-hidden">{t('base.resources.supplies')}</span>
+                </span>
+              </button>
+            </div>
+          </li>
+        ))}
+        <UpgradeCard info={upgrade} commandPoints={resources.commandPoints} onBuy={onUpgrade} />
+      </ul>
+    </Pane>
   )
 }
 

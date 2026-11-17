@@ -110,6 +110,12 @@
   },
   "base": {
     "title": "Base",
+    "hud": "Tableau de bord",
+    "window": {
+      "close": "Fermer"
+    },
+    "stocks": "Stocks",
+    "workshopParts": "Pièces",
     "map": "Plan de la base",
     "clock": {
       "label": "Horloge de jeu"
@@ -135,11 +141,12 @@
       "workshop": "Un établi de plus",
       "warehouse": "Plus de place pour les stocks",
       "level": "Niveau {{level}} sur {{max}}",
-      "buy": "Améliorer ({{cost}} points de commandement)",
+      "buy": "Améliorer",
       "maxed": "Niveau maximal"
     },
     "hangar": {
       "modules": "Modules",
+      "parked": "Avion au parking : ouvrir le hangar",
       "moduleIntact": "{{part}}",
       "moduleDestroyed": "{{part}} (détruit)",
       "repair": "Réparer ({{time}})",
@@ -214,7 +221,7 @@
       "commandPoints": "Points de commandement"
     },
       "stored": "{{stored}} / {{capacity}}",
-    "buy": "Acheter {{quantity}} ({{cost}} de ravitaillement)",
+    "buy": "Acheter {{quantity}}",
       "mechanics": "Mécaniciens libres : {{count}}",
     "parts": {
       "engine": "Moteur",

@@ -1,4 +1,4 @@
-import type { PlacedSprite } from './terrainPlan'
+import type { Cell, PlacedSprite } from './terrainPlan'
 
 // The starting airfield: a runway on row 6, three taxiways north to the aprons with the hangar, the workshop and the depot
 // behind them, and the headquarters, the tower, the windsock and the gun south of the runway.
@@ -22,4 +22,14 @@ export const START_SPRITES: PlacedSprite[] = [
   { sprite: 'control-tower', row: 7, column: 9, widthTiles: 1.4 },
   { sprite: 'windsock', row: 7, column: 1, widthTiles: 0.9 },
   { sprite: 'anti-aircraft-bunker', row: 7, column: 12, widthTiles: 0.9 },
+]
+
+// Where the aircraft park, in the order of the squadron: the three aprons, then the grass between the taxiways.
+export const START_STANDS: Cell[] = [
+  { row: 3, column: 3 },
+  { row: 3, column: 7 },
+  { row: 3, column: 10 },
+  { row: 5, column: 4 },
+  { row: 5, column: 6 },
+  { row: 5, column: 8 },
 ]

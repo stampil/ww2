@@ -24,7 +24,7 @@ Un suivi ne garde que les tâches à faire et les questions en suspens ; les dé
    - **E9, grand : le bombardement.** Vitesse, largage au bon moment, dérive du vent affichée, cibles (char, bunker, usine), bombardiers Amiot 143 et LeO 451.
 
    **Jalon 3 : les assets, la campagne, la finition**
-   - **E10, grand : les assets.** Les autres appareils (MS.406, Amiot 143, LeO 451, adversaires allemands) en 3D ou en sprites à partir des plans libres (`ref/plans-libres/`) ; la livrée allemande du D.520 déjà prête dans FGAddon (`SV-GB.png`, 1 274 820 octets, accord de téléchargement à demander) ; images à faire générer par l'IA, un prompt à la fois (portraits des pilotes, illustrations des cartes, états endommagé et en réparation des avions, aires de stationnement) ; sons.
+   - **E10, grand : les assets.** Les autres appareils (MS.406, Amiot 143, LeO 451, adversaires allemands) en 3D ou en sprites à partir des plans libres (`ref/plans-libres/`) ; la livrée allemande du D.520 déjà prête dans FGAddon (`SV-GB.png`, 1 274 820 octets, accord de téléchargement à demander) ; images à faire générer par l'IA, un prompt à la fois (portraits des pilotes à la place des silhouettes, personnel d'entretien, camion de carburant et pompiers, illustrations des cartes, états endommagé et en réparation des avions, aires de stationnement) ; sons.
    - **E11, grand : la campagne.** La Bataille de France (mai à juin 1940) puis d'autres batailles historiques, météo, événements, tutoriel.
    - **E12, moyen : la finition.** Téléphone et tactile, réglages en `localStorage`, performances, mise en ligne (PHP 8.3 et MariaDB chez un hébergeur), limite d'essais de connexion, nettoyage des outils de lint (point 2).
 
@@ -43,6 +43,4 @@ Un suivi ne garde que les tâches à faire et les questions en suspens ; les dé
 
 ## Questions en suspens
 
-1. **Combien de bases par joueur ?** Je lis : plusieurs, puisque l'échange « entre ses propres bases » n'a de sens que comme ça ; il choisit une première base à l'inscription, puis en prend d'autres (libres, ou prises à l'adversaire). Dis-moi si c'est une seule, ou comment il prend les suivantes. Cela attend M1 : rien n'est bloqué avant.
-2. **E6 : quand la bataille est-elle perdue ?** Le suivi disait « s'il n'y a plus ni avion ni pilote ». J'ai lu : plus de pilote **ou** plus d'avion, comme le jeu d'origine (la partie finit quand tous les pilotes sont morts) ; si tu voulais « les deux à la fois », dis-le-moi. Dans les deux cas rien n'est racheté en cours de partie : le Hangar ne donne un avion de plus que par son amélioration.
-3. **E6 : l'objectif en jours.** Le suivi proposait « tenir un nombre de jours » ou « détruire un nombre d'avions ». Je n'ai pris que les avions ennemis abattus (8) : avec une horloge réelle, un jour de jeu dure un jour réel. Veux-tu aussi un objectif en jours, et de combien ?
+Aucune : « Oui, tes choix, go » (17/11) a tranché les sept questions avec mes propositions (voir le cahier).

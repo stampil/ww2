@@ -110,6 +110,12 @@
   },
   "base": {
     "title": "Base",
+    "hud": "Dashboard",
+    "window": {
+      "close": "Close"
+    },
+    "stocks": "Stocks",
+    "workshopParts": "Parts",
     "map": "Plan of the base",
     "clock": {
       "label": "Game clock"
@@ -135,11 +141,12 @@
       "workshop": "One more bench",
       "warehouse": "More room for the stocks",
       "level": "Level {{level}} of {{max}}",
-      "buy": "Upgrade ({{cost}} command points)",
+      "buy": "Upgrade",
       "maxed": "Top level"
     },
     "hangar": {
       "modules": "Modules",
+      "parked": "Parked aircraft: open the hangar",
       "moduleIntact": "{{part}}",
       "moduleDestroyed": "{{part}} (destroyed)",
       "repair": "Repair ({{time}})",
@@ -214,7 +221,7 @@
       "commandPoints": "Command points"
     },
       "stored": "{{stored}} / {{capacity}}",
-    "buy": "Buy {{quantity}} ({{cost}} supplies)",
+    "buy": "Buy {{quantity}}",
       "mechanics": "Free mechanics: {{count}}",
     "parts": {
       "engine": "Engine",

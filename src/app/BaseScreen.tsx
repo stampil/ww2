@@ -3,25 +3,39 @@ import { useTranslation } from 'react-i18next'
 import { TERRAIN_PLANS } from '../plans/terrainPlan'
 import type { BuildingName } from '../plans/terrainPlan'
 import BaseMap from './BaseMap'
-import AlertButton from './AlertButton'
-import { busyCrews, unavailableCrews } from './flights'
+import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
-import BattleProgress from './BattleProgress'
-import GameClock from './GameClock'
+import { busyCrews, unavailableCrews } from './flights'
+import GameWindow from './GameWindow'
 import HangarPanel from './HangarPanel'
 import HeadquartersPanel from './HeadquartersPanel'
+import Hud from './Hud'
 import type { Player } from './useAccount'
+import { useAircraftSprite } from './useAircraftSprite'
 import { useBase } from './useBase'
-import type { UpgradeName } from './useBase'
+import type { Aircraft, HangarAircraft, UpgradeName } from './useBase'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
 
-const RESOURCES = ['supplies', 'fuel', 'ammunition', 'materials', 'commandPoints'] as const
+function standStatusOf(state: HangarAircraft, aircraft: Aircraft): StandStatus {
+  if (state.fireSeconds !== null) {
+    return 'burning'
+  }
+  if (state.repairSeconds !== null) {
+    return 'repairing'
+  }
+  if (state.destroyedModules.length > 0 || aircraft.durability < aircraft.model.durability) {
+    return 'damaged'
+  }
+  return 'ready'
+}
 
-/** The base of the player who is signed in: a band of the game clock and the resources, the airfield, and the panel of the building opened on it. */
+/** The base of the player who is signed in, played on its map: a strip of figures over the airfield, the aircraft parked, and a window for each building opened on it. */
 function BaseScreen({ player }: { player: Player }) {
   const { t } = useTranslation()
-  const { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot, buyUpgrade, restartBattle } = useBase(player)
+  const { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot, buyUpgrade, restartBattle } =
+    useBase(player)
+  const aircraftSprite = useAircraftSprite()
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
 
@@ -33,49 +47,57 @@ function BaseScreen({ player }: { player: Player }) {
     setErrorCode(await sending)
   }
 
+  const plan = TERRAIN_PLANS[base.terrainPlan]
   const busy = busyCrews(flights)
   const unavailable = unavailableCrews(busy, rests, hangarAircraft)
-  const hasLandedFlight = flights.some((flight) => flight.remainingSeconds === 0)
-  const hasBurningAircraft = hangarAircraft.some((state) => state.fireSeconds !== null)
   const upgradeOf = (building: UpgradeName) => base.upgrades.find((candidate) => candidate.upgrade === building)!
   const repairingAircraftIds = hangarAircraft.filter((state) => state.repairSeconds !== null).map((state) => state.aircraftId)
 
-  function toggle(building: BuildingName): void {
-    setOpenBuilding(openBuilding === building ? null : building)
+  const parkedAircraft: ParkedAircraft[] = []
+  for (let place = 0; place < base.squadron.aircraft.length; place += 1) {
+    const aircraft = base.squadron.aircraft[place]
+    const stand = plan.stands[place]
+    if (stand !== undefined && !busy.aircraftIds.includes(aircraft.id)) {
+      const state = hangarAircraft.find((candidate) => candidate.aircraftId === aircraft.id)!
+      parkedAircraft.push({ id: aircraft.id, stand, status: standStatusOf(state, aircraft) })
+    }
   }
 
+  const alerts: MapAlert[] = []
+  if (flights.some((flight) => flight.remainingSeconds === 0)) {
+    alerts.push({ kind: 'mission', building: 'headquarters', label: t('base.alert') })
+  }
+  if (hangarAircraft.some((state) => state.fireSeconds !== null)) {
+    alerts.push({ kind: 'fire', building: 'hangar', label: t('base.fireAlert') })
+  }
+
+  const errorMessage = errorCode !== null && (
+    <p className="game-message" role="alert">
+      {t(`base.errors.${errorCode}`)}
+    </p>
+  )
+
   return (
-    <section className="base" aria-label={t('base.title')}>
-      <h2>{t('base.title')}</h2>
-      <div className="base-band">
-        <GameClock gameTime={gameTime} />
-        <BattleProgress battle={base.battle} />
-        {hasLandedFlight && <AlertButton label={t('base.alert')} onOpen={() => setOpenBuilding('headquarters')} />}
-        {hasBurningAircraft && <AlertButton label={t('base.fireAlert')} onOpen={() => setOpenBuilding('hangar')} />}
-        <ul className="resources">
-          {RESOURCES.map((resource) => (
-            <li key={resource}>
-              <span>{t(`base.resources.${resource}`)}</span>
-              <strong>{base.resources[resource]}</strong>
-            </li>
-          ))}
-        </ul>
+    <section className="base game" aria-label={t('base.title')}>
+      <h2 className="visually-hidden">{t('base.title')}</h2>
+      <div className="stage">
+        <Hud gameTime={gameTime} base={base} />
+        <BaseMap
+          plan={plan}
+          repairingAircraftIds={repairingAircraftIds}
+          parkedAircraft={parkedAircraft}
+          aircraftSprite={aircraftSprite}
+          alerts={alerts}
+          openBuilding={openBuilding}
+          onSelect={setOpenBuilding}
+        />
       </div>
 
-      {base.battle.status !== 'ongoing' && <BattleOver battle={base.battle} onRestart={() => void order(restartBattle())} />}
-
-      <BaseMap plan={TERRAIN_PLANS[base.terrainPlan]} repairingAircraftIds={repairingAircraftIds} openBuilding={openBuilding} onSelect={toggle} />
-
-      {errorCode !== null && (
-        <p className="account-error" role="alert">
-          {t(`base.errors.${errorCode}`)}
-        </p>
-      )}
+      {openBuilding === null && errorMessage}
 
       {openBuilding !== null && (
-        <section className="base-detail" aria-label={t(`base.building.${openBuilding}.name`)}>
-          <h3>{t(`base.building.${openBuilding}.name`)}</h3>
-          <p className="squadron-hint">{t(`base.building.${openBuilding}.text`)}</p>
+        <GameWindow title={t(`base.building.${openBuilding}.name`)} hint={t(`base.building.${openBuilding}.text`)} onDismiss={() => setOpenBuilding(null)}>
+          {errorMessage}
           {openBuilding === 'headquarters' && (
             <HeadquartersPanel
               squadron={base.squadron}
@@ -87,9 +109,7 @@ function BaseScreen({ player }: { player: Player }) {
               events={base.events}
               busy={busy}
               unavailable={unavailable}
-              onLaunch={(missionId, pilotIds, aircraftIds, fuel, ammunition) =>
-                void order(launchMission(missionId, pilotIds, aircraftIds, fuel, ammunition))
-              }
+              onLaunch={(missionId, pilotIds, aircraftIds, fuel, ammunition) => void order(launchMission(missionId, pilotIds, aircraftIds, fuel, ammunition))}
               onReceive={(missionId) => void order(receiveSquadron(missionId))}
               onRest={(pilotId) => void order(restPilot(pilotId))}
               onRecruit={() => void order(recruitPilot())}
@@ -119,14 +139,17 @@ function BaseScreen({ player }: { player: Player }) {
               squadron={base.squadron}
               hangarAircraft={hangarAircraft}
               busyAircraftIds={busy.aircraftIds}
+              sprite={aircraftSprite}
               onRepair={(aircraftId) => void order(repairAircraft(aircraftId))}
               upgrade={upgradeOf('hangar')}
               commandPoints={base.resources.commandPoints}
               onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
             />
           )}
-        </section>
+        </GameWindow>
       )}
+
+      {base.battle.status !== 'ongoing' && <BattleOver battle={base.battle} onRestart={() => void order(restartBattle())} />}
     </section>
   )
 }

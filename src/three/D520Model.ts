@@ -139,11 +139,13 @@ export class D520Model {
   private wheelAngle = 0
   private deflection = { aileron: 0, rudder: 0, elevator: 0 }
   private sweepPhase = 0
+  /** Settles once the parts are loaded and in place. */
+  readonly ready: Promise<void>
 
   constructor() {
     this.object.add(this.cockpit.object)
     this.object.add(this.effects.object)
-    void this.load()
+    this.ready = this.load()
   }
 
   setLivery(texture: THREE.Texture): void {

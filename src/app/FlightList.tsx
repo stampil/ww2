@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from './formatDuration'
+import Icon from './Icon'
+import Pane from './Pane'
 import type { Flight, Squadron } from './useBase'
 
 type Props = {
@@ -19,16 +21,15 @@ function FlightList({ flights, squadron, onReceive }: Props) {
   }
 
   return (
-    <>
-      <h4>{t('base.mission.flights')}</h4>
+    <Pane title={t('base.mission.flights')}>
       <ul className="jobs">
         {flights.map((flight) => (
           <li key={flight.id}>
-            {t(`base.mission.types.${flight.type}`)} — {flight.remainingSeconds === 0 ? t('base.mission.landed') : formatDuration(flight.remainingSeconds)}
-            {' : '}
-            {flight.crews.map(crewLabel).join(', ')}
-            {' — '}
-            {t('base.mission.loaded', { fuel: flight.fuelLoaded, ammunition: flight.ammunitionLoaded })}
+            <Icon name={flight.type} />
+            <span>{t(`base.mission.types.${flight.type}`)}</span>
+            <strong>{flight.remainingSeconds === 0 ? t('base.mission.landed') : formatDuration(flight.remainingSeconds)}</strong>
+            <span className="muted">{flight.crews.map(crewLabel).join(', ')}</span>
+            <span className="muted">{t('base.mission.loaded', { fuel: flight.fuelLoaded, ammunition: flight.ammunitionLoaded })}</span>
             {flight.remainingSeconds === 0 && (
               <button type="button" onClick={() => onReceive(flight.id)}>
                 {t('base.mission.receive')}
@@ -37,7 +38,7 @@ function FlightList({ flights, squadron, onReceive }: Props) {
           </li>
         ))}
       </ul>
-    </>
+    </Pane>
   )
 }
 

@@ -13,8 +13,10 @@ function GamePage() {
 
   return (
     <Layout tools={<AccountPanel account={account} />}>
-      <section className="intro" aria-labelledby="game-title">
-        <h1 id="game-title">{t('game.title')}</h1>
+      <section className="game-page" aria-labelledby="game-title">
+        <h1 id="game-title" className="game-title">
+          {t('game.title')}
+        </h1>
         {account.player === null ? <p className="squadron-hint">{t('squadron.signInHint')}</p> : <BaseScreen player={account.player} />}
         <div className="status-line">
           <span className="status-dot" data-status={apiStatus} aria-hidden="true" />

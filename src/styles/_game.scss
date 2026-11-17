@@ -1,0 +1,788 @@
+@use 'sass:color';
+@use 'flex' as *;
+@use 'breakpoints' as *;
+
+// The look of the game screen: the colours of the interface of the original game, read off its screenshots on Steam
+// (the panel green, the black outline, the grey-green line of the frame, the gold of the titles, the khaki of the buttons).
+$panel: #283322;
+$panel-raised: #333e29;
+$outline: #030301;
+$frame: #8d907d;
+$text: #fdfefd;
+$muted: #898987;
+// The measured grey lightened, so that small text on the panel green reads at a contrast of 4.5 to 1 or more.
+$muted-text: color.adjust($muted, $lightness: 15%);
+$gold: #cda601;
+$khaki: #a6885a;
+$khaki-light: #b89665;
+$khaki-dark: #977b53;
+$go: #35aa46;
+$go-dark: #228536;
+$alarm: #c94e36;
+$title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
+
+@mixin frame {
+  border: 2px solid $outline;
+  background: $panel;
+  box-shadow:
+    0 0 0 2px $frame,
+    0 0 0 4px $outline;
+}
+
+@mixin inset-frame {
+  border: 2px solid $outline;
+  background: $panel;
+  box-shadow: inset 0 0 0 2px $frame;
+}
+
+@mixin button {
+  @include flex($display: inline-flex, $align: center, $justify: center, $gap: 0.4rem);
+  position: relative;
+  min-height: 2rem;
+  padding: 0 0.8rem;
+  border: 2px solid $outline;
+  border-radius: 0;
+  background: $khaki;
+  box-shadow:
+    inset 0 2px 0 $khaki-light,
+    inset 0 -2px 0 $khaki-dark;
+  color: $outline;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+
+  // Reaches the 48px that a finger needs.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -0.5rem 0;
+  }
+
+  .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.12);
+  }
+
+  &:active:not(:disabled) {
+    box-shadow:
+      inset 0 -2px 0 $khaki-light,
+      inset 0 2px 0 $khaki-dark;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: default;
+    filter: grayscale(0.7);
+    opacity: 0.5;
+  }
+
+  &[aria-pressed='true'] {
+    background: $gold;
+  }
+
+  &.go {
+    background: $go;
+    box-shadow:
+      inset 0 2px 0 color.adjust($go, $lightness: 8%),
+      inset 0 -2px 0 $go-dark;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  fill: currentColor;
+}
+
+.game-page {
+  width: 100%;
+  padding: 1rem 0 2rem;
+}
+
+.game-title {
+  max-width: none;
+  margin: 0 0 1rem;
+  font-family: $title-font;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+}
+
+.game {
+  color: $text;
+}
+
+// The stage: the airfield, with the strip of figures laid over it.
+.stage {
+  position: relative;
+}
+
+// Above the map on a phone, over its top edge from the medium breakpoint.
+.hud {
+  @include flex($align: center, $justify: center, $gap: 0.2rem 1rem);
+  @include frame;
+  flex-wrap: wrap;
+  margin: 0.25rem 0.25rem 0.9rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+
+  @include from('medium') {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 2;
+    width: max-content;
+    max-width: calc(100% - 1.5rem);
+    margin: 0;
+    padding: 0.3rem 1rem;
+    transform: translateX(-50%);
+  }
+}
+
+.hud-item {
+  @include flex($display: inline-flex, $align: center, $gap: 0.3rem);
+  font-variant-numeric: tabular-nums;
+
+  .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: $khaki-light;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.base-map-viewport {
+  overflow: auto hidden;
+  border: 2px solid $outline;
+  box-shadow:
+    0 0 0 2px $frame,
+    0 0 0 4px $outline;
+}
+
+.base-map {
+  position: relative;
+  min-width: 36rem;
+}
+
+.base-map-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+// A sprite stands with the bottom middle of its picture on the bottom middle of its tile; --width is in tiles.
+.base-sprite {
+  position: absolute;
+  top: calc((var(--row) + 1) / var(--rows) * 100%);
+  left: calc((var(--column) + 0.5) / var(--columns) * 100%);
+  width: calc(var(--width) / var(--columns) * 100%);
+  height: auto;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+
+button.base-sprite {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+
+  // Reaches the 48px that a finger needs around a small building.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -0.5rem;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  &:hover img,
+  &:focus-visible img,
+  &[aria-pressed='true'] img {
+    filter: drop-shadow(0 0 0.4rem $gold);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+// An aircraft parked on its stand: the picture is centred on the tile; --width is in tiles.
+.map-aircraft {
+  position: absolute;
+  z-index: 1;
+  top: calc((var(--row) + 0.5) / var(--rows) * 100%);
+  left: calc((var(--column) + 0.5) / var(--columns) * 100%);
+  width: calc(var(--width) / var(--columns) * 100%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -0.5rem;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0.3rem 0.2rem rgba(0, 0, 0, 0.55));
+  }
+
+  &:hover img,
+  &:focus-visible img {
+    filter: drop-shadow(0 0 0.4rem $gold);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+
+  &[data-status='burning'] img {
+    filter: drop-shadow(0 0 0.5rem $alarm);
+  }
+}
+
+.map-aircraft-badge {
+  @include flex($display: inline-flex, $align: center, $justify: center);
+  position: absolute;
+  top: -0.3rem;
+  right: -0.3rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  border: 2px solid $outline;
+  border-radius: 50%;
+  background: $gold;
+  color: $outline;
+
+  .icon {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+
+  [data-status='burning'] > & {
+    background: $alarm;
+    color: $text;
+  }
+}
+
+// A marker over a building that needs the player; a click opens the building.
+.map-alert {
+  @include flex($display: inline-flex, $align: center, $justify: center);
+  position: absolute;
+  z-index: 3;
+  top: calc((var(--row) + 0.15) / var(--rows) * 100%);
+  left: calc((var(--column) + 0.5) / var(--columns) * 100%);
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  border: 2px solid $outline;
+  border-radius: 50%;
+  background: $gold;
+  box-shadow: 0 0 0 2px $frame;
+  color: $outline;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  animation: alert-bounce 0.8s ease-in-out infinite alternate;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -0.6rem;
+  }
+
+  &[data-kind='fire'] {
+    background: $alarm;
+    color: $text;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $text;
+    outline-offset: 3px;
+  }
+
+  .icon {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+}
+
+@keyframes alert-bounce {
+  from {
+    transform: translate(-50%, -50%);
+  }
+
+  to {
+    transform: translate(-50%, -75%);
+  }
+}
+
+// A mechanic on the way to the hangar; a dot stands for the picture to come.
+.maintenance-crew {
+  position: absolute;
+  z-index: 1;
+  width: 0.7rem;
+  aspect-ratio: 1;
+  border: 2px solid $outline;
+  border-radius: 50%;
+  background: $gold;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.game-message {
+  @include inset-frame;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  color: $text;
+  font-size: 0.85rem;
+  border-left: 0.4rem solid $alarm;
+}
+
+// The windows of the game.
+// The dialog is only the frame of the screen: its backdrop dims the map, and the window sits in the middle.
+.window-dialog {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+
+  &[open] {
+    @include flex($align: center, $justify: center);
+  }
+
+  &::backdrop {
+    background: rgba(2, 2, 1, 0.65);
+  }
+
+  @include from('medium') {
+    padding: 1rem;
+  }
+}
+
+.game-window {
+  @include flex($direction: column, $gap: 0.6rem);
+  @include frame;
+  width: 100%;
+  height: 100%;
+  padding: 0.75rem;
+  color: $text;
+
+  @include from('medium') {
+    width: min(100%, 64rem);
+    height: auto;
+    max-height: 100%;
+  }
+}
+
+.window-title {
+  @include inset-frame;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  color: $gold;
+  font-family: $title-font;
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.window-hint {
+  margin: 0;
+  color: $muted-text;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.window-body {
+  @include flex($direction: column, $gap: 0.5rem);
+  min-height: 0;
+  padding: 0.5rem 0.25rem 0.25rem;
+  overflow-y: auto;
+  scrollbar-color: $khaki $outline;
+}
+
+.window-footer {
+  text-align: center;
+}
+
+.game-window button,
+.battle-over button {
+  @include button;
+}
+
+.pane {
+  position: relative;
+  margin-top: 0.9rem;
+}
+
+.pane-tab {
+  @include inset-frame;
+  position: absolute;
+  top: -0.85rem;
+  left: 0.6rem;
+  z-index: 1;
+  margin: 0;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pane-body {
+  @include inset-frame;
+  padding: 1.1rem 0.9rem 0.9rem;
+}
+
+.note {
+  @include flex($align: center, $gap: 0.4rem);
+  margin: 0 0 0.75rem;
+  color: $muted-text;
+  font-size: 0.8rem;
+
+  .icon {
+    width: 1rem;
+    height: 1rem;
+    color: $khaki-light;
+  }
+}
+
+.cards,
+.jobs,
+.reports,
+.stats,
+.modules {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cards {
+  @include flex($gap: 0.75rem);
+  flex-wrap: wrap;
+}
+
+.card {
+  @include flex($direction: column, $gap: 0.5rem);
+  flex: 1 1 13rem;
+  padding: 0.7rem;
+  border: 2px solid $outline;
+  background: $panel-raised;
+  box-shadow: inset 0 0 0 1px $frame;
+  font-size: 0.85rem;
+
+  @include from('medium') {
+    max-width: 16rem;
+  }
+
+  strong {
+    font-weight: 700;
+  }
+
+  span {
+    @include flex($display: inline-flex, $align: center, $gap: 0.3rem);
+    color: $muted-text;
+  }
+
+  .status {
+    color: $gold;
+    font-weight: 600;
+  }
+
+  .status.on-fire {
+    color: color.adjust($alarm, $lightness: 22%);
+  }
+}
+
+.card-head {
+  @include flex($align: center, $gap: 0.6rem);
+
+  > div {
+    @include flex($direction: column);
+    min-width: 0;
+  }
+}
+
+.portrait {
+  @include flex($display: inline-flex, $align: center, $justify: center);
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid $outline;
+  background: $outline;
+  box-shadow: inset 0 0 0 1px $frame;
+  color: $khaki-light;
+
+  .icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+
+.aircraft-picture {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border: 2px solid $outline;
+  background: radial-gradient(circle at 50% 45%, #4b5a3a, $outline);
+}
+
+.stats {
+  @include flex($gap: 0.35rem);
+  flex-wrap: wrap;
+
+  li {
+    @include flex($display: inline-flex, $align: center, $gap: 0.3rem);
+    padding: 0.15rem 0.5rem;
+    background: rgba(2, 2, 1, 0.45);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .icon {
+    width: 1rem;
+    height: 1rem;
+    color: $khaki-light;
+  }
+}
+
+.risk {
+  @include flex($display: inline-flex, $gap: 0.15rem);
+
+  i {
+    width: 0.45rem;
+    height: 0.45rem;
+    background: rgba(253, 254, 253, 0.2);
+  }
+
+  i[data-on='true'] {
+    background: $alarm;
+  }
+}
+
+.gauge-line {
+  @include flex($direction: column, $gap: 0.15rem);
+}
+
+.gauge-label {
+  color: $muted-text;
+  font-size: 0.72rem;
+}
+
+.gauge {
+  height: 0.7rem;
+  border: 2px solid $outline;
+  background: $outline;
+  box-shadow: inset 0 0 0 1px $frame;
+}
+
+.gauge-fill {
+  height: 100%;
+  background-color: $go;
+  background-image: repeating-linear-gradient(90deg, transparent 0 6px, rgba(2, 2, 1, 0.45) 6px 8px);
+
+  [data-tone='warning'] > & {
+    background-color: $gold;
+  }
+
+  [data-tone='bad'] > & {
+    background-color: $alarm;
+  }
+}
+
+.modules {
+  @include flex($gap: 0.3rem);
+  flex-wrap: wrap;
+
+  li {
+    @include flex($display: inline-flex, $align: center, $gap: 0.25rem);
+    padding: 0.1rem 0.45rem;
+    border: 1px solid $frame;
+    font-size: 0.72rem;
+  }
+
+  .icon {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  li[data-destroyed='true'] {
+    border-color: $alarm;
+    color: color.adjust($alarm, $lightness: 22%);
+    text-decoration: line-through;
+  }
+}
+
+.price {
+  @include flex($display: inline-flex, $align: center, $gap: 0.2rem);
+  padding-left: 0.4rem;
+  border-left: 2px solid $outline;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-actions {
+  @include flex($gap: 0.4rem);
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.jobs {
+  @include flex($direction: column, $gap: 0.4rem);
+
+  li {
+    @include flex($align: center, $gap: 0.5rem);
+    flex-wrap: wrap;
+    padding: 0.35rem 0.6rem;
+    background: rgba(2, 2, 1, 0.35);
+    font-size: 0.85rem;
+  }
+
+  strong {
+    color: $gold;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .muted {
+    color: $muted-text;
+    font-size: 0.78rem;
+  }
+}
+
+.reports {
+  @include flex($direction: column, $gap: 0.6rem);
+  font-size: 0.85rem;
+
+  > li {
+    @include flex($direction: column, $gap: 0.15rem);
+    padding-left: 0.6rem;
+    border-left: 0.25rem solid $khaki;
+  }
+
+  strong {
+    color: $gold;
+  }
+
+  span,
+  ul {
+    color: $muted-text;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+// The briefing of a mission: a pilot and an aircraft for each place, then the load.
+.briefing {
+  @include flex($direction: column, $gap: 0.75rem);
+  align-items: flex-start;
+  font-size: 0.85rem;
+
+  fieldset {
+    @include flex($gap: 0.75rem);
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    margin-bottom: 0.4rem;
+    padding: 0;
+    color: $gold;
+    font-weight: 700;
+  }
+
+  label {
+    @include flex($direction: column, $gap: 0.3rem);
+    color: $muted-text;
+  }
+
+  select,
+  input {
+    min-height: 2.1rem;
+    padding: 0 0.6rem;
+    border: 2px solid $outline;
+    background: $outline;
+    box-shadow: inset 0 0 0 1px $frame;
+    color: $text;
+    font: inherit;
+  }
+
+  select:focus-visible,
+  input:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 1px;
+  }
+
+  option {
+    background: $panel;
+    color: $text;
+  }
+}
+
+.briefing-load {
+  @include flex($gap: 0.75rem);
+  flex-wrap: wrap;
+}
+
+.battle-over {
+  @include flex($direction: column, $gap: 0.75rem);
+  align-items: center;
+  padding: 0.5rem 0 0.25rem;
+  text-align: center;
+
+  p {
+    max-width: 28rem;
+    margin: 0;
+  }
+
+  > .icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    color: $gold;
+  }
+}

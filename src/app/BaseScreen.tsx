@@ -7,7 +7,8 @@ import BaseMap from './BaseMap'
 import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
 import type { Departure } from './DepartureView'
-import { busyCrews, unavailableCrews } from './flights'
+import DogfightWindow from './DogfightWindow'
+import { busyCrews, findAlert, unavailableCrews } from './flights'
 import GameWindow from './GameWindow'
 import Guide from './Guide'
 import { guideStepOf, markedBuildingOf, speaksInWindowOf } from './guideSteps'
@@ -15,6 +16,7 @@ import GuideWelcome from './GuideWelcome'
 import HangarPanel from './HangarPanel'
 import HeadquartersPanel from './HeadquartersPanel'
 import Hud from './Hud'
+import MissionToasts from './MissionToasts'
 import type { Player } from './useAccount'
 import { useAircraftSprite } from './useAircraftSprite'
 import ResetConfirm from './ResetConfirm'
@@ -56,6 +58,8 @@ function BaseScreen({ player }: { player: Player }) {
     buy,
     produce,
     launchMission,
+    startAlert,
+    playAlert,
     receiveSquadron,
     inspectAircraft,
     repairAircraft,
@@ -72,6 +76,7 @@ function BaseScreen({ player }: { player: Player }) {
   const [departures, setDepartures] = useState<Departure[]>([])
   const [guideStatus, setGuideStatus] = useGuideStatus(player.id)
   const [isConfirmingReset, setIsConfirmingReset] = useState(false)
+  const [duelAlertId, setDuelAlertId] = useState<number | null>(null)
   const removeDeparture = useCallback((aircraftId: number) => {
     setDepartures((current) => current.filter((departure) => departure.aircraftId !== aircraftId))
   }, [])
@@ -92,6 +97,7 @@ function BaseScreen({ player }: { player: Player }) {
   async function startOver(): Promise<void> {
     setIsConfirmingReset(false)
     setOpenBuilding(null)
+    setDuelAlertId(null)
     setDepartures([])
     const resetErrorCode = await resetGame()
     setErrorCode(resetErrorCode)
@@ -138,6 +144,8 @@ function BaseScreen({ player }: { player: Player }) {
     alerts.push({ kind: 'fire', building: 'hangar', label: t('base.fireAlert') })
   }
 
+  const duel = duelAlertId === null ? undefined : findAlert(flights, duelAlertId)
+
   const guideStep = guideStepOf(guideStatus, { flights, eventCount: base.events.length, hangarAircraft })
   const markedBuilding = guideStep === null ? undefined : markedBuildingOf(guideStep)
   if (markedBuilding !== undefined) {
@@ -169,6 +177,7 @@ function BaseScreen({ player }: { player: Player }) {
         />
       </div>
 
+      <MissionToasts flights={flights} squadron={base.squadron} onOpen={setDuelAlertId} />
       {openBuilding === null && guide}
       <div className="game-tools">
         <button type="button" onClick={() => setIsConfirmingReset(true)}>
@@ -230,6 +239,15 @@ function BaseScreen({ player }: { player: Player }) {
             />
           )}
         </GameWindow>
+      )}
+
+      {duel !== undefined && (
+        <DogfightWindow
+          alert={duel.alert}
+          onStart={(alertId) => order(startAlert(alertId))}
+          onPlay={(alertId, maneuver) => order(playAlert(alertId, maneuver))}
+          onClose={() => setDuelAlertId(null)}
+        />
       )}
 
       {isConfirmingReset && <ResetConfirm onConfirm={() => void startOver()} onCancel={() => setIsConfirmingReset(false)} />}

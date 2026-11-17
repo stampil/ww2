@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
 
-const CAMERA_FIELD_OF_VIEW_DEGREES = 35
+export const CAMERA_FIELD_OF_VIEW_DEGREES = 35
 const CAMERA_NEAR_METERS = 0.1
 const DAMPING_FACTOR = 0.08
 const MILLISECONDS_PER_SECOND = 1000

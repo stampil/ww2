@@ -67,6 +67,32 @@
       "role": "German medium bomber"
     }
   },
+  "duel": {
+    "toast": "Enemy aircraft in sight: {{pilot}} can attack.",
+    "toastResume": "Dogfight under way: {{pilot}}.",
+    "attack": "Attack",
+    "resume": "Resume",
+    "title": "Dogfight",
+    "hint": "You attack from behind. Play your {{moves}} moves: after the last one, the enemy is shot down if it is in your red firing cone, else it gets away.",
+    "turn": "Move {{turn}} of {{moves}}",
+    "maneuvers": {
+      "accelerate": "Accelerate",
+      "turnLeft": "Tight turn left",
+      "turnRight": "Tight turn right",
+      "slipLeft": "Slip left",
+      "slipRight": "Slip right"
+    },
+    "maneuverHints": {
+      "accelerate": "2 cells ahead",
+      "turnLeft": "1 cell ahead, then a quarter turn left",
+      "turnRight": "1 cell ahead, then a quarter turn right",
+      "slipLeft": "1 cell sideways, without turning",
+      "slipRight": "1 cell sideways, without turning"
+    },
+    "won": "Enemy aircraft shot down!",
+    "escaped": "The enemy got away.",
+    "continue": "Continue"
+  },
   "cockpit": {
     "title": "The cockpit in 3D",
     "hint": "Drag to turn the cockpit"
@@ -349,6 +375,10 @@
       "workshopBusy": "Every bench is taken.",
       "noMechanicFree": "No mechanic is free.",
       "unknownMission": "This mission is no longer available.",
+      "unknownAlert": "This call no longer exists.",
+      "alertNotDue": "This call has not come yet.",
+      "alertNotStarted": "This dogfight has not begun.",
+      "alertDone": "This dogfight is over.",
       "invalidCrew": "The crews chosen do not fit.",
       "crewBusy": "A pilot or an aircraft is already on a flight.",
       "aircraftNotSuited": "This aircraft does not suit the mission.",

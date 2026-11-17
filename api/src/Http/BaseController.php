@@ -10,6 +10,7 @@ use League\Route\Http\Exception\UnauthorizedException;
 use League\Route\Http\Exception\UnprocessableEntityException;
 use Psr\Http\Message\ServerRequestInterface;
 use Ww2\Account\PlayerSession;
+use Ww2\Base\Alerts;
 use Ww2\Base\BaseError;
 use Ww2\Base\BaseException;
 use Ww2\Base\BaseOverview;
@@ -23,11 +24,12 @@ use Ww2\Base\Upgrade;
 use Ww2\Base\Upgrades;
 use Ww2\Base\Warehouse;
 use Ww2\Base\Workshop;
+use Ww2\Mission\Dogfight\Maneuver;
 use Ww2\World\Bases;
 
 /**
  * Shows the base of the player who is signed in (the first they hold), and takes their orders: buy a stock, make a spare part,
- * send a mission out and receive its squadron back, inspect and repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade.
+ * send a mission out, answer its alerts and receive its squadron back, inspect and repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade.
  * Once the battle is over the orders are refused, except the one that starts a new battle and the one that starts the game over.
  */
 final class BaseController
@@ -41,6 +43,7 @@ final class BaseController
         private readonly Roster $roster,
         private readonly Upgrades $upgrades,
         private readonly Battle $battle,
+        private readonly Alerts $alerts,
         private readonly Bases $bases,
         private readonly PlayerSession $session,
     ) {
@@ -120,6 +123,35 @@ final class BaseController
         $baseId = $this->ongoingBattleBaseId();
         $missionId = JsonRequestBody::integers($request, 'missionId')['missionId'];
         $this->carryOut(fn () => $this->headquarters->receive($baseId, $missionId));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function startAlert(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ongoingBattleBaseId();
+        $alertId = JsonRequestBody::integers($request, 'alertId')['alertId'];
+        $this->carryOut(fn () => $this->alerts->start($baseId, $alertId));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function playAlert(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ongoingBattleBaseId();
+        $alertId = JsonRequestBody::integers($request, 'alertId')['alertId'];
+        $maneuver = Maneuver::tryFrom(JsonRequestBody::texts($request, 'maneuver')['maneuver']) ?? throw new BadRequestException('invalidBody');
+        $this->carryOut(fn () => $this->alerts->play($baseId, $alertId, $maneuver));
 
         return $this->overview->of($baseId);
     }

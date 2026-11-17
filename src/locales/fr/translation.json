@@ -67,6 +67,32 @@
       "role": "Bombardier moyen allemand"
     }
   },
+  "duel": {
+    "toast": "Avion ennemi en vue : {{pilot}} peut attaquer.",
+    "toastResume": "Combat en cours : {{pilot}}.",
+    "attack": "Attaquer",
+    "resume": "Reprendre",
+    "title": "Combat aérien",
+    "hint": "Tu attaques par derrière. Joue tes {{moves}} coups : après le dernier, l'ennemi est abattu s'il est dans ton cône de tir rouge, sinon il s'échappe.",
+    "turn": "Coup {{turn}} sur {{moves}}",
+    "maneuvers": {
+      "accelerate": "Accélérer",
+      "turnLeft": "Virage serré à gauche",
+      "turnRight": "Virage serré à droite",
+      "slipLeft": "Glissade à gauche",
+      "slipRight": "Glissade à droite"
+    },
+    "maneuverHints": {
+      "accelerate": "2 cases devant",
+      "turnLeft": "1 case devant, puis un quart de tour à gauche",
+      "turnRight": "1 case devant, puis un quart de tour à droite",
+      "slipLeft": "1 case de côté, sans tourner",
+      "slipRight": "1 case de côté, sans tourner"
+    },
+    "won": "Avion ennemi abattu !",
+    "escaped": "L'ennemi s'est échappé.",
+    "continue": "Continuer"
+  },
   "cockpit": {
     "title": "Le cockpit en 3D",
     "hint": "Faites glisser pour tourner le cockpit"
@@ -349,6 +375,10 @@
       "workshopBusy": "Tous les établis sont pris.",
       "noMechanicFree": "Aucun mécanicien n'est libre.",
       "unknownMission": "Cette mission n'est plus disponible.",
+      "unknownAlert": "Cet appel n'existe plus.",
+      "alertNotDue": "Cet appel n'est pas encore arrivé.",
+      "alertNotStarted": "Ce combat n'a pas commencé.",
+      "alertDone": "Ce combat est terminé.",
       "invalidCrew": "Les équipages choisis ne conviennent pas.",
       "crewBusy": "Un pilote ou un avion est déjà en vol.",
       "aircraftNotSuited": "Cet avion ne convient pas à la mission.",

@@ -18,7 +18,15 @@ export type Offer = {
   rewardSupplies: number
   rewardCommandPoints: number
 }
-/** A mission under way: its crews, what each aircraft carries, and the game seconds left before it is back. */
+/** Where an aircraft is on the grid of a dogfight, and which way it points: 0 north, 1 east, 2 south, 3 west. */
+export type DogfightPosition = { x: number; y: number; heading: number }
+export type DogfightOutcome = 'won' | 'escaped'
+export type DogfightState = { turn: number; player: DogfightPosition; enemy: DogfightPosition; outcome: DogfightOutcome | null }
+export type Maneuver = 'accelerate' | 'turnLeft' | 'turnRight' | 'slipLeft' | 'slipRight'
+/** A call to the player during a flight: a dogfight for one aircraft, that shows when `dueSeconds` is down to zero, and is won or lost in `moves` moves. */
+export type FlightAlert = { id: number; kind: 'dogfight'; aircraftId: number; dueSeconds: number; arenaSize: number; moves: number; state: DogfightState | null }
+
+/** A mission under way: its crews, what each aircraft carries, the game seconds left before it is back, and its alerts. */
 export type Flight = {
   id: number
   type: MissionType
@@ -26,6 +34,7 @@ export type Flight = {
   fuelLoaded: number
   ammunitionLoaded: number
   crews: { pilotId: number; aircraftId: number }[]
+  alerts: FlightAlert[]
 }
 
 export type Pilot = {
@@ -220,7 +229,10 @@ export function useBase(player: Player | null) {
   const receivedHangar = base?.hangar.aircraft ?? []
   const receivedRests = base?.roster.rests ?? []
   const jobs = countDown(receivedJobs, elapsedSeconds)
-  const flights = countDown(receivedFlights, elapsedSeconds)
+  const flights = countDown(receivedFlights, elapsedSeconds).map((flight) => ({
+    ...flight,
+    alerts: flight.alerts.map((alert) => ({ ...alert, dueSeconds: Math.max(0, alert.dueSeconds - elapsedSeconds) })),
+  }))
   const rests = countDown(receivedRests, elapsedSeconds)
   const hangarAircraft = receivedHangar.map((state) => ({
     ...state,
@@ -249,6 +261,14 @@ export function useBase(player: Player | null) {
 
   async function launchMission(missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number): Promise<string | null> {
     return receive(await request(`${BASE_URL}/missions/launch`, { missionId, pilotIds, aircraftIds, fuel, ammunition }))
+  }
+
+  async function startAlert(alertId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/alerts/start`, { alertId }))
+  }
+
+  async function playAlert(alertId: number, maneuver: Maneuver): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/alerts/play`, { alertId, maneuver }))
   }
 
   async function receiveSquadron(missionId: number): Promise<string | null> {
@@ -299,6 +319,8 @@ export function useBase(player: Player | null) {
     buy,
     produce,
     launchMission,
+    startAlert,
+    playAlert,
     receiveSquadron,
     inspectAircraft,
     repairAircraft,

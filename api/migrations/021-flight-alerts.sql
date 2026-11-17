@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS flight_alerts (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    mission_id INT UNSIGNED NOT NULL,
+    aircraft_id INT UNSIGNED NOT NULL,
+    kind VARCHAR(32) NOT NULL,
+    due_game_second INT UNSIGNED NOT NULL,
+    moves TINYINT UNSIGNED NOT NULL,
+    state TEXT NULL,
+    FOREIGN KEY (mission_id) REFERENCES missions (id) ON DELETE CASCADE,
+    FOREIGN KEY (aircraft_id) REFERENCES aircraft (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci

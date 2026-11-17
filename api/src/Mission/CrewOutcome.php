@@ -7,7 +7,7 @@ namespace Ww2\Mission;
 use Ww2\Base\SparePart;
 
 /**
- * What a flight did to one pilot and the aircraft they flew: the durability lost, the modules destroyed, the fire, the gauges of the pilot after it, and the losses.
+ * What a flight did to one pilot and the aircraft they flew: whether the crew succeeded, the durability lost, the modules destroyed, the fire, the gauges of the pilot after it, and the losses.
  */
 final readonly class CrewOutcome
 {
@@ -19,6 +19,7 @@ final readonly class CrewOutcome
         public int $aircraftId,
         public string $pilotName,
         public string $aircraftName,
+        public bool $succeeded,
         public int $damage,
         public int $durability,
         public array $destroyedModules,

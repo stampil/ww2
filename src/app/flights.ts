@@ -1,4 +1,4 @@
-import type { Flight, HangarAircraft, Rest } from './useBase'
+import type { Flight, FlightAlert, HangarAircraft, Rest } from './useBase'
 
 /** The pilots and the aircraft that cannot go on a mission now. */
 export type BusyCrews = { pilotIds: number[]; aircraftIds: number[] }
@@ -27,4 +27,34 @@ export function unavailableCrews(busy: BusyCrews, rests: Rest[], hangarAircraft:
     }
   }
   return unavailable
+}
+
+/** An alert of a flight, with the flight it belongs to. */
+export type FlightAlertOf = { alert: FlightAlert; flight: Flight }
+
+/** The alerts that call the player now: due, not over, on a flight that is still in the air. */
+export function dueAlerts(flights: Flight[]): FlightAlertOf[] {
+  const due: FlightAlertOf[] = []
+  for (const flight of flights) {
+    if (flight.remainingSeconds > 0) {
+      for (const alert of flight.alerts) {
+        if (alert.dueSeconds === 0 && alert.state?.outcome == null) {
+          due.push({ alert, flight })
+        }
+      }
+    }
+  }
+  return due
+}
+
+/** The alert with this id, if some flight still has it. */
+export function findAlert(flights: Flight[], alertId: number): FlightAlertOf | undefined {
+  for (const flight of flights) {
+    for (const alert of flight.alerts) {
+      if (alert.id === alertId) {
+        return { alert, flight }
+      }
+    }
+  }
+  return undefined
 }

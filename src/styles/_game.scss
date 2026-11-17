@@ -372,6 +372,121 @@ button.base-sprite {
   }
 }
 
+// The calls of the flights in the air: toasts at the lower left of the screen, over everything but the windows.
+.mission-toasts {
+  @include flex($direction: column, $gap: 0.5rem);
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 30;
+  max-width: calc(100vw - 2rem);
+}
+
+.mission-toast {
+  @include frame;
+  @include flex($align: center, $gap: 0.6rem);
+  padding: 0.5rem 0.8rem;
+  color: $text;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  animation: toast-in 0.25s ease-out;
+
+  .icon {
+    color: $gold;
+  }
+
+  strong {
+    margin-left: auto;
+    color: $gold;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+// The dogfight: the grid seen from above, the move it is at, and the five maneuver cards.
+.duel-view {
+  @include inset-frame;
+  width: 100%;
+  aspect-ratio: 1;
+  max-height: 60vh;
+  margin: 0 auto;
+  overflow: hidden;
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.duel-turn {
+  margin: 0.75rem 0 0.25rem;
+  color: $gold;
+  font-weight: 700;
+  text-align: center;
+}
+
+.duel-result {
+  @include flex($align: center, $justify: center, $gap: 1rem);
+  flex-wrap: wrap;
+  margin: 0.75rem 0 0.25rem;
+
+  strong {
+    font-family: $title-font;
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+  }
+
+  &[data-outcome='won'] strong {
+    color: $go;
+  }
+
+  &[data-outcome='escaped'] strong {
+    color: $alarm;
+  }
+}
+
+.duel-cards {
+  @include flex($gap: 0.5rem);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.duel-card {
+  @include button;
+  flex-direction: column;
+  gap: 0.1rem;
+  height: auto;
+  padding: 0.5rem 0.8rem;
+  text-align: center;
+
+  span {
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
 .game-tools {
   @include flex($justify: flex-end);
   margin: 0.5rem 0;

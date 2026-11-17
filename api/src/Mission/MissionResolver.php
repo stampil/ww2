@@ -6,12 +6,15 @@ namespace Ww2\Mission;
 
 use Random\Randomizer;
 use Ww2\Base\SparePart;
+use Ww2\Mission\Dogfight\DogfightOutcome;
+use Ww2\Mission\Dogfight\DogfightState;
 use Ww2\Squadron\Aircraft;
 use Ww2\Squadron\Pilot;
 
 /**
- * Works out the result of a flight without a mini-game: the strength of the crews against the risk of the mission decides
- * whether it succeeds, then each aircraft takes damage, which destroys modules and may set it on fire, and each pilot tires. The figures are mine.
+ * Works out the result of a flight: a crew that played its dogfight succeeds if it shot the enemy down; the other crews share one roll, the
+ * strength of the crews against the risk of the mission. Then each aircraft takes damage, which destroys modules and may set it on fire, and each pilot tires.
+ * The figures are mine.
  */
 final class MissionResolver
 {
@@ -43,20 +46,31 @@ final class MissionResolver
     /**
      * @param array<int, Pilot> $pilots the pilots of the flight, by id
      * @param array<int, Aircraft> $aircraft the aircraft of the flight, by id
+     * @param array<int, DogfightState> $duels the dogfights of the flight that were played to their end, by the id of the aircraft
      */
-    public function resolve(Flight $flight, array $pilots, array $aircraft): MissionReport
+    public function resolve(Flight $flight, array $pilots, array $aircraft, array $duels = []): MissionReport
     {
-        $totalStrength = 0.0;
+        $successes = [];
+        $unplayed = [];
         foreach ($flight->crews as $crew) {
-            $totalStrength += $this->strengthOf($pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']]);
+            if (isset($duels[$crew['aircraftId']])) {
+                $successes[$crew['aircraftId']] = $duels[$crew['aircraftId']]->outcome === DogfightOutcome::Won;
+            } else {
+                $unplayed[] = $crew;
+            }
         }
-        $chance = $this->successChance($flight, $totalStrength / count($flight->crews));
-        $success = $this->random->getInt(1, self::PERCENT) <= $chance;
+        if ($unplayed !== []) {
+            $rolled = $this->rolledSuccess($flight, $unplayed, $pilots, $aircraft);
+            foreach ($unplayed as $crew) {
+                $successes[$crew['aircraftId']] = $rolled;
+            }
+        }
 
         $outcomes = [];
         foreach ($flight->crews as $crew) {
-            $outcomes[] = $this->outcomeOf($flight->mission, $pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']], $success);
+            $outcomes[] = $this->outcomeOf($flight->mission, $pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']], $successes[$crew['aircraftId']]);
         }
+        $success = !in_array(false, $successes, true);
 
         return new MissionReport(
             $flight->mission->type,
@@ -66,6 +80,24 @@ final class MissionResolver
             $success ? $flight->mission->rewardCommandPoints : 0,
             $outcomes,
         );
+    }
+
+    /**
+     * One roll for the crews that played no mini-game: their average strength against the risk of the mission.
+     *
+     * @param list<array{pilotId: int, aircraftId: int}> $crews
+     * @param array<int, Pilot> $pilots
+     * @param array<int, Aircraft> $aircraft
+     */
+    private function rolledSuccess(Flight $flight, array $crews, array $pilots, array $aircraft): bool
+    {
+        $totalStrength = 0.0;
+        foreach ($crews as $crew) {
+            $totalStrength += $this->strengthOf($pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']]);
+        }
+        $chance = $this->successChance($flight, $totalStrength / count($crews));
+
+        return $this->random->getInt(1, self::PERCENT) <= $chance;
     }
 
     private function strengthOf(Pilot $pilot, Aircraft $aircraft): float
@@ -130,6 +162,7 @@ final class MissionResolver
             $aircraft->id,
             $pilot->name,
             $aircraft->model->name,
+            $success,
             $aircraft->durability - $durability,
             $durability,
             $destroyedModules,

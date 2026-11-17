@@ -41,6 +41,7 @@ final class Headquarters
         private readonly MissionGenerator $generator,
         private readonly WeatherForecast $forecast,
         private readonly MissionResolver $resolver,
+        private readonly Alerts $alerts,
     ) {
     }
 
@@ -49,15 +50,21 @@ final class Headquarters
      *
      * @param GameClock $clock the clock of the base, read once for the whole answer
      * @return array{weather: array<string, int>, offers: list<array<string, int|string|null>>, flights: list<array<string, mixed>>}
+     *                                                                                                       each flight carries its alerts
      */
     public function describe(int $baseId, GameClock $clock): array
     {
         $this->fillTable($baseId);
+        $alerts = $this->alerts->describeByMission($baseId, $clock->gameSeconds);
+        $flights = [];
+        foreach ($this->missions->flightsOf($baseId, $clock->gameSeconds) as $flight) {
+            $flights[] = $flight->toArray() + ['alerts' => $alerts[$flight->mission->id] ?? []];
+        }
 
         return [
             'weather' => $this->forecast->at($clock->gameSeconds)->toArray(),
             'offers' => array_map(static fn (Mission $mission): array => $mission->toArray(), $this->missions->offersOf($baseId)),
-            'flights' => array_map(static fn (Flight $flight): array => $flight->toArray(), $this->missions->flightsOf($baseId, $clock->gameSeconds)),
+            'flights' => $flights,
         ];
     }
 
@@ -90,6 +97,12 @@ final class Headquarters
             foreach ($pilotIds as $place => $pilotId) {
                 $this->missions->addCrew($missionId, $pilotId, $aircraftIds[$place]);
             }
+            $ownedPilots = $this->pilotsById($baseId);
+            $crewPilots = [];
+            foreach ($pilotIds as $pilotId) {
+                $crewPilots[] = $ownedPilots[$pilotId];
+            }
+            $this->alerts->schedule($mission, $crewPilots, $aircraft, $gameSeconds);
         });
     }
 
@@ -108,7 +121,8 @@ final class Headquarters
             if ($flight->remainingSeconds > 0) {
                 throw new BaseException(BaseError::StillInFlight);
             }
-            $report = $this->resolver->resolve($flight, $this->pilotsById($baseId), $this->aircraftById($baseId));
+            $duels = $this->alerts->finishedDuelsOf($baseId, $missionId);
+            $report = $this->resolver->resolve($flight, $this->pilotsById($baseId), $this->aircraftById($baseId), $duels);
             $this->applyReport($baseId, $report, $gameSeconds);
             $this->missions->remove($missionId);
             $this->events->record($baseId, $report->toArray());
@@ -222,8 +236,14 @@ final class Headquarters
             }
         }
         $this->bases->addRewards($baseId, $report->suppliesWon, $report->commandPointsWon);
-        if ($report->success && $report->type === MissionType::AirCombat) {
-            $this->battles->addKills($baseId, count($report->crews));
+        if ($report->type === MissionType::AirCombat) {
+            $kills = 0;
+            foreach ($report->crews as $crew) {
+                if ($crew->succeeded) {
+                    $kills += 1;
+                }
+            }
+            $this->battles->addKills($baseId, $kills);
         }
     }
 

@@ -27,6 +27,10 @@ enum BaseError: string
     case AircraftGrounded = 'aircraftGrounded';
     case AircraftUnderRepair = 'aircraftUnderRepair';
     case NothingToRepair = 'nothingToRepair';
+    case UnknownAlert = 'unknownAlert';
+    case AlertNotDue = 'alertNotDue';
+    case AlertNotStarted = 'alertNotStarted';
+    case AlertDone = 'alertDone';
     case NotInspected = 'notInspected';
     case NothingToInspect = 'nothingToInspect';
     case AircraftUnderInspection = 'aircraftUnderInspection';

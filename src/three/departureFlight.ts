@@ -1,6 +1,7 @@
 import type { AircraftState } from './aircraftState'
 import { D520_GROUND_PITCH_RADIANS } from './D520Model'
 import { bump, clamp, smoothStep } from './easing'
+import { swayAt } from './sway'
 
 /** Where an aircraft is and how it is turned at one moment, in world meters and radians, with its moving parts; heading is counterclockwise from +x. */
 export type FlightPose = {
@@ -21,6 +22,9 @@ const TURN_SECONDS = 8
 const RETURN_SECONDS = 16
 const TURN_ANGLE_RADIANS = 180 * DEGREES
 const BANK_RADIANS = 25 * DEGREES
+const SWAY_ROLL_RADIANS = 4 * DEGREES
+const SWAY_AILERON_SHARE = 0.25
+const SWAY_RAMP_SECONDS = 1
 const BANK_RAMP_SECONDS = 1.2
 const LIFTOFF_PITCH_RADIANS = 8 * DEGREES
 // The tail comes up, from the resting nose-up attitude to level, between these shares of the roll.
@@ -83,6 +87,8 @@ export class DepartureFlight {
 
     const bankProgress =
       smoothStep(0, BANK_RAMP_SECONDS, turnSeconds) * (1 - smoothStep(TURN_SECONDS - BANK_RAMP_SECONDS, TURN_SECONDS, turnSeconds))
+    const sway = swayAt(time)
+    const airborneShare = smoothStep(0, SWAY_RAMP_SECONDS, flightSeconds)
     const gearRetraction = smoothStep(
       this.rollSeconds + GEAR_RETRACT_DELAY_SECONDS,
       this.rollSeconds + GEAR_RETRACT_DELAY_SECONDS + GEAR_RETRACT_SECONDS,
@@ -97,13 +103,13 @@ export class DepartureFlight {
       pitch:
         D520_GROUND_PITCH_RADIANS * (1 - smoothStep(TAIL_LIFT_START_SHARE, TAIL_LIFT_END_SHARE, rolledSeconds / this.rollSeconds)) +
         LIFTOFF_PITCH_RADIANS * smoothStep(this.rollSeconds - ROTATION_SECONDS, this.rollSeconds, time),
-      roll: BANK_RADIANS * bankProgress,
+      roll: BANK_RADIANS * bankProgress + SWAY_ROLL_RADIANS * sway.roll * airborneShare,
       state: {
         engine: IDLE_ENGINE + (1 - IDLE_ENGINE) * smoothStep(-ENGINE_SPOOL_SECONDS, 0, time),
         gearRetraction,
         flaps: 1 - smoothStep(FLAP_RETRACT_DELAY_SECONDS, FLAP_RETRACT_DELAY_SECONDS + FLAP_RETRACT_SECONDS, flightSeconds),
         wheels: (rolledSeconds / this.rollSeconds) * (1 - gearRetraction),
-        aileron: bump(0, BANK_RAMP_SECONDS, turnSeconds) - bump(TURN_SECONDS - BANK_RAMP_SECONDS, TURN_SECONDS, turnSeconds),
+        aileron: bump(0, BANK_RAMP_SECONDS, turnSeconds) - bump(TURN_SECONDS - BANK_RAMP_SECONDS, TURN_SECONDS, turnSeconds) + SWAY_AILERON_SHARE * sway.rate * airborneShare,
         rudder: RUDDER_TURN_SHARE * bankProgress,
         elevator: -bump(this.rollSeconds - ROTATION_SECONDS, this.rollSeconds + ROTATION_SECONDS, time),
       },

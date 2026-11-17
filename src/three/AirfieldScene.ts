@@ -33,6 +33,8 @@ const NOSE_ALONG_Y_ROTATION_RADIANS = Math.PI / 2
 const MILLISECONDS_PER_SECOND = 1000
 const SPRITES_PATH = 'sprites/buildings/'
 const SPRITE_LIFT_METERS = 2
+// An aircraft grows by this share of its size for each meter of altitude, so that it seems to come toward the camera as it climbs.
+const ALTITUDE_GROWTH_PER_METER = 0.0025
 const PARKED_LIFT_METERS = 0.5
 // The aircraft in front of which the camera swings, as in the takeoff of the home page, in meters for the real aircraft.
 const REAL_FRONT_DISTANCE_METERS = 18
@@ -424,7 +426,9 @@ export class AirfieldScene {
   }
 
   private place(model: D520Model, x: number, y: number, altitude: number, heading: number, pitch: number, roll: number): void {
-    model.object.position.set(x, y, d520AxisHeightOnGround(pitch) * this.scale + altitude)
+    const scale = this.scale * (1 + ALTITUDE_GROWTH_PER_METER * altitude)
+    model.object.scale.setScalar(scale)
+    model.object.position.set(x, y, d520AxisHeightOnGround(pitch) * scale + altitude)
     model.object.rotation.set(pitch, roll, heading - NOSE_ALONG_Y_ROTATION_RADIANS, 'ZXY')
   }
 

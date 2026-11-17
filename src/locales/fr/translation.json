@@ -95,12 +95,16 @@
     }
   },
   "duel": {
-    "toast": "Avion ennemi en vue : {{pilot}} peut attaquer.",
+    "toast": "Bombardier ennemi en vue : {{pilot}} peut attaquer.",
     "toastResume": "Combat en cours : {{pilot}}.",
     "attack": "Attaquer",
     "resume": "Reprendre",
-    "title": "Combat aérien",
-    "hint": "Tu attaques par derrière. Joue tes {{moves}} coups : après le dernier, l'ennemi est abattu s'il est dans ton cône de tir rouge, sinon il s'échappe.",
+    "title": "Interception de bombardier",
+    "hint": "Tu attaques un {{enemy}} par derrière. Joue tes {{moves}} coups : après le dernier, le bombardier est abattu s'il est dans ton cône de tir rouge, sinon il s'échappe.",
+    "enemies": {
+      "he111": "Heinkel He 111",
+      "ju87": "Junkers Ju 87"
+    },
     "turn": "Coup {{turn}} sur {{moves}}",
     "maneuvers": {
       "accelerate": "Accélérer",
@@ -116,8 +120,8 @@
       "slipLeft": "1 case de côté, sans tourner",
       "slipRight": "1 case de côté, sans tourner"
     },
-    "won": "Avion ennemi abattu !",
-    "escaped": "L'ennemi s'est échappé.",
+    "won": "Bombardier ennemi abattu !",
+    "escaped": "Le bombardier s'est échappé.",
     "continue": "Continuer"
   },
   "music": {

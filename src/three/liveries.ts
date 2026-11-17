@@ -7,14 +7,14 @@ const TEXTURE_URLS: Record<Livery, string> = {
   french: assetUrl('models/d520/texture-francais.png'),
   vichy: assetUrl('models/d520/texture-vichy.png'),
 }
+const ALL_LIVERIES = Object.keys(TEXTURE_URLS) as Livery[]
 
-/** The textures of both liveries, loaded together, reporting each one as it arrives. */
+/** The textures of the liveries asked for, loaded together, reporting each one as it arrives. */
 export class LiveryTextures {
   private readonly textures: Partial<Record<Livery, THREE.Texture>> = {}
 
-  constructor(maxAnisotropy: number, onLoad: (livery: Livery, texture: THREE.Texture) => void) {
+  constructor(maxAnisotropy: number, onLoad: (livery: Livery, texture: THREE.Texture) => void, liveries: readonly Livery[] = ALL_LIVERIES) {
     const loader = new THREE.TextureLoader()
-    const liveries = Object.keys(TEXTURE_URLS) as Livery[]
     for (const livery of liveries) {
       loader.load(TEXTURE_URLS[livery], (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace

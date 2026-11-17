@@ -95,12 +95,16 @@
     }
   },
   "duel": {
-    "toast": "Enemy aircraft in sight: {{pilot}} can attack.",
+    "toast": "Enemy bomber in sight: {{pilot}} can attack.",
     "toastResume": "Dogfight under way: {{pilot}}.",
     "attack": "Attack",
     "resume": "Resume",
-    "title": "Dogfight",
-    "hint": "You attack from behind. Play your {{moves}} moves: after the last one, the enemy is shot down if it is in your red firing cone, else it gets away.",
+    "title": "Bomber interception",
+    "hint": "You attack a {{enemy}} from behind. Play your {{moves}} moves: after the last one, the bomber is shot down if it is in your red firing cone, else it gets away.",
+    "enemies": {
+      "he111": "Heinkel He 111",
+      "ju87": "Junkers Ju 87"
+    },
     "turn": "Move {{turn}} of {{moves}}",
     "maneuvers": {
       "accelerate": "Accelerate",
@@ -116,8 +120,8 @@
       "slipLeft": "1 cell sideways, without turning",
       "slipRight": "1 cell sideways, without turning"
     },
-    "won": "Enemy aircraft shot down!",
-    "escaped": "The enemy got away.",
+    "won": "Enemy bomber shot down!",
+    "escaped": "The bomber got away.",
     "continue": "Continue"
   },
   "music": {

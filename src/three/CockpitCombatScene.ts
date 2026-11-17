@@ -1,12 +1,12 @@
 import * as THREE from 'three'
 import { D520Model } from './D520Model'
-import { DamageEffects } from './DamageEffects'
 import { DESTROYED_LEVEL } from './damageStages'
 import { LiveryTextures } from './liveries'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
 import { SeededRandom } from './SeededRandom'
 import { createSkyDome, HORIZON_COLOR } from './Sky'
-import { loadStaticAircraft } from './StaticAircraft'
+import { createStaticEnemy } from './StaticEnemy'
+import type { EnemyBody } from './StaticEnemy'
 import { loadTerrainTextures } from './terrainTextures'
 
 /** The fighters the player can meet from the cockpit. */
@@ -18,7 +18,6 @@ export type CockpitStatus = { enemyHealth: number; ammunition: number; secondsLe
 /** `agility` and `accuracy` are the maneuverability of the aircraft and the accuracy of the pilot, from 0 to 1. */
 export type CockpitOptions = { enemy: CockpitEnemy; ammunition: number; agility: number; accuracy: number }
 
-type Body = { object: THREE.Object3D; update(deltaSeconds: number): void; damage(level: number): void; destroy(): void; setVelocity(velocity: THREE.Vector3): void }
 type Flier = { position: THREE.Vector3; yaw: number; pitch: number; roll: number }
 type Bullet = { mesh: THREE.Mesh; velocity: THREE.Vector3; previous: THREE.Vector3; age: number; isActive: boolean }
 
@@ -150,7 +149,7 @@ export class CockpitCombatScene {
   private readonly playerFlight: Flier = { position: new THREE.Vector3(0, 0, START_ALTITUDE_METERS), yaw: 0, pitch: 0, roll: 0 }
   private readonly enemyFlight: Flier = { position: ENEMY_START.clone(), yaw: 0, pitch: 0, roll: 0 }
   private readonly enemyRoot = new THREE.Group()
-  private enemy: Body | undefined
+  private enemy: EnemyBody | undefined
   private readonly sky = createSkyDome()
   private readonly ground: THREE.Mesh
   private readonly clouds: THREE.Group[] = []
@@ -241,20 +240,7 @@ export class CockpitCombatScene {
 
   private async createEnemy(): Promise<void> {
     if (this.options.enemy === 'bf109') {
-      const meshes = await loadStaticAircraft('bf109')
-      const effects = new DamageEffects()
-      const root = new THREE.Group()
-      root.add(meshes, effects.object)
-      this.enemy = {
-        object: root,
-        update: (deltaSeconds) => effects.update(deltaSeconds),
-        damage: (level) => effects.setLevel(level),
-        destroy: () => {
-          effects.explode()
-          meshes.visible = false
-        },
-        setVelocity: (velocity) => effects.setVelocity(velocity),
-      }
+      this.enemy = await createStaticEnemy('bf109')
     } else {
       const model = new D520Model()
       model.setState(FLYING)

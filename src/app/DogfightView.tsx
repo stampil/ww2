@@ -1,28 +1,29 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DogfightScene } from '../three/DogfightScene'
-import type { DuelView } from '../three/DogfightScene'
+import type { DuelBomber, DuelView } from '../three/DogfightScene'
 
 type Props = {
   arenaSize: number
+  bomber: DuelBomber
   /** Where both aircraft stand; nothing is drawn of them until the dogfight has begun. */
   view: DuelView | null
 }
 
 /** The dogfight seen from above, in 3D. It owns a WebGL scene, freed when the window goes. */
-function DogfightView({ arenaSize, view }: Props) {
+function DogfightView({ arenaSize, bomber, view }: Props) {
   const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<DogfightScene | null>(null)
 
   useEffect(() => {
-    const scene = new DogfightScene(containerRef.current!, arenaSize)
+    const scene = new DogfightScene(containerRef.current!, arenaSize, bomber)
     sceneRef.current = scene
     return () => {
       scene.dispose()
       sceneRef.current = null
     }
-  }, [arenaSize])
+  }, [arenaSize, bomber])
 
   useEffect(() => {
     if (view !== null) {

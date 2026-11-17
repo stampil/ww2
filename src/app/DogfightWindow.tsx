@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import DogfightView from './DogfightView'
 import GameWindow from './GameWindow'
+import type { DuelBomber } from '../three/DogfightScene'
 import type { FlightAlert, Maneuver } from './useBase'
 
 const MANEUVERS: Maneuver[] = ['accelerate', 'turnLeft', 'turnRight', 'slipLeft', 'slipRight']
+const BOMBERS: DuelBomber[] = ['he111', 'ju87']
 
 type Props = {
   alert: FlightAlert
@@ -14,13 +16,14 @@ type Props = {
 }
 
 /**
- * A dogfight: the player attacks an enemy from behind and plays one maneuver card per move; after the last move the enemy is shot down if it
+ * A dogfight: the player attacks an enemy bomber from behind and plays one maneuver card per move; after the last move the bomber is shot down if it
  * stands in the firing cone, else it gets away. The dogfight begins when the window opens, and goes on from where it was if the window is closed and opened again.
  */
 function DogfightWindow({ alert, onStart, onPlay, onClose }: Props) {
   const { t } = useTranslation()
   const [isPlaying, setIsPlaying] = useState(false)
   const state = alert.state
+  const bomber = BOMBERS[alert.id % BOMBERS.length]
 
   useEffect(() => {
     if (state === null) {
@@ -40,8 +43,8 @@ function DogfightWindow({ alert, onStart, onPlay, onClose }: Props) {
   const canPlay = state !== null && outcome === null && !isPlaying
 
   return (
-    <GameWindow title={t('duel.title')} hint={t('duel.hint', { moves: alert.moves })} onDismiss={onClose}>
-      <DogfightView arenaSize={alert.arenaSize} view={state} />
+    <GameWindow title={t('duel.title')} hint={t('duel.hint', { moves: alert.moves, enemy: t(`duel.enemies.${bomber}`) })} onDismiss={onClose}>
+      <DogfightView arenaSize={alert.arenaSize} bomber={bomber} view={state} />
       {outcome === null ? (
         <p className="duel-turn">{state === null ? '…' : t('duel.turn', { turn: state.turn + 1, moves: alert.moves })}</p>
       ) : (

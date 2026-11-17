@@ -367,6 +367,20 @@ button.base-sprite {
   pointer-events: none;
 }
 
+.game-tools {
+  @include flex($justify: flex-end);
+  margin: 0.5rem 0;
+}
+
+.reset-confirm {
+  @include flex($direction: column, $gap: 0.75rem);
+  color: $text;
+
+  p {
+    margin: 0;
+  }
+}
+
 // The guide of the first day: what to do next, in a framed panel with a gold edge.
 .guide,
 .guide-welcome {
@@ -490,7 +504,8 @@ button.base-sprite {
 
 .game-window button,
 .battle-over button,
-.guide button {
+.guide button,
+.game-tools button {
   @include button;
 }
 

@@ -102,6 +102,7 @@ $router->group('/api', function (RouteGroup $routes) use ($accounts, $players, $
     $routes->post('/base/pilots/rest', [$baseController, 'restPilot']);
     $routes->post('/base/pilots/recruit', [$baseController, 'recruitPilot']);
     $routes->post('/base/upgrades/buy', [$baseController, 'buyUpgrade']);
+    $routes->post('/base/reset', [$baseController, 'resetBase']);
     $routes->post('/base/battle/restart', [$baseController, 'restartBattle']);
     $sessionController = new SessionController($accounts, $players, $session);
     $routes->get('/session', [$sessionController, 'show']);

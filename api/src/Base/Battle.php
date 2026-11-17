@@ -65,6 +65,14 @@ final class Battle
         if ($this->statusOf($baseId) === BattleStatus::Ongoing) {
             throw new BaseException(BaseError::BattleOngoing);
         }
+        $this->startOver($baseId);
+    }
+
+    /**
+     * Founds the base again, as when it was claimed, whatever state the battle is in: the player starts from scratch.
+     */
+    public function startOver(int $baseId): void
+    {
         $this->database->transaction(function () use ($baseId): void {
             $this->battles->eraseGameOf($baseId);
             $this->squadronFounder->found($baseId);

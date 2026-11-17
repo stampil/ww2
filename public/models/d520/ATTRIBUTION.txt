@@ -16,8 +16,8 @@ Changes made for this site (French Touch, https://github.com/stampil/ww2):
 - the animations (gear, wheels, canopy, flaps, ailerons, rudder, elevator, propeller) are redone in Three.js from the
   pivots, axes and angles of Models/d520.xml, Models/Interior/interior.xml and Models/Interior/Panel/Instruments;
 - texture-francais.png is the unchanged texture.png of the original;
-- texture-vichy.png is that texture reworked with an image generator (1024 x 1024, same layout): Vichy armistice stripes
-  on the cowling, the rear fuselage and the tailplane, tricolor bands under the wings, the panther emblem and the serial removed;
+- texture-vichy.png is that texture reworked with an image generator (1024 x 1024, same layout), after the Vichy armistice
+  markings of autumn 1941 to November 1942: red and yellow bands on the cowling and the fin, a red spinner, tricolor bands under the wings;
 - the textures in cockpit/ (interior, panel, seat, collimator and the instruments) are the unchanged textures of the original.
 
 These files (d520.json, d520.bin, cockpit.json, cockpit.bin, texture-francais.png, texture-vichy.png and the cockpit

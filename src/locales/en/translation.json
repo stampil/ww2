@@ -147,6 +147,13 @@
     "understood": "Understood",
     "stop": "Stop the tutorial"
   },
+  "reset": {
+    "button": "Start the game over",
+    "title": "Start from scratch?",
+    "text": "This base is wiped: the squadron, the resources, the upgrades, the missions and the enemy aircraft shot down all start again from zero, and the tutorial is offered to you again. This cannot be undone.",
+    "confirm": "Yes, erase everything",
+    "cancel": "No, keep my game"
+  },
   "world": {
     "choose": {
       "title": "Choose your base",

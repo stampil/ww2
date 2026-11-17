@@ -16,6 +16,7 @@ import HeadquartersPanel from './HeadquartersPanel'
 import Hud from './Hud'
 import type { Player } from './useAccount'
 import { useAircraftSprite } from './useAircraftSprite'
+import ResetConfirm from './ResetConfirm'
 import { useBase } from './useBase'
 import type { Aircraft, HangarAircraft, UpgradeName } from './useBase'
 import { useGuideStatus } from './useGuideStatus'
@@ -60,6 +61,7 @@ function BaseScreen({ player }: { player: Player }) {
     restPilot,
     recruitPilot,
     buyUpgrade,
+    resetGame,
     restartBattle,
     claimBase,
   } = useBase(player)
@@ -68,6 +70,7 @@ function BaseScreen({ player }: { player: Player }) {
   const [errorCode, setErrorCode] = useState<string | null>(null)
   const [departures, setDepartures] = useState<Departure[]>([])
   const [guideStatus, setGuideStatus] = useGuideStatus(player.id)
+  const [isConfirmingReset, setIsConfirmingReset] = useState(false)
   const removeDeparture = useCallback((aircraftId: number) => {
     setDepartures((current) => current.filter((departure) => departure.aircraftId !== aircraftId))
   }, [])
@@ -82,6 +85,18 @@ function BaseScreen({ player }: { player: Player }) {
 
   async function order(sending: Promise<string | null>): Promise<void> {
     setErrorCode(await sending)
+  }
+
+  // The base is wiped and founded again; the guide of the first day comes back with it.
+  async function startOver(): Promise<void> {
+    setIsConfirmingReset(false)
+    setOpenBuilding(null)
+    setDepartures([])
+    const resetErrorCode = await resetGame()
+    setErrorCode(resetErrorCode)
+    if (resetErrorCode === null) {
+      setGuideStatus('new')
+    }
   }
 
   // Once the orders are given the window closes, to show the squadron taking off one aircraft after the other.
@@ -152,6 +167,11 @@ function BaseScreen({ player }: { player: Player }) {
       </div>
 
       {openBuilding === null && guide}
+      <div className="game-tools">
+        <button type="button" onClick={() => setIsConfirmingReset(true)}>
+          {t('reset.button')}
+        </button>
+      </div>
       {openBuilding === null && errorMessage}
 
       {openBuilding !== null && (
@@ -208,6 +228,8 @@ function BaseScreen({ player }: { player: Player }) {
           )}
         </GameWindow>
       )}
+
+      {isConfirmingReset && <ResetConfirm onConfirm={() => void startOver()} onCancel={() => setIsConfirmingReset(false)} />}
 
       {guideStep === 'welcome' && <GuideWelcome onBegin={() => setGuideStatus('running')} onSkip={() => setGuideStatus('over')} />}
 

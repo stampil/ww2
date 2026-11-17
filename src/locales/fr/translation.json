@@ -147,6 +147,13 @@
     "understood": "Compris",
     "stop": "Arrêter le tutoriel"
   },
+  "reset": {
+    "button": "Recommencer la partie",
+    "title": "Repartir de zéro ?",
+    "text": "Cette base est effacée : l'escadrille, les ressources, les améliorations, les missions et les avions abattus repartent de zéro, et le tutoriel est proposé de nouveau. Cela ne peut pas se défaire.",
+    "confirm": "Oui, tout effacer",
+    "cancel": "Non, garder ma partie"
+  },
   "world": {
     "choose": {
       "title": "Choisis ta base",

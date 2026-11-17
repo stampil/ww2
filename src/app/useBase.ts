@@ -280,6 +280,10 @@ export function useBase(player: Player | null) {
     return receive(await request(CLAIM_URL, { site }))
   }
 
+  async function resetGame(): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/reset`, {}))
+  }
+
   async function restartBattle(): Promise<string | null> {
     return receive(await request(`${BASE_URL}/battle/restart`, {}))
   }
@@ -301,6 +305,7 @@ export function useBase(player: Player | null) {
     restPilot,
     recruitPilot,
     buyUpgrade,
+    resetGame,
     restartBattle,
     claimBase,
   }

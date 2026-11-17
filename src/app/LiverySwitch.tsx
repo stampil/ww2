@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { Livery } from '../three/liveries'
 
-const LIVERIES: Livery[] = ['french', 'german']
+const LIVERIES: Livery[] = ['french', 'vichy']
 
 type LiverySwitchProps = {
   livery: Livery

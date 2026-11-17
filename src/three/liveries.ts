@@ -1,10 +1,10 @@
 import * as THREE from 'three'
 
-export type Livery = 'french' | 'german'
+export type Livery = 'french' | 'vichy'
 
 const TEXTURE_URLS: Record<Livery, string> = {
   french: '/models/d520/texture-francais.png',
-  german: '/models/d520/texture-allemand.png',
+  vichy: '/models/d520/texture-vichy.png',
 }
 
 /** The textures of both liveries, loaded together, reporting each one as it arrives. */

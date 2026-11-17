@@ -31,3 +31,7 @@ npm run dev -- --host
 ```
 
 Le front répond sur le port 5173, et sur l'adresse du réseau local pour le tester sur un téléphone. L'API reste sur 127.0.0.1 : le front lui parle par le proxy `/api`.
+
+## Site statique
+
+L'accueil tourne seul dans le navigateur, sans l'API ni la base : `npm run build` produit le site dans `dist/`, que n'importe quel hébergeur de fichiers sert depuis n'importe quel dossier. Le workflow `.github/workflows/pages.yml` le publie sur GitHub Pages à chaque envoi sur `main` (réglage du dépôt : Pages, source « GitHub Actions »). La page du jeu (`#/jeu`) a besoin de l'API et dit que le serveur est indisponible quand elle est absente.

@@ -1,7 +1,8 @@
+import { assetUrl } from '../assetUrl'
 import type { TerrainTextures } from './tileImages'
 
-const GRASS_URL = '/textures/herbe.png'
-const CONCRETE_URL = '/textures/beton.png'
+const GRASS_URL = assetUrl('textures/herbe.png')
+const CONCRETE_URL = assetUrl('textures/beton.png')
 
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

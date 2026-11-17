@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { assetUrl } from '../assetUrl'
 
-const BUSH_URL = '/models/bush/bush.glb'
+const BUSH_URL = assetUrl('models/bush/bush.glb')
 const GLTF_TO_WORLD_RADIANS = Math.PI / 2
 const WORLD_UP = new THREE.Vector3(0, 0, 1)
 

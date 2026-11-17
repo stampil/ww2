@@ -2,19 +2,15 @@ import * as THREE from 'three'
 import { TILE_SIZE_METERS } from './airfield'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
+import type { Runway } from './Runway'
+import { TerrainGenerator } from './TerrainGenerator'
 import { renderTileImage, TILE_IMAGE_PIXELS } from './tileImages'
 import { loadTerrainTextures } from './terrainTextures'
 import { BUSHES } from './tiles'
-import type { Tile } from './tiles'
 
-const TERRAIN_URL = '/api/terrain'
 const GROUND_CELLS = 200
 const GROUND_DEPTH_METERS = 0.1
 const BUSH_TURN_STEP_RADIANS = 2.4
-
-type Runway = { row: number; firstColumn: number; length: number }
-/** What the API sends for a seed: the runway and the tiles, rows from the north and columns from the west. */
-type TerrainMap = { columns: number; runway: Runway; tiles: Tile[][] }
 
 /** The world has its origin on the left end of the runway, at the middle of its row; x grows to the east, y to the north. */
 function tileCenter(runway: Runway, row: number, column: number): THREE.Vector2 {
@@ -32,12 +28,12 @@ function bushesOnTile(center: THREE.Vector2, tileNumber: number): BushPlacement[
 }
 
 /**
- * The ground: the map of 2D tiles that the API makes for a seed, one textured square each, so any tile can be moved or
- * turned, on a vast grass plain.
+ * The ground: the map of 2D tiles that the generator makes for a seed, one textured square each, so any tile can be
+ * moved or turned, on a vast grass plain.
  */
 export class Terrain {
   readonly object = new THREE.Group()
-  /** The length of the runway in meters, known once the terrain has come from the API. */
+  /** The length of the runway in meters, known once the terrain textures have loaded. */
   readonly runwayLengthMeters: Promise<number>
 
   constructor(
@@ -50,8 +46,7 @@ export class Terrain {
   private async build(): Promise<number> {
     const textures = await loadTerrainTextures()
     this.addGrassPlain(textures.grass)
-    const response = await fetch(`${TERRAIN_URL}?seed=${this.seed}`)
-    const map = (await response.json()) as TerrainMap
+    const map = new TerrainGenerator().generate(this.seed)
     const geometry = new THREE.PlaneGeometry(TILE_SIZE_METERS, TILE_SIZE_METERS)
     const materials = new Map<string, THREE.MeshBasicMaterial>()
     const bushPlacements: BushPlacement[] = []

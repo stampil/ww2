@@ -1,9 +1,10 @@
 import * as THREE from 'three'
+import { assetUrl } from '../assetUrl'
 import { buildGeometry, buildMaterials, loadModelData } from './ac3d'
 import { EasedValue } from './motion'
 
 const MODEL_NAME = 'cockpit'
-const TEXTURES_URL = '/models/d520/cockpit/'
+const TEXTURES_URL = assetUrl('models/d520/cockpit/')
 const CANOPY_PARTS = ['intcanopy', 'inttourcanopy']
 const CANOPY_TRAVEL_METERS = 0.6
 const CANOPY_TRAVEL_SECONDS = 2

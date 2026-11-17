@@ -7,7 +7,13 @@
     "checking": "Vérification de l'API…",
     "ready": "L'API et la base de données répondent.",
     "databaseDown": "L'API répond, la base de données non.",
-    "apiDown": "L'API ne répond pas."
+    "apiDown": "Le serveur de jeu est indisponible."
+  },
+  "home": {
+    "play": "Jouer"
+  },
+  "game": {
+    "title": "Le jeu"
   },
   "takeoff": {
     "title": "Décollage du D.520"

@@ -7,7 +7,13 @@
     "checking": "Checking the API…",
     "ready": "The API and the database are answering.",
     "databaseDown": "The API answers, the database does not.",
-    "apiDown": "The API is not answering."
+    "apiDown": "The game server is unavailable."
+  },
+  "home": {
+    "play": "Play"
+  },
+  "game": {
+    "title": "The game"
   },
   "takeoff": {
     "title": "D.520 takeoff"

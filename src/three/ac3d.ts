@@ -1,6 +1,7 @@
 import * as THREE from 'three'
+import { assetUrl } from '../assetUrl'
 
-const MODELS_URL = '/models/d520/'
+const MODELS_URL = assetUrl('models/d520/')
 const SURFACE_ROUGHNESS = 0.8
 
 type PartGroup = { material: number; start: number; count: number }

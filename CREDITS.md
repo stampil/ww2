@@ -1,0 +1,19 @@
+# Crédits
+
+French Touch reste un projet ouvert et gratuit. Ce fichier nomme les auteurs des œuvres de tiers qu'il utilise ou dont il part.
+
+## Dans le dépôt
+
+- **Dewoitine D.520, modèle 3D, cockpit et textures** : Emmanuel Baranger (helijah), avion « D520 » de FlightGear, [FGAddon](https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/D520/), licence GNU GPL v2. Fichiers et changements : `public/models/d520/` (`ATTRIBUTION.txt`, `COPYING`). La texture `texture-vichy.png` en est une retouche faite avec un générateur d'images.
+- **Buisson 3D** : Quaternius, « Bush », via [Poly Pizza](https://poly.pizza/m/ooG6CkLyE8), domaine public (CC0). Fichier : `public/models/bush/` (`ATTRIBUTION.txt`).
+
+## Plans trois vues, utilisés comme références (non distribués : dossier `ref/plans-libres/`, hors du dépôt)
+
+| Avion | Auteur | Licence | Source |
+|---|---|---|---|
+| Morane-Saulnier M.S.406 | Kaboldy | CC BY-SA 3.0 | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Morane-Saulnier_M.S.406_C1_3-view.svg) |
+| Morane-Saulnier M.S.406 | MMK-Draw | CC BY-SA 4.0 | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Morane-Saulnier_M.S.406_3Views.png) |
+| Amiot 143 | revue L'Aérophile, octobre 1934 | domaine public | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Amiot_143_3-view_L%27Aerophile_October_1934.jpg), numérisé sur [Gallica](http://gallica.bnf.fr/ark:/12148/bpt6k65536832) |
+| Lioré et Olivier LeO 45 (le LeO 451 n'a pas de plan trois vues libre trouvé) | revue L'Aéronautique, décembre 1938, auteur inconnu | domaine public d'après Commons | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:LeO_45_3-view.jpg) |
+
+Une œuvre faite à partir d'un plan en CC BY-SA (modèle, dessin, texture) cite son auteur et se partage sous la même licence.

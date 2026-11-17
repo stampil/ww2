@@ -197,7 +197,7 @@ export class AirfieldScene {
   }
 
   /** Sends an aircraft from its stand to the junction, onto the runway and into its place in the line, to leave with the group waiting there, or a new one. */
-  depart(aircraftId: number, stand: Cell): void {
+  depart(aircraftId: number, stand: Cell, tailNumber: number): void {
     const startSeconds = this.secondsNow()
     const rearPath = this.taxiPathFrom(stand, 0)
     const naturalArrivalSeconds = startSeconds + rearPath.lengthMeters / TAXI_SPEED_METERS_PER_SECOND + PIVOT_SECONDS
@@ -205,7 +205,7 @@ export class AirfieldScene {
     const path = assignment.slot === 0 ? rearPath : this.taxiPathFrom(stand, assignment.slot)
     this.departing.push({
       aircraftId,
-      model: this.acquireModel(),
+      model: this.acquireModel(tailNumber),
       assignment,
       path,
       startSeconds,
@@ -215,8 +215,8 @@ export class AirfieldScene {
   }
 
   /** Brings an aircraft in to land on the runway, then taxi to its stand, with the damage it has; it lands after those that came in before it. */
-  land(aircraftId: number, stand: Cell, damageLevel: number): void {
-    const model = this.acquireModel()
+  land(aircraftId: number, stand: Cell, damageLevel: number, tailNumber: number): void {
+    const model = this.acquireModel(tailNumber)
     for (let level = 0; level < damageLevel; level += 1) {
       model.inflictDamage()
     }
@@ -324,9 +324,10 @@ export class AirfieldScene {
     return new TaxiPath(points)
   }
 
-  private acquireModel(): D520Model {
+  private acquireModel(tailNumber: number): D520Model {
     const model = this.idleModels.pop() ?? this.createModel()
     model.repair()
+    model.setTailNumber(tailNumber)
     model.object.visible = true
     return model
   }

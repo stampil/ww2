@@ -51,10 +51,11 @@ export class AircraftPreviewScene extends OrbitViewScene {
   private readonly liveries: LiveryTextures
   private readonly sky: Sky
 
-  constructor(container: HTMLElement, mode: PreviewMode, damageLevel: number, layoutSeed: number) {
+  constructor(container: HTMLElement, mode: PreviewMode, damageLevel: number, layoutSeed: number, tailNumber: number) {
     super(container, mode === 'flight' ? FLIGHT_VIEW : GROUND_VIEW)
     const { liveries, loaded: frenchLiveryLoaded } = loadFrenchLivery(this.renderer.capabilities.getMaxAnisotropy(), this.aircraft)
     this.liveries = liveries
+    this.aircraft.setTailNumber(tailNumber)
     this.scene.add(this.aircraft.object)
     this.sky = new Sky(mode === 'flight' ? FLIGHT_SKY : OVERHEAD_SKY)
     this.scene.add(this.sky.object)

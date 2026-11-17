@@ -48,11 +48,26 @@ final class SquadronStore
         );
     }
 
+    /**
+     * Adds an aircraft to the base, with the next number: one more than the highest the base has used, so a number is never given twice.
+     */
     public function addAircraft(int $baseId, AircraftModel $model): void
     {
+        $rows = $this->database->fetchAll(
+            'SELECT COALESCE(MAX(numbers.number), 0) + 1 AS next_number FROM aircraft_numbers AS numbers
+             JOIN aircraft ON aircraft.id = numbers.aircraft_id WHERE aircraft.base_id = :base_id',
+            ['base_id' => $baseId],
+        );
         $this->database->execute(
             'INSERT INTO aircraft (base_id, model_id, durability) VALUES (:base_id, :model_id, :durability)',
             ['base_id' => $baseId, 'model_id' => $model->id, 'durability' => $model->durability],
+        );
+        $this->database->execute(
+            'INSERT INTO aircraft_numbers (aircraft_id, number)
+             SELECT aircraft.id, :number FROM aircraft
+             LEFT JOIN aircraft_numbers ON aircraft_numbers.aircraft_id = aircraft.id
+             WHERE aircraft.base_id = :base_id AND aircraft_numbers.aircraft_id IS NULL',
+            ['number' => (int) $rows[0]['next_number'], 'base_id' => $baseId],
         );
     }
 
@@ -140,10 +155,11 @@ final class SquadronStore
     public function aircraftOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT aircraft.id, aircraft.durability AS current_durability, models.id AS model_id, models.code, models.name, models.category,
+            'SELECT aircraft.id, aircraft.durability AS current_durability, aircraft_numbers.number, models.id AS model_id, models.code, models.name, models.category,
                     models.durability, models.maneuverability, models.fuel_capacity, models.ammunition_capacity
              FROM aircraft
              JOIN aircraft_models AS models ON models.id = aircraft.model_id
+             JOIN aircraft_numbers ON aircraft_numbers.aircraft_id = aircraft.id
              WHERE aircraft.base_id = :base_id
              ORDER BY aircraft.id',
             ['base_id' => $baseId],
@@ -154,6 +170,7 @@ final class SquadronStore
                 (int) $row['id'],
                 $this->modelFrom([...$row, 'id' => $row['model_id']]),
                 (int) $row['current_durability'],
+                (int) $row['number'],
             ),
             $rows,
         );

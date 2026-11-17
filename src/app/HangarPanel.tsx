@@ -35,8 +35,10 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, onInspect, onR
 
           return (
             <li key={aircraft.id} className="card">
-              <AircraftPicture isFlying={isFlying} damageLevel={damageLevelOf(aircraft.durability, aircraft.model.durability)} aircraftId={aircraft.id} />
-              <strong>{aircraft.model.name}</strong>
+              <AircraftPicture isFlying={isFlying} damageLevel={damageLevelOf(aircraft.durability, aircraft.model.durability)} aircraftId={aircraft.id} tailNumber={aircraft.number} />
+              <strong>
+                {aircraft.model.name} {t('squadron.aircraftNumber', { number: aircraft.number })}
+              </strong>
               <span>{t(`squadron.categories.${aircraft.model.category}`)}</span>
               {isFlying && <span className="status">{t('base.mission.inFlight')}</span>}
               {state.inspectionSeconds !== null && (

@@ -15,6 +15,16 @@ const SOOT_SHARE = 2.5
 const PLACEMENT_TRIES = 200
 const HOLE_COLOR = '#14110d'
 const HOLE_RIM_COLOR = 'rgba(190, 190, 180, 0.85)'
+const TAIL_NUMBER_HEIGHT_SHARE = 0.05
+const TAIL_NUMBER_OUTLINE_SHARE = 0.004
+const TAIL_NUMBER_COLOR = '#f4f1e8'
+const TAIL_NUMBER_OUTLINE_COLOR = '#14110d'
+const TAIL_NUMBER_FONT = 'Arial Black, Arial, sans-serif'
+// Where the number goes, as shares of the texture: on the fin, ahead of the tricolor rudder; the first spot is the left side of the aircraft, the second the right.
+const TAIL_NUMBER_SPOTS = [
+  { x: 0.878, y: 0.1 },
+  { x: 0.15, y: 0.262 },
+]
 const SOOT_COLOR = 'rgba(20, 15, 10, 0.55)'
 const SOOT_CLEAR_COLOR = 'rgba(20, 15, 10, 0)'
 const BURN_CORE_COLOR = 'rgba(12, 9, 7, 0.85)'
@@ -64,6 +74,7 @@ export class DamagePainter {
   private damageable = new Uint8Array(0)
   private readonly marks: Mark[] = []
   private level = 0
+  private tailNumber: number | undefined
 
   constructor(image: HTMLImageElement) {
     this.image = image
@@ -77,6 +88,12 @@ export class DamagePainter {
     this.canvas.height = image.height
     this.context.drawImage(image, 0, 0)
     this.damageable = this.findDamageablePixels()
+    this.paint()
+  }
+
+  /** Paints this number on the fin, on both sides, under the damage; undefined paints none. */
+  setTailNumber(tailNumber: number | undefined): void {
+    this.tailNumber = tailNumber
     this.paint()
   }
 
@@ -137,6 +154,7 @@ export class DamagePainter {
   private paint(): void {
     const { width, height } = this.canvas
     this.context.drawImage(this.image, 0, 0)
+    this.paintTailNumber()
     if (this.level >= DESTROYED_LEVEL) {
       this.char()
     }
@@ -151,6 +169,24 @@ export class DamagePainter {
         this.paintSoot(x, y, radius * SOOT_SHARE)
         this.paintHole(x, y, radius, mark.kind === 'shrapnel' ? mark.shape : [])
       }
+    }
+  }
+
+  private paintTailNumber(): void {
+    if (this.tailNumber === undefined) {
+      return
+    }
+    const { width, height } = this.canvas
+    this.context.font = `bold ${height * TAIL_NUMBER_HEIGHT_SHARE}px ${TAIL_NUMBER_FONT}`
+    this.context.textAlign = 'center'
+    this.context.textBaseline = 'middle'
+    this.context.lineJoin = 'round'
+    this.context.lineWidth = height * TAIL_NUMBER_OUTLINE_SHARE
+    this.context.strokeStyle = TAIL_NUMBER_OUTLINE_COLOR
+    this.context.fillStyle = TAIL_NUMBER_COLOR
+    for (const spot of TAIL_NUMBER_SPOTS) {
+      this.context.strokeText(String(this.tailNumber), spot.x * width, spot.y * height)
+      this.context.fillText(String(this.tailNumber), spot.x * width, spot.y * height)
     }
   }
 

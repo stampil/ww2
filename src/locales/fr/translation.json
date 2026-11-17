@@ -140,6 +140,7 @@
     "seed": "Graine {{seed}}"
   },
   "squadron": {
+    "aircraftNumber": "n°{{number}}",
     "signInHint": "Connecte-toi pour voir ton escadrille.",
     "pilots": "Pilotes",
     "aircraft": "Avions",
@@ -320,7 +321,7 @@
       "slot": "Avion {{number}}",
       "pilot": "Pilote",
       "aircraft": "Avion",
-      "aircraftOption": "{{name}}, durabilité {{durability}}",
+      "aircraftOption": "{{name}} n°{{number}}, durabilité {{durability}}",
       "fuelLoad": "Carburant par avion",
       "ammunitionLoad": "Munitions par avion",
       "noFreeAircraft": "Aucun avion libre ne convient à cette mission.",

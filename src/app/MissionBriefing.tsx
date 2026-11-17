@@ -94,7 +94,7 @@ function MissionBriefing({ offer, squadron, busy, onLaunch }: Props) {
                 <option value="">—</option>
                 {freeAircraft.map((aircraft) => (
                   <option key={aircraft.id} value={aircraft.id} disabled={aircraftChoices.includes(aircraft.id) && aircraftChoices[place] !== aircraft.id}>
-                    {t('base.mission.aircraftOption', { name: aircraft.model.name, durability: aircraft.durability })}
+                    {t('base.mission.aircraftOption', { name: aircraft.model.name, number: aircraft.number, durability: aircraft.durability })}
                   </option>
                 ))}
               </select>

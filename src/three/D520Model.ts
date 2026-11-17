@@ -146,6 +146,7 @@ export class D520Model {
   private texture: THREE.Texture | undefined
   private liveryTexture: THREE.Texture | undefined
   private damagePainter: DamagePainter | undefined
+  private tailNumber: number | undefined
   private damageTexture: THREE.CanvasTexture | undefined
   private damageLevel = 0
   private wheelAngle = 0
@@ -158,6 +159,12 @@ export class D520Model {
     this.object.add(this.cockpit.object)
     this.object.add(this.effects.object)
     this.ready = this.load()
+  }
+
+  /** Paints the number of the aircraft on its fin; undefined takes it off. */
+  setTailNumber(tailNumber: number | undefined): void {
+    this.tailNumber = tailNumber
+    this.showTexture()
   }
 
   setLivery(texture: THREE.Texture): void {
@@ -279,15 +286,16 @@ export class D520Model {
     hinge.group.quaternion.setFromAxisAngle(hinge.axis, radians)
   }
 
-  /** The livery, with the marks of the damage painted on it when the aircraft is damaged. */
+  /** The livery, with the number of the aircraft and the marks of its damage painted on it when it has any. */
   private showTexture(): void {
     if (this.liveryTexture === undefined) {
       return
     }
-    if (this.damageLevel === 0) {
+    if (this.damageLevel === 0 && this.tailNumber === undefined) {
       this.texture = this.liveryTexture
     } else {
       this.damagePainter ??= new DamagePainter(this.liveryTexture.image as HTMLImageElement)
+      this.damagePainter.setTailNumber(this.tailNumber)
       this.damagePainter.setLevel(this.damageLevel)
       const canvas = this.damagePainter.canvas
       if (this.damageTexture === undefined || this.damageTexture.image !== canvas || this.damageTexture.userData.pixels !== canvas.width) {

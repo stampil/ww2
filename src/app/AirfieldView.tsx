@@ -4,9 +4,9 @@ import type { Cell, TerrainPlan } from '../plans/terrainPlan'
 import { AirfieldScene } from '../three/AirfieldScene'
 
 /** An aircraft that has just been sent on a mission: it taxis from the stand it stood on to the runway, then takes off. */
-export type Departure = { aircraftId: number; stand: Cell }
+export type Departure = { aircraftId: number; tailNumber: number; stand: Cell }
 /** An aircraft that has just come back: it lands on the runway, with the damage it has, then taxis to its stand. */
-export type Arrival = { aircraftId: number; stand: Cell; damageLevel: number }
+export type Arrival = { aircraftId: number; tailNumber: number; stand: Cell; damageLevel: number }
 
 type Props = {
   plan: TerrainPlan
@@ -65,13 +65,13 @@ function AirfieldView({ plan, departures, arrivals, aircraftSprite, aircraftWidt
     for (const departure of departures) {
       if (!handedDepartureIds.current.has(departure.aircraftId)) {
         handedDepartureIds.current.add(departure.aircraftId)
-        sceneRef.current!.depart(departure.aircraftId, departure.stand)
+        sceneRef.current!.depart(departure.aircraftId, departure.stand, departure.tailNumber)
       }
     }
     for (const arrival of arrivals) {
       if (!handedArrivalIds.current.has(arrival.aircraftId)) {
         handedArrivalIds.current.add(arrival.aircraftId)
-        sceneRef.current!.land(arrival.aircraftId, arrival.stand, arrival.damageLevel)
+        sceneRef.current!.land(arrival.aircraftId, arrival.stand, arrival.damageLevel, arrival.tailNumber)
       }
     }
   }, [departures, arrivals, plan, aircraftSprite, aircraftWidthTiles, onDeparted, onLanded])

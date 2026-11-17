@@ -17,7 +17,7 @@ function FlightList({ flights, squadron, onReceive }: Props) {
   function crewLabel(crew: Flight['crews'][number]): string {
     const pilot = squadron.pilots.find((candidate) => candidate.id === crew.pilotId)!
     const aircraft = squadron.aircraft.find((candidate) => candidate.id === crew.aircraftId)!
-    return `${pilot.name} (${aircraft.model.name})`
+    return `${pilot.name} (${aircraft.model.name} ${t('squadron.aircraftNumber', { number: aircraft.number })})`
   }
 
   return (

@@ -140,6 +140,7 @@
     "seed": "Seed {{seed}}"
   },
   "squadron": {
+    "aircraftNumber": "no. {{number}}",
     "signInHint": "Sign in to see your squadron.",
     "pilots": "Pilots",
     "aircraft": "Aircraft",
@@ -320,7 +321,7 @@
       "slot": "Aircraft {{number}}",
       "pilot": "Pilot",
       "aircraft": "Aircraft",
-      "aircraftOption": "{{name}}, durability {{durability}}",
+      "aircraftOption": "{{name}} no. {{number}}, durability {{durability}}",
       "fuelLoad": "Fuel per aircraft",
       "ammunitionLoad": "Ammunition per aircraft",
       "noFreeAircraft": "No free aircraft suits this mission.",

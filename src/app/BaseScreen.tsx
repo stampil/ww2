@@ -120,7 +120,7 @@ function BaseScreen({ player }: { player: Player }) {
     if (launchErrorCode === null) {
       setOpenBuilding(null)
       if (aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches) {
-        const leaving = departing.map((aircraft) => ({ aircraftId: aircraft.id, stand: aircraft.stand }))
+        const leaving = departing.map((aircraft) => ({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand: aircraft.stand }))
         setDepartures((current) => [...current, ...leaving])
       }
     }
@@ -154,10 +154,10 @@ function BaseScreen({ player }: { player: Player }) {
       continue
     }
     if (landingIds.includes(aircraft.id)) {
-      arrivals.push({ aircraftId: aircraft.id, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability) })
+      arrivals.push({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability) })
     } else {
       const state = hangarAircraft.find((candidate) => candidate.aircraftId === aircraft.id)!
-      parkedAircraft.push({ id: aircraft.id, stand, status: standStatusOf(state, aircraft) })
+      parkedAircraft.push({ id: aircraft.id, number: aircraft.number, stand, status: standStatusOf(state, aircraft) })
     }
   }
 

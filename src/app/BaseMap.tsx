@@ -17,7 +17,7 @@ const AIRCRAFT_WIDTH_TILES = 1.4
 
 /** What shows on a parked aircraft: nothing when it is fit, else the trouble it is in. */
 export type StandStatus = 'ready' | 'damaged' | 'inspecting' | 'repairing' | 'burning'
-export type ParkedAircraft = { id: number; stand: Cell; status: StandStatus }
+export type ParkedAircraft = { id: number; number: number; stand: Cell; status: StandStatus }
 /** Something that needs the player at a building: a marker over it, which opens it. */
 export type MapAlert = { kind: 'mission' | 'fire' | 'guide'; building: BuildingName; label: string }
 

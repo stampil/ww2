@@ -48,6 +48,8 @@ export type Pilot = {
 }
 export type Aircraft = {
   id: number
+  /** The number painted on its fin, which it keeps. */
+  number: number
   durability: number
   model: { name: string; category: string; durability: number; maneuverability: number; fuelCapacity: number; ammunitionCapacity: number }
 }

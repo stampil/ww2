@@ -34,6 +34,7 @@ function BaseScreen({ player }: { player: Player }) {
   const unavailable = unavailableCrews(busy, rests, hangarAircraft)
   const hasLandedFlight = flights.some((flight) => flight.remainingSeconds === 0)
   const hasBurningAircraft = hangarAircraft.some((state) => state.fireSeconds !== null)
+  const repairingAircraftIds = hangarAircraft.filter((state) => state.repairSeconds !== null).map((state) => state.aircraftId)
 
   function toggle(building: BuildingName): void {
     setOpenBuilding(openBuilding === building ? null : building)
@@ -56,7 +57,7 @@ function BaseScreen({ player }: { player: Player }) {
         </ul>
       </div>
 
-      <BaseMap plan={TERRAIN_PLANS[base.terrainPlan]} openBuilding={openBuilding} onSelect={toggle} />
+      <BaseMap plan={TERRAIN_PLANS[base.terrainPlan]} repairingAircraftIds={repairingAircraftIds} openBuilding={openBuilding} onSelect={toggle} />
 
       {errorCode !== null && (
         <p className="account-error" role="alert">

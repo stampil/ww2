@@ -348,6 +348,17 @@ h1 {
   pointer-events: none;
 }
 
+.maintenance-crew {
+  position: absolute;
+  width: 0.7rem;
+  aspect-ratio: 1;
+  border: 2px solid var(--paper);
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
 button.base-sprite {
   padding: 0;
   border: 0;

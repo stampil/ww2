@@ -1,4 +1,4 @@
-import { BEATS_PER_MINUTE, bassNotes, drumHits, LOOP_BEATS, MELODY, padNotes } from './theme'
+import { BEATS_PER_MINUTE, bassNotes, drumHits, harmonyNotes, LOOP_BEATS, MELODY, stabNotes } from './theme'
 import type { Note } from './theme'
 
 type Voice = {
@@ -7,6 +7,8 @@ type Voice = {
   attackSeconds: number
   releaseSeconds: number
   cutoffHertz: number
+  /** How long the filter takes to open at the start of a note: the blare of brass. */
+  swellSeconds: number
   /** One oscillator per detune, in cents: several slightly apart sound like a section of instruments. */
   detunes: number[]
 }
@@ -28,9 +30,12 @@ const CHOICE_ON = 'on'
 // The first of these that the player does, anywhere on the page, lets the music start.
 const GESTURE_EVENTS = ['pointerdown', 'keydown']
 
-const LEAD: Voice = { type: 'sawtooth', gain: 0.1, attackSeconds: 0.03, releaseSeconds: 0.12, cutoffHertz: 2400, detunes: [-7, 7] }
-const PAD: Voice = { type: 'triangle', gain: 0.06, attackSeconds: 0.15, releaseSeconds: 0.3, cutoffHertz: 3000, detunes: [0] }
-const BASS: Voice = { type: 'square', gain: 0.1, attackSeconds: 0.005, releaseSeconds: 0.06, cutoffHertz: 500, detunes: [0] }
+const SWELL_START_SHARE = 0.3
+
+const LEAD: Voice = { type: 'sawtooth', gain: 0.1, attackSeconds: 0.03, releaseSeconds: 0.12, cutoffHertz: 2600, swellSeconds: 0.09, detunes: [-6, 6] }
+const HARMONY: Voice = { type: 'sawtooth', gain: 0.07, attackSeconds: 0.03, releaseSeconds: 0.12, cutoffHertz: 2000, swellSeconds: 0.09, detunes: [-4, 4] }
+const STABS: Voice = { type: 'sawtooth', gain: 0.04, attackSeconds: 0.02, releaseSeconds: 0.08, cutoffHertz: 1500, swellSeconds: 0.06, detunes: [0] }
+const BASS: Voice = { type: 'square', gain: 0.1, attackSeconds: 0.005, releaseSeconds: 0.06, cutoffHertz: 500, swellSeconds: 0.02, detunes: [0] }
 
 const KICK_GAIN = 0.5
 const KICK_START_HERTZ = 140
@@ -39,9 +44,11 @@ const KICK_SECONDS = 0.12
 const SNARE_GAIN = 0.22
 const SNARE_SECONDS = 0.14
 const SNARE_HIGH_PASS_HERTZ = 1200
-const HAT_GAIN = 0.05
-const HAT_SECONDS = 0.04
-const HAT_HIGH_PASS_HERTZ = 7000
+const GHOST_GAIN = 0.08
+const GHOST_SECONDS = 0.06
+const CRASH_GAIN = 0.14
+const CRASH_SECONDS = 0.9
+const CRASH_HIGH_PASS_HERTZ = 4500
 
 function hertzOf(midi: number): number {
   return A4_HERTZ * 2 ** ((midi - A4_MIDI) / SEMITONES_PER_OCTAVE)
@@ -65,7 +72,7 @@ function rememberChoice(wantsIt: boolean): void {
 }
 
 /**
- * Plays the theme of the game, over and over, with the Web Audio API: a lead of detuned saws, a pad, a bass and drums. Browsers allow sound only
+ * Plays the theme of the game, over and over, with the Web Audio API: a brass fanfare of detuned saws, a bass and a march on the drums. Browsers allow sound only
  * after a gesture of the player, so the music starts at the first click or key, unless the player has turned it off; their choice is kept.
  * Everything is made of oscillators and noise, so there is no sound file.
  */
@@ -173,13 +180,15 @@ export function renderLoop(context: BaseAudioContext, destination: AudioNode, st
     }
   }
   playNotes(MELODY, LEAD)
-  playNotes(padNotes(), PAD)
+  playNotes(harmonyNotes(), HARMONY)
+  playNotes(stabNotes(), STABS)
   playNotes(bassNotes(), BASS)
   const noise = noiseBuffer(context)
   const hits = drumHits()
   hits.kick.forEach((beat) => playKick(context, destination, startSeconds + beat * secondsPerBeat))
   hits.snare.forEach((beat) => playNoise(context, destination, noise, startSeconds + beat * secondsPerBeat, SNARE_SECONDS, SNARE_GAIN, SNARE_HIGH_PASS_HERTZ))
-  hits.hat.forEach((beat) => playNoise(context, destination, noise, startSeconds + beat * secondsPerBeat, HAT_SECONDS, HAT_GAIN, HAT_HIGH_PASS_HERTZ))
+  hits.ghost.forEach((beat) => playNoise(context, destination, noise, startSeconds + beat * secondsPerBeat, GHOST_SECONDS, GHOST_GAIN, SNARE_HIGH_PASS_HERTZ))
+  hits.crash.forEach((beat) => playNoise(context, destination, noise, startSeconds + beat * secondsPerBeat, CRASH_SECONDS, CRASH_GAIN, CRASH_HIGH_PASS_HERTZ))
 }
 
 /** One note of a voice: its oscillators through a low-pass filter, with a swell at the start and a fade at the end. */
@@ -191,7 +200,8 @@ function playNote(context: BaseAudioContext, destination: AudioNode, voice: Voic
   envelope.gain.linearRampToValueAtTime(0, whenSeconds + lengthSeconds + voice.releaseSeconds)
   const filter = context.createBiquadFilter()
   filter.type = 'lowpass'
-  filter.frequency.value = voice.cutoffHertz
+  filter.frequency.setValueAtTime(voice.cutoffHertz * SWELL_START_SHARE, whenSeconds)
+  filter.frequency.linearRampToValueAtTime(voice.cutoffHertz, whenSeconds + voice.swellSeconds)
   filter.connect(envelope)
   envelope.connect(destination)
   for (const detune of voice.detunes) {
@@ -218,7 +228,7 @@ function playKick(context: BaseAudioContext, destination: AudioNode, whenSeconds
   oscillator.stop(whenSeconds + KICK_SECONDS + END_MARGIN_SECONDS)
 }
 
-/** A burst of noise through a high-pass filter, which fades away: the snare and the hat. */
+/** A burst of noise through a high-pass filter, which fades away: the snare and the cymbal. */
 function playNoise(context: BaseAudioContext, destination: AudioNode, noise: AudioBuffer, whenSeconds: number, lengthSeconds: number, gain: number, highPassHertz: number): void {
   const source = context.createBufferSource()
   source.buffer = noise

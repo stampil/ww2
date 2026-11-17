@@ -1,11 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import { formatDuration } from './formatDuration'
 import type { Base, Part } from './useBase'
-
-const SECONDS_PER_MINUTE = 60
-
-function clock(seconds: number): string {
-  return `${Math.floor(seconds / SECONDS_PER_MINUTE)}:${String(seconds % SECONDS_PER_MINUTE).padStart(2, '0')}`
-}
 
 type Props = {
   workshop: Base['workshop']
@@ -24,7 +19,7 @@ function WorkshopPanel({ workshop, jobs, onProduce }: Props) {
         {workshop.parts.map((part) => (
           <li key={part.part} className="card">
             <strong>{t(`base.parts.${part.part}`)}</strong>
-            <span>{t('base.partCost', { cost: part.materialCost, time: clock(part.seconds) })}</span>
+            <span>{t('base.partCost', { cost: part.materialCost, time: formatDuration(part.seconds) })}</span>
             <span>{t('base.ready', { count: workshop.readyParts[part.part] })}</span>
             <div className="card-actions">
               <button type="button" onClick={() => onProduce(part.part, false)}>
@@ -41,7 +36,7 @@ function WorkshopPanel({ workshop, jobs, onProduce }: Props) {
         <ul className="jobs" aria-label={t('base.running')}>
           {jobs.map((job) => (
             <li key={job.id}>
-              {t(`base.parts.${job.part}`)} — {clock(job.remainingSeconds)}
+              {t(`base.parts.${job.part}`)} — {formatDuration(job.remainingSeconds)}
               {job.hasMechanic ? ` (${t('base.withMechanic')})` : ''}
             </li>
           ))}

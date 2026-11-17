@@ -3,6 +3,30 @@ import type { Player } from './useAccount'
 
 export type Stock = 'fuel' | 'ammunition' | 'materials'
 export type Part = 'engine' | 'wings' | 'fuselage' | 'armament'
+export type MissionType = 'reconnaissance' | 'airCombat' | 'bombing'
+
+/** A mission on the table; the category is the only one that can fly it, or null when any aircraft can. */
+export type Offer = {
+  id: number
+  type: MissionType
+  category: 'fighter' | 'bomber' | null
+  aircraftCount: number
+  durationSeconds: number
+  fuelPerAircraft: number
+  ammunitionPerAircraft: number
+  risk: number
+  rewardSupplies: number
+  rewardCommandPoints: number
+}
+/** A mission under way: its crews, what each aircraft carries, and the game seconds left before it is back. */
+export type Flight = {
+  id: number
+  type: MissionType
+  remainingSeconds: number
+  fuelLoaded: number
+  ammunitionLoaded: number
+  crews: { pilotId: number; aircraftId: number }[]
+}
 
 export type Base = {
   terrainPlan: string
@@ -17,6 +41,7 @@ export type Base = {
     jobs: { id: number; part: Part; remainingSeconds: number; hasMechanic: boolean }[]
     readyParts: Record<Part, number>
   }
+  headquarters: { offers: Offer[]; flights: Flight[] }
 }
 
 type ErrorPayload = { reason_phrase: string }
@@ -43,13 +68,28 @@ async function request(url: string, body?: object): Promise<{ base: Base } | { e
   }
 }
 
+/** The items with the seconds gone by since the API sent them taken off what they have left, down to zero. */
+function countDown<Item extends { remainingSeconds: number }>(items: Item[], elapsedSeconds: number): Item[] {
+  return items.map((item) => ({ ...item, remainingSeconds: Math.max(0, item.remainingSeconds - elapsedSeconds) }))
+}
+
+/** Whether a countdown that had time left when the API sent it has run out since. */
+function hasEnded(received: { remainingSeconds: number }[], shown: { remainingSeconds: number }[]): boolean {
+  for (let place = 0; place < shown.length; place += 1) {
+    if (received[place].remainingSeconds > 0 && shown[place].remainingSeconds === 0) {
+      return true
+    }
+  }
+  return false
+}
+
 /** The game clock of the base, moved on by the seconds gone by since the API sent it. */
 function clockAfter(base: Base, elapsedSeconds: number): { gameTime: Date; paused: boolean } {
   const receivedGameTime = Date.parse(`${base.clock.gameTime}${UTC_DESIGNATOR}`)
   return { gameTime: new Date(receivedGameTime + elapsedSeconds * MILLISECONDS_PER_SECOND), paused: base.clock.paused }
 }
 
-/** The base of the signed-in player, the orders they can give, the game clock, and the seconds left on each part being made. */
+/** The base of the signed-in player, the orders they can give, the game clock, and the seconds left on each part being made and each flight. */
 export function useBase(player: Player | null) {
   const [base, setBase] = useState<Base | null>(null)
   const [receivedAt, setReceivedAt] = useState(0)
@@ -80,15 +120,18 @@ export function useBase(player: Player | null) {
 
   const isRunning = base !== null && !base.clock.paused
   const elapsedSeconds = isRunning ? Math.floor((now - receivedAt) / MILLISECONDS_PER_SECOND) : 0
-  const jobs = (base?.workshop.jobs ?? []).map((job) => ({ ...job, remainingSeconds: Math.max(0, job.remainingSeconds - elapsedSeconds) }))
-  const hasFinishedJob = jobs.some((job) => job.remainingSeconds === 0)
+  const receivedJobs = base?.workshop.jobs ?? []
+  const receivedFlights = base?.headquarters.flights ?? []
+  const jobs = countDown(receivedJobs, elapsedSeconds)
+  const flights = countDown(receivedFlights, elapsedSeconds)
+  const hasEndedCountdown = hasEnded(receivedJobs, jobs) || hasEnded(receivedFlights, flights)
   const clock = base === null ? null : clockAfter(base, elapsedSeconds)
 
   useEffect(() => {
-    if (hasFinishedJob) {
+    if (hasEndedCountdown) {
       void request(BASE_URL).then(receive)
     }
-  }, [hasFinishedJob])
+  }, [hasEndedCountdown])
 
   /** Each order returns the code of the error the API gave, or null when it worked. */
   async function buy(resource: Stock, quantity: number): Promise<string | null> {
@@ -103,5 +146,13 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/clock`, { paused }))
   }
 
-  return { base, jobs, clock, buy, produce, setPaused }
+  async function launchMission(missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/missions/launch`, { missionId, pilotIds, aircraftIds, fuel, ammunition }))
+  }
+
+  async function receiveSquadron(missionId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/missions/return`, { missionId }))
+  }
+
+  return { base, jobs, flights, clock, buy, produce, setPaused, launchMission, receiveSquadron }
 }

@@ -83,6 +83,14 @@ final class BaseStore
         );
     }
 
+    public function spendFuelAndAmmunition(int $playerId, int $fuel, int $ammunition): void
+    {
+        $this->database->execute(
+            'UPDATE base_resources SET fuel = fuel - :fuel, ammunition = ammunition - :ammunition WHERE player_id = :player_id',
+            ['fuel' => $fuel, 'ammunition' => $ammunition, 'player_id' => $playerId],
+        );
+    }
+
     public function addJob(int $playerId, SparePart $part, int $finishGameSecond, bool $hasMechanic): void
     {
         $this->database->execute(

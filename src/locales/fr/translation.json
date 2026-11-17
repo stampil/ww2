@@ -115,6 +115,44 @@
       "label": "Horloge de jeu",
       "pause": "Pause"
     },
+    "alert": "Mission terminée",
+    "mission": {
+      "types": {
+        "reconnaissance": "Reconnaissance",
+        "airCombat": "Combat aérien",
+        "bombing": "Bombardement"
+      },
+      "title": "Missions",
+      "flights": "En vol",
+      "aircraftCount_one": "{{count}} avion",
+      "aircraftCount_other": "{{count}} avions",
+      "duration": "Durée",
+      "fuelPerAircraft": "Carburant par avion",
+      "ammunitionPerAircraft": "Munitions par avion",
+      "risk": "Risque",
+      "riskLevels": {
+        "1": "Faible",
+        "2": "Moyen",
+        "3": "Élevé"
+      },
+      "rewardSupplies": "Gain en ravitaillement",
+      "rewardCommandPoints": "Gain en points de commandement",
+      "prepare": "Préparer",
+      "briefing": "Préparation : {{type}}",
+      "launch": "Lancer la mission",
+      "slot": "Avion {{number}}",
+      "pilot": "Pilote",
+      "aircraft": "Avion",
+      "aircraftOption": "{{name}}, durabilité {{durability}}",
+      "fuelLoad": "Carburant par avion",
+      "ammunitionLoad": "Munitions par avion",
+      "noFreeAircraft": "Aucun avion libre ne convient à cette mission.",
+      "notEnoughPilots": "Il n'y a pas assez de pilotes libres.",
+      "loaded": "{{fuel}} de carburant et {{ammunition}} de munitions par avion",
+      "landed": "Terminée",
+      "receive": "Accueillir l'escadrille",
+      "inFlight": "En vol"
+    },
     "resources": {
       "supplies": "Ravitaillement",
       "fuel": "Carburant",
@@ -140,7 +178,7 @@
       "building": {
       "headquarters": {
         "name": "Quartier Général",
-        "text": "Missions et recrutement : à venir."
+        "text": "Les missions et les pilotes ; le recrutement est à venir."
       },
       "workshop": {
         "name": "Atelier",
@@ -162,6 +200,14 @@
       "insufficientMaterials": "Pas assez de matériaux.",
       "workshopBusy": "Tous les établis sont pris.",
       "noMechanicFree": "Aucun mécanicien n'est libre.",
+      "unknownMission": "Cette mission n'est plus disponible.",
+      "invalidCrew": "Les équipages choisis ne conviennent pas.",
+      "crewBusy": "Un pilote ou un avion est déjà en vol.",
+      "aircraftNotSuited": "Cet avion ne convient pas à la mission.",
+      "invalidLoad": "La charge dépasse ce qu'un avion emporte.",
+      "insufficientFuel": "Pas assez de carburant en stock.",
+      "insufficientAmmunition": "Pas assez de munitions en stock.",
+      "stillInFlight": "L'escadrille n'est pas encore rentrée.",
       "invalidBody": "La commande n'est pas comprise.",
       "signInRequired": "Connecte-toi d'abord.",
       "apiDown": "L'API ne répond pas."

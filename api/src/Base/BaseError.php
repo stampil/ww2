@@ -15,4 +15,12 @@ enum BaseError: string
     case InsufficientMaterials = 'insufficientMaterials';
     case WorkshopBusy = 'workshopBusy';
     case NoMechanicFree = 'noMechanicFree';
+    case UnknownMission = 'unknownMission';
+    case InvalidCrew = 'invalidCrew';
+    case CrewBusy = 'crewBusy';
+    case AircraftNotSuited = 'aircraftNotSuited';
+    case InvalidLoad = 'invalidLoad';
+    case InsufficientFuel = 'insufficientFuel';
+    case InsufficientAmmunition = 'insufficientAmmunition';
+    case StillInFlight = 'stillInFlight';
 }

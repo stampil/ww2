@@ -115,6 +115,44 @@
       "label": "Game clock",
       "pause": "Pause"
     },
+    "alert": "Mission finished",
+    "mission": {
+      "types": {
+        "reconnaissance": "Reconnaissance",
+        "airCombat": "Air combat",
+        "bombing": "Bombing"
+      },
+      "title": "Missions",
+      "flights": "In flight",
+      "aircraftCount_one": "{{count}} aircraft",
+      "aircraftCount_other": "{{count}} aircraft",
+      "duration": "Duration",
+      "fuelPerAircraft": "Fuel per aircraft",
+      "ammunitionPerAircraft": "Ammunition per aircraft",
+      "risk": "Risk",
+      "riskLevels": {
+        "1": "Low",
+        "2": "Medium",
+        "3": "High"
+      },
+      "rewardSupplies": "Supplies reward",
+      "rewardCommandPoints": "Command points reward",
+      "prepare": "Prepare",
+      "briefing": "Briefing: {{type}}",
+      "launch": "Launch the mission",
+      "slot": "Aircraft {{number}}",
+      "pilot": "Pilot",
+      "aircraft": "Aircraft",
+      "aircraftOption": "{{name}}, durability {{durability}}",
+      "fuelLoad": "Fuel per aircraft",
+      "ammunitionLoad": "Ammunition per aircraft",
+      "noFreeAircraft": "No free aircraft suits this mission.",
+      "notEnoughPilots": "There are not enough free pilots.",
+      "loaded": "{{fuel}} fuel and {{ammunition}} ammunition per aircraft",
+      "landed": "Finished",
+      "receive": "Receive the squadron",
+      "inFlight": "In flight"
+    },
     "resources": {
       "supplies": "Supplies",
       "fuel": "Fuel",
@@ -140,7 +178,7 @@
       "building": {
       "headquarters": {
         "name": "Headquarters",
-        "text": "Missions and recruitment: coming."
+        "text": "The missions and the pilots; recruitment is coming."
       },
       "workshop": {
         "name": "Workshop",
@@ -162,6 +200,14 @@
       "insufficientMaterials": "Not enough materials.",
       "workshopBusy": "Every bench is taken.",
       "noMechanicFree": "No mechanic is free.",
+      "unknownMission": "This mission is no longer available.",
+      "invalidCrew": "The crews chosen do not fit.",
+      "crewBusy": "A pilot or an aircraft is already on a flight.",
+      "aircraftNotSuited": "This aircraft does not suit the mission.",
+      "invalidLoad": "The load is more than an aircraft carries.",
+      "insufficientFuel": "Not enough fuel in stock.",
+      "insufficientAmmunition": "Not enough ammunition in stock.",
+      "stillInFlight": "The squadron is not back yet.",
       "invalidBody": "The order is not understood.",
       "signInRequired": "Sign in first.",
       "apiDown": "The API does not answer."

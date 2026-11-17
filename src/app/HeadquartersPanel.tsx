@@ -1,10 +1,23 @@
 import { useTranslation } from 'react-i18next'
+import FlightList from './FlightList'
+import type { BusyCrews } from './flights'
+import MissionBoard from './MissionBoard'
+import type { Flight, Offer } from './useBase'
 import type { Squadron } from './useSquadron'
 
 const GAUGE_MAX = 100
 
-/** The pilots of the squadron, waiting for the missions and the recruitment to come. */
-function HeadquartersPanel({ squadron }: { squadron: Squadron | null }) {
+type Props = {
+  squadron: Squadron | null
+  offers: Offer[]
+  flights: Flight[]
+  busy: BusyCrews
+  onLaunch: (missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number) => void
+  onReceive: (missionId: number) => void
+}
+
+/** The flights under way, the missions on the table, and the pilots of the squadron. */
+function HeadquartersPanel({ squadron, offers, flights, busy, onLaunch, onReceive }: Props) {
   const { t } = useTranslation()
 
   if (squadron === null) {
@@ -13,12 +26,15 @@ function HeadquartersPanel({ squadron }: { squadron: Squadron | null }) {
 
   return (
     <>
+      {flights.length > 0 && <FlightList flights={flights} squadron={squadron} onReceive={onReceive} />}
+      <MissionBoard offers={offers} squadron={squadron} busy={busy} onLaunch={onLaunch} />
       <h4>{t('squadron.pilots')}</h4>
       <ul className="cards">
         {squadron.pilots.map((pilot) => (
           <li key={pilot.id} className="card">
             <strong>{pilot.name}</strong>
             <span>{t(`squadron.ranks.${pilot.rank}`)}</span>
+            {busy.pilotIds.includes(pilot.id) && <span>{t('base.mission.inFlight')}</span>}
             <dl>
               <dt>{t('squadron.fatigue')}</dt>
               <dd>

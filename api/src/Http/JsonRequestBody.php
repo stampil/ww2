@@ -41,6 +41,29 @@ final class JsonRequestBody
     }
 
     /**
+     * @return array<string, list<int>> the fields asked for, all present as lists of whole numbers
+     * @throws BadRequestException when the body is not a JSON object with these fields as lists of whole numbers
+     */
+    public static function integerLists(ServerRequestInterface $request, string ...$fields): array
+    {
+        return self::typed($request, $fields, self::isIntegerList(...));
+    }
+
+    private static function isIntegerList(mixed $value): bool
+    {
+        if (!is_array($value) || !array_is_list($value)) {
+            return false;
+        }
+        foreach ($value as $item) {
+            if (!is_int($item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @param list<string> $fields
      * @param callable(mixed): bool $hasType
      * @return array<string, mixed>

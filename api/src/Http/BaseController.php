@@ -14,6 +14,7 @@ use Ww2\Base\BaseError;
 use Ww2\Base\BaseException;
 use Ww2\Base\BaseStore;
 use Ww2\Base\Building;
+use Ww2\Base\Headquarters;
 use Ww2\Base\SparePart;
 use Ww2\Base\Stock;
 use Ww2\Base\Warehouse;
@@ -21,7 +22,8 @@ use Ww2\Base\Workshop;
 use Ww2\Clock\GameClockStore;
 
 /**
- * Shows the base of the player who is signed in, and takes their orders: buy a stock, make a spare part, pause or resume the clock.
+ * Shows the base of the player who is signed in, and takes their orders: buy a stock, make a spare part, pause or resume the clock,
+ * send a mission out and receive its squadron back.
  */
 final class BaseController
 {
@@ -29,6 +31,7 @@ final class BaseController
         private readonly BaseStore $bases,
         private readonly Warehouse $warehouse,
         private readonly Workshop $workshop,
+        private readonly Headquarters $headquarters,
         private readonly GameClockStore $clocks,
         private readonly PlayerSession $session,
     ) {
@@ -80,6 +83,42 @@ final class BaseController
      * @throws UnauthorizedException when nobody is signed in
      * @throws BadRequestException when the order is not understood
      */
+    public function launchMission(ServerRequestInterface $request): array
+    {
+        $playerId = $this->signedInPlayerId();
+        $numbers = JsonRequestBody::integers($request, 'missionId', 'fuel', 'ammunition');
+        $crews = JsonRequestBody::integerLists($request, 'pilotIds', 'aircraftIds');
+        $this->carryOut(fn () => $this->headquarters->launch(
+            $playerId,
+            $numbers['missionId'],
+            $crews['pilotIds'],
+            $crews['aircraftIds'],
+            $numbers['fuel'],
+            $numbers['ammunition'],
+        ));
+
+        return $this->overview($playerId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function receiveMission(ServerRequestInterface $request): array
+    {
+        $playerId = $this->signedInPlayerId();
+        $missionId = JsonRequestBody::integers($request, 'missionId')['missionId'];
+        $this->carryOut(fn () => $this->headquarters->receive($playerId, $missionId));
+
+        return $this->overview($playerId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
     public function setPaused(ServerRequestInterface $request): array
     {
         $playerId = $this->signedInPlayerId();
@@ -112,7 +151,10 @@ final class BaseController
             $order();
         } catch (BaseException $exception) {
             throw match ($exception->error) {
-                BaseError::InvalidQuantity => new UnprocessableEntityException($exception->error->value),
+                BaseError::InvalidQuantity,
+                BaseError::InvalidCrew,
+                BaseError::AircraftNotSuited,
+                BaseError::InvalidLoad => new UnprocessableEntityException($exception->error->value),
                 default => new ConflictException($exception->error->value),
             };
         }
@@ -132,6 +174,7 @@ final class BaseController
             'warehouse' => $this->warehouse->describe(),
             'clock' => $clock->toArray(),
             'workshop' => $this->workshop->describe($playerId, $clock),
+            'headquarters' => $this->headquarters->describe($playerId, $clock),
         ];
     }
 }

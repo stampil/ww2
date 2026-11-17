@@ -1,8 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import type { Squadron } from './useSquadron'
 
-/** The aircraft of the squadron, waiting for the repairs to come. */
-function HangarPanel({ squadron }: { squadron: Squadron | null }) {
+type Props = {
+  squadron: Squadron | null
+  busyAircraftIds: number[]
+}
+
+/** The aircraft of the squadron, waiting for the repairs to come; the ones on a flight are marked. */
+function HangarPanel({ squadron, busyAircraftIds }: Props) {
   const { t } = useTranslation()
 
   if (squadron === null) {
@@ -17,6 +22,7 @@ function HangarPanel({ squadron }: { squadron: Squadron | null }) {
           <li key={aircraft.id} className="card">
             <strong>{aircraft.model.name}</strong>
             <span>{t(`squadron.categories.${aircraft.model.category}`)}</span>
+            {busyAircraftIds.includes(aircraft.id) && <span>{t('base.mission.inFlight')}</span>}
             <dl>
               <dt>{t('squadron.durability')}</dt>
               <dd>

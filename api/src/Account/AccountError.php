@@ -13,4 +13,5 @@ enum AccountError: string
     case InvalidPassword = 'invalidPassword';
     case NicknameTaken = 'nicknameTaken';
     case WrongCredentials = 'wrongCredentials';
+    case TooManyAttempts = 'tooManyAttempts';
 }

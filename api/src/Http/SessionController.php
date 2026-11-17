@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Ww2\Http;
 
+use League\Route\Http\Exception\TooManyRequestsException;
 use League\Route\Http\Exception\UnauthorizedException;
 use Psr\Http\Message\ServerRequestInterface;
+use Ww2\Account\AccountError;
 use Ww2\Account\AccountException;
 use Ww2\Account\AccountService;
 use Ww2\Account\PlayerSession;
@@ -43,7 +45,10 @@ final class SessionController
         try {
             $player = $this->accounts->authenticate($fields['nickname'], $fields['password']);
         } catch (AccountException $exception) {
-            throw new UnauthorizedException($exception->error->value);
+            throw match ($exception->error) {
+                AccountError::TooManyAttempts => new TooManyRequestsException($exception->error->value),
+                default => new UnauthorizedException($exception->error->value),
+            };
         }
         $this->session->signIn($player->id);
 

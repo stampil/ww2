@@ -74,6 +74,7 @@
       "invalidPassword": "Le mot de passe fait de 8 à 72 caractères.",
       "nicknameTaken": "Ce pseudo est déjà pris.",
       "wrongCredentials": "Pseudo ou mot de passe incorrect.",
+      "tooManyAttempts": "Trop d'essais : réessaie dans un quart d'heure.",
       "invalidBody": "Remplis le pseudo et le mot de passe.",
       "apiDown": "L'API ne répond pas."
     }

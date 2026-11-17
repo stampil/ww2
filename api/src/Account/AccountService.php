@@ -14,7 +14,7 @@ final class AccountService
     private const MIN_PASSWORD_LENGTH = 8;
     private const BCRYPT_MAX_PASSWORD_BYTES = 72;
 
-    public function __construct(private readonly PlayerStore $players)
+    public function __construct(private readonly PlayerStore $players, private readonly SignInAttempts $signInAttempts)
     {
     }
 
@@ -38,14 +38,22 @@ final class AccountService
     }
 
     /**
-     * @throws AccountException when the nickname is unknown or the password is wrong
+     * @throws AccountException when the nickname is unknown or the password is wrong, or the nickname is shut after too many wrong passwords
      */
     public function authenticate(string $nickname, string $password): Player
     {
-        $credentials = $this->players->findCredentials($nickname);
-        if ($credentials === null || !password_verify($password, $credentials->passwordHash)) {
+        if (!$this->isValidNickname($nickname)) {
             throw new AccountException(AccountError::WrongCredentials);
         }
+        if ($this->signInAttempts->isShut($nickname)) {
+            throw new AccountException(AccountError::TooManyAttempts);
+        }
+        $credentials = $this->players->findCredentials($nickname);
+        if ($credentials === null || !password_verify($password, $credentials->passwordHash)) {
+            $this->signInAttempts->recordFailure($nickname);
+            throw new AccountException(AccountError::WrongCredentials);
+        }
+        $this->signInAttempts->forget($nickname);
 
         return $credentials->player;
     }

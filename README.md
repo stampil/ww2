@@ -18,7 +18,7 @@ php api/bin/migrate.php
 npm install
 ```
 
-`php api/bin/migrate.php` crée les tables de la base (les comptes des joueurs) ; on peut le relancer sans risque.
+`php api/bin/migrate.php` joue d'avance les migrations de la base ; on peut le relancer sans risque. L'API les joue d'ailleurs seule, au premier appel qui suit un changement : c'est ce qui crée la base chez l'hébergeur, qui n'a pas de ligne de commande. Une migration déjà envoyée ne se modifie plus : un changement est une nouvelle migration, écrite pour pouvoir être rejouée.
 
 À chaque session, dans deux terminaux :
 
@@ -35,3 +35,15 @@ Le front répond sur le port 5173, et sur l'adresse du réseau local pour le tes
 ## Site statique
 
 L'accueil tourne seul dans le navigateur, sans l'API ni la base : `npm run build` produit le site dans `dist/`, que n'importe quel hébergeur de fichiers sert depuis n'importe quel dossier. Le workflow `.github/workflows/pages.yml` le publie sur GitHub Pages à chaque envoi sur `main` (réglage du dépôt : Pages, source « GitHub Actions »). La page du jeu (`#/jeu`) a besoin de l'API et dit que le serveur est indisponible quand elle est absente.
+
+## Mise en ligne sur InfinityFree
+
+Le compte d'hébergement est `if0_43464490`, le serveur FTP `ftpupload.net`. Depuis cette machine :
+
+```bash
+bash tools/upload.sh
+```
+
+Le script demande l'hôte et le nom de la base MySQL (dans le panneau de l'hébergeur), puis le mot de passe de l'hébergement, qui se tape dans le terminal sans s'afficher et ne s'écrit nulle part, hors le fichier `.env` du site, effacé dès l'envoi fini. Il construit le site (`tools/package.sh` : le front de Vite, l'API avec ses bibliothèques de production, un `.htaccess`) puis envoie tous les fichiers par FTP. À la première visite, l'API crée les tables. L'hébergement doit tourner en PHP 8.3 ou plus (réglage du panneau). Les fichiers qui ne sont plus dans le site ne sont pas effacés du serveur.
+
+L'action `.github/workflows/publish.yml` fait la même chose à chaque envoi de `POC` sur GitHub, une fois posés dans les réglages du dépôt le secret `HOSTING_PASSWORD` et les variables `DB_HOST` et `DB_NAME` ; sans eux elle ne publie rien.

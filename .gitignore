@@ -18,3 +18,4 @@ dist-ssr
 .env
 /api/vendor/
 /ref/
+/build/

@@ -74,6 +74,7 @@
       "invalidPassword": "The password is 8 to 72 characters.",
       "nicknameTaken": "This nickname is already taken.",
       "wrongCredentials": "Wrong nickname or password.",
+      "tooManyAttempts": "Too many attempts: try again in a quarter of an hour.",
       "invalidBody": "Fill in the nickname and the password.",
       "apiDown": "The API does not answer."
     }

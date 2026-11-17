@@ -11,6 +11,7 @@ use Nyholm\Psr7Server\ServerRequestCreator;
 use Ww2\Account\AccountService;
 use Ww2\Account\PlayerSession;
 use Ww2\Account\PlayerStore;
+use Ww2\Account\SignInAttempts;
 use Ww2\Base\BaseFounder;
 use Ww2\Base\BaseOverview;
 use Ww2\Base\BaseStore;
@@ -27,10 +28,12 @@ use Ww2\Base\Warehouse;
 use Ww2\Base\Workshop;
 use Ww2\Clock\GameClockStore;
 use Ww2\Database\DatabaseSettings;
+use Ww2\Database\Migrator;
 use Ww2\Database\PdoDatabase;
 use Ww2\Http\AccountController;
 use Ww2\Http\BaseController;
 use Ww2\Http\HealthController;
+use Ww2\Http\MigrationMiddleware;
 use Ww2\Http\SessionController;
 use Ww2\Http\TerrainPatchController;
 use Ww2\Mission\MissionGenerator;
@@ -55,7 +58,7 @@ $psr17Factory = new Psr17Factory();
 $requestCreator = new ServerRequestCreator($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
 
 $players = new PlayerStore($database);
-$accounts = new AccountService($players);
+$accounts = new AccountService($players, new SignInAttempts($database));
 $session = new PlayerSession();
 $squadrons = new SquadronStore($database);
 $pilotGenerator = new PilotGenerator();
@@ -82,8 +85,8 @@ $worldController = new WorldController($bases, $overview, $session);
 
 $router = new Router();
 $router->setStrategy(new JsonStrategy($psr17Factory));
-$router->group('/api', function (RouteGroup $routes) use ($database, $accounts, $players, $session, $baseController, $worldController): void {
-    $routes->get('/health', new HealthController($database));
+$router->get('/api/health', new HealthController($database));
+$router->group('/api', function (RouteGroup $routes) use ($accounts, $players, $session, $baseController, $worldController): void {
     $routes->get('/terrain', new TerrainController(new TerrainGenerator()));
     $routes->get('/terrain/patch', new TerrainPatchController(new TilePatchGenerator()));
     $routes->post('/account', new AccountController($accounts, $session));
@@ -103,7 +106,7 @@ $router->group('/api', function (RouteGroup $routes) use ($database, $accounts, 
     $routes->get('/session', [$sessionController, 'show']);
     $routes->post('/session', [$sessionController, 'signIn']);
     $routes->delete('/session', [$sessionController, 'signOut']);
-});
+})->middleware(new MigrationMiddleware(new Migrator($database, dirname(__DIR__) . '/migrations')));
 
 $response = $router->dispatch($requestCreator->fromGlobals());
 (new SapiEmitter())->emit($response);

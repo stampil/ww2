@@ -24,39 +24,39 @@ final class Warehouse
     /**
      * @throws BaseException when the quantity is not positive, the supplies run short or the stock would overflow
      */
-    public function buy(int $playerId, Stock $stock, int $quantity): void
+    public function buy(int $baseId, Stock $stock, int $quantity): void
     {
         if ($quantity < 1) {
             throw new BaseException(BaseError::InvalidQuantity);
         }
-        $this->database->transaction(function () use ($playerId, $stock, $quantity): void {
-            $resources = $this->bases->lockResources($playerId);
+        $this->database->transaction(function () use ($baseId, $stock, $quantity): void {
+            $resources = $this->bases->lockResources($baseId);
             $cost = $stock->unitPrice() * $quantity;
             if ($resources->supplies < $cost) {
                 throw new BaseException(BaseError::InsufficientSupplies);
             }
-            if ($resources->stock($stock) + $quantity > $this->capacityOf($playerId)) {
+            if ($resources->stock($stock) + $quantity > $this->capacityOf($baseId)) {
                 throw new BaseException(BaseError::WarehouseFull);
             }
-            $this->bases->buy($playerId, $stock, $quantity, $cost);
+            $this->bases->buy($baseId, $stock, $quantity, $cost);
         });
     }
 
     /**
      * @return array{capacity: int, prices: array<string, int>}
      */
-    public function describe(int $playerId): array
+    public function describe(int $baseId): array
     {
         $prices = [];
         foreach (Stock::cases() as $stock) {
             $prices[$stock->value] = $stock->unitPrice();
         }
 
-        return ['capacity' => $this->capacityOf($playerId), 'prices' => $prices];
+        return ['capacity' => $this->capacityOf($baseId), 'prices' => $prices];
     }
 
-    private function capacityOf(int $playerId): int
+    private function capacityOf(int $baseId): int
     {
-        return self::BASE_CAPACITY + self::CAPACITY_PER_LEVEL * $this->upgrades->levelOf($playerId, Upgrade::Warehouse);
+        return self::BASE_CAPACITY + self::CAPACITY_PER_LEVEL * $this->upgrades->levelOf($baseId, Upgrade::Warehouse);
     }
 }

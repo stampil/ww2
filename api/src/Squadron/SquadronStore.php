@@ -31,13 +31,13 @@ final class SquadronStore
         return $this->modelFrom($rows[0]);
     }
 
-    public function addPilot(int $playerId, Pilot $pilot): void
+    public function addPilot(int $baseId, Pilot $pilot): void
     {
         $this->database->execute(
-            'INSERT INTO pilots (player_id, name, pilot_rank, fatigue, stress, accuracy, resilience)
-             VALUES (:player_id, :name, :pilot_rank, :fatigue, :stress, :accuracy, :resilience)',
+            'INSERT INTO pilots (base_id, name, pilot_rank, fatigue, stress, accuracy, resilience)
+             VALUES (:base_id, :name, :pilot_rank, :fatigue, :stress, :accuracy, :resilience)',
             [
-                'player_id' => $playerId,
+                'base_id' => $baseId,
                 'name' => $pilot->name,
                 'pilot_rank' => $pilot->rank,
                 'fatigue' => $pilot->fatigue,
@@ -48,11 +48,11 @@ final class SquadronStore
         );
     }
 
-    public function addAircraft(int $playerId, AircraftModel $model): void
+    public function addAircraft(int $baseId, AircraftModel $model): void
     {
         $this->database->execute(
-            'INSERT INTO aircraft (player_id, model_id, durability) VALUES (:player_id, :model_id, :durability)',
-            ['player_id' => $playerId, 'model_id' => $model->id, 'durability' => $model->durability],
+            'INSERT INTO aircraft (base_id, model_id, durability) VALUES (:base_id, :model_id, :durability)',
+            ['base_id' => $baseId, 'model_id' => $model->id, 'durability' => $model->durability],
         );
     }
 
@@ -80,12 +80,12 @@ final class SquadronStore
     /**
      * @return array<int, int> the game second at which each rest is over, by the id of the pilot
      */
-    public function restsOf(int $playerId): array
+    public function restsOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
             'SELECT pilot_rests.pilot_id, pilot_rests.finish_game_second
-             FROM pilot_rests JOIN pilots ON pilots.id = pilot_rests.pilot_id WHERE pilots.player_id = :player_id',
-            ['player_id' => $playerId],
+             FROM pilot_rests JOIN pilots ON pilots.id = pilot_rests.pilot_id WHERE pilots.base_id = :base_id',
+            ['base_id' => $baseId],
         );
         $rests = [];
         foreach ($rows as $row) {
@@ -113,11 +113,11 @@ final class SquadronStore
     /**
      * @return list<Pilot>
      */
-    public function pilotsOf(int $playerId): array
+    public function pilotsOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT id, name, pilot_rank, fatigue, stress, accuracy, resilience FROM pilots WHERE player_id = :player_id ORDER BY id',
-            ['player_id' => $playerId],
+            'SELECT id, name, pilot_rank, fatigue, stress, accuracy, resilience FROM pilots WHERE base_id = :base_id ORDER BY id',
+            ['base_id' => $baseId],
         );
 
         return array_map(
@@ -137,16 +137,16 @@ final class SquadronStore
     /**
      * @return list<Aircraft>
      */
-    public function aircraftOf(int $playerId): array
+    public function aircraftOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
             'SELECT aircraft.id, aircraft.durability AS current_durability, models.id AS model_id, models.code, models.name, models.category,
                     models.durability, models.maneuverability, models.fuel_capacity, models.ammunition_capacity
              FROM aircraft
              JOIN aircraft_models AS models ON models.id = aircraft.model_id
-             WHERE aircraft.player_id = :player_id
+             WHERE aircraft.base_id = :base_id
              ORDER BY aircraft.id',
-            ['player_id' => $playerId],
+            ['base_id' => $baseId],
         );
 
         return array_map(

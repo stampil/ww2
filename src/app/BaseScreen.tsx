@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TERRAIN_PLANS } from '../plans/terrainPlan'
 import type { BuildingName } from '../plans/terrainPlan'
+import BaseChoice from './BaseChoice'
 import BaseMap from './BaseMap'
 import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
@@ -33,11 +34,32 @@ function standStatusOf(state: HangarAircraft, aircraft: Aircraft): StandStatus {
 /** The base of the player who is signed in, played on its map: a strip of figures over the airfield, the aircraft parked, and a window for each building opened on it. */
 function BaseScreen({ player }: { player: Player }) {
   const { t } = useTranslation()
-  const { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot, buyUpgrade, restartBattle } =
-    useBase(player)
+  const {
+    base,
+    hasNoBase,
+    jobs,
+    flights,
+    hangarAircraft,
+    rests,
+    gameTime,
+    buy,
+    produce,
+    launchMission,
+    receiveSquadron,
+    repairAircraft,
+    restPilot,
+    recruitPilot,
+    buyUpgrade,
+    restartBattle,
+    claimBase,
+  } = useBase(player)
   const aircraftSprite = useAircraftSprite()
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
+
+  if (hasNoBase) {
+    return <BaseChoice onClaim={claimBase} />
+  }
 
   if (base === null || gameTime === null) {
     return null

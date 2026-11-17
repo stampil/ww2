@@ -31,13 +31,13 @@ final class HangarStore
     /**
      * @return array<int, list<SparePart>> the destroyed modules of the aircraft that have some, by the id of the aircraft
      */
-    public function destroyedModulesOf(int $playerId): array
+    public function destroyedModulesOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
             'SELECT destroyed_modules.aircraft_id, destroyed_modules.part
              FROM destroyed_modules JOIN aircraft ON aircraft.id = destroyed_modules.aircraft_id
-             WHERE aircraft.player_id = :player_id ORDER BY destroyed_modules.part',
-            ['player_id' => $playerId],
+             WHERE aircraft.base_id = :base_id ORDER BY destroyed_modules.part',
+            ['base_id' => $baseId],
         );
         $modules = [];
         foreach ($rows as $row) {
@@ -63,12 +63,12 @@ final class HangarStore
     /**
      * @return array<int, int> the game second at which each repair is done, by the id of the aircraft
      */
-    public function repairsOf(int $playerId): array
+    public function repairsOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
             'SELECT repairs.aircraft_id, repairs.finish_game_second
-             FROM repairs JOIN aircraft ON aircraft.id = repairs.aircraft_id WHERE aircraft.player_id = :player_id',
-            ['player_id' => $playerId],
+             FROM repairs JOIN aircraft ON aircraft.id = repairs.aircraft_id WHERE aircraft.base_id = :base_id',
+            ['base_id' => $baseId],
         );
         $repairs = [];
         foreach ($rows as $row) {
@@ -78,10 +78,10 @@ final class HangarStore
         return $repairs;
     }
 
-    public function runningRepairCount(int $playerId, int $gameSeconds): int
+    public function runningRepairCount(int $baseId, int $gameSeconds): int
     {
         $count = 0;
-        foreach ($this->repairsOf($playerId) as $finishGameSecond) {
+        foreach ($this->repairsOf($baseId) as $finishGameSecond) {
             if ($finishGameSecond > $gameSeconds) {
                 $count += 1;
             }
@@ -106,12 +106,12 @@ final class HangarStore
     /**
      * @return array<int, array{pilotId: int|null, explodesAt: int}> the fires, by the id of the aircraft; the pilot aboard is null when they are gone
      */
-    public function firesOf(int $playerId): array
+    public function firesOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
             'SELECT burning_aircraft.aircraft_id, burning_aircraft.pilot_id, burning_aircraft.explodes_at_game_second
-             FROM burning_aircraft JOIN aircraft ON aircraft.id = burning_aircraft.aircraft_id WHERE aircraft.player_id = :player_id',
-            ['player_id' => $playerId],
+             FROM burning_aircraft JOIN aircraft ON aircraft.id = burning_aircraft.aircraft_id WHERE aircraft.base_id = :base_id',
+            ['base_id' => $baseId],
         );
         $fires = [];
         foreach ($rows as $row) {
@@ -127,15 +127,15 @@ final class HangarStore
     /**
      * @return list<int> the aircraft that cannot take off: with a destroyed module, under repair, or on fire
      */
-    public function groundedAircraftIds(int $playerId): array
+    public function groundedAircraftIds(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT id FROM aircraft WHERE player_id = :player_id AND (
+            'SELECT id FROM aircraft WHERE base_id = :base_id AND (
                 id IN (SELECT aircraft_id FROM destroyed_modules)
                 OR id IN (SELECT aircraft_id FROM repairs)
                 OR id IN (SELECT aircraft_id FROM burning_aircraft)
              )',
-            ['player_id' => $playerId],
+            ['base_id' => $baseId],
         );
 
         return array_map(static fn (array $row): int => (int) $row['id'], $rows);

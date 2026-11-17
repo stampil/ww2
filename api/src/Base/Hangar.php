@@ -40,17 +40,17 @@ final class Hangar
     /**
      * Settles what is due first: repairs that are done, fires that reached the fuel.
      *
-     * @param GameClock $clock the clock of the player, read once for the whole answer
+     * @param GameClock $clock the clock of the base, read once for the whole answer
      * @return array{aircraft: list<array{aircraftId: int, destroyedModules: list<string>, repairDurationSeconds: int, repairSeconds: int|null, fireSeconds: int|null}>}
      */
-    public function describe(int $playerId, GameClock $clock): array
+    public function describe(int $baseId, GameClock $clock): array
     {
-        $this->settle($playerId, $clock->gameSeconds);
-        $destroyed = $this->hangar->destroyedModulesOf($playerId);
-        $repairs = $this->hangar->repairsOf($playerId);
-        $fires = $this->hangar->firesOf($playerId);
+        $this->settle($baseId, $clock->gameSeconds);
+        $destroyed = $this->hangar->destroyedModulesOf($baseId);
+        $repairs = $this->hangar->repairsOf($baseId);
+        $fires = $this->hangar->firesOf($baseId);
         $states = [];
-        foreach ($this->squadrons->aircraftOf($playerId) as $aircraft) {
+        foreach ($this->squadrons->aircraftOf($baseId) as $aircraft) {
             $modules = $destroyed[$aircraft->id] ?? [];
             $states[] = [
                 'aircraftId' => $aircraft->id,
@@ -65,31 +65,31 @@ final class Hangar
     }
 
     /**
-     * @throws BaseException when the aircraft is not the player's, is flying, is already being repaired, has nothing to repair,
+     * @throws BaseException when the aircraft is not the base's, is flying, is already being repaired, has nothing to repair,
      *                       or when no mechanic is free or a spare part is missing
      */
-    public function repair(int $playerId, int $aircraftId): void
+    public function repair(int $baseId, int $aircraftId): void
     {
-        $this->database->transaction(function () use ($playerId, $aircraftId): void {
-            $this->bases->lockResources($playerId);
-            $gameSeconds = $this->clocks->of($playerId)->gameSeconds;
-            $aircraft = $this->aircraftOf($playerId)[$aircraftId] ?? throw new BaseException(BaseError::UnknownAircraft);
+        $this->database->transaction(function () use ($baseId, $aircraftId): void {
+            $this->bases->lockResources($baseId);
+            $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
+            $aircraft = $this->aircraftOf($baseId)[$aircraftId] ?? throw new BaseException(BaseError::UnknownAircraft);
             if ($this->missions->isOnFlight($aircraftId)) {
                 throw new BaseException(BaseError::CrewBusy);
             }
-            if (isset($this->hangar->repairsOf($playerId)[$aircraftId])) {
+            if (isset($this->hangar->repairsOf($baseId)[$aircraftId])) {
                 throw new BaseException(BaseError::AircraftUnderRepair);
             }
-            $destroyed = $this->hangar->destroyedModulesOf($playerId)[$aircraftId] ?? [];
+            $destroyed = $this->hangar->destroyedModulesOf($baseId)[$aircraftId] ?? [];
             $duration = $this->repairDuration($aircraft, count($destroyed));
             if ($duration === 0) {
                 throw new BaseException(BaseError::NothingToRepair);
             }
-            if ($this->mechanics->freeAt($playerId, $gameSeconds) < 1) {
+            if ($this->mechanics->freeAt($baseId, $gameSeconds) < 1) {
                 throw new BaseException(BaseError::NoMechanicFree);
             }
             foreach ($destroyed as $part) {
-                if (!$this->bases->useReadyPart($playerId, $part, $gameSeconds)) {
+                if (!$this->bases->useReadyPart($baseId, $part, $gameSeconds)) {
                     throw new BaseException(BaseError::MissingSparePart);
                 }
             }
@@ -106,47 +106,47 @@ final class Hangar
     /**
      * @return array<int, Aircraft>
      */
-    private function aircraftOf(int $playerId): array
+    private function aircraftOf(int $baseId): array
     {
         $aircraft = [];
-        foreach ($this->squadrons->aircraftOf($playerId) as $owned) {
+        foreach ($this->squadrons->aircraftOf($baseId) as $owned) {
             $aircraft[$owned->id] = $owned;
         }
 
         return $aircraft;
     }
 
-    private function settle(int $playerId, int $gameSeconds): void
+    private function settle(int $baseId, int $gameSeconds): void
     {
-        if (!$this->hasDueWork($playerId, $gameSeconds)) {
+        if (!$this->hasDueWork($baseId, $gameSeconds)) {
             return;
         }
-        $this->database->transaction(function () use ($playerId, $gameSeconds): void {
-            $this->bases->lockResources($playerId);
-            $aircraft = $this->aircraftOf($playerId);
-            foreach ($this->hangar->repairsOf($playerId) as $aircraftId => $finishGameSecond) {
+        $this->database->transaction(function () use ($baseId, $gameSeconds): void {
+            $this->bases->lockResources($baseId);
+            $aircraft = $this->aircraftOf($baseId);
+            foreach ($this->hangar->repairsOf($baseId) as $aircraftId => $finishGameSecond) {
                 if ($finishGameSecond <= $gameSeconds) {
                     $this->squadrons->setAircraftDurability($aircraftId, $aircraft[$aircraftId]->model->durability);
                     $this->hangar->clearModules($aircraftId);
                     $this->hangar->finishRepair($aircraftId);
                 }
             }
-            foreach ($this->hangar->firesOf($playerId) as $aircraftId => $fire) {
+            foreach ($this->hangar->firesOf($baseId) as $aircraftId => $fire) {
                 if ($fire['explodesAt'] <= $gameSeconds) {
-                    $this->explode($playerId, $aircraft[$aircraftId], $fire['pilotId']);
+                    $this->explode($baseId, $aircraft[$aircraftId], $fire['pilotId']);
                 }
             }
         });
     }
 
-    private function hasDueWork(int $playerId, int $gameSeconds): bool
+    private function hasDueWork(int $baseId, int $gameSeconds): bool
     {
-        foreach ($this->hangar->repairsOf($playerId) as $finishGameSecond) {
+        foreach ($this->hangar->repairsOf($baseId) as $finishGameSecond) {
             if ($finishGameSecond <= $gameSeconds) {
                 return true;
             }
         }
-        foreach ($this->hangar->firesOf($playerId) as $fire) {
+        foreach ($this->hangar->firesOf($baseId) as $fire) {
             if ($fire['explodesAt'] <= $gameSeconds) {
                 return true;
             }
@@ -155,11 +155,11 @@ final class Hangar
         return false;
     }
 
-    private function explode(int $playerId, Aircraft $aircraft, ?int $pilotId): void
+    private function explode(int $baseId, Aircraft $aircraft, ?int $pilotId): void
     {
-        $pilot = $this->pilotAboard($playerId, $pilotId);
+        $pilot = $this->pilotAboard($baseId, $pilotId);
         $pilotKilled = $pilot !== null && $this->random->getInt(1, self::PERCENT) <= self::EXPLOSION_KILL_PERCENT;
-        $this->events->record($playerId, [
+        $this->events->record($baseId, [
             'kind' => 'explosion',
             'aircraftName' => $aircraft->model->name,
             'pilotName' => $pilot?->name,
@@ -171,9 +171,9 @@ final class Hangar
         }
     }
 
-    private function pilotAboard(int $playerId, ?int $pilotId): ?Pilot
+    private function pilotAboard(int $baseId, ?int $pilotId): ?Pilot
     {
-        foreach ($this->squadrons->pilotsOf($playerId) as $pilot) {
+        foreach ($this->squadrons->pilotsOf($baseId) as $pilot) {
             if ($pilot->id === $pilotId) {
                 return $pilot;
             }

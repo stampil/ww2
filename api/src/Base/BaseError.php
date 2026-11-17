@@ -36,4 +36,7 @@ enum BaseError: string
     case InsufficientCommandPoints = 'insufficientCommandPoints';
     case BattleOver = 'battleOver';
     case BattleOngoing = 'battleOngoing';
+    case NoBase = 'noBase';
+    case AlreadyHasBase = 'alreadyHasBase';
+    case SiteTaken = 'siteTaken';
 }

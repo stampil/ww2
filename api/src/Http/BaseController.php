@@ -23,9 +23,10 @@ use Ww2\Base\Upgrade;
 use Ww2\Base\Upgrades;
 use Ww2\Base\Warehouse;
 use Ww2\Base\Workshop;
+use Ww2\World\Bases;
 
 /**
- * Shows the base of the player who is signed in, and takes their orders: buy a stock, make a spare part,
+ * Shows the base of the player who is signed in (the first they hold), and takes their orders: buy a stock, make a spare part,
  * send a mission out and receive its squadron back, repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade.
  * Once the battle is over the orders are refused, except the one that starts a new battle.
  */
@@ -40,6 +41,7 @@ final class BaseController
         private readonly Roster $roster,
         private readonly Upgrades $upgrades,
         private readonly Battle $battle,
+        private readonly Bases $bases,
         private readonly PlayerSession $session,
     ) {
     }
@@ -47,10 +49,11 @@ final class BaseController
     /**
      * @return array<string, mixed>
      * @throws UnauthorizedException when nobody is signed in
+     * @throws ConflictException when the player holds no base yet
      */
     public function show(): array
     {
-        return $this->overview->of($this->signedInPlayerId());
+        return $this->overview->of($this->ownBaseId());
     }
 
     /**
@@ -60,13 +63,13 @@ final class BaseController
      */
     public function buy(ServerRequestInterface $request): array
     {
-        $playerId = $this->ongoingBattlePlayerId();
+        $baseId = $this->ongoingBattleBaseId();
         $stock = Stock::tryFrom(JsonRequestBody::texts($request, 'resource')['resource'])
             ?? throw new BadRequestException('invalidBody');
         $quantity = JsonRequestBody::integers($request, 'quantity')['quantity'];
-        $this->carryOut(fn () => $this->warehouse->buy($playerId, $stock, $quantity));
+        $this->carryOut(fn () => $this->warehouse->buy($baseId, $stock, $quantity));
 
-        return $this->overview->of($playerId);
+        return $this->overview->of($baseId);
     }
 
     /**
@@ -76,13 +79,13 @@ final class BaseController
      */
     public function produce(ServerRequestInterface $request): array
     {
-        $playerId = $this->ongoingBattlePlayerId();
+        $baseId = $this->ongoingBattleBaseId();
         $part = SparePart::tryFrom(JsonRequestBody::texts($request, 'part')['part'])
             ?? throw new BadRequestException('invalidBody');
         $withMechanic = JsonRequestBody::booleans($request, 'withMechanic')['withMechanic'];
-        $this->carryOut(fn () => $this->workshop->start($playerId, $part, $withMechanic));
+        $this->carryOut(fn () => $this->workshop->start($baseId, $part, $withMechanic));
 
-        return $this->overview->of($playerId);
+        return $this->overview->of($baseId);
     }
 
     /**
@@ -92,11 +95,11 @@ final class BaseController
      */
     public function launchMission(ServerRequestInterface $request): array
     {
-        $playerId = $this->ongoingBattlePlayerId();
+        $baseId = $this->ongoingBattleBaseId();
         $numbers = JsonRequestBody::integers($request, 'missionId', 'fuel', 'ammunition');
         $crews = JsonRequestBody::integerLists($request, 'pilotIds', 'aircraftIds');
         $this->carryOut(fn () => $this->headquarters->launch(
-            $playerId,
+            $baseId,
             $numbers['missionId'],
             $crews['pilotIds'],
             $crews['aircraftIds'],
@@ -104,7 +107,7 @@ final class BaseController
             $numbers['ammunition'],
         ));
 
-        return $this->overview->of($playerId);
+        return $this->overview->of($baseId);
     }
 
     /**
@@ -114,11 +117,11 @@ final class BaseController
      */
     public function receiveMission(ServerRequestInterface $request): array
     {
-        $playerId = $this->ongoingBattlePlayerId();
+        $baseId = $this->ongoingBattleBaseId();
         $missionId = JsonRequestBody::integers($request, 'missionId')['missionId'];
-        $this->carryOut(fn () => $this->headquarters->receive($playerId, $missionId));
+        $this->carryOut(fn () => $this->headquarters->receive($baseId, $missionId));
 
-        return $this->overview->of($playerId);
+        return $this->overview->of($baseId);
     }
 
     /**
@@ -128,11 +131,11 @@ final class BaseController
      */
     public function repairAircraft(ServerRequestInterface $request): array
     {
-        $playerId = $this->ongoingBattlePlayerId();
+        $baseId = $this->ongoingBattleBaseId();
         $aircraftId = JsonRequestBody::integers($request, 'aircraftId')['aircraftId'];
-        $this->carryOut(fn () => $this->hangar->repair($playerId, $aircraftId));
+        $this->carryOut(fn () => $this->hangar->repair($baseId, $aircraftId));
 
-        return $this->overview->of($playerId);
+        return $this->overview->of($baseId);
     }
 
     /**
@@ -142,11 +145,11 @@ final class BaseController
      */
     public function restPilot(ServerRequestInterface $request): array
     {
-        $playerId = $this->ongoingBattlePlayerId();
+        $baseId = $this->ongoingBattleBaseId();
         $pilotId = JsonRequestBody::integers($request, 'pilotId')['pilotId'];
-        $this->carryOut(fn () => $this->roster->rest($playerId, $pilotId));
+        $this->carryOut(fn () => $this->roster->rest($baseId, $pilotId));
 
-        return $this->overview->of($playerId);
+        return $this->overview->of($baseId);
     }
 
     /**
@@ -155,10 +158,10 @@ final class BaseController
      */
     public function recruitPilot(): array
     {
-        $playerId = $this->ongoingBattlePlayerId();
-        $this->carryOut(fn () => $this->roster->recruit($playerId));
+        $baseId = $this->ongoingBattleBaseId();
+        $this->carryOut(fn () => $this->roster->recruit($baseId));
 
-        return $this->overview->of($playerId);
+        return $this->overview->of($baseId);
     }
 
     /**
@@ -168,11 +171,11 @@ final class BaseController
      */
     public function buyUpgrade(ServerRequestInterface $request): array
     {
-        $playerId = $this->ongoingBattlePlayerId();
+        $baseId = $this->ongoingBattleBaseId();
         $upgrade = Upgrade::tryFrom(JsonRequestBody::texts($request, 'upgrade')['upgrade']) ?? throw new BadRequestException('invalidBody');
-        $this->carryOut(fn () => $this->upgrades->buy($playerId, $upgrade));
+        $this->carryOut(fn () => $this->upgrades->buy($baseId, $upgrade));
 
-        return $this->overview->of($playerId);
+        return $this->overview->of($baseId);
     }
 
     /**
@@ -181,32 +184,36 @@ final class BaseController
      */
     public function restartBattle(): array
     {
-        $playerId = $this->signedInPlayerId();
-        $this->carryOut(fn () => $this->battle->restart($playerId));
+        $baseId = $this->ownBaseId();
+        $this->carryOut(fn () => $this->battle->restart($baseId));
 
-        return $this->overview->of($playerId);
+        return $this->overview->of($baseId);
     }
 
     /**
      * @throws UnauthorizedException when nobody is signed in
-     * @throws ConflictException when the battle is over
+     * @throws ConflictException when the player holds no base yet, or the battle is over
      */
-    private function ongoingBattlePlayerId(): int
+    private function ongoingBattleBaseId(): int
     {
-        $playerId = $this->signedInPlayerId();
-        $this->carryOut(fn () => $this->battle->assertOngoing($playerId));
+        $baseId = $this->ownBaseId();
+        $this->carryOut(fn () => $this->battle->assertOngoing($baseId));
 
-        return $playerId;
+        return $baseId;
     }
 
-    private function signedInPlayerId(): int
+    /**
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws ConflictException when the player holds no base yet
+     */
+    private function ownBaseId(): int
     {
         $playerId = $this->session->playerId();
         if ($playerId === null) {
             throw new UnauthorizedException('signInRequired');
         }
 
-        return $playerId;
+        return $this->bases->idOf($playerId) ?? throw new ConflictException(BaseError::NoBase->value);
     }
 
     /**

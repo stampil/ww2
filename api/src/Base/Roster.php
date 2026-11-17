@@ -36,14 +36,14 @@ final class Roster
     /**
      * Ends the rests that are over first, so the gauges are right.
      *
-     * @param GameClock $clock the clock of the player, read once for the whole answer
+     * @param GameClock $clock the clock of the base, read once for the whole answer
      * @return array{rests: list<array{pilotId: int, remainingSeconds: int}>, recruitment: array{cost: int, maxPilots: int}}
      */
-    public function describe(int $playerId, GameClock $clock): array
+    public function describe(int $baseId, GameClock $clock): array
     {
-        $this->settle($playerId, $clock->gameSeconds);
+        $this->settle($baseId, $clock->gameSeconds);
         $rests = [];
-        foreach ($this->squadrons->restsOf($playerId) as $pilotId => $finishGameSecond) {
+        foreach ($this->squadrons->restsOf($baseId) as $pilotId => $finishGameSecond) {
             $rests[] = ['pilotId' => $pilotId, 'remainingSeconds' => max(0, $finishGameSecond - $clock->gameSeconds)];
         }
 
@@ -53,18 +53,18 @@ final class Roster
     /**
      * Sends a pilot to rest: out of the missions for a while, then fatigue and stress drop.
      *
-     * @throws BaseException when the pilot is not the player's, is flying or resting already, or has no fatigue or stress to lose
+     * @throws BaseException when the pilot is not the base's, is flying or resting already, or has no fatigue or stress to lose
      */
-    public function rest(int $playerId, int $pilotId): void
+    public function rest(int $baseId, int $pilotId): void
     {
-        $this->database->transaction(function () use ($playerId, $pilotId): void {
-            $this->bases->lockResources($playerId);
-            $gameSeconds = $this->clocks->of($playerId)->gameSeconds;
-            $pilot = $this->pilotsById($playerId)[$pilotId] ?? throw new BaseException(BaseError::UnknownPilot);
-            if (isset($this->squadrons->restsOf($playerId)[$pilotId])) {
+        $this->database->transaction(function () use ($baseId, $pilotId): void {
+            $this->bases->lockResources($baseId);
+            $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
+            $pilot = $this->pilotsById($baseId)[$pilotId] ?? throw new BaseException(BaseError::UnknownPilot);
+            if (isset($this->squadrons->restsOf($baseId)[$pilotId])) {
                 throw new BaseException(BaseError::PilotResting);
             }
-            foreach ($this->missions->flightsOf($playerId, $gameSeconds) as $flight) {
+            foreach ($this->missions->flightsOf($baseId, $gameSeconds) as $flight) {
                 foreach ($flight->crews as $crew) {
                     if ($crew['pilotId'] === $pilotId) {
                         throw new BaseException(BaseError::CrewBusy);
@@ -83,25 +83,25 @@ final class Roster
      *
      * @throws BaseException when the supplies run short or the base is full
      */
-    public function recruit(int $playerId): void
+    public function recruit(int $baseId): void
     {
-        $this->database->transaction(function () use ($playerId): void {
-            $resources = $this->bases->lockResources($playerId);
-            if (count($this->squadrons->pilotsOf($playerId)) >= self::MAX_PILOTS) {
+        $this->database->transaction(function () use ($baseId): void {
+            $resources = $this->bases->lockResources($baseId);
+            if (count($this->squadrons->pilotsOf($baseId)) >= self::MAX_PILOTS) {
                 throw new BaseException(BaseError::TooManyPilots);
             }
             if ($resources->supplies < self::RECRUIT_COST) {
                 throw new BaseException(BaseError::InsufficientSupplies);
             }
-            $this->bases->spendSupplies($playerId, self::RECRUIT_COST);
-            $this->squadrons->addPilot($playerId, $this->pilotGenerator->generate(self::RECRUIT_RANK));
+            $this->bases->spendSupplies($baseId, self::RECRUIT_COST);
+            $this->squadrons->addPilot($baseId, $this->pilotGenerator->generate(self::RECRUIT_RANK));
         });
     }
 
-    private function settle(int $playerId, int $gameSeconds): void
+    private function settle(int $baseId, int $gameSeconds): void
     {
         $due = [];
-        foreach ($this->squadrons->restsOf($playerId) as $pilotId => $finishGameSecond) {
+        foreach ($this->squadrons->restsOf($baseId) as $pilotId => $finishGameSecond) {
             if ($finishGameSecond <= $gameSeconds) {
                 $due[] = $pilotId;
             }
@@ -109,9 +109,9 @@ final class Roster
         if ($due === []) {
             return;
         }
-        $this->database->transaction(function () use ($playerId, $due): void {
-            $this->bases->lockResources($playerId);
-            $pilots = $this->pilotsById($playerId);
+        $this->database->transaction(function () use ($baseId, $due): void {
+            $this->bases->lockResources($baseId);
+            $pilots = $this->pilotsById($baseId);
             foreach ($due as $pilotId) {
                 $pilot = $pilots[$pilotId];
                 $this->squadrons->updatePilotGauges($pilotId, max(0, $pilot->fatigue - self::REST_RECOVERY), max(0, $pilot->stress - self::REST_RECOVERY));
@@ -123,10 +123,10 @@ final class Roster
     /**
      * @return array<int, Pilot>
      */
-    private function pilotsById(int $playerId): array
+    private function pilotsById(int $baseId): array
     {
         $pilots = [];
-        foreach ($this->squadrons->pilotsOf($playerId) as $pilot) {
+        foreach ($this->squadrons->pilotsOf($baseId) as $pilot) {
             $pilots[$pilot->id] = $pilot;
         }
 

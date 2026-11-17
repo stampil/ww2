@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS aircraft (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    player_id INT UNSIGNED NOT NULL,
+    base_id INT UNSIGNED NOT NULL,
     model_id INT UNSIGNED NOT NULL,
     durability SMALLINT UNSIGNED NOT NULL,
-    FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE,
+    FOREIGN KEY (base_id) REFERENCES bases (id) ON DELETE CASCADE,
     FOREIGN KEY (model_id) REFERENCES aircraft_models (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci

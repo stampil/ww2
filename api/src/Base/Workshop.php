@@ -29,50 +29,50 @@ final class Workshop
     /**
      * @throws BaseException when the materials run short, every bench is busy, or no mechanic is free
      */
-    public function start(int $playerId, SparePart $part, bool $withMechanic): void
+    public function start(int $baseId, SparePart $part, bool $withMechanic): void
     {
-        $this->database->transaction(function () use ($playerId, $part, $withMechanic): void {
-            $resources = $this->bases->lockResources($playerId);
-            $gameSeconds = $this->clocks->of($playerId)->gameSeconds;
-            $running = $this->bases->runningJobs($playerId, $gameSeconds);
-            if (count($running) >= $this->benchesOf($playerId)) {
+        $this->database->transaction(function () use ($baseId, $part, $withMechanic): void {
+            $resources = $this->bases->lockResources($baseId);
+            $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
+            $running = $this->bases->runningJobs($baseId, $gameSeconds);
+            if (count($running) >= $this->benchesOf($baseId)) {
                 throw new BaseException(BaseError::WorkshopBusy);
             }
-            if ($withMechanic && $this->mechanics->freeAt($playerId, $gameSeconds) < 1) {
+            if ($withMechanic && $this->mechanics->freeAt($baseId, $gameSeconds) < 1) {
                 throw new BaseException(BaseError::NoMechanicFree);
             }
             if ($resources->materials < $part->materialCost()) {
                 throw new BaseException(BaseError::InsufficientMaterials);
             }
-            $this->bases->spendMaterials($playerId, $part->materialCost());
+            $this->bases->spendMaterials($baseId, $part->materialCost());
             $seconds = $withMechanic ? intdiv($part->seconds(), self::MECHANIC_TIME_DIVISOR) : $part->seconds();
-            $this->bases->addJob($playerId, $part, $gameSeconds + $seconds, $withMechanic);
+            $this->bases->addJob($baseId, $part, $gameSeconds + $seconds, $withMechanic);
         });
     }
 
     /**
-     * @param GameClock $clock the clock of the player, read once for the whole answer
+     * @param GameClock $clock the clock of the base, read once for the whole answer
      * @return array{benches: int, freeMechanics: int, parts: list<array{part: string, materialCost: int, seconds: int}>, jobs: list<array<string, int|string|bool>>, readyParts: array<string, int>}
      */
-    public function describe(int $playerId, GameClock $clock): array
+    public function describe(int $baseId, GameClock $clock): array
     {
-        $running = $this->bases->runningJobs($playerId, $clock->gameSeconds);
+        $running = $this->bases->runningJobs($baseId, $clock->gameSeconds);
         $parts = [];
         foreach (SparePart::cases() as $part) {
             $parts[] = ['part' => $part->value, 'materialCost' => $part->materialCost(), 'seconds' => $part->seconds()];
         }
 
         return [
-            'benches' => $this->benchesOf($playerId),
-            'freeMechanics' => $this->mechanics->freeAt($playerId, $clock->gameSeconds),
+            'benches' => $this->benchesOf($baseId),
+            'freeMechanics' => $this->mechanics->freeAt($baseId, $clock->gameSeconds),
             'parts' => $parts,
             'jobs' => array_map(static fn (ProductionJob $job): array => $job->toArray(), $running),
-            'readyParts' => $this->bases->readyParts($playerId, $clock->gameSeconds),
+            'readyParts' => $this->bases->readyParts($baseId, $clock->gameSeconds),
         ];
     }
 
-    private function benchesOf(int $playerId): int
+    private function benchesOf(int $baseId): int
     {
-        return self::BASE_BENCHES + $this->upgrades->levelOf($playerId, Upgrade::Workshop);
+        return self::BASE_BENCHES + $this->upgrades->levelOf($baseId, Upgrade::Workshop);
     }
 }

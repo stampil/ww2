@@ -7,11 +7,11 @@ namespace Ww2\Base;
 use Ww2\Database\Database;
 
 /**
- * Keeps the progress of the battle of each base: the enemy aircraft shot down. It can also erase everything a player has in the game.
+ * Keeps the progress of the battle of each base: the enemy aircraft shot down. It can also erase everything a base has in the game.
  */
 final class BattleStore
 {
-    /** @var list<string> every table that holds something of a player's game, each with a player_id column */
+    /** @var list<string> every table that holds something of a base's game, each with a base_id column */
     private const GAME_TABLES = [
         'pilots',
         'aircraft',
@@ -21,38 +21,34 @@ final class BattleStore
         'base_upgrades',
         'battle_progress',
         'base_resources',
-        'base_terrains',
-        'game_clocks',
     ];
 
     public function __construct(private readonly Database $database)
     {
     }
 
-    public function killsOf(int $playerId): int
+    public function killsOf(int $baseId): int
     {
-        $rows = $this->database->fetchAll('SELECT kills FROM battle_progress WHERE player_id = :player_id', ['player_id' => $playerId]);
+        $rows = $this->database->fetchAll('SELECT kills FROM battle_progress WHERE base_id = :base_id', ['base_id' => $baseId]);
 
         return $rows === [] ? 0 : (int) $rows[0]['kills'];
     }
 
-    public function addKills(int $playerId, int $kills): void
+    public function addKills(int $baseId, int $kills): void
     {
         $this->database->execute(
-            'INSERT INTO battle_progress (player_id, kills) VALUES (:player_id, :kills) ON DUPLICATE KEY UPDATE kills = kills + :added_kills',
-            ['player_id' => $playerId, 'kills' => $kills, 'added_kills' => $kills],
+            'INSERT INTO battle_progress (base_id, kills) VALUES (:base_id, :kills) ON DUPLICATE KEY UPDATE kills = kills + :added_kills',
+            ['base_id' => $baseId, 'kills' => $kills, 'added_kills' => $kills],
         );
     }
 
     /**
-     * Erases the squadron, the base and the battle of the player, so that the game can be founded again.
+     * Erases the squadron, the stocks and the battle of the base, so that the game can be founded again there. The caller holds the transaction.
      */
-    public function eraseGameOf(int $playerId): void
+    public function eraseGameOf(int $baseId): void
     {
-        $this->database->transaction(function () use ($playerId): void {
-            foreach (self::GAME_TABLES as $table) {
-                $this->database->execute('DELETE FROM ' . $table . ' WHERE player_id = :player_id', ['player_id' => $playerId]);
-            }
-        });
+        foreach (self::GAME_TABLES as $table) {
+            $this->database->execute('DELETE FROM ' . $table . ' WHERE base_id = :base_id', ['base_id' => $baseId]);
+        }
     }
 }

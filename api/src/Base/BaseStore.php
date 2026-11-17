@@ -8,7 +8,7 @@ use LogicException;
 use Ww2\Database\Database;
 
 /**
- * Keeps the resources, the terrain plan and the production jobs of the bases in the database.
+ * Keeps the resources and the production jobs of the bases in the database, and the terrain plan of each base.
  */
 final class BaseStore
 {
@@ -16,70 +16,64 @@ final class BaseStore
     {
     }
 
-    public function add(int $playerId, BaseResources $resources, string $terrainPlan): void
+    public function add(int $baseId, BaseResources $resources): void
     {
-        $this->database->transaction(function () use ($playerId, $resources, $terrainPlan): void {
-            $this->database->execute(
-                'INSERT INTO base_resources (player_id, supplies, fuel, ammunition, materials, command_points)
-                 VALUES (:player_id, :supplies, :fuel, :ammunition, :materials, :command_points)',
-                [
-                    'player_id' => $playerId,
-                    'supplies' => $resources->supplies,
-                    'fuel' => $resources->fuel,
-                    'ammunition' => $resources->ammunition,
-                    'materials' => $resources->materials,
-                    'command_points' => $resources->commandPoints,
-                ],
-            );
-            $this->database->execute(
-                'INSERT INTO base_terrains (player_id, plan) VALUES (:player_id, :plan)',
-                ['player_id' => $playerId, 'plan' => $terrainPlan],
-            );
-        });
+        $this->database->execute(
+            'INSERT INTO base_resources (base_id, supplies, fuel, ammunition, materials, command_points)
+             VALUES (:base_id, :supplies, :fuel, :ammunition, :materials, :command_points)',
+            [
+                'base_id' => $baseId,
+                'supplies' => $resources->supplies,
+                'fuel' => $resources->fuel,
+                'ammunition' => $resources->ammunition,
+                'materials' => $resources->materials,
+                'command_points' => $resources->commandPoints,
+            ],
+        );
     }
 
     /**
      * @return string the name of the terrain plan of the base, which the front draws
      */
-    public function terrainPlanOf(int $playerId): string
+    public function terrainPlanOf(int $baseId): string
     {
         $rows = $this->database->fetchAll(
-            'SELECT plan FROM base_terrains WHERE player_id = :player_id',
-            ['player_id' => $playerId],
+            'SELECT plan FROM bases WHERE id = :base_id',
+            ['base_id' => $baseId],
         );
         if ($rows === []) {
-            throw new LogicException('The player has no base.');
+            throw new LogicException('The base does not exist.');
         }
 
         return (string) $rows[0]['plan'];
     }
 
-    public function resourcesOf(int $playerId): BaseResources
+    public function resourcesOf(int $baseId): BaseResources
     {
-        return $this->readResources($playerId, '');
+        return $this->readResources($baseId, '');
     }
 
     /**
      * Reads the resources and holds them until the end of the transaction, so that two requests cannot spend them twice.
      */
-    public function lockResources(int $playerId): BaseResources
+    public function lockResources(int $baseId): BaseResources
     {
-        return $this->readResources($playerId, ' FOR UPDATE');
+        return $this->readResources($baseId, ' FOR UPDATE');
     }
 
-    public function buy(int $playerId, Stock $stock, int $quantity, int $cost): void
+    public function buy(int $baseId, Stock $stock, int $quantity, int $cost): void
     {
         $this->database->execute(
-            'UPDATE base_resources SET supplies = supplies - :cost, ' . $stock->value . ' = ' . $stock->value . ' + :quantity WHERE player_id = :player_id',
-            ['cost' => $cost, 'quantity' => $quantity, 'player_id' => $playerId],
+            'UPDATE base_resources SET supplies = supplies - :cost, ' . $stock->value . ' = ' . $stock->value . ' + :quantity WHERE base_id = :base_id',
+            ['cost' => $cost, 'quantity' => $quantity, 'base_id' => $baseId],
         );
     }
 
-    public function spendMaterials(int $playerId, int $amount): void
+    public function spendMaterials(int $baseId, int $amount): void
     {
         $this->database->execute(
-            'UPDATE base_resources SET materials = materials - :amount WHERE player_id = :player_id',
-            ['amount' => $amount, 'player_id' => $playerId],
+            'UPDATE base_resources SET materials = materials - :amount WHERE base_id = :base_id',
+            ['amount' => $amount, 'base_id' => $baseId],
         );
     }
 
@@ -88,52 +82,52 @@ final class BaseStore
      *
      * @return bool whether there was one
      */
-    public function useReadyPart(int $playerId, SparePart $part, int $gameSeconds): bool
+    public function useReadyPart(int $baseId, SparePart $part, int $gameSeconds): bool
     {
         return $this->database->execute(
-            'DELETE FROM production_jobs WHERE player_id = :player_id AND part = :part AND finish_game_second <= :game_seconds LIMIT 1',
-            ['player_id' => $playerId, 'part' => $part->value, 'game_seconds' => $gameSeconds],
+            'DELETE FROM production_jobs WHERE base_id = :base_id AND part = :part AND finish_game_second <= :game_seconds LIMIT 1',
+            ['base_id' => $baseId, 'part' => $part->value, 'game_seconds' => $gameSeconds],
         ) === 1;
     }
 
-    public function addRewards(int $playerId, int $supplies, int $commandPoints): void
+    public function addRewards(int $baseId, int $supplies, int $commandPoints): void
     {
         $this->database->execute(
-            'UPDATE base_resources SET supplies = supplies + :supplies, command_points = command_points + :command_points WHERE player_id = :player_id',
-            ['supplies' => $supplies, 'command_points' => $commandPoints, 'player_id' => $playerId],
+            'UPDATE base_resources SET supplies = supplies + :supplies, command_points = command_points + :command_points WHERE base_id = :base_id',
+            ['supplies' => $supplies, 'command_points' => $commandPoints, 'base_id' => $baseId],
         );
     }
 
-    public function spendCommandPoints(int $playerId, int $amount): void
+    public function spendCommandPoints(int $baseId, int $amount): void
     {
         $this->database->execute(
-            'UPDATE base_resources SET command_points = command_points - :amount WHERE player_id = :player_id',
-            ['amount' => $amount, 'player_id' => $playerId],
+            'UPDATE base_resources SET command_points = command_points - :amount WHERE base_id = :base_id',
+            ['amount' => $amount, 'base_id' => $baseId],
         );
     }
 
-    public function spendSupplies(int $playerId, int $amount): void
+    public function spendSupplies(int $baseId, int $amount): void
     {
         $this->database->execute(
-            'UPDATE base_resources SET supplies = supplies - :amount WHERE player_id = :player_id',
-            ['amount' => $amount, 'player_id' => $playerId],
+            'UPDATE base_resources SET supplies = supplies - :amount WHERE base_id = :base_id',
+            ['amount' => $amount, 'base_id' => $baseId],
         );
     }
 
-    public function spendFuelAndAmmunition(int $playerId, int $fuel, int $ammunition): void
+    public function spendFuelAndAmmunition(int $baseId, int $fuel, int $ammunition): void
     {
         $this->database->execute(
-            'UPDATE base_resources SET fuel = fuel - :fuel, ammunition = ammunition - :ammunition WHERE player_id = :player_id',
-            ['fuel' => $fuel, 'ammunition' => $ammunition, 'player_id' => $playerId],
+            'UPDATE base_resources SET fuel = fuel - :fuel, ammunition = ammunition - :ammunition WHERE base_id = :base_id',
+            ['fuel' => $fuel, 'ammunition' => $ammunition, 'base_id' => $baseId],
         );
     }
 
-    public function addJob(int $playerId, SparePart $part, int $finishGameSecond, bool $hasMechanic): void
+    public function addJob(int $baseId, SparePart $part, int $finishGameSecond, bool $hasMechanic): void
     {
         $this->database->execute(
-            'INSERT INTO production_jobs (player_id, part, has_mechanic, finish_game_second)
-             VALUES (:player_id, :part, :has_mechanic, :finish_game_second)',
-            ['player_id' => $playerId, 'part' => $part->value, 'has_mechanic' => (int) $hasMechanic, 'finish_game_second' => $finishGameSecond],
+            'INSERT INTO production_jobs (base_id, part, has_mechanic, finish_game_second)
+             VALUES (:base_id, :part, :has_mechanic, :finish_game_second)',
+            ['base_id' => $baseId, 'part' => $part->value, 'has_mechanic' => (int) $hasMechanic, 'finish_game_second' => $finishGameSecond],
         );
     }
 
@@ -141,12 +135,12 @@ final class BaseStore
      * @param int $gameSeconds the game time now, which the jobs are counted against
      * @return list<ProductionJob> the parts still being made, the next to finish first
      */
-    public function runningJobs(int $playerId, int $gameSeconds): array
+    public function runningJobs(int $baseId, int $gameSeconds): array
     {
         $rows = $this->database->fetchAll(
             'SELECT id, part, has_mechanic, finish_game_second
-             FROM production_jobs WHERE player_id = :player_id AND finish_game_second > :game_seconds ORDER BY finish_game_second',
-            ['player_id' => $playerId, 'game_seconds' => $gameSeconds],
+             FROM production_jobs WHERE base_id = :base_id AND finish_game_second > :game_seconds ORDER BY finish_game_second',
+            ['base_id' => $baseId, 'game_seconds' => $gameSeconds],
         );
 
         return array_map(
@@ -164,12 +158,12 @@ final class BaseStore
      * @param int $gameSeconds the game time now, which the jobs are counted against
      * @return array<string, int> how many parts of each kind are finished, by the name of the part
      */
-    public function readyParts(int $playerId, int $gameSeconds): array
+    public function readyParts(int $baseId, int $gameSeconds): array
     {
         $rows = $this->database->fetchAll(
             'SELECT part, COUNT(*) AS total FROM production_jobs
-             WHERE player_id = :player_id AND finish_game_second <= :game_seconds GROUP BY part',
-            ['player_id' => $playerId, 'game_seconds' => $gameSeconds],
+             WHERE base_id = :base_id AND finish_game_second <= :game_seconds GROUP BY part',
+            ['base_id' => $baseId, 'game_seconds' => $gameSeconds],
         );
         $ready = array_fill_keys(array_map(static fn (SparePart $part): string => $part->value, SparePart::cases()), 0);
         foreach ($rows as $row) {
@@ -179,14 +173,14 @@ final class BaseStore
         return $ready;
     }
 
-    private function readResources(int $playerId, string $lock): BaseResources
+    private function readResources(int $baseId, string $lock): BaseResources
     {
         $rows = $this->database->fetchAll(
-            'SELECT supplies, fuel, ammunition, materials, command_points FROM base_resources WHERE player_id = :player_id' . $lock,
-            ['player_id' => $playerId],
+            'SELECT supplies, fuel, ammunition, materials, command_points FROM base_resources WHERE base_id = :base_id' . $lock,
+            ['base_id' => $baseId],
         );
         if ($rows === []) {
-            throw new LogicException('The player has no base.');
+            throw new LogicException('The base does not exist.');
         }
 
         return new BaseResources(

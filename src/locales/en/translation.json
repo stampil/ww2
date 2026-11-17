@@ -108,8 +108,27 @@
       "bomber": "Bomber"
     }
   },
+  "world": {
+    "choose": {
+      "title": "Choose your base",
+      "hint": "Each free site is a base to run; the other players of this world have taken theirs."
+    },
+    "sites": "Sites",
+    "free": "Free",
+    "taken": "Taken",
+    "claim": "Take this base",
+    "site": {
+      "lille": "Lille",
+      "reims": "Reims",
+      "metz": "Metz",
+      "nancy": "Nancy",
+      "dijon": "Dijon",
+      "orleans": "Orléans"
+    }
+  },
   "base": {
     "title": "Base",
+    "site": "Base",
     "hud": "Dashboard",
     "window": {
       "close": "Close"
@@ -281,6 +300,9 @@
       "insufficientCommandPoints": "Not enough command points.",
       "battleOver": "The battle is over: start a new one.",
       "battleOngoing": "The battle is not over.",
+      "noBase": "You have no base yet.",
+      "alreadyHasBase": "You already have a base.",
+      "siteTaken": "This site is taken: choose another.",
       "invalidBody": "The order is not understood.",
       "signInRequired": "Sign in first.",
       "apiDown": "The API does not answer."

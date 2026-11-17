@@ -20,22 +20,22 @@ final class EventLog
     /**
      * @param array<string, mixed> $details what happened; its `kind` tells the front which sort of event it is
      */
-    public function record(int $playerId, array $details): void
+    public function record(int $baseId, array $details): void
     {
         $this->database->execute(
-            'INSERT INTO base_events (player_id, details) VALUES (:player_id, :details)',
-            ['player_id' => $playerId, 'details' => json_encode($details, JSON_THROW_ON_ERROR)],
+            'INSERT INTO base_events (base_id, details) VALUES (:base_id, :details)',
+            ['base_id' => $baseId, 'details' => json_encode($details, JSON_THROW_ON_ERROR)],
         );
     }
 
     /**
      * @return list<array<string, mixed>> the latest events, the newest first, each with its id
      */
-    public function latest(int $playerId): array
+    public function latest(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT id, details FROM base_events WHERE player_id = :player_id ORDER BY id DESC LIMIT ' . self::SHOWN,
-            ['player_id' => $playerId],
+            'SELECT id, details FROM base_events WHERE base_id = :base_id ORDER BY id DESC LIMIT ' . self::SHOWN,
+            ['base_id' => $baseId],
         );
         $events = [];
         foreach ($rows as $row) {

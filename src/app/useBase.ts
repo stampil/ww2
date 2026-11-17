@@ -84,6 +84,8 @@ export type UpgradeInfo = { upgrade: UpgradeName; level: number; maxLevel: numbe
 export type Battle = { kills: number; target: number; status: 'ongoing' | 'won' | 'lost' }
 
 export type Base = {
+  /** The site the base stands on. */
+  site: string
   terrainPlan: string
   resources: { supplies: number; fuel: number; ammunition: number; materials: number; commandPoints: number }
   buildings: string[]
@@ -109,6 +111,8 @@ type ErrorPayload = { reason_phrase: string }
 
 const BASE_URL = '/api/base'
 const API_DOWN = 'apiDown'
+const NO_BASE = 'noBase'
+const CLAIM_URL = '/api/world/claim'
 const MILLISECONDS_PER_SECOND = 1000
 // The API writes the game time without a time zone; read as UTC it shows as written.
 const UTC_DESIGNATOR = 'Z'
@@ -170,6 +174,7 @@ function gameTimeAfter(base: Base, elapsedSeconds: number): Date {
 /** The base of the signed-in player, the orders they can give, the game time, and the seconds left on each part being made, flight, repair, fire and rest. */
 export function useBase(player: Player | null) {
   const [base, setBase] = useState<Base | null>(null)
+  const [hasNoBase, setHasNoBase] = useState(false)
   const [receivedAt, setReceivedAt] = useState(0)
   const [now, setNow] = useState(0)
 
@@ -178,6 +183,7 @@ export function useBase(player: Player | null) {
       return result.error
     }
     setBase(result.base)
+    setHasNoBase(false)
     setReceivedAt(Date.now())
     setNow(Date.now())
     return null
@@ -188,7 +194,13 @@ export function useBase(player: Player | null) {
       setBase(null)
       return
     }
-    void request(BASE_URL).then(receive)
+    void request(BASE_URL).then((result) => {
+      if ('error' in result && result.error === NO_BASE) {
+        setHasNoBase(true)
+        return
+      }
+      receive(result)
+    })
   }, [player])
 
   useEffect(() => {
@@ -252,9 +264,32 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/upgrades/buy`, { upgrade }))
   }
 
+  /** Takes a free site for the player, who holds no base yet. */
+  async function claimBase(site: string): Promise<string | null> {
+    return receive(await request(CLAIM_URL, { site }))
+  }
+
   async function restartBattle(): Promise<string | null> {
     return receive(await request(`${BASE_URL}/battle/restart`, {}))
   }
 
-  return { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot, buyUpgrade, restartBattle }
+  return {
+    base,
+    hasNoBase,
+    jobs,
+    flights,
+    hangarAircraft,
+    rests,
+    gameTime,
+    buy,
+    produce,
+    launchMission,
+    receiveSquadron,
+    repairAircraft,
+    restPilot,
+    recruitPilot,
+    buyUpgrade,
+    restartBattle,
+    claimBase,
+  }
 }

@@ -23,13 +23,16 @@ type Props = {
   base: Base
 }
 
-/** The strip over the map: the game time, the aircraft and the pilots, the resources, and the battle, each with its icon. */
+/** The strip over the map: the site of the base, the game time, the aircraft and the pilots, the resources, and the battle, each with its icon. */
 function Hud({ gameTime, base }: Props) {
   const { t, i18n } = useTranslation()
   const formatter = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'medium', timeZone: GAME_TIME_ZONE })
 
   return (
     <div className="hud" role="group" aria-label={t('base.hud')}>
+      <HudItem icon="site" label={t('base.site')}>
+        {t(`world.site.${base.site}`)}
+      </HudItem>
       <HudItem icon="clock" label={t('base.clock.label')}>
         <time dateTime={gameTime.toISOString()}>{formatter.format(gameTime)}</time>
       </HudItem>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ww2\Base;
 
+use Ww2\Database\Database;
 use Ww2\Squadron\SquadronFounder;
 use Ww2\Squadron\SquadronStore;
 
@@ -16,6 +17,7 @@ final class Battle
     private const KILL_TARGET = 8;
 
     public function __construct(
+        private readonly Database $database,
         private readonly BattleStore $battles,
         private readonly SquadronStore $squadrons,
         private readonly SquadronFounder $squadronFounder,
@@ -23,12 +25,12 @@ final class Battle
     ) {
     }
 
-    public function statusOf(int $playerId): BattleStatus
+    public function statusOf(int $baseId): BattleStatus
     {
-        if ($this->battles->killsOf($playerId) >= self::KILL_TARGET) {
+        if ($this->battles->killsOf($baseId) >= self::KILL_TARGET) {
             return BattleStatus::Won;
         }
-        if ($this->squadrons->pilotsOf($playerId) === [] || $this->squadrons->aircraftOf($playerId) === []) {
+        if ($this->squadrons->pilotsOf($baseId) === [] || $this->squadrons->aircraftOf($baseId) === []) {
             return BattleStatus::Lost;
         }
 
@@ -38,33 +40,35 @@ final class Battle
     /**
      * @return array{kills: int, target: int, status: string}
      */
-    public function describe(int $playerId): array
+    public function describe(int $baseId): array
     {
-        return ['kills' => $this->battles->killsOf($playerId), 'target' => self::KILL_TARGET, 'status' => $this->statusOf($playerId)->value];
+        return ['kills' => $this->battles->killsOf($baseId), 'target' => self::KILL_TARGET, 'status' => $this->statusOf($baseId)->value];
     }
 
     /**
      * @throws BaseException when the battle is over
      */
-    public function assertOngoing(int $playerId): void
+    public function assertOngoing(int $baseId): void
     {
-        if ($this->statusOf($playerId) !== BattleStatus::Ongoing) {
+        if ($this->statusOf($baseId) !== BattleStatus::Ongoing) {
             throw new BaseException(BaseError::BattleOver);
         }
     }
 
     /**
-     * Starts a new battle: the squadron and the base are founded again, as for a new player.
+     * Starts a new battle on the same base: the squadron and the stocks are founded again, as when the base was claimed.
      *
      * @throws BaseException when the battle is not over
      */
-    public function restart(int $playerId): void
+    public function restart(int $baseId): void
     {
-        if ($this->statusOf($playerId) === BattleStatus::Ongoing) {
+        if ($this->statusOf($baseId) === BattleStatus::Ongoing) {
             throw new BaseException(BaseError::BattleOngoing);
         }
-        $this->battles->eraseGameOf($playerId);
-        $this->squadronFounder->found($playerId);
-        $this->baseFounder->found($playerId);
+        $this->database->transaction(function () use ($baseId): void {
+            $this->battles->eraseGameOf($baseId);
+            $this->squadronFounder->found($baseId);
+            $this->baseFounder->found($baseId);
+        });
     }
 }

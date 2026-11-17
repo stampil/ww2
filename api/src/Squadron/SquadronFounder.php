@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Ww2\Squadron;
 
-use Ww2\Database\Database;
-
 /**
- * Gives a new player a squadron to start with: a few pilots of different ranks and a few D.520.
+ * Gives a new base a squadron to start with: a few pilots of different ranks and a few D.520. The caller holds the transaction.
  */
 final class SquadronFounder
 {
@@ -16,30 +14,25 @@ final class SquadronFounder
     /** @var list<int> the rank of each starting pilot: a sub-lieutenant, two staff sergeants, a sergeant */
     private const PILOT_RANKS = [4, 2, 2, 1];
 
-    public function __construct(
-        private readonly Database $database,
-        private readonly SquadronStore $squadrons,
-        private readonly PilotGenerator $pilots,
-    ) {
+    public function __construct(private readonly SquadronStore $squadrons, private readonly PilotGenerator $pilots)
+    {
     }
 
-    public function found(int $playerId): void
+    public function found(int $baseId): void
     {
-        $this->database->transaction(function () use ($playerId): void {
-            foreach (self::PILOT_RANKS as $rank) {
-                $this->squadrons->addPilot($playerId, $this->pilots->generate($rank));
-            }
-            for ($count = 0; $count < self::AIRCRAFT_COUNT; $count += 1) {
-                $this->addStartingAircraft($playerId);
-            }
-        });
+        foreach (self::PILOT_RANKS as $rank) {
+            $this->squadrons->addPilot($baseId, $this->pilots->generate($rank));
+        }
+        for ($count = 0; $count < self::AIRCRAFT_COUNT; $count += 1) {
+            $this->addStartingAircraft($baseId);
+        }
     }
 
     /**
      * Adds one aircraft of the type the squadron starts with.
      */
-    public function addStartingAircraft(int $playerId): void
+    public function addStartingAircraft(int $baseId): void
     {
-        $this->squadrons->addAircraft($playerId, $this->squadrons->modelByCode(self::AIRCRAFT_CODE));
+        $this->squadrons->addAircraft($baseId, $this->squadrons->modelByCode(self::AIRCRAFT_CODE));
     }
 }

@@ -108,8 +108,27 @@
       "bomber": "Bombardier"
     }
   },
+  "world": {
+    "choose": {
+      "title": "Choisis ta base",
+      "hint": "Chaque site libre est une base à gérer ; les autres joueurs de ce monde ont déjà pris les leurs."
+    },
+    "sites": "Sites",
+    "free": "Libre",
+    "taken": "Prise",
+    "claim": "Prendre cette base",
+    "site": {
+      "lille": "Lille",
+      "reims": "Reims",
+      "metz": "Metz",
+      "nancy": "Nancy",
+      "dijon": "Dijon",
+      "orleans": "Orléans"
+    }
+  },
   "base": {
     "title": "Base",
+    "site": "Base",
     "hud": "Tableau de bord",
     "window": {
       "close": "Fermer"
@@ -281,6 +300,9 @@
       "insufficientCommandPoints": "Pas assez de points de commandement.",
       "battleOver": "La bataille est terminée : lance-en une nouvelle.",
       "battleOngoing": "La bataille n'est pas terminée.",
+      "noBase": "Tu n'as pas encore de base.",
+      "alreadyHasBase": "Tu as déjà une base.",
+      "siteTaken": "Ce site est déjà pris : choisis-en un autre.",
       "invalidBody": "La commande n'est pas comprise.",
       "signInRequired": "Connecte-toi d'abord.",
       "apiDown": "L'API ne répond pas."

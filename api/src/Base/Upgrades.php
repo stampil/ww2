@@ -23,11 +23,11 @@ final class Upgrades
     ) {
     }
 
-    public function levelOf(int $playerId, Upgrade $upgrade): int
+    public function levelOf(int $baseId, Upgrade $upgrade): int
     {
         $rows = $this->database->fetchAll(
-            'SELECT level FROM base_upgrades WHERE player_id = :player_id AND upgrade = :upgrade',
-            ['player_id' => $playerId, 'upgrade' => $upgrade->value],
+            'SELECT level FROM base_upgrades WHERE base_id = :base_id AND upgrade = :upgrade',
+            ['base_id' => $baseId, 'upgrade' => $upgrade->value],
         );
 
         return $rows === [] ? 0 : (int) $rows[0]['level'];
@@ -36,11 +36,11 @@ final class Upgrades
     /**
      * @return list<array{upgrade: string, level: int, maxLevel: int, cost: int|null}> the cost is null once the top level is reached
      */
-    public function describe(int $playerId): array
+    public function describe(int $baseId): array
     {
         $described = [];
         foreach (Upgrade::cases() as $upgrade) {
-            $level = $this->levelOf($playerId, $upgrade);
+            $level = $this->levelOf($baseId, $upgrade);
             $described[] = [
                 'upgrade' => $upgrade->value,
                 'level' => $level,
@@ -55,11 +55,11 @@ final class Upgrades
     /**
      * @throws BaseException when the top level is reached already, or the command points run short
      */
-    public function buy(int $playerId, Upgrade $upgrade): void
+    public function buy(int $baseId, Upgrade $upgrade): void
     {
-        $this->database->transaction(function () use ($playerId, $upgrade): void {
-            $resources = $this->bases->lockResources($playerId);
-            $level = $this->levelOf($playerId, $upgrade);
+        $this->database->transaction(function () use ($baseId, $upgrade): void {
+            $resources = $this->bases->lockResources($baseId);
+            $level = $this->levelOf($baseId, $upgrade);
             if ($level >= self::MAX_LEVEL) {
                 throw new BaseException(BaseError::UpgradeAtMaximum);
             }
@@ -67,13 +67,13 @@ final class Upgrades
             if ($resources->commandPoints < $cost) {
                 throw new BaseException(BaseError::InsufficientCommandPoints);
             }
-            $this->bases->spendCommandPoints($playerId, $cost);
+            $this->bases->spendCommandPoints($baseId, $cost);
             $this->database->execute(
-                'INSERT INTO base_upgrades (player_id, upgrade, level) VALUES (:player_id, :upgrade, 1) ON DUPLICATE KEY UPDATE level = level + 1',
-                ['player_id' => $playerId, 'upgrade' => $upgrade->value],
+                'INSERT INTO base_upgrades (base_id, upgrade, level) VALUES (:base_id, :upgrade, 1) ON DUPLICATE KEY UPDATE level = level + 1',
+                ['base_id' => $baseId, 'upgrade' => $upgrade->value],
             );
             if ($upgrade === Upgrade::Hangar) {
-                $this->squadron->addStartingAircraft($playerId);
+                $this->squadron->addStartingAircraft($baseId);
             }
         });
     }

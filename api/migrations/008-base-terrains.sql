@@ -1,5 +1,0 @@
-CREATE TABLE IF NOT EXISTS base_terrains (
-    player_id INT UNSIGNED NOT NULL PRIMARY KEY,
-    plan VARCHAR(32) NOT NULL,
-    FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci

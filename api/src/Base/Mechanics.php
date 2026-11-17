@@ -15,10 +15,10 @@ final class Mechanics
     {
     }
 
-    public function freeAt(int $playerId, int $gameSeconds): int
+    public function freeAt(int $baseId, int $gameSeconds): int
     {
-        $busy = $this->hangar->runningRepairCount($playerId, $gameSeconds);
-        foreach ($this->bases->runningJobs($playerId, $gameSeconds) as $job) {
+        $busy = $this->hangar->runningRepairCount($baseId, $gameSeconds);
+        foreach ($this->bases->runningJobs($baseId, $gameSeconds) as $job) {
             if ($job->hasMechanic) {
                 $busy += 1;
             }

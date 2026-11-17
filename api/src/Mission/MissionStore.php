@@ -7,7 +7,7 @@ namespace Ww2\Mission;
 use Ww2\Database\Database;
 
 /**
- * Keeps the missions of the players in the database: on the table until launched, under way until the squadron is received.
+ * Keeps the missions of the bases in the database: on the table until launched, under way until the squadron is received.
  */
 final class MissionStore
 {
@@ -17,13 +17,13 @@ final class MissionStore
     {
     }
 
-    public function addOffer(int $playerId, Mission $mission): void
+    public function addOffer(int $baseId, Mission $mission): void
     {
         $this->database->execute(
-            'INSERT INTO missions (player_id, type, aircraft_count, duration_seconds, fuel_per_aircraft, ammunition_per_aircraft, risk, reward_supplies, reward_command_points)
-             VALUES (:player_id, :type, :aircraft_count, :duration_seconds, :fuel_per_aircraft, :ammunition_per_aircraft, :risk, :reward_supplies, :reward_command_points)',
+            'INSERT INTO missions (base_id, type, aircraft_count, duration_seconds, fuel_per_aircraft, ammunition_per_aircraft, risk, reward_supplies, reward_command_points)
+             VALUES (:base_id, :type, :aircraft_count, :duration_seconds, :fuel_per_aircraft, :ammunition_per_aircraft, :risk, :reward_supplies, :reward_command_points)',
             [
-                'player_id' => $playerId,
+                'base_id' => $baseId,
                 'type' => $mission->type->value,
                 'aircraft_count' => $mission->aircraftCount,
                 'duration_seconds' => $mission->durationSeconds,
@@ -39,19 +39,19 @@ final class MissionStore
     /**
      * @return list<Mission> the missions not launched yet, the oldest first
      */
-    public function offersOf(int $playerId): array
+    public function offersOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT ' . self::MISSION_COLUMNS . ' FROM missions WHERE player_id = :player_id AND return_game_second IS NULL ORDER BY id',
-            ['player_id' => $playerId],
+            'SELECT ' . self::MISSION_COLUMNS . ' FROM missions WHERE base_id = :base_id AND return_game_second IS NULL ORDER BY id',
+            ['base_id' => $baseId],
         );
 
         return array_map($this->missionFrom(...), $rows);
     }
 
-    public function offer(int $playerId, int $missionId): ?Mission
+    public function offer(int $baseId, int $missionId): ?Mission
     {
-        foreach ($this->offersOf($playerId) as $mission) {
+        foreach ($this->offersOf($baseId) as $mission) {
             if ($mission->id === $missionId) {
                 return $mission;
             }
@@ -86,18 +86,18 @@ final class MissionStore
      * @param int $gameSeconds the game time now, which the return of each flight is counted against
      * @return list<Flight> the missions launched, the first back first
      */
-    public function flightsOf(int $playerId, int $gameSeconds): array
+    public function flightsOf(int $baseId, int $gameSeconds): array
     {
         $rows = $this->database->fetchAll(
             'SELECT ' . self::MISSION_COLUMNS . ', fuel_loaded, ammunition_loaded, wind_speed, return_game_second
-             FROM missions WHERE player_id = :player_id AND return_game_second IS NOT NULL ORDER BY return_game_second, id',
-            ['player_id' => $playerId],
+             FROM missions WHERE base_id = :base_id AND return_game_second IS NOT NULL ORDER BY return_game_second, id',
+            ['base_id' => $baseId],
         );
         $crewRows = $this->database->fetchAll(
             'SELECT mission_crews.mission_id, mission_crews.pilot_id, mission_crews.aircraft_id
              FROM mission_crews JOIN missions ON missions.id = mission_crews.mission_id
-             WHERE missions.player_id = :player_id ORDER BY mission_crews.pilot_id',
-            ['player_id' => $playerId],
+             WHERE missions.base_id = :base_id ORDER BY mission_crews.pilot_id',
+            ['base_id' => $baseId],
         );
         $crewsByMission = [];
         foreach ($crewRows as $crewRow) {
@@ -120,9 +120,9 @@ final class MissionStore
         return $flights;
     }
 
-    public function flight(int $playerId, int $missionId, int $gameSeconds): ?Flight
+    public function flight(int $baseId, int $missionId, int $gameSeconds): ?Flight
     {
-        foreach ($this->flightsOf($playerId, $gameSeconds) as $flight) {
+        foreach ($this->flightsOf($baseId, $gameSeconds) as $flight) {
             if ($flight->mission->id === $missionId) {
                 return $flight;
             }

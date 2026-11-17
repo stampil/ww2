@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 
 /**
- * The game time of a player: the seconds gone by since the battle began. It never stops.
+ * The game time of an instance: the seconds gone by since the battle began. It never stops.
  */
 final readonly class GameClock
 {

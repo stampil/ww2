@@ -11,18 +11,14 @@ use Ww2\Account\AccountError;
 use Ww2\Account\AccountException;
 use Ww2\Account\AccountService;
 use Ww2\Account\PlayerSession;
-use Ww2\Base\BaseFounder;
-use Ww2\Squadron\SquadronFounder;
 
 /**
- * Creates an account, gives its player a squadron and a base to start with, and signs them in.
+ * Creates an account and signs its player in; the player has no base until they claim one.
  */
 final class AccountController
 {
     public function __construct(
         private readonly AccountService $accounts,
-        private readonly SquadronFounder $founder,
-        private readonly BaseFounder $baseFounder,
         private readonly PlayerSession $session,
     ) {
     }
@@ -41,8 +37,6 @@ final class AccountController
                 default => new UnprocessableEntityException($exception->error->value),
             };
         }
-        $this->founder->found($player->id);
-        $this->baseFounder->found($player->id);
         $this->session->signIn($player->id);
 
         return ['player' => $player->toArray()];

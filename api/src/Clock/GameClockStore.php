@@ -8,7 +8,7 @@ use LogicException;
 use Ww2\Database\Database;
 
 /**
- * Keeps the game clocks of the players in the database; a clock runs from the moment it starts, by the clock of the database.
+ * Reads the game clock of a base: the one of its instance, which runs from the creation of the instance, by the clock of the database.
  */
 final class GameClockStore
 {
@@ -16,22 +16,15 @@ final class GameClockStore
     {
     }
 
-    public function start(int $playerId): void
-    {
-        $this->database->execute(
-            'INSERT INTO game_clocks (player_id, started_at) VALUES (:player_id, NOW())',
-            ['player_id' => $playerId],
-        );
-    }
-
-    public function of(int $playerId): GameClock
+    public function of(int $baseId): GameClock
     {
         $rows = $this->database->fetchAll(
-            'SELECT TIMESTAMPDIFF(SECOND, started_at, NOW()) AS game_seconds FROM game_clocks WHERE player_id = :player_id',
-            ['player_id' => $playerId],
+            'SELECT TIMESTAMPDIFF(SECOND, instances.started_at, NOW()) AS game_seconds
+             FROM bases JOIN instances ON instances.id = bases.instance_id WHERE bases.id = :base_id',
+            ['base_id' => $baseId],
         );
         if ($rows === []) {
-            throw new LogicException('The player has no clock.');
+            throw new LogicException('The base does not exist.');
         }
 
         return new GameClock((int) $rows[0]['game_seconds']);

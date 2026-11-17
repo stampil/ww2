@@ -93,6 +93,9 @@
     "escaped": "L'ennemi s'est échappé.",
     "continue": "Continuer"
   },
+  "music": {
+    "label": "Musique"
+  },
   "cockpit": {
     "title": "Le cockpit en 3D",
     "hint": "Faites glisser pour tourner le cockpit"

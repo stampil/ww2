@@ -152,6 +152,21 @@ a {
   @include flex($gap: 0.5rem);
 }
 
+.music-toggle {
+  padding: 0.4rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+
+  &[aria-pressed='true'] {
+    color: var(--accent);
+    font-weight: 700;
+  }
+}
+
 .language-switch {
   @include flex($align: center, $gap: 0.65rem);
   color: var(--muted);

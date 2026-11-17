@@ -55,5 +55,21 @@
       "wrecked": "ravagé",
       "destroyed": "détruit"
     }
+  },
+  "account": {
+    "signIn": "Se connecter",
+    "register": "Créer un compte",
+    "signOut": "Se déconnecter",
+    "nickname": "Pseudo",
+    "password": "Mot de passe",
+    "signedInAs": "Connecté : {{nickname}}",
+    "errors": {
+      "invalidNickname": "Le pseudo fait de 3 à 32 caractères : lettres, chiffres, tiret et tiret bas.",
+      "invalidPassword": "Le mot de passe fait de 8 à 72 caractères.",
+      "nicknameTaken": "Ce pseudo est déjà pris.",
+      "wrongCredentials": "Pseudo ou mot de passe incorrect.",
+      "invalidBody": "Remplis le pseudo et le mot de passe.",
+      "apiDown": "L'API ne répond pas."
+    }
   }
 }

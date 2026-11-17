@@ -55,5 +55,21 @@
       "wrecked": "wrecked",
       "destroyed": "destroyed"
     }
+  },
+  "account": {
+    "signIn": "Sign in",
+    "register": "Create an account",
+    "signOut": "Sign out",
+    "nickname": "Nickname",
+    "password": "Password",
+    "signedInAs": "Signed in: {{nickname}}",
+    "errors": {
+      "invalidNickname": "The nickname is 3 to 32 characters: letters, digits, hyphen and underscore.",
+      "invalidPassword": "The password is 8 to 72 characters.",
+      "nicknameTaken": "This nickname is already taken.",
+      "wrongCredentials": "Wrong nickname or password.",
+      "invalidBody": "Fill in the nickname and the password.",
+      "apiDown": "The API does not answer."
+    }
   }
 }

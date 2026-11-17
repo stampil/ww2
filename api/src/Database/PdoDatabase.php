@@ -33,6 +33,18 @@ final class PdoDatabase implements Database
         }
     }
 
+    public function execute(string $statement, array $parameters = []): int
+    {
+        try {
+            $prepared = $this->connection()->prepare($statement);
+            $prepared->execute($parameters);
+
+            return $prepared->rowCount();
+        } catch (PDOException $exception) {
+            throw new DatabaseException($exception->getMessage(), previous: $exception);
+        }
+    }
+
     private function connection(): PDO
     {
         if ($this->connection === null) {

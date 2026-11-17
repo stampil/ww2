@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import AccountPanel from './AccountPanel'
 import AircraftViewer from './AircraftViewer'
 import CockpitViewer from './CockpitViewer'
 import TakeoffView from './TakeoffView'
@@ -19,25 +20,28 @@ function App() {
           <span className="wordmark-mark">F</span>
           <span>French Touch</span>
         </a>
-        <nav className="language-switch" aria-label={t('language')}>
-          <button
-            type="button"
-            lang="fr"
-            aria-pressed={i18n.resolvedLanguage === 'fr'}
-            onClick={() => void i18n.changeLanguage('fr')}
-          >
-            FR
-          </button>
-          <span aria-hidden="true">/</span>
-          <button
-            type="button"
-            lang="en"
-            aria-pressed={i18n.resolvedLanguage === 'en'}
-            onClick={() => void i18n.changeLanguage('en')}
-          >
-            EN
-          </button>
-        </nav>
+        <div className="topbar-tools">
+          <AccountPanel />
+          <nav className="language-switch" aria-label={t('language')}>
+            <button
+              type="button"
+              lang="fr"
+              aria-pressed={i18n.resolvedLanguage === 'fr'}
+              onClick={() => void i18n.changeLanguage('fr')}
+            >
+              FR
+            </button>
+            <span aria-hidden="true">/</span>
+            <button
+              type="button"
+              lang="en"
+              aria-pressed={i18n.resolvedLanguage === 'en'}
+              onClick={() => void i18n.changeLanguage('en')}
+            >
+              EN
+            </button>
+          </nav>
+        </div>
       </header>
 
       <section className="intro" aria-labelledby="welcome-title">

@@ -14,8 +14,11 @@ Puis mettre dans `.env` les identifiants de la base. Ensuite :
 
 ```bash
 cd api && composer install && cd ..
+php api/bin/migrate.php
 npm install
 ```
+
+`php api/bin/migrate.php` crée les tables de la base (les comptes des joueurs) ; on peut le relancer sans risque.
 
 À chaque session, dans deux terminaux :
 

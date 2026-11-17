@@ -54,6 +54,8 @@ a {
 }
 
 .topbar {
+  position: relative;
+  z-index: 1;
   min-height: 5.5rem;
   border-bottom: 1px solid var(--line);
   animation: arrive 600ms ease-out both;
@@ -76,6 +78,68 @@ a {
   color: white;
   font-family: 'Playfair Display', serif;
   font-size: 1.1rem;
+}
+
+.topbar-tools {
+  @include flex($align: center, $gap: 1.25rem);
+}
+
+.account {
+  @include flex($align: center, $gap: 0.75rem);
+  position: relative;
+  font-size: 0.8rem;
+
+  button {
+    height: 2rem;
+    padding: 0 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+}
+
+.account-name {
+  color: var(--muted);
+}
+
+.account-form {
+  @include flex($direction: column, $gap: 0.75rem);
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 1;
+  width: min(18rem, 90vw);
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--paper);
+
+  label {
+    @include flex($direction: column, $gap: 0.3rem);
+    color: var(--muted);
+  }
+
+  input {
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+  }
+}
+
+.account-error {
+  margin: 0;
+  color: var(--accent);
+}
+
+.account-actions {
+  @include flex($gap: 0.5rem);
 }
 
 .language-switch {

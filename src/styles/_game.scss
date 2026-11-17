@@ -238,18 +238,23 @@ button.base-sprite {
   }
 }
 
-// An aircraft parked on its stand: the picture is centred on the tile; --width is in tiles.
-.map-aircraft {
+// A picture centred on its tile; --width is in tiles.
+@mixin centred-on-tile {
   position: absolute;
-  z-index: 1;
   top: calc((var(--row) + 0.5) / var(--rows) * 100%);
   left: calc((var(--column) + 0.5) / var(--columns) * 100%);
   width: calc(var(--width) / var(--columns) * 100%);
+  transform: translate(-50%, -50%);
+}
+
+// An aircraft parked on its stand.
+.map-aircraft {
+  @include centred-on-tile;
+  z-index: 1;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
-  transform: translate(-50%, -50%);
 
   &::after {
     content: '';
@@ -351,6 +356,15 @@ button.base-sprite {
   to {
     transform: translate(-50%, -75%);
   }
+}
+
+// An aircraft taking off: it waits on its stand, and the animation moves it along its route.
+.aircraft-takeoff {
+  @include centred-on-tile;
+  z-index: 2;
+  height: auto;
+  filter: drop-shadow(0 0.3rem 0.2rem rgba(0, 0, 0, 0.55));
+  pointer-events: none;
 }
 
 // A mechanic on the way to the hangar; a dot stands for the picture to come.

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
+import AircraftTakeoff from './AircraftTakeoff'
 import Icon from './Icon'
 import type { IconName } from './iconPaths'
 import MaintenanceCrew from './MaintenanceCrew'
@@ -17,6 +18,8 @@ const AIRCRAFT_WIDTH_TILES = 1.4
 /** What shows on a parked aircraft: nothing when it is fit, else the trouble it is in. */
 export type StandStatus = 'ready' | 'damaged' | 'repairing' | 'burning'
 export type ParkedAircraft = { id: number; stand: Cell; status: StandStatus }
+/** An aircraft that has just been sent on a mission: it takes off from the stand it stood on, after a delay. */
+export type Departure = { aircraftId: number; stand: Cell; delayMilliseconds: number }
 /** Something that needs the player at a building: a marker over it, which opens it. */
 export type MapAlert = { kind: 'mission' | 'fire'; building: BuildingName; label: string }
 
@@ -30,6 +33,9 @@ type Props = {
   /** The aircraft on the ground, each at its stand, and their picture seen from above, once it is drawn. */
   parkedAircraft: ParkedAircraft[]
   aircraftSprite: string | null
+  /** The aircraft that take off, each from its stand, and what to do once one has left the map. */
+  departures: Departure[]
+  onDeparted: (aircraftId: number) => void
   alerts: MapAlert[]
   openBuilding: BuildingName | null
   onSelect: (building: BuildingName) => void
@@ -47,8 +53,8 @@ function standPlacement(stand: Cell): CSSProperties {
   return { '--row': stand.row, '--column': stand.column, '--width': AIRCRAFT_WIDTH_TILES } as CSSProperties
 }
 
-/** The base seen from above: the tiles of its terrain plan, the sprites standing on them, the aircraft parked, the mechanics at work and the alerts; a click on a building opens it. */
-function BaseMap({ plan, repairingAircraftIds, parkedAircraft, aircraftSprite, alerts, openBuilding, onSelect }: Props) {
+/** The base seen from above: the tiles of its terrain plan, the sprites standing on them, the aircraft parked or taking off, the mechanics at work and the alerts; a click on a building opens it. */
+function BaseMap({ plan, repairingAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, alerts, openBuilding, onSelect }: Props) {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gridSize = { '--rows': plan.tiles.length, '--columns': plan.tiles[0].length } as CSSProperties
@@ -106,6 +112,19 @@ function BaseMap({ plan, repairingAircraftIds, parkedAircraft, aircraftSprite, a
                 </span>
               )}
             </button>
+          ))}
+        {aircraftSprite !== null &&
+          departures.map((departure) => (
+            <AircraftTakeoff
+              key={departure.aircraftId}
+              plan={plan}
+              aircraftId={departure.aircraftId}
+              stand={departure.stand}
+              sprite={aircraftSprite}
+              delayMilliseconds={departure.delayMilliseconds}
+              widthTiles={AIRCRAFT_WIDTH_TILES}
+              onDeparted={onDeparted}
+            />
           ))}
         {alerts.map((alert) => {
           const sprite = plan.sprites.find((candidate) => candidate.building === alert.building)!

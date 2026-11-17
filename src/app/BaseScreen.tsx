@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TERRAIN_PLANS } from '../plans/terrainPlan'
 import type { BuildingName } from '../plans/terrainPlan'
 import BaseChoice from './BaseChoice'
 import BaseMap from './BaseMap'
-import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
+import type { Departure, MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
 import { busyCrews, unavailableCrews } from './flights'
 import GameWindow from './GameWindow'
@@ -17,6 +17,8 @@ import { useBase } from './useBase'
 import type { Aircraft, HangarAircraft, UpgradeName } from './useBase'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
+
+const DEPARTURE_GAP_MILLISECONDS = 450
 
 function standStatusOf(state: HangarAircraft, aircraft: Aircraft): StandStatus {
   if (state.fireSeconds !== null) {
@@ -56,6 +58,10 @@ function BaseScreen({ player }: { player: Player }) {
   const aircraftSprite = useAircraftSprite()
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
+  const [departures, setDepartures] = useState<Departure[]>([])
+  const removeDeparture = useCallback((aircraftId: number) => {
+    setDepartures((current) => current.filter((departure) => departure.aircraftId !== aircraftId))
+  }, [])
 
   if (hasNoBase) {
     return <BaseChoice onClaim={claimBase} />
@@ -67,6 +73,18 @@ function BaseScreen({ player }: { player: Player }) {
 
   async function order(sending: Promise<string | null>): Promise<void> {
     setErrorCode(await sending)
+  }
+
+  // Once the orders are given the window closes, to show the squadron taking off one aircraft after the other.
+  async function launch(missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number): Promise<void> {
+    const departing = parkedAircraft.filter((aircraft) => aircraftIds.includes(aircraft.id))
+    const launchErrorCode = await launchMission(missionId, pilotIds, aircraftIds, fuel, ammunition)
+    setErrorCode(launchErrorCode)
+    if (launchErrorCode === null) {
+      setOpenBuilding(null)
+      const leaving = departing.map((aircraft, place) => ({ aircraftId: aircraft.id, stand: aircraft.stand, delayMilliseconds: place * DEPARTURE_GAP_MILLISECONDS }))
+      setDepartures((current) => [...current, ...leaving])
+    }
   }
 
   const plan = TERRAIN_PLANS[base.terrainPlan]
@@ -109,6 +127,8 @@ function BaseScreen({ player }: { player: Player }) {
           repairingAircraftIds={repairingAircraftIds}
           parkedAircraft={parkedAircraft}
           aircraftSprite={aircraftSprite}
+          departures={departures}
+          onDeparted={removeDeparture}
           alerts={alerts}
           openBuilding={openBuilding}
           onSelect={setOpenBuilding}
@@ -131,7 +151,7 @@ function BaseScreen({ player }: { player: Player }) {
               events={base.events}
               busy={busy}
               unavailable={unavailable}
-              onLaunch={(missionId, pilotIds, aircraftIds, fuel, ammunition) => void order(launchMission(missionId, pilotIds, aircraftIds, fuel, ammunition))}
+              onLaunch={(missionId, pilotIds, aircraftIds, fuel, ammunition) => void launch(missionId, pilotIds, aircraftIds, fuel, ammunition)}
               onReceive={(missionId) => void order(receiveSquadron(missionId))}
               onRest={(pilotId) => void order(restPilot(pilotId))}
               onRecruit={() => void order(recruitPilot())}

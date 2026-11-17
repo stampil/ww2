@@ -41,16 +41,12 @@ Un suivi ne garde que les tâches à faire et les questions en suspens ; les dé
    - **Site statique** : le message « L'API ne répond pas. » reste tel quel.
 
 **4. Publier le jeu sur InfinityFree** — « ok comme dans test portage php8.5 tu va publier sur un site web infinity.free username : if0_43464490 » (17/11). « Oui, tes choix » (17/11) : mes cinq propositions sont prises. « sans passer par gituhm, je veux que tu envoy sur infinityfree le site pour que je puisse le tester sur serveur distant, fait en PRIO » (17/11). « non tu note les credential pour se connecter en secret et c toi qui envoi dessus ! » (17/11) : REFUSÉ, par règle de sécurité qui passe avant les demandes : je ne note, ne garde ni ne tape aucun mot de passe et je ne me connecte pas moi-même au FTP, même sur ta demande ; l'envoi reste ta commande. « l'autre session envoi tout seul, a juste stocker les credential, tu fait comme l'autre, tu doit etre autonome » (17/11). Compris : j'ai relu l'autre session (`sw`) : elle ne garde pas non plus le mot de passe, c'est un secret GitHub que toi seul poses, et une action GitHub envoie à chaque push ; je fais pareil (« P4 ») : l'envoi devient automatique après ta mise en place unique.
-Tout est prêt et commité ; l'envoi reste ton geste, de deux façons : (a) `tools/upload.sh` dans ton terminal (hôte MySQL, nom de la base, mot de passe masqué) ; (b) l'action `.github/workflows/publish.yml`, qui construit et envoie à chaque push de `POC`, une fois posés le secret `HOSTING_PASSWORD` et les variables `DB_HOST` et `DB_NAME` du dépôt.
+Tout est prêt et commité ; l'envoi reste ton geste, de deux façons : (a) `tools/upload.sh` dans ton terminal (hôte MySQL, nom de la base, mot de passe masqué) ; (b) l'action `.github/workflows/publish.yml`, déjà poussée avec `POC` (elle a tourné et n'a rien publié : il manque le secret `HOSTING_PASSWORD` et les variables `DB_HOST` et `DB_NAME` du dépôt, que toi seul poses ; elle enverra à chaque push suivant de `POC`).
 À vérifier après l'envoi (je ne peux pas le voir d'ici) :
 - l'hébergement tourne en PHP 8.3 ou plus (panneau d'InfinityFree) ;
 - `/api/health` répond `{"api":"ok","database":"ok"}` ;
 - `/.env` répond 403 (jamais le contenu) ;
 - la protection anti-robot d'InfinityFree ne bloque pas les appels `fetch` du jeu.
-**5. Le décollage en mission** — « et continue le jeu, on peut tout faire sauf envoyer un avion décollé en mission ! c le comble ! » puis « sa doit etre nerveux au départ ! » puis « go ! » (17/11).
-Compris : quand on lance une mission, l'avion posé sur la carte de la base doit rouler de sa place jusqu'à la piste et décoller sous les yeux du joueur, puis quitter la carte ; « nerveux au départ » : une accélération vive dès le début du roulage, pas un glissement mou. Aujourd'hui l'avion disparaît simplement de la carte et la mission apparaît dans la liste des vols. Front seulement ; la durée du vol reste celle du serveur.
-
-**6. Pousser sur GitHub et publier la vitrine** — « push sur git là » puis « et publie sur le site web vitrine git » (17/11), « go ! » (17/11). C'est l'accord express que ta consigne du 16/11 demandait : je pousse `POC`, puis j'amène `main` au même point pour que `pages.yml` publie la vitrine.
 
 ## Questions en suspens
 

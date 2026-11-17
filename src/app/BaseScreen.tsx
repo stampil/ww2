@@ -10,6 +10,7 @@ import type { Arrival, Departure } from './AirfieldView'
 import CockpitCombatWindow from './CockpitCombatWindow'
 import DogfightWindow from './DogfightWindow'
 import { busyCrews, findAlert, unavailableCrews } from './flights'
+import { useStands } from './useStands'
 import { damageLevelOf } from '../three/damageStages'
 import GameWindow from './GameWindow'
 import Guide from './Guide'
@@ -87,6 +88,8 @@ function BaseScreen({ player }: { player: Player }) {
   const removeLanding = useCallback((aircraftId: number) => {
     setLandingIds((current) => current.filter((landingId) => landingId !== aircraftId))
   }, [])
+  const busy = busyCrews(flights)
+  const stands = useStands(base?.squadron.aircraft.map((aircraft) => aircraft.id) ?? [], busy.aircraftIds, base === null ? 0 : TERRAIN_PLANS[base.terrainPlan].stands.length)
 
   if (hasNoBase) {
     return <BaseChoice onClaim={claimBase} />
@@ -142,19 +145,18 @@ function BaseScreen({ player }: { player: Player }) {
   }
 
   const plan = TERRAIN_PLANS[base.terrainPlan]
-  const busy = busyCrews(flights)
   const unavailable = unavailableCrews(busy, rests, hangarAircraft)
   const upgradeOf = (building: UpgradeName) => base.upgrades.find((candidate) => candidate.upgrade === building)!
   const servicedAircraftIds = hangarAircraft.filter((state) => state.inspectionSeconds !== null || state.repairSeconds !== null).map((state) => state.aircraftId)
 
   const parkedAircraft: ParkedAircraft[] = []
   const arrivals: Arrival[] = []
-  for (let place = 0; place < base.squadron.aircraft.length; place += 1) {
-    const aircraft = base.squadron.aircraft[place]
-    const stand = plan.stands[place]
-    if (stand === undefined || busy.aircraftIds.includes(aircraft.id)) {
+  for (const aircraft of base.squadron.aircraft) {
+    const standNumber = stands.get(aircraft.id)
+    if (standNumber === undefined) {
       continue
     }
+    const stand = plan.stands[standNumber]
     if (landingIds.includes(aircraft.id)) {
       arrivals.push({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability) })
     } else {

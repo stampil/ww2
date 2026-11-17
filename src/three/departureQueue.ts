@@ -6,7 +6,7 @@ export const GROUP_WAIT_SECONDS = 10
 export const DEPARTURE_STAGGER_SECONDS = 0.5
 // A new group reaches the slots only this long after the previous group has started to roll, so the slots are empty.
 const CLEARANCE_SECONDS = 3
-// An aircraft reaches its slot at least this long after the one in front of it, so none has to pass another.
+// An aircraft reaches its slot at least this long after the one behind it, which came before: none has to pass another.
 const ARRIVAL_SPACING_SECONDS = 2.5
 
 /** The aircraft waiting on the runway to leave together, one behind the other; times are seconds on the clock of the scene. */
@@ -17,7 +17,12 @@ export class DepartureGroup {
     this.arrivals = [firstArrivalSeconds]
   }
 
-  /** When the lead starts to roll: at once when the group is full, else after the wait that follows the last arrival. */
+  /** How many aircraft the group has. */
+  get size(): number {
+    return this.arrivals.length
+  }
+
+  /** When the front aircraft starts to roll: at once when the group is full, else after the wait that follows the last arrival. */
   get releaseSeconds(): number {
     const lastArrival = Math.max(...this.arrivals)
     return this.arrivals.length === GROUP_SIZE ? lastArrival : lastArrival + GROUP_WAIT_SECONDS
@@ -28,15 +33,16 @@ export class DepartureGroup {
     return this.arrivals.length < GROUP_SIZE && orderSeconds < this.releaseSeconds
   }
 
-  /** Takes one more aircraft in, in the slot behind the last: 0 is the lead, at the front. It arrives after the aircraft in front of it. */
+  /** Takes one more aircraft in, in the slot in front of the last: 0 is the rear, where the first to come stands, and the last to come is at the front. */
   add(naturalArrivalSeconds: number): { slot: number; arrivalSeconds: number } {
     const arrivalSeconds = Math.max(naturalArrivalSeconds, Math.max(...this.arrivals) + ARRIVAL_SPACING_SECONDS)
     this.arrivals.push(arrivalSeconds)
     return { slot: this.arrivals.length - 1, arrivalSeconds }
   }
 
+  /** The aircraft at the front rolls first, then the one behind it, half a second apart. */
   startSecondsOf(slot: number): number {
-    return this.releaseSeconds + slot * DEPARTURE_STAGGER_SECONDS
+    return this.releaseSeconds + (this.size - 1 - slot) * DEPARTURE_STAGGER_SECONDS
   }
 }
 

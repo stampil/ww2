@@ -48,13 +48,13 @@ function climbedMeters(flightSeconds: number): number {
   return CLIMB_RATE_METERS_PER_SECOND * (flightSeconds - CLIMB_RAMP_SECONDS / 2)
 }
 
-/** The departure of an aircraft that starts to roll at `startX` on the runway, heading east: roll, climb, a half turn to the right, and back on the far side. */
+/** The departure of an aircraft that starts to roll at a place of the runway, heading east: roll, climb, a half turn to the right, and back on the far side. */
 export class DepartureFlight {
   readonly durationSeconds: number
   private readonly rollSeconds = LIFTOFF_SPEED_METERS_PER_SECOND / ACCELERATION_METERS_PER_SECOND_SQUARED
   private readonly turnRadius = (LIFTOFF_SPEED_METERS_PER_SECOND * TURN_SECONDS) / TURN_ANGLE_RADIANS
 
-  constructor(private readonly startX: number) {
+  constructor() {
     this.durationSeconds = this.rollSeconds + STRAIGHT_CLIMB_SECONDS + TURN_SECONDS + RETURN_SECONDS
   }
 
@@ -65,7 +65,8 @@ export class DepartureFlight {
     return smoothStep(swingInStart, swingInStart + FRONT_VIEW_SWING_SECONDS, time) * (1 - smoothStep(swingOutStart, swingOutStart + FRONT_VIEW_SWING_SECONDS, time))
   }
 
-  pose(time: number): FlightPose {
+  /** `startX` is where the aircraft stands on the runway at the start of the roll. */
+  pose(time: number, startX: number): FlightPose {
     const rolledSeconds = clamp(time, 0, this.rollSeconds)
     const flightSeconds = Math.max(0, time - this.rollSeconds)
     const straightSeconds = Math.min(flightSeconds, STRAIGHT_CLIMB_SECONDS)
@@ -74,7 +75,7 @@ export class DepartureFlight {
     const turnedRadians = (TURN_ANGLE_RADIANS * turnSeconds) / TURN_SECONDS
 
     const x =
-      this.startX +
+      startX +
       (ACCELERATION_METERS_PER_SECOND_SQUARED * rolledSeconds * rolledSeconds) / 2 +
       LIFTOFF_SPEED_METERS_PER_SECOND * (straightSeconds - returnSeconds) +
       this.turnRadius * Math.sin(turnedRadians)

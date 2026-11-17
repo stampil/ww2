@@ -22,6 +22,11 @@ const STOP_FADE_SECONDS = 0.05
 const STOP_MILLISECONDS = 150
 const NOISE_SECONDS = 1
 const END_MARGIN_SECONDS = 0.05
+const CHOICE_KEY = 'french-touch-music'
+const CHOICE_OFF = 'off'
+const CHOICE_ON = 'on'
+// The first of these that the player does, anywhere on the page, lets the music start.
+const GESTURE_EVENTS = ['pointerdown', 'keydown']
 
 const LEAD: Voice = { type: 'sawtooth', gain: 0.1, attackSeconds: 0.03, releaseSeconds: 0.12, cutoffHertz: 2400, detunes: [-7, 7] }
 const PAD: Voice = { type: 'triangle', gain: 0.06, attackSeconds: 0.15, releaseSeconds: 0.3, cutoffHertz: 3000, detunes: [0] }
@@ -42,19 +47,43 @@ function hertzOf(midi: number): number {
   return A4_HERTZ * 2 ** ((midi - A4_MIDI) / SEMITONES_PER_OCTAVE)
 }
 
+/** Whether the player has not turned the music off; it is on until they do. */
+function wantsMusic(): boolean {
+  try {
+    return localStorage.getItem(CHOICE_KEY) !== CHOICE_OFF
+  } catch {
+    return true
+  }
+}
+
+function rememberChoice(wantsIt: boolean): void {
+  try {
+    localStorage.setItem(CHOICE_KEY, wantsIt ? CHOICE_ON : CHOICE_OFF)
+  } catch {
+    // Storage is refused (a private window, for one): the choice only lasts until the page is closed.
+  }
+}
+
 /**
- * Plays the theme of the game, over and over, with the Web Audio API: a lead of detuned saws, a pad, a bass and drums. It has to be started by
- * a click, as browsers allow nothing else. Everything is made of oscillators and noise, so there is no sound file.
+ * Plays the theme of the game, over and over, with the Web Audio API: a lead of detuned saws, a pad, a bass and drums. Browsers allow sound only
+ * after a gesture of the player, so the music starts at the first click or key, unless the player has turned it off; their choice is kept.
+ * Everything is made of oscillators and noise, so there is no sound file.
  */
 export class MusicPlayer {
   private context: AudioContext | undefined
   private master: GainNode | undefined
   private timer: number | undefined
   private nextLoopSeconds = 0
+  private isWaitingForGesture = false
   private readonly listeners = new Set<() => void>()
 
   get isPlaying(): boolean {
     return this.context !== undefined
+  }
+
+  /** Whether the music is on: it plays, or it will as soon as the player does something on the page. */
+  get isOn(): boolean {
+    return this.isPlaying || this.isWaitingForGesture
   }
 
   /** For `useSyncExternalStore`: calls the listener when the music starts or stops. */
@@ -63,12 +92,37 @@ export class MusicPlayer {
     return () => this.listeners.delete(listener)
   }
 
+  /** Turns the music on or off, and keeps the choice for the next visit. */
   toggle(): void {
-    if (this.isPlaying) {
+    if (this.isOn) {
+      this.isWaitingForGesture = false
       this.stop()
+      rememberChoice(false)
     } else {
       this.start()
+      rememberChoice(true)
     }
+    this.notify()
+  }
+
+  /** Starts the music at the first gesture of the player, unless they have turned it off; a click on the music button is not that gesture. */
+  startOnFirstGesture(): void {
+    if (this.isOn || !wantsMusic()) {
+      return
+    }
+    this.isWaitingForGesture = true
+    const begin = (event: Event): void => {
+      if (event.target instanceof Element && event.target.closest('.music-toggle') !== null) {
+        return
+      }
+      GESTURE_EVENTS.forEach((name) => window.removeEventListener(name, begin))
+      if (this.isWaitingForGesture) {
+        this.isWaitingForGesture = false
+        this.start()
+      }
+    }
+    GESTURE_EVENTS.forEach((name) => window.addEventListener(name, begin))
+    this.notify()
   }
 
   start(): void {

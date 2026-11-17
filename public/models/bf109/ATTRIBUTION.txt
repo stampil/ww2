@@ -1,0 +1,13 @@
+Messerschmitt Bf 109 G-14, 3D model
+
+Original work: Detlef Faber and Marco Schüle, FlightGear aircraft.
+Source: https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/bf109/
+License: GNU General Public License, version 2, as the README of that FlightGear aircraft says (the README and the text of the licence are next to this file).
+
+Changes made for this site (French Touch, https://github.com/stampil/ww2):
+- the AC3D model was converted by tools/convert-ac3d.py into bf109.json and bf109.bin: the discs that stand for a turning propeller and the
+  high-detail glass copies are dropped, the axes are turned (x right, y nose, z up) and the model is centred vertically;
+- bf109g.png is the texture of the original, shrunk from 2048 x 2048 to 1024 x 1024 pixels;
+- the animations, the interior and the weapons of the FlightGear aircraft are not included.
+
+The model is the G-14 of 1944, the Bf 109 of the FlightGear hangar: the E of 1940 is not in it.

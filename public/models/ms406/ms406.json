@@ -1,0 +1,711 @@
+{
+ "license": "GPL-2.0",
+ "source": "FlightGear FGAddon, Aircraft/MS-406, Emmanuel Baranger, converted by tools/convert-ac3d.py",
+ "materials": [
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "texture.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": "texture.png"
+  }
+ ],
+ "parts": [
+  {
+   "name": "Cylindre",
+   "origin": [
+    -0.0,
+    -3.28062,
+    0.0936
+   ],
+   "vertexCount": 340,
+   "indexCount": 1536,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1536
+    }
+   ],
+   "positionsOffset": 0,
+   "normalsOffset": 4080,
+   "uvsOffset": 8160,
+   "indicesOffset": 10880
+  },
+  {
+   "name": "aileronD",
+   "origin": [
+    3.86817,
+    0.751,
+    0.01129
+   ],
+   "vertexCount": 174,
+   "indexCount": 870,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 870
+    }
+   ],
+   "positionsOffset": 17024,
+   "normalsOffset": 19112,
+   "uvsOffset": 21200,
+   "indicesOffset": 22592
+  },
+  {
+   "name": "aileronG",
+   "origin": [
+    -3.86817,
+    0.751,
+    0.01129
+   ],
+   "vertexCount": 174,
+   "indexCount": 870,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 870
+    }
+   ],
+   "positionsOffset": 26072,
+   "normalsOffset": 28160,
+   "uvsOffset": 30248,
+   "indicesOffset": 31640
+  },
+  {
+   "name": "ailes",
+   "origin": [
+    -0.0,
+    0.69661,
+    -0.14633
+   ],
+   "vertexCount": 974,
+   "indexCount": 4938,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4938
+    }
+   ],
+   "positionsOffset": 35120,
+   "normalsOffset": 46808,
+   "uvsOffset": 58496,
+   "indicesOffset": 66288
+  },
+  {
+   "name": "ailes2",
+   "origin": [
+    -0.0,
+    -2.99227,
+    -0.07064
+   ],
+   "vertexCount": 246,
+   "indexCount": 1200,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1200
+    }
+   ],
+   "positionsOffset": 86040,
+   "normalsOffset": 88992,
+   "uvsOffset": 91944,
+   "indicesOffset": 93912
+  },
+  {
+   "name": "air",
+   "origin": [
+    -0.0,
+    3.11603,
+    0.10136
+   ],
+   "vertexCount": 138,
+   "indexCount": 672,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 672
+    }
+   ],
+   "positionsOffset": 98712,
+   "normalsOffset": 100368,
+   "uvsOffset": 102024,
+   "indicesOffset": 103128
+  },
+  {
+   "name": "axeDB",
+   "origin": [
+    1.72952,
+    1.90617,
+    -1.0895
+   ],
+   "vertexCount": 321,
+   "indexCount": 1056,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1056
+    }
+   ],
+   "positionsOffset": 105816,
+   "normalsOffset": 109668,
+   "uvsOffset": 113520,
+   "indicesOffset": 116088
+  },
+  {
+   "name": "axeDH",
+   "origin": [
+    1.67146,
+    1.76692,
+    -0.55948
+   ],
+   "vertexCount": 384,
+   "indexCount": 1728,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1728
+    }
+   ],
+   "positionsOffset": 120312,
+   "normalsOffset": 124920,
+   "uvsOffset": 129528,
+   "indicesOffset": 132600
+  },
+  {
+   "name": "axeGB",
+   "origin": [
+    -1.72952,
+    1.90617,
+    -1.0895
+   ],
+   "vertexCount": 321,
+   "indexCount": 1056,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1056
+    }
+   ],
+   "positionsOffset": 139512,
+   "normalsOffset": 143364,
+   "uvsOffset": 147216,
+   "indicesOffset": 149784
+  },
+  {
+   "name": "axeGH",
+   "origin": [
+    -1.67146,
+    1.76692,
+    -0.55948
+   ],
+   "vertexCount": 384,
+   "indexCount": 1728,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1728
+    }
+   ],
+   "positionsOffset": 154008,
+   "normalsOffset": 158616,
+   "uvsOffset": 163224,
+   "indicesOffset": 166296
+  },
+  {
+   "name": "bol",
+   "origin": [
+    -0.0,
+    3.76942,
+    0.34727
+   ],
+   "vertexCount": 274,
+   "indexCount": 1344,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1344
+    }
+   ],
+   "positionsOffset": 173208,
+   "normalsOffset": 176496,
+   "uvsOffset": 179784,
+   "indicesOffset": 181976
+  },
+  {
+   "name": "bosses",
+   "origin": [
+    -0.0,
+    1.97733,
+    -0.17694
+   ],
+   "vertexCount": 616,
+   "indexCount": 3264,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 3264
+    }
+   ],
+   "positionsOffset": 187352,
+   "normalsOffset": 194744,
+   "uvsOffset": 202136,
+   "indicesOffset": 207064
+  },
+  {
+   "name": "canon",
+   "origin": [
+    -0.0,
+    3.89216,
+    0.34727
+   ],
+   "vertexCount": 161,
+   "indexCount": 864,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 864
+    }
+   ],
+   "positionsOffset": 220120,
+   "normalsOffset": 222052,
+   "uvsOffset": 223984,
+   "indicesOffset": 225272
+  },
+  {
+   "name": "canopy",
+   "origin": [
+    -0.0,
+    0.03342,
+    0.81596
+   ],
+   "vertexCount": 30,
+   "indexCount": 72,
+   "groups": [
+    {
+     "material": 1,
+     "start": 0,
+     "count": 72
+    }
+   ],
+   "positionsOffset": 228728,
+   "normalsOffset": 229088,
+   "uvsOffset": 229448,
+   "indicesOffset": 229688
+  },
+  {
+   "name": "direction",
+   "origin": [
+    -0.0,
+    -3.7672,
+    0.5949
+   ],
+   "vertexCount": 458,
+   "indexCount": 2400,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 2400
+    }
+   ],
+   "positionsOffset": 229976,
+   "normalsOffset": 235472,
+   "uvsOffset": 240968,
+   "indicesOffset": 244632
+  },
+  {
+   "name": "echappes",
+   "origin": [
+    -0.0,
+    2.61679,
+    0.39488
+   ],
+   "vertexCount": 2316,
+   "indexCount": 13248,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 13248
+    }
+   ],
+   "positionsOffset": 254232,
+   "normalsOffset": 282024,
+   "uvsOffset": 309816,
+   "indicesOffset": 328344
+  },
+  {
+   "name": "fuselage",
+   "origin": [
+    -0.0,
+    0.04999,
+    0.38628
+   ],
+   "vertexCount": 1120,
+   "indexCount": 6006,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 6006
+    }
+   ],
+   "positionsOffset": 381336,
+   "normalsOffset": 394776,
+   "uvsOffset": 408216,
+   "indicesOffset": 417176
+  },
+  {
+   "name": "guns",
+   "origin": [
+    -0.0,
+    2.19965,
+    -0.17694
+   ],
+   "vertexCount": 258,
+   "indexCount": 1344,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1344
+    }
+   ],
+   "positionsOffset": 441200,
+   "normalsOffset": 444296,
+   "uvsOffset": 447392,
+   "indicesOffset": 449456
+  },
+  {
+   "name": "helice",
+   "origin": [
+    0.0049,
+    3.6765,
+    0.00952
+   ],
+   "vertexCount": 144,
+   "indexCount": 792,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 792
+    }
+   ],
+   "positionsOffset": 454832,
+   "normalsOffset": 456560,
+   "uvsOffset": 458288,
+   "indicesOffset": 459440
+  },
+  {
+   "name": "pate",
+   "origin": [
+    -0.0,
+    -3.01439,
+    -0.62144
+   ],
+   "vertexCount": 175,
+   "indexCount": 846,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 846
+    }
+   ],
+   "positionsOffset": 462608,
+   "normalsOffset": 464708,
+   "uvsOffset": 466808,
+   "indicesOffset": 468208
+  },
+  {
+   "name": "porteD",
+   "origin": [
+    1.74881,
+    1.85619,
+    -0.72784
+   ],
+   "vertexCount": 80,
+   "indexCount": 348,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 348
+    }
+   ],
+   "positionsOffset": 471592,
+   "normalsOffset": 472552,
+   "uvsOffset": 473512,
+   "indicesOffset": 474152
+  },
+  {
+   "name": "porteG",
+   "origin": [
+    -1.74881,
+    1.85619,
+    -0.72784
+   ],
+   "vertexCount": 80,
+   "indexCount": 348,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 348
+    }
+   ],
+   "positionsOffset": 475544,
+   "normalsOffset": 476504,
+   "uvsOffset": 477464,
+   "indicesOffset": 478104
+  },
+  {
+   "name": "priseair",
+   "origin": [
+    -0.0,
+    1.88697,
+    -0.53242
+   ],
+   "vertexCount": 260,
+   "indexCount": 1296,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1296
+    }
+   ],
+   "positionsOffset": 479496,
+   "normalsOffset": 482616,
+   "uvsOffset": 485736,
+   "indicesOffset": 487816
+  },
+  {
+   "name": "profondeur",
+   "origin": [
+    -0.0,
+    -3.36322,
+    -0.07307
+   ],
+   "vertexCount": 700,
+   "indexCount": 3636,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 3636
+    }
+   ],
+   "positionsOffset": 493000,
+   "normalsOffset": 501400,
+   "uvsOffset": 509800,
+   "indicesOffset": 515400
+  },
+  {
+   "name": "roueD",
+   "origin": [
+    1.66677,
+    1.94478,
+    -1.34738
+   ],
+   "vertexCount": 802,
+   "indexCount": 4800,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4800
+    }
+   ],
+   "positionsOffset": 529944,
+   "normalsOffset": 539568,
+   "uvsOffset": 549192,
+   "indicesOffset": 555608
+  },
+  {
+   "name": "roueG",
+   "origin": [
+    -1.66677,
+    1.94478,
+    -1.34738
+   ],
+   "vertexCount": 802,
+   "indexCount": 4800,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4800
+    }
+   ],
+   "positionsOffset": 574808,
+   "normalsOffset": 584432,
+   "uvsOffset": 594056,
+   "indicesOffset": 600472
+  },
+  {
+   "name": "tourcanopy",
+   "origin": [
+    -0.0,
+    0.03125,
+    0.79503
+   ],
+   "vertexCount": 66,
+   "indexCount": 198,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 198
+    }
+   ],
+   "positionsOffset": 619672,
+   "normalsOffset": 620464,
+   "uvsOffset": 621256,
+   "indicesOffset": 621784
+  },
+  {
+   "name": "tourvitres",
+   "origin": [
+    -0.0,
+    0.0147,
+    0.79503
+   ],
+   "vertexCount": 134,
+   "indexCount": 414,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 414
+    }
+   ],
+   "positionsOffset": 622576,
+   "normalsOffset": 624184,
+   "uvsOffset": 625792,
+   "indicesOffset": 626864
+  },
+  {
+   "name": "trous",
+   "origin": [
+    -0.0,
+    -0.06166,
+    0.39889
+   ],
+   "vertexCount": 1055,
+   "indexCount": 4986,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4986
+    }
+   ],
+   "positionsOffset": 628520,
+   "normalsOffset": 641180,
+   "uvsOffset": 653840,
+   "indicesOffset": 662280
+  },
+  {
+   "name": "viseur",
+   "origin": [
+    0.0683,
+    1.1293,
+    0.81911
+   ],
+   "vertexCount": 1494,
+   "indexCount": 6108,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 6108
+    }
+   ],
+   "positionsOffset": 682224,
+   "normalsOffset": 700152,
+   "uvsOffset": 718080,
+   "indicesOffset": 730032
+  },
+  {
+   "name": "vitres",
+   "origin": [
+    -0.0,
+    0.01384,
+    0.80634
+   ],
+   "vertexCount": 90,
+   "indexCount": 246,
+   "groups": [
+    {
+     "material": 1,
+     "start": 0,
+     "count": 246
+    }
+   ],
+   "positionsOffset": 754464,
+   "normalsOffset": 755544,
+   "uvsOffset": 756624,
+   "indicesOffset": 757344
+  },
+  {
+   "name": "voletD",
+   "origin": [
+    1.70188,
+    0.59028,
+    -0.26913
+   ],
+   "vertexCount": 29,
+   "indexCount": 114,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 114
+    }
+   ],
+   "positionsOffset": 758328,
+   "normalsOffset": 758676,
+   "uvsOffset": 759024,
+   "indicesOffset": 759256
+  },
+  {
+   "name": "voletG",
+   "origin": [
+    -1.70188,
+    0.59028,
+    -0.26913
+   ],
+   "vertexCount": 29,
+   "indexCount": 114,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 114
+    }
+   ],
+   "positionsOffset": 759712,
+   "normalsOffset": 760060,
+   "uvsOffset": 760408,
+   "indicesOffset": 760640
+  }
+ ]
+}

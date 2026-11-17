@@ -1,0 +1,11 @@
+Morane-Saulnier MS.406, 3D model
+
+Original work: Emmanuel Baranger (3D/FDM) and VonS (FDM/texture), FlightGear aircraft.
+Source: https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/MS-406/
+License: GNU General Public License, version 2 (the COPYING file next to this one, also the file of that FlightGear aircraft).
+
+Changes made for this site (French Touch, https://github.com/stampil/ww2):
+- the AC3D model was converted by tools/convert-ac3d.py into ms406.json and ms406.bin: the discs that stand for a turning propeller and the
+  high-detail glass copies are dropped, the axes are turned (x right, y nose, z up) and the model is centred vertically;
+- texture.png is the texture of the original, shrunk from 2048 x 2048 to 1024 x 1024 pixels;
+- the animations, the interior and the weapons of the FlightGear aircraft are not included.

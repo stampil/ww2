@@ -2,7 +2,6 @@
   "language": "Langue",
   "eyebrow": "Projet prêt à démarrer",
   "title": "Bonjour, le monde.",
-  "description": "Une base React, TypeScript et Vite, avec les traductions déjà en place.",
   "status": {
     "checking": "Vérification de l'API…",
     "ready": "L'API et la base de données répondent.",
@@ -32,6 +31,7 @@
   "credits": {
     "model": "Modèle 3D du D.520 :",
     "adapted": "adapté pour ce site",
+    "aircraft": "Autres avions 3D :",
     "bush": "Buisson 3D :",
     "publicDomain": "domaine public (CC0)"
   },
@@ -46,6 +46,26 @@
     "moveRudder": "Bouger la gouverne de direction",
     "moveElevator": "Bouger la gouverne de profondeur",
     "runGauges": "Faire vivre les cadrans"
+  },
+  "showcase": {
+    "title": "Les autres modèles 3D du jeu",
+    "hint": "faites glisser pour tourner l'avion",
+    "ms406": {
+      "name": "Morane-Saulnier M.S.406",
+      "role": "Chasseur français"
+    },
+    "bf109": {
+      "name": "Messerschmitt Bf 109 G-14",
+      "role": "Chasseur allemand, version G-14 de 1944"
+    },
+    "ju87": {
+      "name": "Junkers Ju 87",
+      "role": "Bombardier en piqué allemand, le « Stuka »"
+    },
+    "he111": {
+      "name": "Heinkel He 111",
+      "role": "Bombardier moyen allemand"
+    }
   },
   "cockpit": {
     "title": "Le cockpit en 3D",

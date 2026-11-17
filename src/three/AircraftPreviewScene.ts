@@ -4,18 +4,23 @@ import { LiveryTextures } from './liveries'
 import { OrbitViewScene } from './OrbitViewScene'
 import type { OrbitView } from './OrbitViewScene'
 import { ParkingPad } from './ParkingPad'
-import { Sky } from './Sky'
+import { FLIGHT_SKY, HORIZON_COLOR, OVERHEAD_SKY, Sky } from './Sky'
 
 /** On the ground: seen from above on its parking pad among bushes, turned by dragging. In flight: seen from the side, nose to the right, in a sky. */
 export type PreviewMode = 'ground' | 'flight'
 
-// Straight above the aircraft, a little toward its tail, so that its nose points up the picture; dragging turns it from there.
+// Straight above the aircraft, a little toward its tail, so that its nose points up the picture; dragging turns it from there,
+// down to the horizon but never below the terrain.
 const GROUND_VIEW: OrbitView = {
   cameraStart: new THREE.Vector3(0, -0.5, 28),
   target: new THREE.Vector3(0, 0, 0),
-  farMeters: 100,
+  farMeters: 600,
   isDraggable: true,
+  maxPolarAngleDegrees: 85,
 }
+// The terrain fades into the haze of the horizon between these distances from the camera, before it ends.
+const HAZE_NEAR_METERS = 80
+const HAZE_FAR_METERS = 260
 // On the right side of the aircraft (+x) looking toward -x, with +z up: the nose (+y) points to the right of the picture.
 const FLIGHT_VIEW: OrbitView = {
   cameraStart: new THREE.Vector3(17, 0, 0.6),
@@ -40,23 +45,24 @@ function loadFrenchLivery(maxAnisotropy: number, aircraft: D520Model): { liverie
   return { liveries, loaded }
 }
 
-/** One D.520 of the hangar on its own: on the ground, on terrain among bushes, to turn about, or in flight in a sky, with the damage it really has. */
+/** One D.520 of the hangar on its own: on the ground, on terrain among a few bushes placed by `layoutSeed`, under a sky, to turn about, or in flight in a sky, with the damage it really has. */
 export class AircraftPreviewScene extends OrbitViewScene {
   private readonly aircraft = new D520Model()
   private readonly liveries: LiveryTextures
-  private readonly sky: Sky | undefined
+  private readonly sky: Sky
 
-  constructor(container: HTMLElement, mode: PreviewMode, damageLevel: number) {
+  constructor(container: HTMLElement, mode: PreviewMode, damageLevel: number, layoutSeed: number) {
     super(container, mode === 'flight' ? FLIGHT_VIEW : GROUND_VIEW)
     const { liveries, loaded: frenchLiveryLoaded } = loadFrenchLivery(this.renderer.capabilities.getMaxAnisotropy(), this.aircraft)
     this.liveries = liveries
     this.scene.add(this.aircraft.object)
+    this.sky = new Sky(mode === 'flight' ? FLIGHT_SKY : OVERHEAD_SKY)
+    this.scene.add(this.sky.object)
     if (mode === 'ground') {
-      this.scene.add(new ParkingPad().object)
+      this.scene.add(new ParkingPad(layoutSeed).object)
+      this.scene.fog = new THREE.Fog(HORIZON_COLOR, HAZE_NEAR_METERS, HAZE_FAR_METERS)
     }
     if (mode === 'flight') {
-      this.sky = new Sky()
-      this.scene.add(this.sky.object)
       this.aircraft.setVelocity(FLIGHT_VELOCITY)
       this.aircraft.setControl('retractGear', true)
       this.aircraft.setControl('runEngine', true)
@@ -71,7 +77,7 @@ export class AircraftPreviewScene extends OrbitViewScene {
 
   protected advance(deltaSeconds: number): void {
     this.aircraft.update(deltaSeconds)
-    this.sky?.update(deltaSeconds)
+    this.sky.update(deltaSeconds)
   }
 
   private showDamage(level: number): void {

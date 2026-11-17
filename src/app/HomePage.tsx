@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import AircraftShowcase from './AircraftShowcase'
 import AircraftViewer from './AircraftViewer'
 import BushViewer from './BushViewer'
 import CockpitViewer from './CockpitViewer'
@@ -7,7 +8,9 @@ import TakeoffView from './TakeoffView'
 import TerrainTest from './TerrainTest'
 import { GAME_HASH } from './useHashRoute'
 
-/** The showcase: every 3D model of the game (the D.520, its cockpit, the bush) turned by dragging, the terrain test and the takeoff. It runs in the browser alone, with no server. */
+const SHOWCASE_AIRCRAFT_IDS = ['ms406', 'bf109', 'ju87', 'he111']
+
+/** The showcase: every 3D model of the game (the D.520 and its cockpit, the other aircraft, the bush) turned by dragging, the terrain test and the takeoff. It runs in the browser alone, with no server. */
 function HomePage() {
   const { t } = useTranslation()
 
@@ -19,10 +22,15 @@ function HomePage() {
         <div className="viewers">
           <AircraftViewer />
           <CockpitViewer />
+        </div>
+        <h2 className="viewers-title">{t('showcase.title')}</h2>
+        <div className="viewers viewers-wrapping">
+          {SHOWCASE_AIRCRAFT_IDS.map((aircraftId) => (
+            <AircraftShowcase key={aircraftId} aircraftId={aircraftId} />
+          ))}
           <BushViewer />
         </div>
         <TerrainTest />
-        <p className="description">{t('description')}</p>
         <a className="play-link" href={GAME_HASH}>
           {t('home.play')}
         </a>

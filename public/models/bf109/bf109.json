@@ -1,0 +1,1057 @@
+{
+ "license": "GPL-2.0",
+ "source": "FlightGear FGAddon, Aircraft/bf109 (Bf 109 G-14), Detlef Faber and Marco Sch\u00fcle, converted by tools/convert-ac3d.py",
+ "materials": [
+  {
+   "name": "Newmat",
+   "opacity": 1.0,
+   "texture": "bf109g.png"
+  },
+  {
+   "name": "fuselage.006",
+   "opacity": 1.0,
+   "texture": "bf109g.png"
+  },
+  {
+   "name": "glass",
+   "opacity": 0.312,
+   "texture": "bf109g.png"
+  },
+  {
+   "name": "glass",
+   "opacity": 0.312,
+   "texture": null
+  }
+ ],
+ "parts": [
+  {
+   "name": "aileron.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 34,
+   "indexCount": 48,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 48
+    }
+   ],
+   "positionsOffset": 0,
+   "normalsOffset": 408,
+   "uvsOffset": 816,
+   "indicesOffset": 1088
+  },
+  {
+   "name": "aileron.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 34,
+   "indexCount": 48,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 48
+    }
+   ],
+   "positionsOffset": 1280,
+   "normalsOffset": 1688,
+   "uvsOffset": 2096,
+   "indicesOffset": 2368
+  },
+  {
+   "name": "airintake",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 752,
+   "indexCount": 1104,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1104
+    }
+   ],
+   "positionsOffset": 2560,
+   "normalsOffset": 11584,
+   "uvsOffset": 20608,
+   "indicesOffset": 26624
+  },
+  {
+   "name": "antenna_G10",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 56,
+   "indexCount": 84,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 84
+    }
+   ],
+   "positionsOffset": 31040,
+   "normalsOffset": 31712,
+   "uvsOffset": 32384,
+   "indicesOffset": 32832
+  },
+  {
+   "name": "beule_G6",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 1240,
+   "indexCount": 1800,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1800
+    }
+   ],
+   "positionsOffset": 33168,
+   "normalsOffset": 48048,
+   "uvsOffset": 62928,
+   "indicesOffset": 72848
+  },
+  {
+   "name": "canopy_G10",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 408,
+   "indexCount": 576,
+   "groups": [
+    {
+     "material": 1,
+     "start": 0,
+     "count": 576
+    }
+   ],
+   "positionsOffset": 80048,
+   "normalsOffset": 84944,
+   "uvsOffset": 89840,
+   "indicesOffset": 93104
+  },
+  {
+   "name": "canopyglass_G10",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 63,
+   "indexCount": 69,
+   "groups": [
+    {
+     "material": 3,
+     "start": 0,
+     "count": 69
+    }
+   ],
+   "positionsOffset": 95408,
+   "normalsOffset": 96164,
+   "uvsOffset": 96920,
+   "indicesOffset": 97424
+  },
+  {
+   "name": "Circle.012",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 2208,
+   "indexCount": 3168,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 3168
+    }
+   ],
+   "positionsOffset": 97700,
+   "normalsOffset": 124196,
+   "uvsOffset": 150692,
+   "indicesOffset": 168356
+  },
+  {
+   "name": "cockpitframe_G",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 256,
+   "indexCount": 348,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 348
+    }
+   ],
+   "positionsOffset": 181028,
+   "normalsOffset": 184100,
+   "uvsOffset": 187172,
+   "indicesOffset": 189220
+  },
+  {
+   "name": "coolflap.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 116,
+   "indexCount": 168,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 168
+    }
+   ],
+   "positionsOffset": 190612,
+   "normalsOffset": 192004,
+   "uvsOffset": 193396,
+   "indicesOffset": 194324
+  },
+  {
+   "name": "coolflap.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 116,
+   "indexCount": 168,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 168
+    }
+   ],
+   "positionsOffset": 194996,
+   "normalsOffset": 196388,
+   "uvsOffset": 197780,
+   "indicesOffset": 198708
+  },
+  {
+   "name": "dfloop",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 444,
+   "indexCount": 648,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 648
+    }
+   ],
+   "positionsOffset": 199380,
+   "normalsOffset": 204708,
+   "uvsOffset": 210036,
+   "indicesOffset": 213588
+  },
+  {
+   "name": "elevator.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 66,
+   "indexCount": 66,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 66
+    }
+   ],
+   "positionsOffset": 216180,
+   "normalsOffset": 216972,
+   "uvsOffset": 217764,
+   "indicesOffset": 218292
+  },
+  {
+   "name": "elevator.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 66,
+   "indexCount": 66,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 66
+    }
+   ],
+   "positionsOffset": 218556,
+   "normalsOffset": 219348,
+   "uvsOffset": 220140,
+   "indicesOffset": 220668
+  },
+  {
+   "name": "engine",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 1975,
+   "indexCount": 2787,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 2787
+    }
+   ],
+   "positionsOffset": 220932,
+   "normalsOffset": 244632,
+   "uvsOffset": 268332,
+   "indicesOffset": 284132
+  },
+  {
+   "name": "engine.002",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 20,
+   "indexCount": 30,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 30
+    }
+   ],
+   "positionsOffset": 295280,
+   "normalsOffset": 295520,
+   "uvsOffset": 295760,
+   "indicesOffset": 295920
+  },
+  {
+   "name": "engine.003",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 20,
+   "indexCount": 30,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 30
+    }
+   ],
+   "positionsOffset": 296040,
+   "normalsOffset": 296280,
+   "uvsOffset": 296520,
+   "indicesOffset": 296680
+  },
+  {
+   "name": "flap.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 28,
+   "indexCount": 30,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 30
+    }
+   ],
+   "positionsOffset": 296800,
+   "normalsOffset": 297136,
+   "uvsOffset": 297472,
+   "indicesOffset": 297696
+  },
+  {
+   "name": "flap.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 28,
+   "indexCount": 30,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 30
+    }
+   ],
+   "positionsOffset": 297816,
+   "normalsOffset": 298152,
+   "uvsOffset": 298488,
+   "indicesOffset": 298712
+  },
+  {
+   "name": "flap.R.001",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 92,
+   "indexCount": 138,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 138
+    }
+   ],
+   "positionsOffset": 298832,
+   "normalsOffset": 299936,
+   "uvsOffset": 301040,
+   "indicesOffset": 301776
+  },
+  {
+   "name": "flap.R.002",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 92,
+   "indexCount": 138,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 138
+    }
+   ],
+   "positionsOffset": 302328,
+   "normalsOffset": 303432,
+   "uvsOffset": 304536,
+   "indicesOffset": 305272
+  },
+  {
+   "name": "frontglass",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 56,
+   "indexCount": 66,
+   "groups": [
+    {
+     "material": 3,
+     "start": 0,
+     "count": 66
+    }
+   ],
+   "positionsOffset": 305824,
+   "normalsOffset": 306496,
+   "uvsOffset": 307168,
+   "indicesOffset": 307616
+  },
+  {
+   "name": "fuselage_G",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 934,
+   "indexCount": 1206,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1206
+    }
+   ],
+   "positionsOffset": 307880,
+   "normalsOffset": 319088,
+   "uvsOffset": 330296,
+   "indicesOffset": 337768
+  },
+  {
+   "name": "gear1.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 432,
+   "indexCount": 648,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 648
+    }
+   ],
+   "positionsOffset": 342592,
+   "normalsOffset": 347776,
+   "uvsOffset": 352960,
+   "indicesOffset": 356416
+  },
+  {
+   "name": "gear1.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 432,
+   "indexCount": 648,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 648
+    }
+   ],
+   "positionsOffset": 359008,
+   "normalsOffset": 364192,
+   "uvsOffset": 369376,
+   "indicesOffset": 372832
+  },
+  {
+   "name": "geardoor1.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 52,
+   "indexCount": 72,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 72
+    }
+   ],
+   "positionsOffset": 375424,
+   "normalsOffset": 376048,
+   "uvsOffset": 376672,
+   "indicesOffset": 377088
+  },
+  {
+   "name": "geardoor1.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 52,
+   "indexCount": 72,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 72
+    }
+   ],
+   "positionsOffset": 377376,
+   "normalsOffset": 378000,
+   "uvsOffset": 378624,
+   "indicesOffset": 379040
+  },
+  {
+   "name": "geardoor1.R.002",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 54,
+   "indexCount": 66,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 66
+    }
+   ],
+   "positionsOffset": 379328,
+   "normalsOffset": 379976,
+   "uvsOffset": 380624,
+   "indicesOffset": 381056
+  },
+  {
+   "name": "geardoor2.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 102,
+   "indexCount": 144,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 144
+    }
+   ],
+   "positionsOffset": 381320,
+   "normalsOffset": 382544,
+   "uvsOffset": 383768,
+   "indicesOffset": 384584
+  },
+  {
+   "name": "geardoor2.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 102,
+   "indexCount": 144,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 144
+    }
+   ],
+   "positionsOffset": 385160,
+   "normalsOffset": 386384,
+   "uvsOffset": 387608,
+   "indicesOffset": 388424
+  },
+  {
+   "name": "hstab.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 69,
+   "indexCount": 87,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 87
+    }
+   ],
+   "positionsOffset": 389000,
+   "normalsOffset": 389828,
+   "uvsOffset": 390656,
+   "indicesOffset": 391208
+  },
+  {
+   "name": "hstab.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 69,
+   "indexCount": 87,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 87
+    }
+   ],
+   "positionsOffset": 391556,
+   "normalsOffset": 392384,
+   "uvsOffset": 393212,
+   "indicesOffset": 393764
+  },
+  {
+   "name": "K-beule",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 480,
+   "indexCount": 480,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 480
+    }
+   ],
+   "positionsOffset": 394112,
+   "normalsOffset": 399872,
+   "uvsOffset": 405632,
+   "indicesOffset": 409472
+  },
+  {
+   "name": "prophub",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 1104,
+   "indexCount": 1584,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1584
+    }
+   ],
+   "positionsOffset": 411392,
+   "normalsOffset": 424640,
+   "uvsOffset": 437888,
+   "indicesOffset": 446720
+  },
+  {
+   "name": "rudder_w",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 242,
+   "indexCount": 276,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 276
+    }
+   ],
+   "positionsOffset": 453056,
+   "normalsOffset": 455960,
+   "uvsOffset": 458864,
+   "indicesOffset": 460800
+  },
+  {
+   "name": "slat.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 71,
+   "indexCount": 99,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 99
+    }
+   ],
+   "positionsOffset": 461904,
+   "normalsOffset": 462756,
+   "uvsOffset": 463608,
+   "indicesOffset": 464176
+  },
+  {
+   "name": "slat.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 68,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 464572,
+   "normalsOffset": 465388,
+   "uvsOffset": 466204,
+   "indicesOffset": 466748
+  },
+  {
+   "name": "tailgear",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 1536,
+   "indexCount": 2304,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 2304
+    }
+   ],
+   "positionsOffset": 467132,
+   "normalsOffset": 485564,
+   "uvsOffset": 503996,
+   "indicesOffset": 516284
+  },
+  {
+   "name": "tailwheel",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 1488,
+   "indexCount": 2160,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 2160
+    }
+   ],
+   "positionsOffset": 525500,
+   "normalsOffset": 543356,
+   "uvsOffset": 561212,
+   "indicesOffset": 573116
+  },
+  {
+   "name": "tropfilter2",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 1126,
+   "indexCount": 1662,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1662
+    }
+   ],
+   "positionsOffset": 581756,
+   "normalsOffset": 595268,
+   "uvsOffset": 608780,
+   "indicesOffset": 617788
+  },
+  {
+   "name": "upcoolflap.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 56,
+   "indexCount": 84,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 84
+    }
+   ],
+   "positionsOffset": 624436,
+   "normalsOffset": 625108,
+   "uvsOffset": 625780,
+   "indicesOffset": 626228
+  },
+  {
+   "name": "upcoolflap.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 56,
+   "indexCount": 84,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 84
+    }
+   ],
+   "positionsOffset": 626564,
+   "normalsOffset": 627236,
+   "uvsOffset": 627908,
+   "indicesOffset": 628356
+  },
+  {
+   "name": "vstab_w",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 402,
+   "indexCount": 498,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 498
+    }
+   ],
+   "positionsOffset": 628692,
+   "normalsOffset": 633516,
+   "uvsOffset": 638340,
+   "indicesOffset": 641556
+  },
+  {
+   "name": "wheel1.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 3264,
+   "indexCount": 4800,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4800
+    }
+   ],
+   "positionsOffset": 643548,
+   "normalsOffset": 682716,
+   "uvsOffset": 721884,
+   "indicesOffset": 747996
+  },
+  {
+   "name": "wheel1.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 3264,
+   "indexCount": 4800,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4800
+    }
+   ],
+   "positionsOffset": 767196,
+   "normalsOffset": 806364,
+   "uvsOffset": 845532,
+   "indicesOffset": 871644
+  },
+  {
+   "name": "wheel2.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 288,
+   "indexCount": 432,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 432
+    }
+   ],
+   "positionsOffset": 890844,
+   "normalsOffset": 894300,
+   "uvsOffset": 897756,
+   "indicesOffset": 900060
+  },
+  {
+   "name": "wheel2.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 288,
+   "indexCount": 432,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 432
+    }
+   ],
+   "positionsOffset": 901788,
+   "normalsOffset": 905244,
+   "uvsOffset": 908700,
+   "indicesOffset": 911004
+  },
+  {
+   "name": "wing.L",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 811,
+   "indexCount": 1119,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1119
+    }
+   ],
+   "positionsOffset": 912732,
+   "normalsOffset": 922464,
+   "uvsOffset": 932196,
+   "indicesOffset": 938684
+  },
+  {
+   "name": "wing.R",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.5136
+   ],
+   "vertexCount": 827,
+   "indexCount": 1119,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1119
+    }
+   ],
+   "positionsOffset": 943160,
+   "normalsOffset": 953084,
+   "uvsOffset": 963008,
+   "indicesOffset": 969624
+  }
+ ]
+}

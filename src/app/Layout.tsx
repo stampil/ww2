@@ -6,6 +6,13 @@ import { HOME_HASH } from './useHashRoute'
 const MODEL_SOURCE_URL = 'https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/D520/'
 const MODEL_LICENSE_URL = assetUrl('models/d520/COPYING')
 const MODEL_ATTRIBUTION_URL = assetUrl('models/d520/ATTRIBUTION.txt')
+const FGADDON_AIRCRAFT_URL = 'https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/'
+const SHOWCASE_CREDITS = [
+  { aircraftId: 'ms406', directory: 'MS-406', author: 'Emmanuel Baranger' },
+  { aircraftId: 'ju87', directory: 'Ju-87', author: 'Emmanuel Baranger' },
+  { aircraftId: 'he111', directory: 'Heinkel-He-111', author: 'Emmanuel Baranger' },
+  { aircraftId: 'bf109', directory: 'bf109', author: 'Detlef Faber, Marco Schüle' },
+]
 const BUSH_SOURCE_URL = 'https://poly.pizza/m/ooG6CkLyE8'
 const BUSH_ATTRIBUTION_URL = assetUrl('models/bush/ATTRIBUTION.txt')
 
@@ -51,7 +58,15 @@ function Layout({ tools, children }: { tools?: ReactNode; children: ReactNode })
           <span>{t('footer')}</span>
           <span className="credits">
             {t('credits.model')} <a href={MODEL_SOURCE_URL}>Emmanuel Baranger</a>, FlightGear,{' '}
-            <a href={MODEL_LICENSE_URL}>GPL v2</a>, <a href={MODEL_ATTRIBUTION_URL}>{t('credits.adapted')}</a>. {t('credits.bush')}{' '}
+            <a href={MODEL_LICENSE_URL}>GPL v2</a>, <a href={MODEL_ATTRIBUTION_URL}>{t('credits.adapted')}</a>. {t('credits.aircraft')}{' '}
+            {SHOWCASE_CREDITS.map((credit) => (
+              <span key={credit.aircraftId}>
+                <a href={`${FGADDON_AIRCRAFT_URL}${credit.directory}/`}>{t(`showcase.${credit.aircraftId}.name`)}</a>, {credit.author}, FlightGear,{' '}
+                <a href={assetUrl(`models/${credit.aircraftId}/COPYING`)}>GPL v2</a>,{' '}
+                <a href={assetUrl(`models/${credit.aircraftId}/ATTRIBUTION.txt`)}>{t('credits.adapted')}</a>.{' '}
+              </span>
+            ))}
+            {t('credits.bush')}{' '}
             <a href={BUSH_SOURCE_URL}>Quaternius</a>, <a href={BUSH_ATTRIBUTION_URL}>{t('credits.publicDomain')}</a>.
           </span>
         </div>

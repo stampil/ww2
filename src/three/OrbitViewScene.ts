@@ -13,8 +13,16 @@ const SUN_LIGHT_INTENSITY = 2
 const SUN_POSITION = new THREE.Vector3(-30, 20, 60)
 const FILL_LIGHT_INTENSITY = 0.8
 const FILL_POSITION = new THREE.Vector3(30, -20, -10)
+const FRAMING_SCALE = 0.8
 
-export type OrbitView = { cameraStart: THREE.Vector3; target: THREE.Vector3; farMeters: number; isDraggable: boolean }
+/** `maxPolarAngleDegrees` is how far from straight above the camera may be dragged; leave it out to let it go all the way round. */
+export type OrbitView = {
+  cameraStart: THREE.Vector3
+  target: THREE.Vector3
+  farMeters: number
+  isDraggable: boolean
+  maxPolarAngleDegrees?: number
+}
 
 /** A subject alone on a clear background, turned in every direction by dragging unless its view is fixed. Owns its WebGL canvas. */
 export abstract class OrbitViewScene {
@@ -38,6 +46,9 @@ export abstract class OrbitViewScene {
     this.controls.enabled = view.isDraggable
     this.controls.enableZoom = false
     this.controls.enablePan = false
+    if (view.maxPolarAngleDegrees !== undefined) {
+      this.controls.maxPolarAngle = THREE.MathUtils.degToRad(view.maxPolarAngleDegrees)
+    }
     this.controls.enableDamping = true
     this.controls.dampingFactor = DAMPING_FACTOR
     this.controls.update()
@@ -61,6 +72,16 @@ export abstract class OrbitViewScene {
     this.resizeObserver.disconnect()
     this.controls.dispose()
     disposeScene(this.scene, this.renderer)
+  }
+
+  /** Aims the camera at a subject whose bounding sphere is known, from where it stands now, far enough back for the subject to fill the view; an aircraft is flat, so it fills less than its sphere. */
+  protected frame(center: THREE.Vector3, radiusMeters: number): void {
+    const halfFieldOfViewRadians = THREE.MathUtils.degToRad(CAMERA_FIELD_OF_VIEW_DEGREES / 2)
+    const distanceMeters = (radiusMeters * FRAMING_SCALE) / Math.sin(halfFieldOfViewRadians)
+    const direction = this.camera.position.clone().sub(this.controls.target).normalize()
+    this.controls.target.copy(center)
+    this.camera.position.copy(center).addScaledVector(direction, distanceMeters)
+    this.controls.update()
   }
 
   /** Moves the subject on by one frame. */

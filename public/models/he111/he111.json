@@ -1,0 +1,837 @@
+{
+ "license": "GPL-2.0",
+ "source": "FlightGear FGAddon, Aircraft/Heinkel-He-111, Emmanuel Baranger, converted by tools/convert-ac3d.py",
+ "materials": [
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "texture.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": "texture.png"
+  }
+ ],
+ "parts": [
+  {
+   "name": "aileronD",
+   "origin": [
+    8.23491,
+    1.63,
+    0.29677
+   ],
+   "vertexCount": 306,
+   "indexCount": 1650,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1650
+    }
+   ],
+   "positionsOffset": 0,
+   "normalsOffset": 3672,
+   "uvsOffset": 7344,
+   "indicesOffset": 9792
+  },
+  {
+   "name": "aileronG",
+   "origin": [
+    -8.23491,
+    1.63,
+    0.29677
+   ],
+   "vertexCount": 306,
+   "indexCount": 1650,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1650
+    }
+   ],
+   "positionsOffset": 16392,
+   "normalsOffset": 20064,
+   "uvsOffset": 23736,
+   "indicesOffset": 26184
+  },
+  {
+   "name": "ailes",
+   "origin": [
+    0.0,
+    3.48857,
+    -0.13743
+   ],
+   "vertexCount": 1966,
+   "indexCount": 10470,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 10470
+    }
+   ],
+   "positionsOffset": 32784,
+   "normalsOffset": 56376,
+   "uvsOffset": 79968,
+   "indicesOffset": 95696
+  },
+  {
+   "name": "ailes2",
+   "origin": [
+    -0.0,
+    -5.99735,
+    -0.0169
+   ],
+   "vertexCount": 908,
+   "indexCount": 4788,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4788
+    }
+   ],
+   "positionsOffset": 137576,
+   "normalsOffset": 148472,
+   "uvsOffset": 159368,
+   "indicesOffset": 166632
+  },
+  {
+   "name": "antennes",
+   "origin": [
+    -0.0,
+    -2.85538,
+    1.95121
+   ],
+   "vertexCount": 180,
+   "indexCount": 840,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 840
+    }
+   ],
+   "positionsOffset": 185784,
+   "normalsOffset": 187944,
+   "uvsOffset": 190104,
+   "indicesOffset": 191544
+  },
+  {
+   "name": "axeA",
+   "origin": [
+    -0.0,
+    -6.28013,
+    -0.52729
+   ],
+   "vertexCount": 187,
+   "indexCount": 876,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 876
+    }
+   ],
+   "positionsOffset": 194904,
+   "normalsOffset": 197148,
+   "uvsOffset": 199392,
+   "indicesOffset": 200888
+  },
+  {
+   "name": "axeDB",
+   "origin": [
+    2.66052,
+    4.96671,
+    -1.94778
+   ],
+   "vertexCount": 368,
+   "indexCount": 1812,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1812
+    }
+   ],
+   "positionsOffset": 204392,
+   "normalsOffset": 208808,
+   "uvsOffset": 213224,
+   "indicesOffset": 216168
+  },
+  {
+   "name": "axeDC",
+   "origin": [
+    2.66052,
+    4.55624,
+    -1.86601
+   ],
+   "vertexCount": 108,
+   "indexCount": 540,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 540
+    }
+   ],
+   "positionsOffset": 223416,
+   "normalsOffset": 224712,
+   "uvsOffset": 226008,
+   "indicesOffset": 226872
+  },
+  {
+   "name": "axeDD",
+   "origin": [
+    2.66052,
+    4.63453,
+    -1.33895
+   ],
+   "vertexCount": 36,
+   "indexCount": 108,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 108
+    }
+   ],
+   "positionsOffset": 229032,
+   "normalsOffset": 229464,
+   "uvsOffset": 229896,
+   "indicesOffset": 230184
+  },
+  {
+   "name": "axeDE",
+   "origin": [
+    2.66052,
+    3.85024,
+    -1.15342
+   ],
+   "vertexCount": 102,
+   "indexCount": 426,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 426
+    }
+   ],
+   "positionsOffset": 230616,
+   "normalsOffset": 231840,
+   "uvsOffset": 233064,
+   "indicesOffset": 233880
+  },
+  {
+   "name": "axeDH",
+   "origin": [
+    2.66052,
+    5.16049,
+    -1.20637
+   ],
+   "vertexCount": 144,
+   "indexCount": 540,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 540
+    }
+   ],
+   "positionsOffset": 235584,
+   "normalsOffset": 237312,
+   "uvsOffset": 239040,
+   "indicesOffset": 240192
+  },
+  {
+   "name": "axeGB",
+   "origin": [
+    -2.66,
+    4.96671,
+    -1.94778
+   ],
+   "vertexCount": 368,
+   "indexCount": 1812,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1812
+    }
+   ],
+   "positionsOffset": 242352,
+   "normalsOffset": 246768,
+   "uvsOffset": 251184,
+   "indicesOffset": 254128
+  },
+  {
+   "name": "axeGC",
+   "origin": [
+    -2.66,
+    4.55624,
+    -1.86601
+   ],
+   "vertexCount": 108,
+   "indexCount": 540,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 540
+    }
+   ],
+   "positionsOffset": 261376,
+   "normalsOffset": 262672,
+   "uvsOffset": 263968,
+   "indicesOffset": 264832
+  },
+  {
+   "name": "axeGD",
+   "origin": [
+    -2.66,
+    4.63453,
+    -1.33895
+   ],
+   "vertexCount": 36,
+   "indexCount": 108,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 108
+    }
+   ],
+   "positionsOffset": 266992,
+   "normalsOffset": 267424,
+   "uvsOffset": 267856,
+   "indicesOffset": 268144
+  },
+  {
+   "name": "axeGE",
+   "origin": [
+    -2.66,
+    3.85024,
+    -1.15342
+   ],
+   "vertexCount": 102,
+   "indexCount": 426,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 426
+    }
+   ],
+   "positionsOffset": 268576,
+   "normalsOffset": 269800,
+   "uvsOffset": 271024,
+   "indicesOffset": 271840
+  },
+  {
+   "name": "axeGH",
+   "origin": [
+    -2.66,
+    5.16049,
+    -1.20637
+   ],
+   "vertexCount": 144,
+   "indexCount": 540,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 540
+    }
+   ],
+   "positionsOffset": 273544,
+   "normalsOffset": 275272,
+   "uvsOffset": 277000,
+   "indicesOffset": 278152
+  },
+  {
+   "name": "bolD",
+   "origin": [
+    2.67854,
+    7.82138,
+    -0.41622
+   ],
+   "vertexCount": 320,
+   "indexCount": 1818,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1818
+    }
+   ],
+   "positionsOffset": 280312,
+   "normalsOffset": 284152,
+   "uvsOffset": 287992,
+   "indicesOffset": 290552
+  },
+  {
+   "name": "bolG",
+   "origin": [
+    -2.67854,
+    7.82139,
+    -0.41622
+   ],
+   "vertexCount": 320,
+   "indexCount": 1818,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1818
+    }
+   ],
+   "positionsOffset": 297824,
+   "normalsOffset": 301664,
+   "uvsOffset": 305504,
+   "indicesOffset": 308064
+  },
+  {
+   "name": "cables",
+   "origin": [
+    -0.0,
+    -2.86964,
+    2.37767
+   ],
+   "vertexCount": 12,
+   "indexCount": 36,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 36
+    }
+   ],
+   "positionsOffset": 315336,
+   "normalsOffset": 315480,
+   "uvsOffset": 315624,
+   "indicesOffset": 315720
+  },
+  {
+   "name": "direction",
+   "origin": [
+    -0.0,
+    -7.45074,
+    1.50441
+   ],
+   "vertexCount": 138,
+   "indexCount": 690,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 690
+    }
+   ],
+   "positionsOffset": 315864,
+   "normalsOffset": 317520,
+   "uvsOffset": 319176,
+   "indicesOffset": 320280
+  },
+  {
+   "name": "echappes",
+   "origin": [
+    -0.0,
+    6.74718,
+    -0.59882
+   ],
+   "vertexCount": 2304,
+   "indexCount": 13416,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 13416
+    }
+   ],
+   "positionsOffset": 323040,
+   "normalsOffset": 350688,
+   "uvsOffset": 378336,
+   "indicesOffset": 396768
+  },
+  {
+   "name": "fuselage",
+   "origin": [
+    -0.0,
+    -0.01265,
+    0.67241
+   ],
+   "vertexCount": 2128,
+   "indexCount": 9789,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 9789
+    }
+   ],
+   "positionsOffset": 450432,
+   "normalsOffset": 475968,
+   "uvsOffset": 501504,
+   "indicesOffset": 518528
+  },
+  {
+   "name": "heliceD",
+   "origin": [
+    3.02047,
+    7.73138,
+    -0.33936
+   ],
+   "vertexCount": 144,
+   "indexCount": 792,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 792
+    }
+   ],
+   "positionsOffset": 557684,
+   "normalsOffset": 559412,
+   "uvsOffset": 561140,
+   "indicesOffset": 562292
+  },
+  {
+   "name": "heliceG",
+   "origin": [
+    -2.33661,
+    7.73139,
+    -0.33936
+   ],
+   "vertexCount": 144,
+   "indexCount": 792,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 792
+    }
+   ],
+   "positionsOffset": 565460,
+   "normalsOffset": 567188,
+   "uvsOffset": 568916,
+   "indicesOffset": 570068
+  },
+  {
+   "name": "moteurs",
+   "origin": [
+    -0.0,
+    4.7261,
+    -0.544
+   ],
+   "vertexCount": 1410,
+   "indexCount": 7122,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 7122
+    }
+   ],
+   "positionsOffset": 573236,
+   "normalsOffset": 590156,
+   "uvsOffset": 607076,
+   "indicesOffset": 618356
+  },
+  {
+   "name": "porteDE",
+   "origin": [
+    2.8399,
+    4.23491,
+    -1.18531
+   ],
+   "vertexCount": 73,
+   "indexCount": 324,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 324
+    }
+   ],
+   "positionsOffset": 646844,
+   "normalsOffset": 647720,
+   "uvsOffset": 648596,
+   "indicesOffset": 649180
+  },
+  {
+   "name": "porteDI",
+   "origin": [
+    2.49888,
+    4.23491,
+    -1.14826
+   ],
+   "vertexCount": 86,
+   "indexCount": 384,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 384
+    }
+   ],
+   "positionsOffset": 650476,
+   "normalsOffset": 651508,
+   "uvsOffset": 652540,
+   "indicesOffset": 653228
+  },
+  {
+   "name": "porteGE",
+   "origin": [
+    -2.8399,
+    4.23491,
+    -1.18531
+   ],
+   "vertexCount": 73,
+   "indexCount": 324,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 324
+    }
+   ],
+   "positionsOffset": 654764,
+   "normalsOffset": 655640,
+   "uvsOffset": 656516,
+   "indicesOffset": 657100
+  },
+  {
+   "name": "porteGI",
+   "origin": [
+    -2.49888,
+    4.23491,
+    -1.14826
+   ],
+   "vertexCount": 86,
+   "indexCount": 384,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 384
+    }
+   ],
+   "positionsOffset": 658396,
+   "normalsOffset": 659428,
+   "uvsOffset": 660460,
+   "indicesOffset": 661148
+  },
+  {
+   "name": "profondeur",
+   "origin": [
+    -0.0,
+    -7.44192,
+    -0.00452
+   ],
+   "vertexCount": 900,
+   "indexCount": 4872,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4872
+    }
+   ],
+   "positionsOffset": 662684,
+   "normalsOffset": 673484,
+   "uvsOffset": 684284,
+   "indicesOffset": 691484
+  },
+  {
+   "name": "roueA",
+   "origin": [
+    -0.0,
+    -6.41969,
+    -0.7111
+   ],
+   "vertexCount": 802,
+   "indexCount": 4800,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4800
+    }
+   ],
+   "positionsOffset": 710972,
+   "normalsOffset": 720596,
+   "uvsOffset": 730220,
+   "indicesOffset": 736636
+  },
+  {
+   "name": "roueD",
+   "origin": [
+    2.66026,
+    4.9164,
+    -2.25764
+   ],
+   "vertexCount": 802,
+   "indexCount": 4800,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4800
+    }
+   ],
+   "positionsOffset": 755836,
+   "normalsOffset": 765460,
+   "uvsOffset": 775084,
+   "indicesOffset": 781500
+  },
+  {
+   "name": "roueG",
+   "origin": [
+    -2.66026,
+    4.9164,
+    -2.25764
+   ],
+   "vertexCount": 802,
+   "indexCount": 4800,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 4800
+    }
+   ],
+   "positionsOffset": 800700,
+   "normalsOffset": 810324,
+   "uvsOffset": 819948,
+   "indicesOffset": 826364
+  },
+  {
+   "name": "tourtourelle",
+   "origin": [
+    -0.0,
+    2.79845,
+    1.17166
+   ],
+   "vertexCount": 198,
+   "indexCount": 606,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 606
+    }
+   ],
+   "positionsOffset": 845564,
+   "normalsOffset": 847940,
+   "uvsOffset": 850316,
+   "indicesOffset": 851900
+  },
+  {
+   "name": "trous",
+   "origin": [
+    -0.03481,
+    -0.216,
+    0.49765
+   ],
+   "vertexCount": 536,
+   "indexCount": 2112,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 2112
+    }
+   ],
+   "positionsOffset": 854324,
+   "normalsOffset": 860756,
+   "uvsOffset": 867188,
+   "indicesOffset": 871476
+  },
+  {
+   "name": "vitres",
+   "origin": [
+    -0.0,
+    3.95191,
+    -0.14069
+   ],
+   "vertexCount": 1076,
+   "indexCount": 3420,
+   "groups": [
+    {
+     "material": 1,
+     "start": 0,
+     "count": 3420
+    }
+   ],
+   "positionsOffset": 879924,
+   "normalsOffset": 892836,
+   "uvsOffset": 905748,
+   "indicesOffset": 914356
+  },
+  {
+   "name": "vitretourelle",
+   "origin": [
+    -0.0,
+    2.80422,
+    1.18412
+   ],
+   "vertexCount": 178,
+   "indexCount": 660,
+   "groups": [
+    {
+     "material": 1,
+     "start": 0,
+     "count": 660
+    }
+   ],
+   "positionsOffset": 928036,
+   "normalsOffset": 930172,
+   "uvsOffset": 932308,
+   "indicesOffset": 933732
+  },
+  {
+   "name": "voletD",
+   "origin": [
+    3.34761,
+    1.59484,
+    -0.23375
+   ],
+   "vertexCount": 159,
+   "indexCount": 732,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 732
+    }
+   ],
+   "positionsOffset": 936372,
+   "normalsOffset": 938280,
+   "uvsOffset": 940188,
+   "indicesOffset": 941460
+  },
+  {
+   "name": "voletG",
+   "origin": [
+    -3.34761,
+    1.59484,
+    -0.23375
+   ],
+   "vertexCount": 159,
+   "indexCount": 732,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 732
+    }
+   ],
+   "positionsOffset": 944388,
+   "normalsOffset": 946296,
+   "uvsOffset": 948204,
+   "indicesOffset": 949476
+  }
+ ]
+}

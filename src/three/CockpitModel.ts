@@ -104,7 +104,7 @@ export class CockpitModel {
   }
 
   private async load(): Promise<void> {
-    const { manifest, buffer } = await loadModelData(MODEL_NAME)
+    const { manifest, buffer } = await loadModelData('d520', MODEL_NAME)
     const materials = buildMaterials(manifest)
     const loader = new THREE.TextureLoader()
     const textures = new Map<string, THREE.Texture>()

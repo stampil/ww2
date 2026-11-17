@@ -1,11 +1,12 @@
-"""Converts the FlightGear D520 models (AC3D) into the binary files the site loads.
+"""Converts the FlightGear models (AC3D) of the D520 and of the other aircraft of the game into the binary files the site loads.
 
 Usage: python3 -I tools/convert-ac3d.py <ref directory> <output directory>
-The models are by Emmanuel Baranger, under the GPL v2 (see public/models/d520/ATTRIBUTION.txt). This script keeps the parts
+The models are under the GPL v2 (see the ATTRIBUTION.txt of each folder of public/models). For the D520 this script keeps the parts
 the site shows, turns the axes (AC3D: x aft, y up, z left) into ours (x right, y nose, z up, origin on the thrust axis),
 and writes d520.json and cockpit.json (parts, groups, materials, buffer offsets, part origins) beside d520.bin and
 cockpit.bin (positions, normals, uvs, indices). The cockpit files carry the offsets that FlightGear applies to the panel,
 the seat and the instruments; an instrument part is named after its folder, like airspeed/needle.
+The other aircraft (AIRCRAFT) keep every part that has surfaces, except the discs and the high-detail glass copies, centred vertically.
 """
 import json
 import sys
@@ -64,6 +65,16 @@ MODELS = {
         (f"{INSTRUMENTS_DIRECTORY}/collimator/collimator.ac", COLLIMATOR_OFFSET, ALL_PARTS, "collimator/"),
     ],
 }
+# The other aircraft of the game, seen from outside only: the AC3D file under <ref>, and where it comes from.
+AIRCRAFT = {
+    "ms406": ("flightgear-ms406/ms406.ac", "FlightGear FGAddon, Aircraft/MS-406, Emmanuel Baranger"),
+    "bf109": ("flightgear-bf109/bf109g14.ac", "FlightGear FGAddon, Aircraft/bf109 (Bf 109 G-14), Detlef Faber and Marco Schüle"),
+    "ju87": ("flightgear-ju87/ju87.ac", "FlightGear FGAddon, Aircraft/Ju-87, Emmanuel Baranger"),
+    "he111": ("flightgear-he111/he111.ac", "FlightGear FGAddon, Aircraft/Heinkel-He-111, Emmanuel Baranger"),
+}
+# Parts left out: the discs that stand for a turning propeller, and the high-detail glass copies.
+DROPPED_PREFIXES = ("HDR", "propblur", "propdisc", "propdisk", "pdisk")
+D520_SOURCE = "FlightGear FGAddon, Aircraft/D520, Emmanuel Baranger"
 HUB_PART = "bol"
 SMOOTH_FLAG = "0x10"
 
@@ -187,7 +198,7 @@ def build_part(record, offset, hub_y):
     return {"positions": output_positions, "normals": output_normals, "uvs": output_uvs, "indices": indices, "groups": groups}
 
 
-def convert_model(name, files, ref_directory, output_directory, hub_y):
+def convert_model(name, files, ref_directory, output_directory, hub_y, source):
     """Writes <name>.json and <name>.bin from the kept parts of every AC3D file, with their FlightGear offsets."""
     chunks = []
     parts = []
@@ -197,6 +208,8 @@ def convert_model(name, files, ref_directory, output_directory, hub_y):
         file_materials, objects = read_materials_and_objects(ref_directory / relative_path)
         by_name = {record["name"]: record for record in objects if record["name"]}
         part_names = list(by_name) if kept_parts is None else kept_parts
+        if kept_parts is None:
+            part_names = [part for part in part_names if by_name[part]["surfaces"] and not part.startswith(DROPPED_PREFIXES)]
         textures = {by_name[part_name]["texture"] for part_name in part_names} - {None}
         assert len(textures) == 1, (relative_path, textures)
         texture = textures.pop()
@@ -239,7 +252,7 @@ def convert_model(name, files, ref_directory, output_directory, hub_y):
     (output_directory / f"{name}.bin").write_bytes(b"".join(chunks))
     manifest = {
         "license": "GPL-2.0",
-        "source": "FlightGear FGAddon, Aircraft/D520, Emmanuel Baranger, converted by tools/convert-ac3d.py",
+        "source": f"{source}, converted by tools/convert-ac3d.py",
         "materials": materials,
         "parts": [entry for entry, _ in parts],
     }
@@ -259,7 +272,14 @@ def main():
     hub_y = float((hub_vertices[:, 1].min() + hub_vertices[:, 1].max()) / 2)
     print("axe de poussée (y AC3D du cône d'hélice):", round(hub_y, 3))
     for name, files in MODELS.items():
-        convert_model(name, files, ref_directory, output_directory, hub_y)
+        convert_model(name, files, ref_directory, output_directory, hub_y, D520_SOURCE)
+    for name, (relative_path, source) in AIRCRAFT.items():
+        _, objects = read_materials_and_objects(ref_directory / relative_path)
+        heights = [vertex[1] + record["loc"][1] for record in objects for vertex in record["vertices"]]
+        aircraft_hub_y = (min(heights) + max(heights)) / 2
+        aircraft_directory = output_directory.parent / name
+        aircraft_directory.mkdir(parents=True, exist_ok=True)
+        convert_model(name, [(relative_path, NO_OFFSET, ALL_PARTS, "")], ref_directory, aircraft_directory, aircraft_hub_y, source)
 
 
 main()

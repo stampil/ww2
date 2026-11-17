@@ -2,7 +2,6 @@
   "language": "Language",
   "eyebrow": "Project ready to begin",
   "title": "Hello, world.",
-  "description": "A React, TypeScript, and Vite foundation, with translations ready to go.",
   "status": {
     "checking": "Checking the API…",
     "ready": "The API and the database are answering.",
@@ -32,6 +31,7 @@
   "credits": {
     "model": "D.520 3D model:",
     "adapted": "adapted for this site",
+    "aircraft": "Other 3D aircraft:",
     "bush": "Bush 3D model:",
     "publicDomain": "public domain (CC0)"
   },
@@ -46,6 +46,26 @@
     "moveRudder": "Move the rudder",
     "moveElevator": "Move the elevator",
     "runGauges": "Run the gauges"
+  },
+  "showcase": {
+    "title": "The game's other 3D models",
+    "hint": "drag to turn the aircraft",
+    "ms406": {
+      "name": "Morane-Saulnier M.S.406",
+      "role": "French fighter"
+    },
+    "bf109": {
+      "name": "Messerschmitt Bf 109 G-14",
+      "role": "German fighter, the G-14 version of 1944"
+    },
+    "ju87": {
+      "name": "Junkers Ju 87",
+      "role": "German dive bomber, the \"Stuka\""
+    },
+    "he111": {
+      "name": "Heinkel He 111",
+      "role": "German medium bomber"
+    }
   },
   "cockpit": {
     "title": "The cockpit in 3D",

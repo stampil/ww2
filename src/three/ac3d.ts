@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { assetUrl } from '../assetUrl'
 
-const MODELS_URL = assetUrl('models/d520/')
+const MODELS_URL = assetUrl('models/')
 const SURFACE_ROUGHNESS = 0.8
 
 type PartGroup = { material: number; start: number; count: number }
@@ -20,11 +20,11 @@ type MaterialEntry = { name: string; opacity: number; texture: string | null }
 export type Manifest = { materials: MaterialEntry[]; parts: PartEntry[] }
 export type ModelData = { manifest: Manifest; buffer: ArrayBuffer }
 
-/** The manifest and the binary buffer that tools/convert-ac3d.py wrote for one model. */
-export async function loadModelData(name: string): Promise<ModelData> {
+/** The manifest and the binary buffer that tools/convert-ac3d.py wrote for one model, in the folder of its aircraft. */
+export async function loadModelData(folder: string, name: string): Promise<ModelData> {
   const [manifest, buffer] = await Promise.all([
-    fetch(`${MODELS_URL}${name}.json`).then((response) => response.json() as Promise<Manifest>),
-    fetch(`${MODELS_URL}${name}.bin`).then((response) => response.arrayBuffer()),
+    fetch(`${MODELS_URL}${folder}/${name}.json`).then((response) => response.json() as Promise<Manifest>),
+    fetch(`${MODELS_URL}${folder}/${name}.bin`).then((response) => response.arrayBuffer()),
   ])
   return { manifest, buffer }
 }

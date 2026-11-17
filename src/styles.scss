@@ -200,14 +200,6 @@ h1 {
   line-height: 0.98;
 }
 
-.description {
-  max-width: 34rem;
-  margin: 2rem 0 0;
-  color: var(--muted);
-  font-size: clamp(1rem, 2vw, 1.2rem);
-  line-height: 1.7;
-}
-
 .play-link {
   @include flex($display: inline-flex, $align: center, $justify: center);
   height: 2.5rem;
@@ -265,6 +257,21 @@ h1 {
   }
 }
 
+.viewers-wrapping {
+  margin-top: 1rem;
+
+  @include from('medium') {
+    flex-flow: row wrap;
+    align-items: flex-start;
+  }
+
+  .model-viewer {
+    @include from('medium') {
+      flex: 1 1 calc(50% - 1rem);
+    }
+  }
+}
+
 .model-viewer {
   @include flex($direction: column, $gap: 0.75rem);
   width: 100%;
@@ -313,6 +320,16 @@ h1 {
   margin: 1rem 0 0;
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.model-viewer-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.viewers-title {
+  margin: 2rem 0 0;
+  font-size: 1.25rem;
 }
 
 .model-viewer-hint {

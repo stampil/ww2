@@ -6,14 +6,13 @@ import AirfieldView from './AirfieldView'
 import type { Arrival, Departure } from './AirfieldView'
 import Icon from './Icon'
 import type { IconName } from './iconPaths'
-import MaintenanceCrew from './MaintenanceCrew'
+import MaintenanceCrews from './MaintenanceCrews'
 import type { BuildingName, Cell, PlacedSprite, TerrainPlan } from '../plans/terrainPlan'
 import { paintTiles } from '../three/patchImage'
 import { loadTerrainTextures } from '../three/terrainTextures'
 
 const TILE_PIXELS = 128
 const SPRITES_PATH = 'sprites/buildings/'
-const CREW_START_DELAY_MILLISECONDS = 1500
 const AIRCRAFT_WIDTH_TILES = 1.4
 
 /** What shows on a parked aircraft: nothing when it is fit, else the trouble it is in. */
@@ -143,9 +142,7 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
             </button>
           )
         })}
-        {servicedAircraftIds.map((aircraftId, place) => (
-          <MaintenanceCrew key={aircraftId} plan={plan} delayMilliseconds={place * CREW_START_DELAY_MILLISECONDS} />
-        ))}
+        <MaintenanceCrews plan={plan} servicedAircraftIds={servicedAircraftIds} parkedAircraft={parkedAircraft} />
       </div>
     </div>
   )

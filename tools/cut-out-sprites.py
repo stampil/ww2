@@ -83,4 +83,5 @@ def main():
         print(name, right - left, "x", bottom - top)
 
 
-main()
+if __name__ == '__main__':
+    main()

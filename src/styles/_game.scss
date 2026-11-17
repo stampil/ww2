@@ -529,17 +529,39 @@ button.base-sprite {
   flex-wrap: wrap;
 }
 
-// A mechanic on the way to the hangar; a dot stands for the picture to come.
-.maintenance-crew {
+// A mechanic: one frame of his sheet (four columns of frames, four rows), the point where he stands being his feet; the walk and the repair
+// play the four frames of a row one after the other. The row, and the flip of the right-hand walk to walk to the left, are set by his animation.
+.crew-member {
   position: absolute;
   z-index: 1;
-  width: 0.7rem;
-  aspect-ratio: 1;
-  border: 2px solid $outline;
-  border-radius: 50%;
-  background: $gold;
-  transform: translate(-50%, -50%);
+  height: calc(0.6 / var(--rows) * 100%);
+  aspect-ratio: 114 / 140;
+  background-repeat: no-repeat;
+  background-size: 400% 400%;
+  translate: -50% -100%;
   pointer-events: none;
+
+  &[data-pose='walk'] {
+    animation: crew-frames 0.45s steps(4) infinite;
+  }
+
+  &[data-pose='work'] {
+    animation: crew-frames 0.9s steps(4) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+  }
+}
+
+@keyframes crew-frames {
+  from {
+    background-position-x: 0%;
+  }
+
+  to {
+    background-position-x: 133.333%;
+  }
 }
 
 .game-message {

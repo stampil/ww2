@@ -96,6 +96,7 @@ export class DamageEffects {
   readonly object = new THREE.Group()
   private readonly particles: Particle[] = []
   private emitters: Emitter[] = []
+  private readonly wind = new THREE.Vector3()
 
   constructor() {
     const texture = softSpriteTexture()
@@ -105,6 +106,11 @@ export class DamageEffects {
       this.object.add(sprite)
       this.particles.push({ sprite, age: 0, life: 0, sizeStart: 0, sizeEnd: 0, opacity: 0, velocity: new THREE.Vector3() })
     }
+  }
+
+  /** The velocity of the aircraft in its own frame: the smoke stays in the air, so it trails against that velocity. */
+  setVelocity(velocity: THREE.Vector3): void {
+    this.wind.copy(velocity).negate()
   }
 
   /** Smoke and flames for this damage level. */
@@ -170,7 +176,7 @@ export class DamageEffects {
       return
     }
     const progress = particle.age / particle.life
-    particle.sprite.position.addScaledVector(particle.velocity, deltaSeconds)
+    particle.sprite.position.addScaledVector(particle.velocity, deltaSeconds).addScaledVector(this.wind, deltaSeconds)
     const size = particle.sizeStart + (particle.sizeEnd - particle.sizeStart) * progress
     particle.sprite.scale.set(size, size, 1)
     particle.sprite.material.opacity = particle.opacity * Math.min(1, progress / FADE_IN_SHARE) * (1 - progress)

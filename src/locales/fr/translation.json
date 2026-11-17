@@ -36,7 +36,8 @@
     "lowerFlaps": "Sortir les volets",
     "moveAilerons": "Bouger les ailerons",
     "moveRudder": "Bouger la gouverne de direction",
-    "moveElevator": "Bouger la gouverne de profondeur"
+    "moveElevator": "Bouger la gouverne de profondeur",
+    "runGauges": "Faire vivre les cadrans"
   },
   "cockpit": {
     "title": "Le cockpit en 3D",

@@ -3,8 +3,9 @@
 Usage: python3 -I tools/convert-ac3d.py <ref directory> <output directory>
 The models are by Emmanuel Baranger, under the GPL v2 (see public/models/d520/ATTRIBUTION.txt). This script keeps the parts
 the site shows, turns the axes (AC3D: x aft, y up, z left) into ours (x right, y nose, z up, origin on the thrust axis),
-and writes d520.json and cockpit.json (parts, groups, materials, buffer offsets) beside d520.bin and cockpit.bin
-(positions, normals, uvs, indices). The cockpit files carry the offsets that FlightGear applies to the panel and the seat.
+and writes d520.json and cockpit.json (parts, groups, materials, buffer offsets, part origins) beside d520.bin and
+cockpit.bin (positions, normals, uvs, indices). The cockpit files carry the offsets that FlightGear applies to the panel,
+the seat and the instruments; an instrument part is named after its folder, like airspeed/needle.
 """
 import json
 import sys
@@ -24,13 +25,43 @@ INTERIOR_PARTS = [
 NO_OFFSET = (0.0, 0.0, 0.0)
 PANEL_OFFSET = (-0.662, 0.0, 0.367)
 SEAT_OFFSET = (0.250, 0.0, 0.260)
+COLLIMATOR_OFFSET = (-0.427, 0.0, 0.823)
+# Where panel.xml puts each instrument on the panel (x aft, y right, z up, in meters).
+INSTRUMENT_OFFSETS = {
+    "airspeed": (-0.009, 0.000, 0.201),
+    "alt": (-0.007, 0.107, 0.155),
+    "vsi": (-0.007, 0.107, 0.260),
+    "clock": (-0.007, 0.189, 0.258),
+    "compass": (-0.002, 0.000, 0.301),
+    "oiltemp": (-0.007, -0.171, 0.235),
+    "temp": (-0.007, -0.244, 0.235),
+    "oilpress": (-0.007, -0.171, 0.163),
+    "press": (-0.007, -0.244, 0.163),
+    "tach": (-0.007, -0.301, 0.079),
+    "mano": (-0.007, -0.318, 0.163),
+}
 EXTERIOR_FILE = "flightgear-d520/d520.ac"
+INSTRUMENTS_DIRECTORY = "flightgear-d520-interior/Panel/Instruments"
+ALL_PARTS = None
+
+
+def plus(first, second):
+    return tuple(a + b for a, b in zip(first, second))
+
+
+# Each file: path, FlightGear offset, kept parts (None keeps every part), prefix of the part names.
+INSTRUMENT_FILES = [
+    (f"{INSTRUMENTS_DIRECTORY}/{name}/{name}.ac", plus(PANEL_OFFSET, offset), ALL_PARTS, f"{name}/")
+    for name, offset in INSTRUMENT_OFFSETS.items()
+]
 MODELS = {
-    "d520": [(EXTERIOR_FILE, NO_OFFSET, EXTERIOR_PARTS)],
+    "d520": [(EXTERIOR_FILE, NO_OFFSET, EXTERIOR_PARTS, "")],
     "cockpit": [
-        ("flightgear-d520-interior/interior.ac", NO_OFFSET, INTERIOR_PARTS),
-        ("flightgear-d520-interior/Panel/panel.ac", PANEL_OFFSET, ["panel"]),
-        ("flightgear-d520-interior/Seat/seat.ac", SEAT_OFFSET, ["seat"]),
+        ("flightgear-d520-interior/interior.ac", NO_OFFSET, INTERIOR_PARTS, ""),
+        ("flightgear-d520-interior/Panel/panel.ac", PANEL_OFFSET, ["panel"], ""),
+        ("flightgear-d520-interior/Seat/seat.ac", SEAT_OFFSET, ["seat"], ""),
+        *INSTRUMENT_FILES,
+        (f"{INSTRUMENTS_DIRECTORY}/collimator/collimator.ac", COLLIMATOR_OFFSET, ALL_PARTS, "collimator/"),
     ],
 }
 HUB_PART = "bol"
@@ -162,24 +193,43 @@ def convert_model(name, files, ref_directory, output_directory, hub_y):
     parts = []
     materials = []
     offset_in_buffer = 0
-    for relative_path, offset, kept_parts in files:
+    for relative_path, offset, kept_parts, prefix in files:
         file_materials, objects = read_materials_and_objects(ref_directory / relative_path)
-        by_name = {record["name"]: record for record in objects}
-        textures = {by_name[part_name]["texture"] for part_name in kept_parts}
+        by_name = {record["name"]: record for record in objects if record["name"]}
+        part_names = list(by_name) if kept_parts is None else kept_parts
+        textures = {by_name[part_name]["texture"] for part_name in part_names} - {None}
         assert len(textures) == 1, (relative_path, textures)
         texture = textures.pop()
         material_shift = len(materials)
         materials.extend({**material, "texture": texture} for material in file_materials)
-        for part_name in kept_parts:
-            part = build_part(by_name[part_name], offset, hub_y)
+        untextured_materials = {}
+        for part_name in part_names:
+            record = by_name[part_name]
+            part = build_part(record, offset, hub_y)
             arrays = [
                 ("positions", numpy.array(part["positions"], dtype="<f4")),
                 ("normals", numpy.array(part["normals"], dtype="<f4")),
                 ("uvs", numpy.array(part["uvs"], dtype="<f4")),
                 ("indices", numpy.array(part["indices"], dtype="<u4")),
             ]
-            groups = [{**group, "material": group["material"] + material_shift} for group in part["groups"]]
-            entry = {"name": part_name, "vertexCount": len(part["positions"]), "indexCount": len(part["indices"]), "groups": groups}
+            groups = []
+            for group in part["groups"]:
+                material = group["material"] + material_shift
+                if record["texture"] is None:
+                    # a part without a texture, like a glass, gets its own copy of the material, with no map
+                    if material not in untextured_materials:
+                        untextured_materials[material] = len(materials)
+                        materials.append({**materials[material], "texture": None})
+                    material = untextured_materials[material]
+                groups.append({**group, "material": material})
+            origin = to_our_frame((0.0, 0.0, 0.0), record["loc"], offset, hub_y)
+            entry = {
+                "name": prefix + part_name,
+                "origin": [round(value, 5) for value in origin],
+                "vertexCount": len(part["positions"]),
+                "indexCount": len(part["indices"]),
+                "groups": groups,
+            }
             for key, array in arrays:
                 entry[key + "Offset"] = offset_in_buffer
                 chunks.append(array.tobytes())

@@ -152,6 +152,11 @@ export class D520Model {
     this.showTexture()
   }
 
+  /** The velocity of the aircraft in its own frame, in meters per second: the smoke trails against it. */
+  setVelocity(velocity: THREE.Vector3): void {
+    this.effects.setVelocity(velocity)
+  }
+
   /** One more level of damage, up to destruction; returns the level reached. */
   inflictDamage(): number {
     if (this.damageLevel >= DESTROYED_LEVEL) {
@@ -175,12 +180,15 @@ export class D520Model {
     this.showTexture()
   }
 
-  /** Starts or stops one animation: it eases in and out, and the canopy slides along with the cockpit's. */
+  /** Starts or stops one animation: it eases in and out; the canopy is the cockpit's, and the gauges follow the engine. */
   setControl(control: AircraftControl, isActive: boolean): void {
     if (control === 'openCanopy') {
       this.cockpit.setControl(control, isActive)
     } else {
       this.eased[control].setTarget(isActive ? 1 : 0)
+    }
+    if (control === 'runEngine') {
+      this.cockpit.setControl('runGauges', isActive)
     }
   }
 

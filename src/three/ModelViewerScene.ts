@@ -12,6 +12,9 @@ const AIRCRAFT_VIEW: OrbitView = {
   farMeters: 100,
 }
 
+// The flight speed given to the aircraft on show, nose first, so that its smoke trails behind it.
+const AIRCRAFT_VELOCITY = new THREE.Vector3(0, 10, 0)
+
 /** The D.520 alone on a clear background, turned in every direction by dragging, with its animations. */
 export class ModelViewerScene extends OrbitViewScene {
   private readonly aircraft = new D520Model()
@@ -26,6 +29,7 @@ export class ModelViewerScene extends OrbitViewScene {
       }
     })
     this.scene.add(this.aircraft.object)
+    this.aircraft.setVelocity(AIRCRAFT_VELOCITY)
   }
 
   setLivery(livery: Livery): void {

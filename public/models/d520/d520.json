@@ -31,6 +31,11 @@
  "parts": [
   {
    "name": "fuselage",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 1158,
    "indexCount": 5730,
    "groups": [
@@ -47,6 +52,11 @@
   },
   {
    "name": "ailes",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 1294,
    "indexCount": 6240,
    "groups": [
@@ -63,6 +73,11 @@
   },
   {
    "name": "ailes2",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 416,
    "indexCount": 1908,
    "groups": [
@@ -79,6 +94,11 @@
   },
   {
    "name": "direction",
+   "origin": [
+    -0.0,
+    -3.65748,
+    0.26856
+   ],
    "vertexCount": 480,
    "indexCount": 2580,
    "groups": [
@@ -95,6 +115,11 @@
   },
   {
    "name": "profondeur",
+   "origin": [
+    -0.0,
+    -3.3838,
+    0.2911
+   ],
    "vertexCount": 486,
    "indexCount": 2340,
    "groups": [
@@ -111,6 +136,11 @@
   },
   {
    "name": "aileronG",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 116,
    "indexCount": 564,
    "groups": [
@@ -127,6 +157,11 @@
   },
   {
    "name": "aileronD",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 116,
    "indexCount": 564,
    "groups": [
@@ -143,6 +178,11 @@
   },
   {
    "name": "voletG",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 94,
    "indexCount": 324,
    "groups": [
@@ -159,6 +199,11 @@
   },
   {
    "name": "voletD",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 94,
    "indexCount": 324,
    "groups": [
@@ -175,6 +220,11 @@
   },
   {
    "name": "bol",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 306,
    "indexCount": 1536,
    "groups": [
@@ -191,6 +241,11 @@
   },
   {
    "name": "helice",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 144,
    "indexCount": 792,
    "groups": [
@@ -207,6 +262,11 @@
   },
   {
    "name": "propblur",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 36,
    "indexCount": 36,
    "groups": [
@@ -223,6 +283,11 @@
   },
   {
    "name": "canopy",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 58,
    "indexCount": 168,
    "groups": [
@@ -239,6 +304,11 @@
   },
   {
    "name": "tourcanopy",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 124,
    "indexCount": 360,
    "groups": [
@@ -255,6 +325,11 @@
   },
   {
    "name": "vitres",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 228,
    "indexCount": 903,
    "groups": [
@@ -271,6 +346,11 @@
   },
   {
    "name": "tourvitres",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 146,
    "indexCount": 414,
    "groups": [
@@ -287,6 +367,11 @@
   },
   {
    "name": "air",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 264,
    "indexCount": 1320,
    "groups": [
@@ -303,6 +388,11 @@
   },
   {
    "name": "priseair",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 300,
    "indexCount": 1536,
    "groups": [
@@ -319,6 +409,11 @@
   },
   {
    "name": "ailettes",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 186,
    "indexCount": 792,
    "groups": [
@@ -335,6 +430,11 @@
   },
   {
    "name": "cachesguns",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 220,
    "indexCount": 810,
    "groups": [
@@ -351,6 +451,11 @@
   },
   {
    "name": "echappements",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 2312,
    "indexCount": 12672,
    "groups": [
@@ -367,6 +472,11 @@
   },
   {
    "name": "roueG",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 802,
    "indexCount": 4800,
    "groups": [
@@ -383,6 +493,11 @@
   },
   {
    "name": "roueD",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 802,
    "indexCount": 4800,
    "groups": [
@@ -399,6 +514,11 @@
   },
   {
    "name": "roueA",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 802,
    "indexCount": 4800,
    "groups": [
@@ -415,6 +535,11 @@
   },
   {
    "name": "axeG",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 289,
    "indexCount": 1440,
    "groups": [
@@ -431,6 +556,11 @@
   },
   {
    "name": "axeD",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 289,
    "indexCount": 1440,
    "groups": [
@@ -447,6 +577,11 @@
   },
   {
    "name": "axeA",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 1089,
    "indexCount": 4224,
    "groups": [
@@ -463,6 +598,11 @@
   },
   {
    "name": "porteG",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 122,
    "indexCount": 504,
    "groups": [
@@ -479,6 +619,11 @@
   },
   {
    "name": "porteD",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 114,
    "indexCount": 504,
    "groups": [

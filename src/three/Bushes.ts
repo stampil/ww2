@@ -1,14 +1,14 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
-const BUSH_URL = '/models/bush/shrub_04_1k.gltf'
+const BUSH_URL = '/models/bush/bush.glb'
 const GLTF_TO_WORLD_RADIANS = Math.PI / 2
 const WORLD_UP = new THREE.Vector3(0, 0, 1)
 
 /** Where a bush stands on the ground, how wide it is and how it is turned about the vertical. */
 export type BushPlacement = { x: number; y: number; widthMeters: number; turnRadians: number }
 
-/** The 3D bushes: the Poly Haven shrub_04 (CC0), drawn once for every placement. Shown once loaded. */
+/** The 3D bushes: the Quaternius bush (CC0), drawn once for every placement. Shown once loaded. */
 export class Bushes {
   readonly object = new THREE.Group()
 
@@ -26,7 +26,7 @@ export class Bushes {
     })
   }
 
-  /** The shrub stood up (glTF up is y, ours is z), its foot on the ground at the origin, repeated at every placement. */
+  /** The bush stood up (glTF up is y, ours is z), its foot on the ground at the origin, repeated at every placement. */
   private instance(mesh: THREE.Mesh): THREE.InstancedMesh {
     const geometry = mesh.geometry.clone()
     geometry.applyMatrix4(mesh.matrixWorld)

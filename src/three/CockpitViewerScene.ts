@@ -5,8 +5,8 @@ import { OrbitViewScene } from './OrbitViewScene'
 import type { OrbitView } from './OrbitViewScene'
 
 const COCKPIT_VIEW: OrbitView = {
-  cameraStart: new THREE.Vector3(1.4, -2.2, 1.5),
-  target: new THREE.Vector3(0, 0, 0.1),
+  cameraStart: new THREE.Vector3(0.6, -1, 0.8),
+  target: new THREE.Vector3(0, 0.35, 0.15),
   farMeters: 20,
 }
 

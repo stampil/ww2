@@ -36,7 +36,8 @@
     "lowerFlaps": "Lower the flaps",
     "moveAilerons": "Move the ailerons",
     "moveRudder": "Move the rudder",
-    "moveElevator": "Move the elevator"
+    "moveElevator": "Move the elevator",
+    "runGauges": "Run the gauges"
   },
   "cockpit": {
     "title": "The cockpit in 3D",

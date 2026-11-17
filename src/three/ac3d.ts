@@ -6,6 +6,7 @@ const SURFACE_ROUGHNESS = 0.8
 type PartGroup = { material: number; start: number; count: number }
 type PartEntry = {
   name: string
+  origin: [number, number, number]
   vertexCount: number
   indexCount: number
   positionsOffset: number
@@ -14,7 +15,7 @@ type PartEntry = {
   indicesOffset: number
   groups: PartGroup[]
 }
-type MaterialEntry = { name: string; opacity: number; texture: string }
+type MaterialEntry = { name: string; opacity: number; texture: string | null }
 export type Manifest = { materials: MaterialEntry[]; parts: PartEntry[] }
 export type ModelData = { manifest: Manifest; buffer: ArrayBuffer }
 

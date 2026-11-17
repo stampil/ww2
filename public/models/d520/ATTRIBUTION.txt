@@ -8,15 +8,17 @@ Changes made for this site (French Touch, https://github.com/stampil/ww2):
 - the AC3D models (Models/d520.ac, Models/Interior/interior.ac, Panel/panel.ac and Seat/seat.ac) were converted by
   tools/convert-ac3d.py into d520.json, d520.bin, cockpit.json and cockpit.bin: only 29 of the 41 parts of the aircraft are
   kept (machine guns, holes, antennas, lights, pitot, high-detail glass copies and the propeller disc are dropped), as well
-  as the 12 parts of the interior without the HDR copies, the panel and the seat (the instruments are not included);
+  as the 12 parts of the interior without the HDR copies, the panel, the seat, the collimator sight and 11 instruments
+  (airspeed, altimeter, vertical speed, clock, compass, oil temperature, cylinder temperature, oil pressure, fuel pressure,
+  manifold pressure, tachometer; the gear and propeller indicators are not included);
   the axes are turned (x right, y nose, z up), the origin is put on the thrust axis, and the panel and the seat get the
   offsets that FlightGear gives them;
 - the animations (gear, wheels, canopy, flaps, ailerons, rudder, elevator, propeller) are redone in Three.js from the
-  pivots, axes and angles of Models/d520.xml and Models/Interior/interior.xml;
+  pivots, axes and angles of Models/d520.xml, Models/Interior/interior.xml and Models/Interior/Panel/Instruments;
 - texture-francais.png is the unchanged texture.png of the original;
 - texture-vichy.png is that texture reworked with an image generator (1024 x 1024, same layout): Vichy armistice stripes
   on the cowling, the rear fuselage and the tailplane, tricolor bands under the wings, the panther emblem and the serial removed;
-- cockpit/interior.png, cockpit/panel.png and cockpit/seat.png are the unchanged textures of the original.
+- the textures in cockpit/ (interior, panel, seat, collimator and the instruments) are the unchanged textures of the original.
 
 These files (d520.json, d520.bin, cockpit.json, cockpit.bin, texture-francais.png, texture-vichy.png and the cockpit
 textures) are under the GPL v2, like the original.

@@ -26,11 +26,196 @@
    "name": "DefaultWhite",
    "opacity": 1.0,
    "texture": "seat.png"
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "airspeed.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": "airspeed.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "alt.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": "alt.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "vsi.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": "vsi.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "clock.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": "clock.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "compass.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": "compass.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "oiltemp.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": "oiltemp.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "temp.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": "temp.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "oilpress.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": "oilpress.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "press.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": "press.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "tach.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": "tach.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "mano.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": "mano.png"
+  },
+  {
+   "name": "Transparent",
+   "opacity": 0.15,
+   "texture": null
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "collimator.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": "collimator.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": null
   }
  ],
  "parts": [
   {
    "name": "interieur",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 126,
    "indexCount": 534,
    "groups": [
@@ -47,6 +232,11 @@
   },
   {
    "name": "inttour",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 122,
    "indexCount": 348,
    "groups": [
@@ -68,6 +258,11 @@
   },
   {
    "name": "inttourvitres",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 280,
    "indexCount": 1254,
    "groups": [
@@ -84,6 +279,11 @@
   },
   {
    "name": "inttourcanopy",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 248,
    "indexCount": 1104,
    "groups": [
@@ -100,6 +300,11 @@
   },
   {
    "name": "armature",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 244,
    "indexCount": 720,
    "groups": [
@@ -116,6 +321,11 @@
   },
   {
    "name": "structure",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 240,
    "indexCount": 1164,
    "groups": [
@@ -132,6 +342,11 @@
   },
   {
    "name": "fond",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 26,
    "indexCount": 84,
    "groups": [
@@ -148,6 +363,11 @@
   },
   {
    "name": "renfort",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 2003,
    "indexCount": 9180,
    "groups": [
@@ -164,6 +384,11 @@
   },
   {
    "name": "planchet",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 12,
    "indexCount": 36,
    "groups": [
@@ -180,6 +405,11 @@
   },
   {
    "name": "bloc1",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 3563,
    "indexCount": 18276,
    "groups": [
@@ -196,6 +426,11 @@
   },
   {
    "name": "intvitres",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 221,
    "indexCount": 978,
    "groups": [
@@ -212,6 +447,11 @@
   },
   {
    "name": "intcanopy",
+   "origin": [
+    -0.0,
+    -0.0,
+    -0.32669
+   ],
    "vertexCount": 58,
    "indexCount": 168,
    "groups": [
@@ -228,6 +468,11 @@
   },
   {
    "name": "panel",
+   "origin": [
+    -0.0,
+    0.662,
+    0.04031
+   ],
    "vertexCount": 448,
    "indexCount": 2436,
    "groups": [
@@ -244,6 +489,11 @@
   },
   {
    "name": "seat",
+   "origin": [
+    -0.0,
+    -0.25,
+    -0.06669
+   ],
    "vertexCount": 231,
    "indexCount": 1326,
    "groups": [
@@ -257,6 +507,1392 @@
    "normalsOffset": 390812,
    "uvsOffset": 393584,
    "indicesOffset": 395432
+  },
+  {
+   "name": "airspeed/face",
+   "origin": [
+    -0.0,
+    0.66917,
+    0.24131
+   ],
+   "vertexCount": 48,
+   "indexCount": 48,
+   "groups": [
+    {
+     "material": 5,
+     "start": 0,
+     "count": 48
+    }
+   ],
+   "positionsOffset": 400736,
+   "normalsOffset": 401312,
+   "uvsOffset": 401888,
+   "indicesOffset": 402272
+  },
+  {
+   "name": "airspeed/fond",
+   "origin": [
+    -0.0,
+    0.671,
+    0.24131
+   ],
+   "vertexCount": 144,
+   "indexCount": 720,
+   "groups": [
+    {
+     "material": 5,
+     "start": 0,
+     "count": 720
+    }
+   ],
+   "positionsOffset": 402464,
+   "normalsOffset": 404192,
+   "uvsOffset": 405920,
+   "indicesOffset": 407072
+  },
+  {
+   "name": "airspeed/needle",
+   "origin": [
+    -0.0,
+    0.66917,
+    0.24131
+   ],
+   "vertexCount": 14,
+   "indexCount": 57,
+   "groups": [
+    {
+     "material": 5,
+     "start": 0,
+     "count": 57
+    }
+   ],
+   "positionsOffset": 409952,
+   "normalsOffset": 410120,
+   "uvsOffset": 410288,
+   "indicesOffset": 410400
+  },
+  {
+   "name": "airspeed/visses",
+   "origin": [
+    -0.0,
+    0.671,
+    0.24131
+   ],
+   "vertexCount": 728,
+   "indexCount": 3864,
+   "groups": [
+    {
+     "material": 5,
+     "start": 0,
+     "count": 3864
+    }
+   ],
+   "positionsOffset": 410628,
+   "normalsOffset": 419364,
+   "uvsOffset": 428100,
+   "indicesOffset": 433924
+  },
+  {
+   "name": "airspeed/vitre",
+   "origin": [
+    -0.0,
+    0.671,
+    0.24131
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 7,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 449380,
+   "normalsOffset": 449776,
+   "uvsOffset": 450172,
+   "indicesOffset": 450436
+  },
+  {
+   "name": "alt/face",
+   "origin": [
+    0.107,
+    0.6654,
+    0.19531
+   ],
+   "vertexCount": 140,
+   "indexCount": 156,
+   "groups": [
+    {
+     "material": 8,
+     "start": 0,
+     "count": 156
+    }
+   ],
+   "positionsOffset": 450820,
+   "normalsOffset": 452500,
+   "uvsOffset": 454180,
+   "indicesOffset": 455300
+  },
+  {
+   "name": "alt/fond",
+   "origin": [
+    0.107,
+    0.669,
+    0.19531
+   ],
+   "vertexCount": 690,
+   "indexCount": 3618,
+   "groups": [
+    {
+     "material": 8,
+     "start": 0,
+     "count": 3618
+    }
+   ],
+   "positionsOffset": 455924,
+   "normalsOffset": 464204,
+   "uvsOffset": 472484,
+   "indicesOffset": 478004
+  },
+  {
+   "name": "alt/inhg",
+   "origin": [
+    0.107,
+    0.66617,
+    0.19531
+   ],
+   "vertexCount": 96,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 8,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 492476,
+   "normalsOffset": 493628,
+   "uvsOffset": 494780,
+   "indicesOffset": 495548
+  },
+  {
+   "name": "alt/knob",
+   "origin": [
+    0.07085,
+    0.66526,
+    0.15871
+   ],
+   "vertexCount": 129,
+   "indexCount": 672,
+   "groups": [
+    {
+     "material": 8,
+     "start": 0,
+     "count": 672
+    }
+   ],
+   "positionsOffset": 495932,
+   "normalsOffset": 497480,
+   "uvsOffset": 499028,
+   "indicesOffset": 500060
+  },
+  {
+   "name": "alt/needlekm",
+   "origin": [
+    0.107,
+    0.66638,
+    0.19531
+   ],
+   "vertexCount": 42,
+   "indexCount": 165,
+   "groups": [
+    {
+     "material": 8,
+     "start": 0,
+     "count": 165
+    }
+   ],
+   "positionsOffset": 502748,
+   "normalsOffset": 503252,
+   "uvsOffset": 503756,
+   "indicesOffset": 504092
+  },
+  {
+   "name": "alt/needlemetre",
+   "origin": [
+    0.107,
+    0.66657,
+    0.19531
+   ],
+   "vertexCount": 42,
+   "indexCount": 165,
+   "groups": [
+    {
+     "material": 8,
+     "start": 0,
+     "count": 165
+    }
+   ],
+   "positionsOffset": 504752,
+   "normalsOffset": 505256,
+   "uvsOffset": 505760,
+   "indicesOffset": 506096
+  },
+  {
+   "name": "alt/vitre",
+   "origin": [
+    0.107,
+    0.669,
+    0.19531
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 10,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 506756,
+   "normalsOffset": 507152,
+   "uvsOffset": 507548,
+   "indicesOffset": 507812
+  },
+  {
+   "name": "vsi/face",
+   "origin": [
+    0.107,
+    0.66603,
+    0.30031
+   ],
+   "vertexCount": 34,
+   "indexCount": 48,
+   "groups": [
+    {
+     "material": 11,
+     "start": 0,
+     "count": 48
+    }
+   ],
+   "positionsOffset": 508196,
+   "normalsOffset": 508604,
+   "uvsOffset": 509012,
+   "indicesOffset": 509284
+  },
+  {
+   "name": "vsi/fond",
+   "origin": [
+    0.107,
+    0.669,
+    0.30031
+   ],
+   "vertexCount": 144,
+   "indexCount": 720,
+   "groups": [
+    {
+     "material": 11,
+     "start": 0,
+     "count": 720
+    }
+   ],
+   "positionsOffset": 509476,
+   "normalsOffset": 511204,
+   "uvsOffset": 512932,
+   "indicesOffset": 514084
+  },
+  {
+   "name": "vsi/needle",
+   "origin": [
+    0.107,
+    0.66603,
+    0.30031
+   ],
+   "vertexCount": 14,
+   "indexCount": 57,
+   "groups": [
+    {
+     "material": 11,
+     "start": 0,
+     "count": 57
+    }
+   ],
+   "positionsOffset": 516964,
+   "normalsOffset": 517132,
+   "uvsOffset": 517300,
+   "indicesOffset": 517412
+  },
+  {
+   "name": "vsi/visses",
+   "origin": [
+    0.107,
+    0.669,
+    0.30031
+   ],
+   "vertexCount": 728,
+   "indexCount": 3864,
+   "groups": [
+    {
+     "material": 11,
+     "start": 0,
+     "count": 3864
+    }
+   ],
+   "positionsOffset": 517640,
+   "normalsOffset": 526376,
+   "uvsOffset": 535112,
+   "indicesOffset": 540936
+  },
+  {
+   "name": "vsi/vitre",
+   "origin": [
+    0.107,
+    0.669,
+    0.30031
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 13,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 556392,
+   "normalsOffset": 556788,
+   "uvsOffset": 557184,
+   "indicesOffset": 557448
+  },
+  {
+   "name": "clock/face",
+   "origin": [
+    0.189,
+    0.66719,
+    0.29831
+   ],
+   "vertexCount": 17,
+   "indexCount": 48,
+   "groups": [
+    {
+     "material": 14,
+     "start": 0,
+     "count": 48
+    }
+   ],
+   "positionsOffset": 557832,
+   "normalsOffset": 558036,
+   "uvsOffset": 558240,
+   "indicesOffset": 558376
+  },
+  {
+   "name": "clock/fond",
+   "origin": [
+    0.189,
+    0.669,
+    0.29831
+   ],
+   "vertexCount": 196,
+   "indexCount": 936,
+   "groups": [
+    {
+     "material": 14,
+     "start": 0,
+     "count": 936
+    }
+   ],
+   "positionsOffset": 558568,
+   "normalsOffset": 560920,
+   "uvsOffset": 563272,
+   "indicesOffset": 564840
+  },
+  {
+   "name": "clock/heures",
+   "origin": [
+    0.189,
+    0.66719,
+    0.29831
+   ],
+   "vertexCount": 14,
+   "indexCount": 57,
+   "groups": [
+    {
+     "material": 14,
+     "start": 0,
+     "count": 57
+    }
+   ],
+   "positionsOffset": 568584,
+   "normalsOffset": 568752,
+   "uvsOffset": 568920,
+   "indicesOffset": 569032
+  },
+  {
+   "name": "clock/minutes",
+   "origin": [
+    0.189,
+    0.66719,
+    0.29831
+   ],
+   "vertexCount": 14,
+   "indexCount": 57,
+   "groups": [
+    {
+     "material": 14,
+     "start": 0,
+     "count": 57
+    }
+   ],
+   "positionsOffset": 569260,
+   "normalsOffset": 569428,
+   "uvsOffset": 569596,
+   "indicesOffset": 569708
+  },
+  {
+   "name": "clock/secondes",
+   "origin": [
+    0.189,
+    0.66719,
+    0.29831
+   ],
+   "vertexCount": 14,
+   "indexCount": 57,
+   "groups": [
+    {
+     "material": 14,
+     "start": 0,
+     "count": 57
+    }
+   ],
+   "positionsOffset": 569936,
+   "normalsOffset": 570104,
+   "uvsOffset": 570272,
+   "indicesOffset": 570384
+  },
+  {
+   "name": "clock/visses",
+   "origin": [
+    0.189,
+    0.669,
+    0.29831
+   ],
+   "vertexCount": 728,
+   "indexCount": 3612,
+   "groups": [
+    {
+     "material": 14,
+     "start": 0,
+     "count": 3612
+    }
+   ],
+   "positionsOffset": 570612,
+   "normalsOffset": 579348,
+   "uvsOffset": 588084,
+   "indicesOffset": 593908
+  },
+  {
+   "name": "clock/vitre",
+   "origin": [
+    0.189,
+    0.669,
+    0.29831
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 16,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 608356,
+   "normalsOffset": 608752,
+   "uvsOffset": 609148,
+   "indicesOffset": 609412
+  },
+  {
+   "name": "compass/Ball",
+   "origin": [
+    -0.0,
+    0.664,
+    0.34131
+   ],
+   "vertexCount": 3171,
+   "indexCount": 5928,
+   "groups": [
+    {
+     "material": 17,
+     "start": 0,
+     "count": 5928
+    }
+   ],
+   "positionsOffset": 609796,
+   "normalsOffset": 647848,
+   "uvsOffset": 685900,
+   "indicesOffset": 711268
+  },
+  {
+   "name": "compass/fond",
+   "origin": [
+    -0.0,
+    0.664,
+    0.34131
+   ],
+   "vertexCount": 879,
+   "indexCount": 4794,
+   "groups": [
+    {
+     "material": 17,
+     "start": 0,
+     "count": 4794
+    }
+   ],
+   "positionsOffset": 734980,
+   "normalsOffset": 745528,
+   "uvsOffset": 756076,
+   "indicesOffset": 763108
+  },
+  {
+   "name": "compass/vitre",
+   "origin": [
+    -0.0,
+    0.664,
+    0.34131
+   ],
+   "vertexCount": 4,
+   "indexCount": 6,
+   "groups": [
+    {
+     "material": 19,
+     "start": 0,
+     "count": 6
+    }
+   ],
+   "positionsOffset": 782284,
+   "normalsOffset": 782332,
+   "uvsOffset": 782380,
+   "indicesOffset": 782412
+  },
+  {
+   "name": "oiltemp/face",
+   "origin": [
+    -0.171,
+    0.669,
+    0.27531
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 20,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 782436,
+   "normalsOffset": 782832,
+   "uvsOffset": 783228,
+   "indicesOffset": 783492
+  },
+  {
+   "name": "oiltemp/fond",
+   "origin": [
+    -0.171,
+    0.669,
+    0.27531
+   ],
+   "vertexCount": 900,
+   "indexCount": 4764,
+   "groups": [
+    {
+     "material": 20,
+     "start": 0,
+     "count": 4764
+    }
+   ],
+   "positionsOffset": 783876,
+   "normalsOffset": 794676,
+   "uvsOffset": 805476,
+   "indicesOffset": 812676
+  },
+  {
+   "name": "oiltemp/needle",
+   "origin": [
+    -0.171,
+    0.669,
+    0.27531
+   ],
+   "vertexCount": 135,
+   "indexCount": 606,
+   "groups": [
+    {
+     "material": 20,
+     "start": 0,
+     "count": 606
+    }
+   ],
+   "positionsOffset": 831732,
+   "normalsOffset": 833352,
+   "uvsOffset": 834972,
+   "indicesOffset": 836052
+  },
+  {
+   "name": "oiltemp/vitre",
+   "origin": [
+    -0.171,
+    0.669,
+    0.27531
+   ],
+   "vertexCount": 96,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 22,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 838476,
+   "normalsOffset": 839628,
+   "uvsOffset": 840780,
+   "indicesOffset": 841548
+  },
+  {
+   "name": "temp/face",
+   "origin": [
+    -0.244,
+    0.669,
+    0.27531
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 23,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 841932,
+   "normalsOffset": 842328,
+   "uvsOffset": 842724,
+   "indicesOffset": 842988
+  },
+  {
+   "name": "temp/fond",
+   "origin": [
+    -0.244,
+    0.669,
+    0.27531
+   ],
+   "vertexCount": 900,
+   "indexCount": 4764,
+   "groups": [
+    {
+     "material": 23,
+     "start": 0,
+     "count": 4764
+    }
+   ],
+   "positionsOffset": 843372,
+   "normalsOffset": 854172,
+   "uvsOffset": 864972,
+   "indicesOffset": 872172
+  },
+  {
+   "name": "temp/needle",
+   "origin": [
+    -0.244,
+    0.669,
+    0.27531
+   ],
+   "vertexCount": 135,
+   "indexCount": 606,
+   "groups": [
+    {
+     "material": 23,
+     "start": 0,
+     "count": 606
+    }
+   ],
+   "positionsOffset": 891228,
+   "normalsOffset": 892848,
+   "uvsOffset": 894468,
+   "indicesOffset": 895548
+  },
+  {
+   "name": "temp/vitre",
+   "origin": [
+    -0.244,
+    0.669,
+    0.27531
+   ],
+   "vertexCount": 96,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 25,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 897972,
+   "normalsOffset": 899124,
+   "uvsOffset": 900276,
+   "indicesOffset": 901044
+  },
+  {
+   "name": "oilpress/face",
+   "origin": [
+    -0.171,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 26,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 901428,
+   "normalsOffset": 901824,
+   "uvsOffset": 902220,
+   "indicesOffset": 902484
+  },
+  {
+   "name": "oilpress/fond",
+   "origin": [
+    -0.171,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 900,
+   "indexCount": 4764,
+   "groups": [
+    {
+     "material": 26,
+     "start": 0,
+     "count": 4764
+    }
+   ],
+   "positionsOffset": 902868,
+   "normalsOffset": 913668,
+   "uvsOffset": 924468,
+   "indicesOffset": 931668
+  },
+  {
+   "name": "oilpress/needle",
+   "origin": [
+    -0.171,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 135,
+   "indexCount": 606,
+   "groups": [
+    {
+     "material": 26,
+     "start": 0,
+     "count": 606
+    }
+   ],
+   "positionsOffset": 950724,
+   "normalsOffset": 952344,
+   "uvsOffset": 953964,
+   "indicesOffset": 955044
+  },
+  {
+   "name": "oilpress/vitre",
+   "origin": [
+    -0.171,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 96,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 28,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 957468,
+   "normalsOffset": 958620,
+   "uvsOffset": 959772,
+   "indicesOffset": 960540
+  },
+  {
+   "name": "press/face",
+   "origin": [
+    -0.244,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 29,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 960924,
+   "normalsOffset": 961320,
+   "uvsOffset": 961716,
+   "indicesOffset": 961980
+  },
+  {
+   "name": "press/fond",
+   "origin": [
+    -0.244,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 900,
+   "indexCount": 4764,
+   "groups": [
+    {
+     "material": 29,
+     "start": 0,
+     "count": 4764
+    }
+   ],
+   "positionsOffset": 962364,
+   "normalsOffset": 973164,
+   "uvsOffset": 983964,
+   "indicesOffset": 991164
+  },
+  {
+   "name": "press/needle",
+   "origin": [
+    -0.244,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 135,
+   "indexCount": 606,
+   "groups": [
+    {
+     "material": 29,
+     "start": 0,
+     "count": 606
+    }
+   ],
+   "positionsOffset": 1010220,
+   "normalsOffset": 1011840,
+   "uvsOffset": 1013460,
+   "indicesOffset": 1014540
+  },
+  {
+   "name": "press/vitre",
+   "origin": [
+    -0.244,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 96,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 31,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 1016964,
+   "normalsOffset": 1018116,
+   "uvsOffset": 1019268,
+   "indicesOffset": 1020036
+  },
+  {
+   "name": "tach/face",
+   "origin": [
+    -0.301,
+    0.669,
+    0.11931
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 32,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 1020420,
+   "normalsOffset": 1020816,
+   "uvsOffset": 1021212,
+   "indicesOffset": 1021476
+  },
+  {
+   "name": "tach/fond",
+   "origin": [
+    -0.301,
+    0.669,
+    0.11931
+   ],
+   "vertexCount": 900,
+   "indexCount": 4764,
+   "groups": [
+    {
+     "material": 32,
+     "start": 0,
+     "count": 4764
+    }
+   ],
+   "positionsOffset": 1021860,
+   "normalsOffset": 1032660,
+   "uvsOffset": 1043460,
+   "indicesOffset": 1050660
+  },
+  {
+   "name": "tach/needle",
+   "origin": [
+    -0.301,
+    0.669,
+    0.11931
+   ],
+   "vertexCount": 135,
+   "indexCount": 606,
+   "groups": [
+    {
+     "material": 32,
+     "start": 0,
+     "count": 606
+    }
+   ],
+   "positionsOffset": 1069716,
+   "normalsOffset": 1071336,
+   "uvsOffset": 1072956,
+   "indicesOffset": 1074036
+  },
+  {
+   "name": "tach/vitre",
+   "origin": [
+    -0.301,
+    0.669,
+    0.11931
+   ],
+   "vertexCount": 96,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 34,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 1076460,
+   "normalsOffset": 1077612,
+   "uvsOffset": 1078764,
+   "indicesOffset": 1079532
+  },
+  {
+   "name": "mano/face",
+   "origin": [
+    -0.318,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 33,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 35,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 1079916,
+   "normalsOffset": 1080312,
+   "uvsOffset": 1080708,
+   "indicesOffset": 1080972
+  },
+  {
+   "name": "mano/fond",
+   "origin": [
+    -0.318,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 900,
+   "indexCount": 4764,
+   "groups": [
+    {
+     "material": 35,
+     "start": 0,
+     "count": 4764
+    }
+   ],
+   "positionsOffset": 1081356,
+   "normalsOffset": 1092156,
+   "uvsOffset": 1102956,
+   "indicesOffset": 1110156
+  },
+  {
+   "name": "mano/needle",
+   "origin": [
+    -0.318,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 135,
+   "indexCount": 606,
+   "groups": [
+    {
+     "material": 35,
+     "start": 0,
+     "count": 606
+    }
+   ],
+   "positionsOffset": 1129212,
+   "normalsOffset": 1130832,
+   "uvsOffset": 1132452,
+   "indicesOffset": 1133532
+  },
+  {
+   "name": "mano/vitre",
+   "origin": [
+    -0.318,
+    0.669,
+    0.20331
+   ],
+   "vertexCount": 96,
+   "indexCount": 96,
+   "groups": [
+    {
+     "material": 37,
+     "start": 0,
+     "count": 96
+    }
+   ],
+   "positionsOffset": 1135956,
+   "normalsOffset": 1137108,
+   "uvsOffset": 1138260,
+   "indicesOffset": 1139028
+  },
+  {
+   "name": "collimator/attache",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 72,
+   "indexCount": 420,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 420
+    }
+   ],
+   "positionsOffset": 1139412,
+   "normalsOffset": 1140276,
+   "uvsOffset": 1141140,
+   "indicesOffset": 1141716
+  },
+  {
+   "name": "collimator/barre",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 8,
+   "indexCount": 36,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 36
+    }
+   ],
+   "positionsOffset": 1143396,
+   "normalsOffset": 1143492,
+   "uvsOffset": 1143588,
+   "indicesOffset": 1143652
+  },
+  {
+   "name": "collimator/base",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 24,
+   "indexCount": 132,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 132
+    }
+   ],
+   "positionsOffset": 1143796,
+   "normalsOffset": 1144084,
+   "uvsOffset": 1144372,
+   "indicesOffset": 1144564
+  },
+  {
+   "name": "collimator/bouton1",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 417,
+   "indexCount": 2400,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 2400
+    }
+   ],
+   "positionsOffset": 1145092,
+   "normalsOffset": 1150096,
+   "uvsOffset": 1155100,
+   "indicesOffset": 1158436
+  },
+  {
+   "name": "collimator/bouton2",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 417,
+   "indexCount": 2400,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 2400
+    }
+   ],
+   "positionsOffset": 1168036,
+   "normalsOffset": 1173040,
+   "uvsOffset": 1178044,
+   "indicesOffset": 1181380
+  },
+  {
+   "name": "collimator/bouton3",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 211,
+   "indexCount": 1164,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 1164
+    }
+   ],
+   "positionsOffset": 1190980,
+   "normalsOffset": 1193512,
+   "uvsOffset": 1196044,
+   "indicesOffset": 1197732
+  },
+  {
+   "name": "collimator/info",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 12,
+   "indexCount": 54,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 54
+    }
+   ],
+   "positionsOffset": 1202388,
+   "normalsOffset": 1202532,
+   "uvsOffset": 1202676,
+   "indicesOffset": 1202772
+  },
+  {
+   "name": "collimator/manette",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 289,
+   "indexCount": 1440,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 1440
+    }
+   ],
+   "positionsOffset": 1202988,
+   "normalsOffset": 1206456,
+   "uvsOffset": 1209924,
+   "indicesOffset": 1212236
+  },
+  {
+   "name": "collimator/molette",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 129,
+   "indexCount": 672,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 672
+    }
+   ],
+   "positionsOffset": 1217996,
+   "normalsOffset": 1219544,
+   "uvsOffset": 1221092,
+   "indicesOffset": 1222124
+  },
+  {
+   "name": "collimator/montants",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 98,
+   "indexCount": 336,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 336
+    }
+   ],
+   "positionsOffset": 1224812,
+   "normalsOffset": 1225988,
+   "uvsOffset": 1227164,
+   "indicesOffset": 1227948
+  },
+  {
+   "name": "collimator/projo",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 289,
+   "indexCount": 1440,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 1440
+    }
+   ],
+   "positionsOffset": 1229292,
+   "normalsOffset": 1232760,
+   "uvsOffset": 1236228,
+   "indicesOffset": 1238540
+  },
+  {
+   "name": "collimator/support",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 30,
+   "indexCount": 168,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 168
+    }
+   ],
+   "positionsOffset": 1244300,
+   "normalsOffset": 1244660,
+   "uvsOffset": 1245020,
+   "indicesOffset": 1245260
+  },
+  {
+   "name": "collimator/toit",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 154,
+   "indexCount": 912,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 912
+    }
+   ],
+   "positionsOffset": 1245932,
+   "normalsOffset": 1247780,
+   "uvsOffset": 1249628,
+   "indicesOffset": 1250860
+  },
+  {
+   "name": "collimator/viseur",
+   "origin": [
+    -0.00715,
+    0.42867,
+    0.55319
+   ],
+   "vertexCount": 208,
+   "indexCount": 1248,
+   "groups": [
+    {
+     "material": 38,
+     "start": 0,
+     "count": 1248
+    }
+   ],
+   "positionsOffset": 1254508,
+   "normalsOffset": 1257004,
+   "uvsOffset": 1259500,
+   "indicesOffset": 1261164
+  },
+  {
+   "name": "collimator/vitre",
+   "origin": [
+    -0.0,
+    0.427,
+    0.49631
+   ],
+   "vertexCount": 8,
+   "indexCount": 30,
+   "groups": [
+    {
+     "material": 40,
+     "start": 0,
+     "count": 30
+    }
+   ],
+   "positionsOffset": 1266156,
+   "normalsOffset": 1266252,
+   "uvsOffset": 1266348,
+   "indicesOffset": 1266412
   }
  ]
 }

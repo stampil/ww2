@@ -48,4 +48,4 @@ Le script demande l'hôte et le nom de la base MySQL (dans le panneau de l'hébe
 
 L'action `.github/workflows/publish.yml` fait la même chose à chaque envoi de `POC` sur GitHub, une fois posés dans les réglages du dépôt le secret `HOSTING_PASSWORD` et les variables `DB_HOST` et `DB_NAME` ; sans eux elle ne publie rien.
 
-Pour que l'action puisse publier, il faut lui donner une fois le mot de passe de l'hébergement (secret `HOSTING_PASSWORD`) et l'hôte et le nom de la base MySQL (variables `DB_HOST` et `DB_NAME`) : `bash tools/connect-hosting.sh` les pose sur GitHub avec `gh`, puis relance l'action.
+Pour que l'action puisse publier, il faut lui donner une fois le mot de passe de l'hébergement et l'adresse de la base : les variables `DB_HOST` et `DB_NAME` se posent dans les réglages du dépôt (Secrets and variables, Actions), et `bash tools/connect-hosting.sh` pose le secret `HOSTING_PASSWORD` avec `gh`, puis relance l'action.

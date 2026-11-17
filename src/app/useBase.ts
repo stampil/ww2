@@ -32,7 +32,7 @@ export type Base = {
   terrainPlan: string
   resources: { supplies: number; fuel: number; ammunition: number; materials: number; commandPoints: number }
   buildings: string[]
-  clock: { gameTime: string; paused: boolean }
+  clock: { gameTime: string }
   warehouse: { capacity: number; prices: Record<Stock, number> }
   workshop: {
     benches: number
@@ -83,13 +83,13 @@ function hasEnded(received: { remainingSeconds: number }[], shown: { remainingSe
   return false
 }
 
-/** The game clock of the base, moved on by the seconds gone by since the API sent it. */
-function clockAfter(base: Base, elapsedSeconds: number): { gameTime: Date; paused: boolean } {
+/** The game time of the base, moved on by the seconds gone by since the API sent it. */
+function gameTimeAfter(base: Base, elapsedSeconds: number): Date {
   const receivedGameTime = Date.parse(`${base.clock.gameTime}${UTC_DESIGNATOR}`)
-  return { gameTime: new Date(receivedGameTime + elapsedSeconds * MILLISECONDS_PER_SECOND), paused: base.clock.paused }
+  return new Date(receivedGameTime + elapsedSeconds * MILLISECONDS_PER_SECOND)
 }
 
-/** The base of the signed-in player, the orders they can give, the game clock, and the seconds left on each part being made and each flight. */
+/** The base of the signed-in player, the orders they can give, the game time, and the seconds left on each part being made and each flight. */
 export function useBase(player: Player | null) {
   const [base, setBase] = useState<Base | null>(null)
   const [receivedAt, setReceivedAt] = useState(0)
@@ -118,14 +118,13 @@ export function useBase(player: Player | null) {
     return () => clearInterval(timer)
   }, [])
 
-  const isRunning = base !== null && !base.clock.paused
-  const elapsedSeconds = isRunning ? Math.floor((now - receivedAt) / MILLISECONDS_PER_SECOND) : 0
+  const elapsedSeconds = Math.floor((now - receivedAt) / MILLISECONDS_PER_SECOND)
   const receivedJobs = base?.workshop.jobs ?? []
   const receivedFlights = base?.headquarters.flights ?? []
   const jobs = countDown(receivedJobs, elapsedSeconds)
   const flights = countDown(receivedFlights, elapsedSeconds)
   const hasEndedCountdown = hasEnded(receivedJobs, jobs) || hasEnded(receivedFlights, flights)
-  const clock = base === null ? null : clockAfter(base, elapsedSeconds)
+  const gameTime = base === null ? null : gameTimeAfter(base, elapsedSeconds)
 
   useEffect(() => {
     if (hasEndedCountdown) {
@@ -142,10 +141,6 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/production`, { part, withMechanic }))
   }
 
-  async function setPaused(paused: boolean): Promise<string | null> {
-    return receive(await request(`${BASE_URL}/clock`, { paused }))
-  }
-
   async function launchMission(missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number): Promise<string | null> {
     return receive(await request(`${BASE_URL}/missions/launch`, { missionId, pilotIds, aircraftIds, fuel, ammunition }))
   }
@@ -154,5 +149,5 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/missions/return`, { missionId }))
   }
 
-  return { base, jobs, flights, clock, buy, produce, setPaused, launchMission, receiveSquadron }
+  return { base, jobs, flights, gameTime, buy, produce, launchMission, receiveSquadron }
 }

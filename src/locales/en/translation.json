@@ -112,8 +112,7 @@
     "title": "Base",
     "map": "Plan of the base",
     "clock": {
-      "label": "Game clock",
-      "pause": "Pause"
+      "label": "Game clock"
     },
     "alert": "Mission finished",
     "mission": {

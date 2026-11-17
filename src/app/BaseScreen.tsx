@@ -19,12 +19,12 @@ const RESOURCES = ['supplies', 'fuel', 'ammunition', 'materials', 'commandPoints
 /** The base of the player who is signed in: a band of the game clock and the resources, the airfield, and the panel of the building opened on it. */
 function BaseScreen({ player }: { player: Player }) {
   const { t } = useTranslation()
-  const { base, jobs, flights, clock, buy, produce, setPaused, launchMission, receiveSquadron } = useBase(player)
+  const { base, jobs, flights, gameTime, buy, produce, launchMission, receiveSquadron } = useBase(player)
   const squadron = useSquadron(player)
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
 
-  if (base === null || clock === null) {
+  if (base === null || gameTime === null) {
     return null
   }
 
@@ -43,7 +43,7 @@ function BaseScreen({ player }: { player: Player }) {
     <section className="base" aria-label={t('base.title')}>
       <h2>{t('base.title')}</h2>
       <div className="base-band">
-        <GameClock gameTime={clock.gameTime} paused={clock.paused} onPausedChange={(paused) => void order(setPaused(paused))} />
+        <GameClock gameTime={gameTime} />
         {hasLandedFlight && <MissionAlert onOpen={() => setOpenBuilding('headquarters')} />}
         <ul className="resources">
           {RESOURCES.map((resource) => (

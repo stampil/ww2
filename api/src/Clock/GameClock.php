@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 
 /**
- * The game time of a player: the seconds gone by since the battle began, and whether the clock is paused.
+ * The game time of a player: the seconds gone by since the battle began. It never stops.
  */
 final readonly class GameClock
 {
@@ -17,20 +17,17 @@ final readonly class GameClock
     // The game date follows no real time zone, so UTC keeps daylight saving from shifting it.
     private const TIME_ZONE = 'UTC';
 
-    public function __construct(public int $gameSeconds, public bool $paused)
+    public function __construct(public int $gameSeconds)
     {
     }
 
     /**
-     * @return array{gameTime: string, paused: bool}
+     * @return array{gameTime: string}
      */
     public function toArray(): array
     {
         $battleStart = new DateTimeImmutable(self::BATTLE_START, new DateTimeZone(self::TIME_ZONE));
 
-        return [
-            'gameTime' => $battleStart->modify('+' . $this->gameSeconds . ' seconds')->format(self::GAME_TIME_FORMAT),
-            'paused' => $this->paused,
-        ];
+        return ['gameTime' => $battleStart->modify('+' . $this->gameSeconds . ' seconds')->format(self::GAME_TIME_FORMAT)];
     }
 }

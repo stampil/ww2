@@ -62,7 +62,6 @@ $router->group('/api', function (RouteGroup $routes) use ($database, $accounts, 
     $routes->get('/base', [$baseController, 'show']);
     $routes->post('/base/purchase', [$baseController, 'buy']);
     $routes->post('/base/production', [$baseController, 'produce']);
-    $routes->post('/base/clock', [$baseController, 'setPaused']);
     $routes->post('/base/missions/launch', [$baseController, 'launchMission']);
     $routes->post('/base/missions/return', [$baseController, 'receiveMission']);
     $sessionController = new SessionController($accounts, $players, $session);

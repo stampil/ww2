@@ -22,7 +22,7 @@ use Ww2\Base\Workshop;
 use Ww2\Clock\GameClockStore;
 
 /**
- * Shows the base of the player who is signed in, and takes their orders: buy a stock, make a spare part, pause or resume the clock,
+ * Shows the base of the player who is signed in, and takes their orders: buy a stock, make a spare part,
  * send a mission out and receive its squadron back.
  */
 final class BaseController
@@ -110,24 +110,6 @@ final class BaseController
         $playerId = $this->signedInPlayerId();
         $missionId = JsonRequestBody::integers($request, 'missionId')['missionId'];
         $this->carryOut(fn () => $this->headquarters->receive($playerId, $missionId));
-
-        return $this->overview($playerId);
-    }
-
-    /**
-     * @return array<string, mixed>
-     * @throws UnauthorizedException when nobody is signed in
-     * @throws BadRequestException when the order is not understood
-     */
-    public function setPaused(ServerRequestInterface $request): array
-    {
-        $playerId = $this->signedInPlayerId();
-        $paused = JsonRequestBody::booleans($request, 'paused')['paused'];
-        if ($paused) {
-            $this->clocks->pause($playerId);
-        } else {
-            $this->clocks->resume($playerId);
-        }
 
         return $this->overview($playerId);
     }

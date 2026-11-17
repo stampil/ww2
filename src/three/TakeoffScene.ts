@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { D520_LOWEST_POINT_METERS, D520Model } from './D520Model'
+import { d520AxisHeightOnGround, D520Model } from './D520Model'
 import { LiveryTextures } from './liveries'
 import type { Livery } from './liveries'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
@@ -103,7 +103,7 @@ export class TakeoffScene {
     this.aircraft.setState(pose.state)
     this.aircraft.update(elapsedSeconds - this.previousElapsedSeconds)
     this.previousElapsedSeconds = elapsedSeconds
-    this.aircraft.object.position.set(pose.x, pose.y, D520_LOWEST_POINT_METERS + pose.altitude)
+    this.aircraft.object.position.set(pose.x, pose.y, d520AxisHeightOnGround(pose.pitch) + pose.altitude)
     this.aircraft.object.rotation.set(pose.pitch, pose.roll, pose.heading - NOSE_ALONG_Y_ROTATION_RADIANS, 'ZXY')
     this.placeCamera(pose)
     this.renderer.render(this.scene, this.camera)

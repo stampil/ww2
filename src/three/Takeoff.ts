@@ -1,4 +1,5 @@
 import type { AircraftState } from './aircraftState'
+import { D520_GROUND_PITCH_RADIANS } from './D520Model'
 import { bump, clamp, smoothStep } from './easing'
 
 /** Where the aircraft is and how it is turned at one moment of the takeoff, in world meters and radians, and how far the camera has swung to the front. */
@@ -26,6 +27,9 @@ const TURN_ANGLE_RADIANS = 90 * DEGREES
 const BANK_RADIANS = 15 * DEGREES
 const BANK_RAMP_SECONDS = 1.2
 const LIFTOFF_PITCH_RADIANS = 8 * DEGREES
+// The tail comes up, from the resting nose-up attitude to level, between these shares of the roll.
+const TAIL_LIFT_START_SHARE = 0.3
+const TAIL_LIFT_END_SHARE = 0.5
 const ROTATION_SECONDS = 1
 const CLIMB_RATE_METERS_PER_SECOND = 3
 const CLIMB_RAMP_SECONDS = 1
@@ -96,7 +100,9 @@ export class Takeoff {
       y,
       altitude: climbedMeters(flightSeconds),
       heading: -turnedRadians,
-      pitch: LIFTOFF_PITCH_RADIANS * smoothStep(this.liftoffSeconds - ROTATION_SECONDS, this.liftoffSeconds, time),
+      pitch:
+        D520_GROUND_PITCH_RADIANS * (1 - smoothStep(TAIL_LIFT_START_SHARE, TAIL_LIFT_END_SHARE, rolledShare)) +
+        LIFTOFF_PITCH_RADIANS * smoothStep(this.liftoffSeconds - ROTATION_SECONDS, this.liftoffSeconds, time),
       roll: BANK_RADIANS * bankProgress,
       frontView: smoothStep(this.turnEndSeconds, this.frontViewStartSeconds, time),
       state: {

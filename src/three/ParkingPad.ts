@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { assetUrl } from '../assetUrl'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
-import { D520_LOWEST_POINT_METERS } from './D520Model'
+import { D520_GROUND_PITCH_RADIANS, d520AxisHeightOnGround } from './D520Model'
 import { SeededRandom } from './SeededRandom'
 
 const GRASS_URL = assetUrl('textures/herbe.png')
@@ -67,7 +67,7 @@ export class ParkingPad {
   readonly object = new THREE.Group()
 
   constructor(layoutSeed: number) {
-    this.object.position.z = -D520_LOWEST_POINT_METERS
+    this.object.position.z = -d520AxisHeightOnGround(D520_GROUND_PITCH_RADIANS)
     this.object.add(texturedPlane(GRASS_URL, GRASS_COLOR_UNTIL_LOADED, GRASS_SIZE_METERS, GRASS_SIZE_METERS, GRASS_TILE_METERS))
     const pad = texturedPlane(CONCRETE_URL, CONCRETE_COLOR_UNTIL_LOADED, PAD_WIDTH_METERS, PAD_LENGTH_METERS, CONCRETE_TILE_METERS)
     pad.position.z = PAD_LIFT_METERS

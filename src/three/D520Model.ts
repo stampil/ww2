@@ -53,8 +53,17 @@ export const AIRCRAFT_CONTROLS: AircraftControl[] = [
 ]
 type ExteriorControl = Exclude<AircraftControl, 'openCanopy'>
 
-/** The distance from the thrust axis down to the wheels, so the aircraft can stand on the ground. */
-export const D520_LOWEST_POINT_METERS = 2.08
+// Where the wheels touch the ground, measured on the model: y ahead of the thrust axis, z below it.
+const MAIN_WHEEL_CONTACT = { y: 1.985, z: -2.08 }
+const TAIL_WHEEL_CONTACT = { y: -3.36, z: -0.8 }
+
+/** The nose-up angle at rest, where the main wheels and the tail wheel both touch the ground. */
+export const D520_GROUND_PITCH_RADIANS = Math.atan2(TAIL_WHEEL_CONTACT.z - MAIN_WHEEL_CONTACT.z, MAIN_WHEEL_CONTACT.y - TAIL_WHEEL_CONTACT.y)
+
+/** How high the thrust axis stands above the ground when the main wheels are on it and the nose is up by `pitchRadians`. */
+export function d520AxisHeightOnGround(pitchRadians: number): number {
+  return -(MAIN_WHEEL_CONTACT.z * Math.cos(pitchRadians) + MAIN_WHEEL_CONTACT.y * Math.sin(pitchRadians))
+}
 
 type Hinge = { group: THREE.Group; axis: THREE.Vector3 }
 type GearSideHinges = { wheel: Hinge; door: Hinge; doorMesh: THREE.Mesh; doorRest: THREE.Vector3; direction: 1 | -1 }

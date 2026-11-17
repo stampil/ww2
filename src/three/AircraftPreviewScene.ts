@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { D520Model } from './D520Model'
+import { D520_GROUND_PITCH_RADIANS, D520Model } from './D520Model'
 import { LiveryTextures } from './liveries'
 import { OrbitViewScene } from './OrbitViewScene'
 import type { OrbitView } from './OrbitViewScene'
@@ -59,6 +59,7 @@ export class AircraftPreviewScene extends OrbitViewScene {
     this.sky = new Sky(mode === 'flight' ? FLIGHT_SKY : OVERHEAD_SKY)
     this.scene.add(this.sky.object)
     if (mode === 'ground') {
+      this.aircraft.object.rotation.x = D520_GROUND_PITCH_RADIANS
       this.scene.add(new ParkingPad(layoutSeed).object)
       this.scene.fog = new THREE.Fog(HORIZON_COLOR, HAZE_NEAR_METERS, HAZE_FAR_METERS)
     }

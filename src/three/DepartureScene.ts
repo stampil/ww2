@@ -6,7 +6,7 @@ import type { Cell, TerrainPlan } from '../plans/terrainPlan'
 import { TILE_SIZE_METERS } from './airfield'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
-import { D520_LOWEST_POINT_METERS, D520Model } from './D520Model'
+import { D520_GROUND_PITCH_RADIANS, d520AxisHeightOnGround, D520Model } from './D520Model'
 import { DEPARTURE_START_X_METERS, DepartureFlight } from './departureFlight'
 import { DepartureQueue } from './departureQueue'
 import type { Assignment } from './departureQueue'
@@ -242,12 +242,12 @@ export class DepartureScene {
       if (taxiedSeconds < aircraft.taxiSeconds) {
         const distance = (path.lengthMeters * taxiedSeconds) / aircraft.taxiSeconds
         const place = path.pointAt(distance)
-        this.place(model, place.x, place.y, 0, path.headingAt(distance, HEADING_SPAN_METERS), 0, 0)
+        this.place(model, place.x, place.y, 0, path.headingAt(distance, HEADING_SPAN_METERS), D520_GROUND_PITCH_RADIANS, 0)
         return
       }
       const place = path.pointAt(path.lengthMeters)
       const turned = turnBetween(aircraft.endHeading, 0) * smoothStep(aircraft.taxiSeconds, aircraft.taxiSeconds + PIVOT_SECONDS, taxiedSeconds)
-      this.place(model, place.x, place.y, 0, aircraft.endHeading + turned, 0, 0)
+      this.place(model, place.x, place.y, 0, aircraft.endHeading + turned, D520_GROUND_PITCH_RADIANS, 0)
       return
     }
     const pose = this.flight.pose(seconds - assignment.group.startSecondsOf(assignment.slot))
@@ -259,7 +259,7 @@ export class DepartureScene {
   }
 
   private place(model: D520Model, x: number, y: number, altitude: number, heading: number, pitch: number, roll: number): void {
-    model.object.position.set(x, y, D520_LOWEST_POINT_METERS * AIRCRAFT_SCALE + altitude)
+    model.object.position.set(x, y, d520AxisHeightOnGround(pitch) * AIRCRAFT_SCALE + altitude)
     model.object.rotation.set(pitch, roll, heading - NOSE_ALONG_Y_ROTATION_RADIANS, 'ZXY')
   }
 }

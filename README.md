@@ -47,3 +47,5 @@ bash tools/upload.sh
 Le script demande l'hôte et le nom de la base MySQL (dans le panneau de l'hébergeur), puis le mot de passe de l'hébergement, qui se tape dans le terminal sans s'afficher et ne s'écrit nulle part, hors le fichier `.env` du site, effacé dès l'envoi fini. Il construit le site (`tools/package.sh` : le front de Vite, l'API avec ses bibliothèques de production, un `.htaccess`) puis envoie tous les fichiers par FTP. À la première visite, l'API crée les tables. L'hébergement doit tourner en PHP 8.3 ou plus (réglage du panneau). Les fichiers qui ne sont plus dans le site ne sont pas effacés du serveur.
 
 L'action `.github/workflows/publish.yml` fait la même chose à chaque envoi de `POC` sur GitHub, une fois posés dans les réglages du dépôt le secret `HOSTING_PASSWORD` et les variables `DB_HOST` et `DB_NAME` ; sans eux elle ne publie rien.
+
+Pour que l'action puisse publier, il faut lui donner une fois le mot de passe de l'hébergement (secret `HOSTING_PASSWORD`) et l'hôte et le nom de la base MySQL (variables `DB_HOST` et `DB_NAME`) : `bash tools/connect-hosting.sh` les pose sur GitHub avec `gh`, puis relance l'action.

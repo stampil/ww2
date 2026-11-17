@@ -230,7 +230,7 @@
     },
     "stocks": "Stocks",
     "workshopParts": "Parts",
-    "departure": "The squadron taking off",
+    "airfield": "The base: takeoffs and landings",
     "map": "Plan of the base",
     "clock": {
       "label": "Game clock"

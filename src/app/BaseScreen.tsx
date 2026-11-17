@@ -6,9 +6,10 @@ import BaseChoice from './BaseChoice'
 import BaseMap from './BaseMap'
 import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
-import type { Departure } from './DepartureView'
+import type { Arrival, Departure } from './AirfieldView'
 import DogfightWindow from './DogfightWindow'
 import { busyCrews, findAlert, unavailableCrews } from './flights'
+import { damageLevelOf } from '../three/damageStages'
 import GameWindow from './GameWindow'
 import Guide from './Guide'
 import { guideStepOf, markedBuildingOf, speaksInWindowOf } from './guideSteps'
@@ -74,11 +75,15 @@ function BaseScreen({ player }: { player: Player }) {
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
   const [departures, setDepartures] = useState<Departure[]>([])
+  const [landingIds, setLandingIds] = useState<number[]>([])
   const [guideStatus, setGuideStatus] = useGuideStatus(player.id)
   const [isConfirmingReset, setIsConfirmingReset] = useState(false)
   const [duelAlertId, setDuelAlertId] = useState<number | null>(null)
   const removeDeparture = useCallback((aircraftId: number) => {
     setDepartures((current) => current.filter((departure) => departure.aircraftId !== aircraftId))
+  }, [])
+  const removeLanding = useCallback((aircraftId: number) => {
+    setLandingIds((current) => current.filter((landingId) => landingId !== aircraftId))
   }, [])
 
   if (hasNoBase) {
@@ -99,6 +104,7 @@ function BaseScreen({ player }: { player: Player }) {
     setOpenBuilding(null)
     setDuelAlertId(null)
     setDepartures([])
+    setLandingIds([])
     const resetErrorCode = await resetGame()
     setErrorCode(resetErrorCode)
     if (resetErrorCode === null) {
@@ -120,6 +126,19 @@ function BaseScreen({ player }: { player: Player }) {
     }
   }
 
+  // The squadron is received: the window closes to show the aircraft that are left landing and taxiing to their stands.
+  async function receive(missionId: number): Promise<void> {
+    const crewAircraftIds = flights.find((flight) => flight.id === missionId)!.crews.map((crew) => crew.aircraftId)
+    const receiveErrorCode = await receiveSquadron(missionId)
+    setErrorCode(receiveErrorCode)
+    if (receiveErrorCode === null) {
+      setOpenBuilding(null)
+      if (aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches) {
+        setLandingIds((current) => [...current, ...crewAircraftIds])
+      }
+    }
+  }
+
   const plan = TERRAIN_PLANS[base.terrainPlan]
   const busy = busyCrews(flights)
   const unavailable = unavailableCrews(busy, rests, hangarAircraft)
@@ -127,10 +146,16 @@ function BaseScreen({ player }: { player: Player }) {
   const servicedAircraftIds = hangarAircraft.filter((state) => state.inspectionSeconds !== null || state.repairSeconds !== null).map((state) => state.aircraftId)
 
   const parkedAircraft: ParkedAircraft[] = []
+  const arrivals: Arrival[] = []
   for (let place = 0; place < base.squadron.aircraft.length; place += 1) {
     const aircraft = base.squadron.aircraft[place]
     const stand = plan.stands[place]
-    if (stand !== undefined && !busy.aircraftIds.includes(aircraft.id)) {
+    if (stand === undefined || busy.aircraftIds.includes(aircraft.id)) {
+      continue
+    }
+    if (landingIds.includes(aircraft.id)) {
+      arrivals.push({ aircraftId: aircraft.id, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability) })
+    } else {
       const state = hangarAircraft.find((candidate) => candidate.aircraftId === aircraft.id)!
       parkedAircraft.push({ id: aircraft.id, stand, status: standStatusOf(state, aircraft) })
     }
@@ -171,6 +196,8 @@ function BaseScreen({ player }: { player: Player }) {
           aircraftSprite={aircraftSprite}
           departures={departures}
           onDeparted={removeDeparture}
+          arrivals={arrivals}
+          onLanded={removeLanding}
           alerts={alerts}
           openBuilding={openBuilding}
           onSelect={setOpenBuilding}
@@ -202,7 +229,7 @@ function BaseScreen({ player }: { player: Player }) {
               busy={busy}
               unavailable={unavailable}
               onLaunch={(missionId, pilotIds, aircraftIds, fuel, ammunition) => void launch(missionId, pilotIds, aircraftIds, fuel, ammunition)}
-              onReceive={(missionId) => void order(receiveSquadron(missionId))}
+              onReceive={(missionId) => void receive(missionId)}
               onRest={(pilotId) => void order(restPilot(pilotId))}
               onRecruit={() => void order(recruitPilot())}
             />

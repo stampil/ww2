@@ -8,6 +8,7 @@ import { TILE_SIZE_METERS } from './airfield'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
 import { D520_GROUND_PITCH_RADIANS, D520_SPAN_METERS, d520AxisHeightOnGround, D520Model } from './D520Model'
+import { ArrivalFlight } from './arrivalFlight'
 import { DepartureFlight } from './departureFlight'
 import { DepartureQueue } from './departureQueue'
 import type { Assignment } from './departureQueue'
@@ -39,6 +40,12 @@ const REAL_FRONT_HEIGHT_METERS = 8
 const REAL_FORMATION_GAP_METERS = 12
 const ENTRY_CLEARANCE_METERS = 40
 const TAXI_SPEED_METERS_PER_SECOND = 30
+// An aircraft that has landed taxis more slowly to its stand, and the next one lands this long after it.
+const LANDED_TAXI_SPEED_METERS_PER_SECOND = 18
+const LANDING_SPACING_SECONDS = 7
+const APPROACH_DISTANCE_METERS = 360
+const TOUCHDOWN_BEFORE_END_METERS = 40
+const EXIT_PAST_ENTRY_METERS = 30
 const HEADING_SPAN_METERS = 8
 const TAXI_ENGINE = 0.35
 const TAXI_WHEELS = 0.4
@@ -48,6 +55,13 @@ const MARGIN_BUSH_WIDTH_METERS = { min: 10, max: 18 }
 const MARGIN_SEED = 1940
 const FULL_TURN_DEGREES = 360
 const DEGREES = Math.PI / 180
+
+type LandingAircraft = {
+  aircraftId: number
+  model: D520Model
+  startSeconds: number
+  path: TaxiPath
+}
 
 type DepartingAircraft = {
   aircraftId: number
@@ -82,18 +96,19 @@ function marginBushes(plan: TerrainPlan, runway: PlanRunway): BushPlacement[] {
   return placements
 }
 
-/** Draws the base again in 3D over its flat map, the same size and seen from the same place, for the aircraft to take off from it. */
-export type DepartureSceneOptions = {
+/** Draws the base again in 3D over its flat map, the same size and seen from the same place, for the aircraft to take off from it and to land on it. */
+export type AirfieldSceneOptions = {
   /** The picture of an aircraft seen from above, as the flat map draws the aircraft parked, and how wide it is there, in tiles. */
   aircraftSprite: string
   aircraftWidthTiles: number
 }
 
 /**
- * The squadron taking off over the base, which fills the canvas as the flat map does: each group waits on the runway, one aircraft behind
- * the other, then rolls off, climbs, turns back and flies off; the camera swings in front of the lead in the air, then back above the base. Owns its WebGL canvas.
+ * The squadron taking off and landing over the base, which fills the canvas as the flat map does: each group waits on the runway, one aircraft
+ * behind the other, then rolls off, climbs, turns back and flies off, the camera swinging in front of the lead and back above the base; an aircraft that comes
+ * back lands on the runway and taxis to its stand. Owns its WebGL canvas.
  */
-export class DepartureScene {
+export class AirfieldScene {
   private readonly renderer: THREE.WebGLRenderer
   private readonly scene = new THREE.Scene()
   private readonly camera = new THREE.PerspectiveCamera(CAMERA_FIELD_OF_VIEW_DEGREES, 1, CAMERA_NEAR_METERS, CAMERA_FAR_METERS)
@@ -103,10 +118,12 @@ export class DepartureScene {
   private readonly gapMeters: number
   private readonly leadX: number
   private readonly flight: DepartureFlight
+  private readonly landingFlight: ArrivalFlight
   private readonly queue = new DepartureQueue()
   private readonly models: D520Model[] = []
   private readonly idleModels: D520Model[] = []
   private readonly departing: DepartingAircraft[] = []
+  private readonly landing: LandingAircraft[] = []
   private readonly liveries: LiveryTextures
   private readonly parked = new THREE.Group()
   private readonly topPosition = new THREE.Vector3()
@@ -117,19 +134,24 @@ export class DepartureScene {
   private readonly startMilliseconds = performance.now()
   private parkedStands: Cell[] = []
   private parkedTexture: THREE.Texture | undefined
+  private lastLandingSeconds = Number.NEGATIVE_INFINITY
   private previousSeconds = 0
 
   constructor(
     private readonly container: HTMLElement,
     private readonly plan: TerrainPlan,
-    private readonly options: DepartureSceneOptions,
+    private readonly options: AirfieldSceneOptions,
     private readonly onDeparted: (aircraftId: number) => void,
+    private readonly onLanded: (aircraftId: number) => void,
   ) {
     this.runway = runwayOf(plan)
     this.scale = (options.aircraftWidthTiles * TILE_SIZE_METERS) / D520_SPAN_METERS
     this.gapMeters = REAL_FORMATION_GAP_METERS * this.scale
     this.leadX = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x + 2 * this.gapMeters + ENTRY_CLEARANCE_METERS
     this.flight = new DepartureFlight(this.leadX)
+    const runwayEndX = tileCenterOf(this.runway, this.runway.row, this.runway.lastColumn).x + TILE_SIZE_METERS / 2
+    const touchdownX = runwayEndX - TOUCHDOWN_BEFORE_END_METERS
+    this.landingFlight = new ArrivalFlight(touchdownX + APPROACH_DISTANCE_METERS, touchdownX, this.exitX())
     this.renderer = createRenderer(container, false)
     this.liveries = new LiveryTextures(this.renderer.capabilities.getMaxAnisotropy(), (livery, texture) => {
       if (livery === 'french') {
@@ -182,11 +204,38 @@ export class DepartureScene {
     })
   }
 
+  /** Brings an aircraft in to land on the runway, then taxi to its stand, with the damage it has; it lands after those that came in before it. */
+  land(aircraftId: number, stand: Cell, damageLevel: number): void {
+    const model = this.acquireModel()
+    for (let level = 0; level < damageLevel; level += 1) {
+      model.inflictDamage()
+    }
+    const startSeconds = Math.max(this.secondsNow(), this.lastLandingSeconds + LANDING_SPACING_SECONDS)
+    this.lastLandingSeconds = startSeconds
+    model.object.visible = false
+    this.landing.push({ aircraftId, model, startSeconds, path: this.taxiPathToStand(stand) })
+  }
+
   dispose(): void {
     this.renderer.setAnimationLoop(null)
     this.resizeObserver.disconnect()
     disposeScene(this.scene, this.renderer)
     this.liveries.dispose()
+  }
+
+  /** Where a landed aircraft leaves the runway: a little beyond the junction where aircraft come onto it, on the way it came. */
+  private exitX(): number {
+    return tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x + EXIT_PAST_ENTRY_METERS
+  }
+
+  /** From the runway, the way an aircraft that has landed takes to its stand: to the junction, then down the taxiways. */
+  private taxiPathToStand(stand: Cell): TaxiPath {
+    const steps = findPath(this.plan, { row: this.runway.row, column: this.runway.entryColumn }, stand)
+    const points = [new THREE.Vector2(this.exitX(), 0)]
+    for (const step of steps) {
+      points.push(tileCenterOf(this.runway, step.cell.row, step.cell.column))
+    }
+    return new TaxiPath(points)
   }
 
   private secondsNow(): number {
@@ -254,6 +303,7 @@ export class DepartureScene {
 
   private acquireModel(): D520Model {
     const model = this.idleModels.pop() ?? this.createModel()
+    model.repair()
     model.object.visible = true
     return model
   }
@@ -287,8 +337,42 @@ export class DepartureScene {
       this.move(aircraft, seconds)
       aircraft.model.update(deltaSeconds)
     }
+    for (let index = this.landing.length - 1; index >= 0; index -= 1) {
+      const aircraft = this.landing[index]
+      if (this.moveLanding(aircraft, seconds)) {
+        aircraft.model.object.visible = false
+        this.idleModels.push(aircraft.model)
+        this.landing.splice(index, 1)
+        this.onLanded(aircraft.aircraftId)
+        continue
+      }
+      aircraft.model.update(deltaSeconds)
+    }
     this.placeCamera(seconds)
     this.renderer.render(this.scene, this.camera)
+  }
+
+  /** Moves a landing aircraft; true once it has reached its stand. It stays out of sight until its turn to come in. */
+  private moveLanding(aircraft: LandingAircraft, seconds: number): boolean {
+    const elapsedSeconds = seconds - aircraft.startSeconds
+    if (elapsedSeconds < 0) {
+      return false
+    }
+    aircraft.model.object.visible = true
+    if (elapsedSeconds < this.landingFlight.durationSeconds) {
+      const pose = this.landingFlight.pose(elapsedSeconds)
+      aircraft.model.setState(pose.state)
+      this.place(aircraft.model, pose.x, pose.y, pose.altitude, pose.heading, pose.pitch, pose.roll)
+      return false
+    }
+    const distance = (elapsedSeconds - this.landingFlight.durationSeconds) * LANDED_TAXI_SPEED_METERS_PER_SECOND
+    if (distance >= aircraft.path.lengthMeters) {
+      return true
+    }
+    const place = aircraft.path.pointAt(distance)
+    aircraft.model.setState({ engine: TAXI_ENGINE, gearRetraction: 0, flaps: 1, wheels: TAXI_WHEELS, aileron: 0, rudder: 0, elevator: 0 })
+    this.place(aircraft.model, place.x, place.y, 0, aircraft.path.headingAt(distance, HEADING_SPAN_METERS), D520_GROUND_PITCH_RADIANS, 0)
+    return false
   }
 
   /** On its way to its place in the line, or in its place and then in flight, where each aircraft follows the lead a little behind it. */

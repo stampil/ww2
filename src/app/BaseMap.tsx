@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react'
 import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
-import DepartureView from './DepartureView'
-import type { Departure } from './DepartureView'
+import AirfieldView from './AirfieldView'
+import type { Arrival, Departure } from './AirfieldView'
 import Icon from './Icon'
 import type { IconName } from './iconPaths'
 import MaintenanceCrew from './MaintenanceCrew'
@@ -35,6 +35,9 @@ type Props = {
   /** The aircraft that take off, each from its stand, and what to do once one has flown off. */
   departures: Departure[]
   onDeparted: (aircraftId: number) => void
+  /** The aircraft that land and taxi to their stands, and what to do once one has got there. */
+  arrivals: Arrival[]
+  onLanded: (aircraftId: number) => void
   alerts: MapAlert[]
   openBuilding: BuildingName | null
   onSelect: (building: BuildingName) => void
@@ -52,8 +55,8 @@ function standPlacement(stand: Cell): CSSProperties {
   return { '--row': stand.row, '--column': stand.column, '--width': AIRCRAFT_WIDTH_TILES } as CSSProperties
 }
 
-/** The base seen from above: the tiles of its terrain plan, the sprites standing on them, the aircraft parked or taking off, the mechanics at work and the alerts; a click on a building opens it. */
-function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, alerts, openBuilding, onSelect }: Props) {
+/** The base seen from above: the tiles of its terrain plan, the sprites standing on them, the aircraft parked, taking off or landing, the mechanics at work and the alerts; a click on a building opens it. */
+function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, arrivals, onLanded, alerts, openBuilding, onSelect }: Props) {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gridSize = { '--rows': plan.tiles.length, '--columns': plan.tiles[0].length } as CSSProperties
@@ -74,14 +77,16 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
     <div className="base-map-viewport">
       <div className="base-map" role="group" aria-label={t('base.map')} style={gridSize}>
         <canvas className="base-map-canvas" ref={canvasRef} />
-        {departures.length > 0 && aircraftSprite !== null && (
-          <DepartureView
+        {(departures.length > 0 || arrivals.length > 0) && aircraftSprite !== null && (
+          <AirfieldView
             plan={plan}
             departures={departures}
+            arrivals={arrivals}
             aircraftSprite={aircraftSprite}
             aircraftWidthTiles={AIRCRAFT_WIDTH_TILES}
             parkedStands={parkedAircraft.map((aircraft) => aircraft.stand)}
             onDeparted={onDeparted}
+            onLanded={onLanded}
           />
         )}
         {plan.sprites.map((sprite) => {

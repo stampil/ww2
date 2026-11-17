@@ -5,6 +5,7 @@ export type Stock = 'fuel' | 'ammunition' | 'materials'
 export type Part = 'engine' | 'wings' | 'fuselage' | 'armament'
 
 export type Base = {
+  terrainPlan: string
   resources: { supplies: number; fuel: number; ammunition: number; materials: number; commandPoints: number }
   buildings: string[]
   warehouse: { capacity: number; prices: Record<Stock, number> }

@@ -84,7 +84,6 @@
     "seed": "Graine {{seed}}"
   },
   "squadron": {
-    "title": "Escadrille de {{nickname}}",
     "signInHint": "Connecte-toi pour voir ton escadrille.",
     "pilots": "Pilotes",
     "aircraft": "Avions",
@@ -111,6 +110,7 @@
   },
   "base": {
     "title": "Base",
+    "map": "Plan de la base",
     "resources": {
       "supplies": "Ravitaillement",
       "fuel": "Carburant",
@@ -118,11 +118,9 @@
       "materials": "Matériaux",
       "commandPoints": "Points de commandement"
     },
-    "warehouse": "Entrepôt",
-    "stored": "{{stored}} / {{capacity}}",
+      "stored": "{{stored}} / {{capacity}}",
     "buy": "Acheter {{quantity}} ({{cost}} de ravitaillement)",
-    "workshop": "Atelier",
-    "mechanics": "Mécaniciens libres : {{count}}",
+      "mechanics": "Mécaniciens libres : {{count}}",
     "parts": {
       "engine": "Moteur",
       "wings": "Ailes",
@@ -135,8 +133,7 @@
     "makeWithMechanic": "Avec un mécanicien",
     "running": "En fabrication",
     "withMechanic": "avec un mécanicien",
-    "buildings": "Bâtiments",
-    "building": {
+      "building": {
       "headquarters": {
         "name": "Quartier Général",
         "text": "Missions et recrutement : à venir."

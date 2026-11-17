@@ -1,12 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import AccountPanel from './AccountPanel'
-import BasePanel from './BasePanel'
+import BaseScreen from './BaseScreen'
 import Layout from './Layout'
-import SquadronPanel from './SquadronPanel'
 import { useAccount } from './useAccount'
 import { useApiStatus } from './useApiStatus'
 
-/** The game, which needs the server: the account, the squadron and the base of the player, and whether the server answers. */
+/** The game, which needs the server: the base of the player who is signed in, and whether the server answers. */
 function GamePage() {
   const { t } = useTranslation()
   const apiStatus = useApiStatus()
@@ -16,8 +15,7 @@ function GamePage() {
     <Layout tools={<AccountPanel account={account} />}>
       <section className="intro" aria-labelledby="game-title">
         <h1 id="game-title">{t('game.title')}</h1>
-        <SquadronPanel player={account.player} />
-        <BasePanel player={account.player} />
+        {account.player === null ? <p className="squadron-hint">{t('squadron.signInHint')}</p> : <BaseScreen player={account.player} />}
         <div className="status-line">
           <span className="status-dot" data-status={apiStatus} aria-hidden="true" />
           <span>{t(`status.${apiStatus}`)}</span>

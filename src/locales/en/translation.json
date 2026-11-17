@@ -84,7 +84,6 @@
     "seed": "Seed {{seed}}"
   },
   "squadron": {
-    "title": "Squadron of {{nickname}}",
     "signInHint": "Sign in to see your squadron.",
     "pilots": "Pilots",
     "aircraft": "Aircraft",
@@ -111,6 +110,7 @@
   },
   "base": {
     "title": "Base",
+    "map": "Plan of the base",
     "resources": {
       "supplies": "Supplies",
       "fuel": "Fuel",
@@ -118,11 +118,9 @@
       "materials": "Materials",
       "commandPoints": "Command points"
     },
-    "warehouse": "Warehouse",
-    "stored": "{{stored}} / {{capacity}}",
+      "stored": "{{stored}} / {{capacity}}",
     "buy": "Buy {{quantity}} ({{cost}} supplies)",
-    "workshop": "Workshop",
-    "mechanics": "Free mechanics: {{count}}",
+      "mechanics": "Free mechanics: {{count}}",
     "parts": {
       "engine": "Engine",
       "wings": "Wings",
@@ -135,8 +133,7 @@
     "makeWithMechanic": "With a mechanic",
     "running": "Being made",
     "withMechanic": "with a mechanic",
-    "buildings": "Buildings",
-    "building": {
+      "building": {
       "headquarters": {
         "name": "Headquarters",
         "text": "Missions and recruitment: coming."

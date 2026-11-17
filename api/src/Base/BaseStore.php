@@ -8,7 +8,7 @@ use LogicException;
 use Ww2\Database\Database;
 
 /**
- * Keeps the resources and the production jobs of the bases in the database.
+ * Keeps the resources, the terrain plan and the production jobs of the bases in the database.
  */
 final class BaseStore
 {
@@ -16,20 +16,42 @@ final class BaseStore
     {
     }
 
-    public function add(int $playerId, BaseResources $resources): void
+    public function add(int $playerId, BaseResources $resources, string $terrainPlan): void
     {
-        $this->database->execute(
-            'INSERT INTO base_resources (player_id, supplies, fuel, ammunition, materials, command_points)
-             VALUES (:player_id, :supplies, :fuel, :ammunition, :materials, :command_points)',
-            [
-                'player_id' => $playerId,
-                'supplies' => $resources->supplies,
-                'fuel' => $resources->fuel,
-                'ammunition' => $resources->ammunition,
-                'materials' => $resources->materials,
-                'command_points' => $resources->commandPoints,
-            ],
+        $this->database->transaction(function () use ($playerId, $resources, $terrainPlan): void {
+            $this->database->execute(
+                'INSERT INTO base_resources (player_id, supplies, fuel, ammunition, materials, command_points)
+                 VALUES (:player_id, :supplies, :fuel, :ammunition, :materials, :command_points)',
+                [
+                    'player_id' => $playerId,
+                    'supplies' => $resources->supplies,
+                    'fuel' => $resources->fuel,
+                    'ammunition' => $resources->ammunition,
+                    'materials' => $resources->materials,
+                    'command_points' => $resources->commandPoints,
+                ],
+            );
+            $this->database->execute(
+                'INSERT INTO base_terrains (player_id, plan) VALUES (:player_id, :plan)',
+                ['player_id' => $playerId, 'plan' => $terrainPlan],
+            );
+        });
+    }
+
+    /**
+     * @return string the name of the terrain plan of the base, which the front draws
+     */
+    public function terrainPlanOf(int $playerId): string
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT plan FROM base_terrains WHERE player_id = :player_id',
+            ['player_id' => $playerId],
         );
+        if ($rows === []) {
+            throw new LogicException('The player has no base.');
+        }
+
+        return (string) $rows[0]['plan'];
     }
 
     public function resourcesOf(int $playerId): BaseResources

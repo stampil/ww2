@@ -104,6 +104,7 @@ final class BaseController
     private function overview(int $playerId): array
     {
         return [
+            'terrainPlan' => $this->bases->terrainPlanOf($playerId),
             'resources' => $this->bases->resourcesOf($playerId)->toArray(),
             'buildings' => array_map(static fn (Building $building): string => $building->value, Building::cases()),
             'warehouse' => $this->warehouse->describe(),

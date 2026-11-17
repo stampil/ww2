@@ -4,8 +4,10 @@ import { TERRAIN_PLANS } from '../plans/terrainPlan'
 import type { BuildingName } from '../plans/terrainPlan'
 import BaseChoice from './BaseChoice'
 import BaseMap from './BaseMap'
-import type { Departure, MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
+import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
+import DepartureView from './DepartureView'
+import type { Departure } from './DepartureView'
 import { busyCrews, unavailableCrews } from './flights'
 import GameWindow from './GameWindow'
 import Guide from './Guide'
@@ -23,7 +25,7 @@ import { useGuideStatus } from './useGuideStatus'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
 
-const DEPARTURE_GAP_MILLISECONDS = 450
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
 function standStatusOf(state: HangarAircraft, aircraft: Aircraft): StandStatus {
   if (state.fireSeconds !== null) {
@@ -99,15 +101,17 @@ function BaseScreen({ player }: { player: Player }) {
     }
   }
 
-  // Once the orders are given the window closes, to show the squadron taking off one aircraft after the other.
+  // Once the orders are given the window closes, to show the squadron taking off, in groups of three.
   async function launch(missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number): Promise<void> {
     const departing = parkedAircraft.filter((aircraft) => aircraftIds.includes(aircraft.id))
     const launchErrorCode = await launchMission(missionId, pilotIds, aircraftIds, fuel, ammunition)
     setErrorCode(launchErrorCode)
     if (launchErrorCode === null) {
       setOpenBuilding(null)
-      const leaving = departing.map((aircraft, place) => ({ aircraftId: aircraft.id, stand: aircraft.stand, delayMilliseconds: place * DEPARTURE_GAP_MILLISECONDS }))
-      setDepartures((current) => [...current, ...leaving])
+      if (!window.matchMedia(REDUCED_MOTION_QUERY).matches) {
+        const leaving = departing.map((aircraft) => ({ aircraftId: aircraft.id, stand: aircraft.stand }))
+        setDepartures((current) => [...current, ...leaving])
+      }
     }
   }
 
@@ -158,12 +162,11 @@ function BaseScreen({ player }: { player: Player }) {
           servicedAircraftIds={servicedAircraftIds}
           parkedAircraft={parkedAircraft}
           aircraftSprite={aircraftSprite}
-          departures={departures}
-          onDeparted={removeDeparture}
           alerts={alerts}
           openBuilding={openBuilding}
           onSelect={setOpenBuilding}
         />
+        {departures.length > 0 && <DepartureView plan={plan} departures={departures} onDeparted={removeDeparture} />}
       </div>
 
       {openBuilding === null && guide}

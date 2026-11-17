@@ -201,6 +201,7 @@
     },
     "stocks": "Stocks",
     "workshopParts": "Parts",
+    "departure": "The squadron taking off",
     "map": "Plan of the base",
     "clock": {
       "label": "Game clock"

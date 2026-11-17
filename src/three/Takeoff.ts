@@ -1,4 +1,5 @@
 import type { AircraftState } from './aircraftState'
+import { bump, clamp, smoothStep } from './easing'
 
 /** Where the aircraft is and how it is turned at one moment of the takeoff, in world meters and radians, and how far the camera has swung to the front. */
 export type TakeoffPose = {
@@ -33,20 +34,6 @@ const GEAR_RETRACT_SECONDS = 2
 const FLAP_RETRACT_DELAY_SECONDS = 2
 const FLAP_RETRACT_SECONDS = 3
 const RUDDER_TURN_SHARE = 0.4
-
-/** A swing from 0 to 1 and back to 0 between start and end. */
-function bump(start: number, end: number, value: number): number {
-  return Math.sin(Math.PI * clamp((value - start) / (end - start), 0, 1))
-}
-
-function clamp(value: number, minimum: number, maximum: number): number {
-  return Math.min(Math.max(value, minimum), maximum)
-}
-
-function smoothStep(start: number, end: number, value: number): number {
-  const progress = clamp((value - start) / (end - start), 0, 1)
-  return progress * progress * (3 - 2 * progress)
-}
 
 /** The altitude gained when the climb rate grows smoothly from zero to its steady value. */
 function climbedMeters(flightSeconds: number): number {

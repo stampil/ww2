@@ -109,6 +109,37 @@
       "bomber": "Bomber"
     }
   },
+  "guide": {
+    "welcome": {
+      "title": "Welcome, commander",
+      "hint": "10 May 1940",
+      "text": "Germany is attacking in the west. You command this air base and its squadron of D.520s. To hold the battle, shoot down 8 enemy aircraft; with no pilot or no aircraft left, it is lost. I will guide you through the first day.",
+      "begin": "Begin"
+    },
+    "launch": {
+      "title": "Step 1: a first mission",
+      "text": "Open the Headquarters (the gold arrow) and prepare a reconnaissance, the least risky: pick a pilot and an aircraft, then launch the mission."
+    },
+    "fly": {
+      "title": "Step 2: the squadron is in flight",
+      "text": "The flight lasts a few minutes, in real time. At the Headquarters, watch the fatigue and stress of the pilots: a tired pilot flies worse."
+    },
+    "receive": {
+      "title": "Step 3: the return",
+      "text": "The squadron is back: open the Headquarters and receive it, to read the report and collect the rewards."
+    },
+    "maintenance": {
+      "title": "Step 4: the aircraft is damaged",
+      "text": "At the Hangar, inspect the aircraft to see its damage. If a module is destroyed, have the part made at the Workshop, then repair. An aircraft on fire explodes if it is not repaired in time."
+    },
+    "free": {
+      "title": "Step 5: over to you",
+      "text": "You have been through it all: missions, inspection, repair. To win you need 8 enemy aircraft shot down, which air combats bring. Rest your pilots, recruit, and improve the base with command points."
+    },
+    "here": "The guide points at this building",
+    "understood": "Understood",
+    "skip": "Skip the tutorial"
+  },
   "world": {
     "choose": {
       "title": "Choose your base",

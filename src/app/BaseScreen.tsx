@@ -8,6 +8,9 @@ import type { Departure, MapAlert, ParkedAircraft, StandStatus } from './BaseMap
 import BattleOver from './BattleOver'
 import { busyCrews, unavailableCrews } from './flights'
 import GameWindow from './GameWindow'
+import Guide from './Guide'
+import { guideStepOf, markedBuildingOf, speaksInWindowOf } from './guideSteps'
+import GuideWelcome from './GuideWelcome'
 import HangarPanel from './HangarPanel'
 import HeadquartersPanel from './HeadquartersPanel'
 import Hud from './Hud'
@@ -15,6 +18,7 @@ import type { Player } from './useAccount'
 import { useAircraftSprite } from './useAircraftSprite'
 import { useBase } from './useBase'
 import type { Aircraft, HangarAircraft, UpgradeName } from './useBase'
+import { useGuideStatus } from './useGuideStatus'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
 
@@ -63,6 +67,7 @@ function BaseScreen({ player }: { player: Player }) {
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
   const [departures, setDepartures] = useState<Departure[]>([])
+  const [guideStatus, setGuideStatus] = useGuideStatus(player.id)
   const removeDeparture = useCallback((aircraftId: number) => {
     setDepartures((current) => current.filter((departure) => departure.aircraftId !== aircraftId))
   }, [])
@@ -115,6 +120,13 @@ function BaseScreen({ player }: { player: Player }) {
     alerts.push({ kind: 'fire', building: 'hangar', label: t('base.fireAlert') })
   }
 
+  const guideStep = guideStepOf(guideStatus, { flights, eventCount: base.events.length, hangarAircraft })
+  const markedBuilding = guideStep === null ? undefined : markedBuildingOf(guideStep)
+  if (markedBuilding !== undefined) {
+    alerts.push({ kind: 'guide', building: markedBuilding, label: t('guide.here') })
+  }
+  const guide = guideStep !== null && guideStep !== 'welcome' ? <Guide step={guideStep} onEnd={() => setGuideStatus('over')} /> : null
+
   const errorMessage = errorCode !== null && (
     <p className="game-message" role="alert">
       {t(`base.errors.${errorCode}`)}
@@ -139,10 +151,12 @@ function BaseScreen({ player }: { player: Player }) {
         />
       </div>
 
+      {openBuilding === null && guide}
       {openBuilding === null && errorMessage}
 
       {openBuilding !== null && (
         <GameWindow title={t(`base.building.${openBuilding}.name`)} hint={t(`base.building.${openBuilding}.text`)} onDismiss={() => setOpenBuilding(null)}>
+          {guideStep !== null && speaksInWindowOf(guideStep, openBuilding) && guide}
           {errorMessage}
           {openBuilding === 'headquarters' && (
             <HeadquartersPanel
@@ -195,6 +209,8 @@ function BaseScreen({ player }: { player: Player }) {
           )}
         </GameWindow>
       )}
+
+      {guideStep === 'welcome' && <GuideWelcome onBegin={() => setGuideStatus('running')} onSkip={() => setGuideStatus('over')} />}
 
       {base.battle.status !== 'ongoing' && <BattleOver battle={base.battle} onRestart={() => void order(restartBattle())} />}
     </section>

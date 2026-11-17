@@ -21,10 +21,10 @@ export type ParkedAircraft = { id: number; stand: Cell; status: StandStatus }
 /** An aircraft that has just been sent on a mission: it takes off from the stand it stood on, after a delay. */
 export type Departure = { aircraftId: number; stand: Cell; delayMilliseconds: number }
 /** Something that needs the player at a building: a marker over it, which opens it. */
-export type MapAlert = { kind: 'mission' | 'fire'; building: BuildingName; label: string }
+export type MapAlert = { kind: 'mission' | 'fire' | 'guide'; building: BuildingName; label: string }
 
 const STATUS_ICONS: Record<Exclude<StandStatus, 'ready'>, IconName> = { damaged: 'warning', inspecting: 'reconnaissance', repairing: 'repair', burning: 'fire' }
-const ALERT_ICONS: Record<MapAlert['kind'], IconName> = { mission: 'warning', fire: 'fire' }
+const ALERT_ICONS: Record<MapAlert['kind'], IconName> = { mission: 'warning', fire: 'fire', guide: 'upgrade' }
 
 type Props = {
   plan: TerrainPlan

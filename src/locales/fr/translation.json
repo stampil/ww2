@@ -109,6 +109,37 @@
       "bomber": "Bombardier"
     }
   },
+  "guide": {
+    "welcome": {
+      "title": "Bienvenue, commandant",
+      "hint": "10 mai 1940",
+      "text": "L'Allemagne attaque à l'ouest. Tu commandes cette base aérienne et son escadrille de D.520. Pour tenir la bataille, abats 8 avions ennemis ; sans pilote ou sans avion, elle est perdue. Je te guide pour la première journée.",
+      "begin": "Commencer"
+    },
+    "launch": {
+      "title": "Étape 1 : une première mission",
+      "text": "Ouvre le Quartier Général (la flèche dorée) et prépare une reconnaissance, la moins risquée : choisis un pilote et un avion, puis lance la mission."
+    },
+    "fly": {
+      "title": "Étape 2 : l'escadrille est en vol",
+      "text": "Le vol dure quelques minutes, en temps réel. Au Quartier Général, surveille la fatigue et le stress des pilotes : un pilote fatigué vole moins bien."
+    },
+    "receive": {
+      "title": "Étape 3 : le retour",
+      "text": "L'escadrille est rentrée : ouvre le Quartier Général et reçois-la, pour lire le rapport et toucher les gains."
+    },
+    "maintenance": {
+      "title": "Étape 4 : l'avion est abîmé",
+      "text": "Au Hangar, inspecte l'avion pour voir ses dégâts. Si un module est détruit, fais fabriquer la pièce à l'Atelier, puis répare. Un avion en feu explose s'il n'est pas réparé à temps."
+    },
+    "free": {
+      "title": "Étape 5 : à toi de jouer",
+      "text": "Tu as fait le tour : missions, inspection, réparation. Pour gagner il faut 8 avions ennemis abattus, ce que rapportent les combats aériens. Fais reposer les pilotes, recrute, et améliore la base avec les points de commandement."
+    },
+    "here": "Le guide te montre ce bâtiment",
+    "understood": "Compris",
+    "skip": "Passer le tutoriel"
+  },
   "world": {
     "choose": {
       "title": "Choisis ta base",

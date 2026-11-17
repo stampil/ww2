@@ -32,4 +32,8 @@ enum BaseError: string
     case PilotResting = 'pilotResting';
     case NothingToRest = 'nothingToRest';
     case TooManyPilots = 'tooManyPilots';
+    case UpgradeAtMaximum = 'upgradeAtMaximum';
+    case InsufficientCommandPoints = 'insufficientCommandPoints';
+    case BattleOver = 'battleOver';
+    case BattleOngoing = 'battleOngoing';
 }

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import type { Base, Stock } from './useBase'
+import type { Base, Stock, UpgradeInfo, UpgradeName } from './useBase'
+import UpgradeCard from './UpgradeCard'
 
 const PURCHASE_STEP = 100
 const STOCKS: Stock[] = ['fuel', 'ammunition', 'materials']
@@ -8,10 +9,12 @@ type Props = {
   resources: Base['resources']
   warehouse: Base['warehouse']
   onBuy: (stock: Stock, quantity: number) => void
+  upgrade: UpgradeInfo
+  onUpgrade: (upgrade: UpgradeName) => void
 }
 
 /** The stocks of the warehouse, each with a button to buy more of it. */
-function WarehousePanel({ resources, warehouse, onBuy }: Props) {
+function WarehousePanel({ resources, warehouse, onBuy, upgrade, onUpgrade }: Props) {
   const { t } = useTranslation()
 
   return (
@@ -26,6 +29,7 @@ function WarehousePanel({ resources, warehouse, onBuy }: Props) {
           </button>
         </li>
       ))}
+      <UpgradeCard info={upgrade} commandPoints={resources.commandPoints} onBuy={onUpgrade} />
     </ul>
   )
 }

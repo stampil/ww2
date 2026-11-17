@@ -37,6 +37,7 @@ final class Headquarters
         private readonly GameClockStore $clocks,
         private readonly HangarStore $hangar,
         private readonly EventLog $events,
+        private readonly BattleStore $battles,
         private readonly MissionGenerator $generator,
         private readonly WeatherForecast $forecast,
         private readonly MissionResolver $resolver,
@@ -218,6 +219,9 @@ final class Headquarters
             }
         }
         $this->bases->addRewards($playerId, $report->suppliesWon, $report->commandPointsWon);
+        if ($report->success && $report->type === MissionType::AirCombat) {
+            $this->battles->addKills($playerId, count($report->crews));
+        }
     }
 
     /**

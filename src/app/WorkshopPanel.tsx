@@ -1,15 +1,19 @@
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from './formatDuration'
-import type { Base, Part } from './useBase'
+import type { Base, Part, UpgradeInfo, UpgradeName } from './useBase'
+import UpgradeCard from './UpgradeCard'
 
 type Props = {
   workshop: Base['workshop']
   jobs: Base['workshop']['jobs']
   onProduce: (part: Part, withMechanic: boolean) => void
+  upgrade: UpgradeInfo
+  commandPoints: number
+  onUpgrade: (upgrade: UpgradeName) => void
 }
 
 /** The spare parts the workshop can make, with or without a mechanic, and the ones being made. */
-function WorkshopPanel({ workshop, jobs, onProduce }: Props) {
+function WorkshopPanel({ workshop, jobs, onProduce, upgrade, commandPoints, onUpgrade }: Props) {
   const { t } = useTranslation()
 
   return (
@@ -31,6 +35,7 @@ function WorkshopPanel({ workshop, jobs, onProduce }: Props) {
             </div>
           </li>
         ))}
+        <UpgradeCard info={upgrade} commandPoints={commandPoints} onBuy={onUpgrade} />
       </ul>
       {jobs.length > 0 && (
         <ul className="jobs" aria-label={t('base.running')}>

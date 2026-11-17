@@ -8,7 +8,7 @@ use Ww2\Squadron\AircraftCategory;
 
 /**
  * What a type of mission looks like: the aircraft it takes, how long it lasts, what it burns, how risky it is, what it pays.
- * The fuel, the ammunition and the rewards are figures per aircraft.
+ * The fuel, the ammunition and the rewards are figures per aircraft; the supplies paid grow with the risk, by a figure per risk point.
  */
 final readonly class MissionProfile
 {
@@ -22,7 +22,7 @@ final readonly class MissionProfile
         public IntegerRange $fuelPerAircraft,
         public IntegerRange $ammunitionPerAircraft,
         public IntegerRange $risk,
-        public IntegerRange $suppliesPerAircraft,
+        public IntegerRange $suppliesPerRiskPoint,
         public int $commandPointsPerAircraft,
     ) {
     }

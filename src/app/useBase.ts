@@ -77,6 +77,12 @@ export type ExplosionEvent = { kind: 'explosion'; id: number; aircraftName: stri
 /** What happened at the base; the newest event comes first. */
 export type BaseEvent = MissionReport | ExplosionEvent
 
+export type UpgradeName = 'hangar' | 'workshop' | 'warehouse'
+/** What the command points buy for a building; the cost is null at the top level. */
+export type UpgradeInfo = { upgrade: UpgradeName; level: number; maxLevel: number; cost: number | null }
+/** The battle of the base: the enemy aircraft shot down against the target, and how it stands. */
+export type Battle = { kills: number; target: number; status: 'ongoing' | 'won' | 'lost' }
+
 export type Base = {
   terrainPlan: string
   resources: { supplies: number; fuel: number; ammunition: number; materials: number; commandPoints: number }
@@ -95,6 +101,8 @@ export type Base = {
   hangar: { aircraft: HangarAircraft[] }
   squadron: Squadron
   events: BaseEvent[]
+  upgrades: UpgradeInfo[]
+  battle: Battle
 }
 
 type ErrorPayload = { reason_phrase: string }
@@ -240,5 +248,13 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/pilots/recruit`, {}))
   }
 
-  return { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot }
+  async function buyUpgrade(upgrade: UpgradeName): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/upgrades/buy`, { upgrade }))
+  }
+
+  async function restartBattle(): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/battle/restart`, {}))
+  }
+
+  return { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot, buyUpgrade, restartBattle }
 }

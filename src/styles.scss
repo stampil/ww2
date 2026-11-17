@@ -453,7 +453,8 @@ button.base-sprite {
 }
 
 .resources li,
-.game-clock {
+.game-clock,
+.battle-progress {
   @include stat-box;
 }
 
@@ -470,7 +471,8 @@ button.base-sprite {
 
 .card button,
 .jobs button,
-.briefing > button {
+.briefing > button,
+.battle-over button {
   position: relative;
   height: 2rem;
   padding: 0 0.7rem;
@@ -577,6 +579,21 @@ button.base-sprite {
 .card .on-fire {
   color: var(--accent);
   font-weight: 600;
+}
+
+.battle-over {
+  @include flex($direction: column, $gap: 0.75rem);
+  align-items: flex-start;
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--accent);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+
+  h3,
+  p {
+    margin: 0;
+  }
 }
 
 .briefing-load {

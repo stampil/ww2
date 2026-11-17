@@ -9,12 +9,12 @@ use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
 
 /**
- * The workshop: a few benches that make spare parts for the aircraft, helped by mechanics who halve the time.
+ * The workshop: a few benches, which the upgrades add to, that make spare parts for the aircraft, helped by mechanics who halve the time.
  * Its times run on the game clock.
  */
 final class Workshop
 {
-    private const BENCHES = 2;
+    private const BASE_BENCHES = 2;
     private const MECHANIC_TIME_DIVISOR = 2;
 
     public function __construct(
@@ -22,6 +22,7 @@ final class Workshop
         private readonly BaseStore $bases,
         private readonly GameClockStore $clocks,
         private readonly Mechanics $mechanics,
+        private readonly Upgrades $upgrades,
     ) {
     }
 
@@ -34,7 +35,7 @@ final class Workshop
             $resources = $this->bases->lockResources($playerId);
             $gameSeconds = $this->clocks->of($playerId)->gameSeconds;
             $running = $this->bases->runningJobs($playerId, $gameSeconds);
-            if (count($running) >= self::BENCHES) {
+            if (count($running) >= $this->benchesOf($playerId)) {
                 throw new BaseException(BaseError::WorkshopBusy);
             }
             if ($withMechanic && $this->mechanics->freeAt($playerId, $gameSeconds) < 1) {
@@ -62,11 +63,16 @@ final class Workshop
         }
 
         return [
-            'benches' => self::BENCHES,
+            'benches' => $this->benchesOf($playerId),
             'freeMechanics' => $this->mechanics->freeAt($playerId, $clock->gameSeconds),
             'parts' => $parts,
             'jobs' => array_map(static fn (ProductionJob $job): array => $job->toArray(), $running),
             'readyParts' => $this->bases->readyParts($playerId, $clock->gameSeconds),
         ];
+    }
+
+    private function benchesOf(int $playerId): int
+    {
+        return self::BASE_BENCHES + $this->upgrades->levelOf($playerId, Upgrade::Workshop);
     }
 }

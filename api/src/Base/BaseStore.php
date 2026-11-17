@@ -104,6 +104,14 @@ final class BaseStore
         );
     }
 
+    public function spendCommandPoints(int $playerId, int $amount): void
+    {
+        $this->database->execute(
+            'UPDATE base_resources SET command_points = command_points - :amount WHERE player_id = :player_id',
+            ['amount' => $amount, 'player_id' => $playerId],
+        );
+    }
+
     public function spendSupplies(int $playerId, int $amount): void
     {
         $this->database->execute(

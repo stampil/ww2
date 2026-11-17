@@ -116,6 +116,28 @@
     },
     "alert": "Mission finished",
     "fireAlert": "Aircraft on fire",
+    "battle": {
+      "kills": "Enemy aircraft shot down",
+      "progress": "{{kills}} of {{target}}",
+      "won": {
+        "title": "Victory",
+        "text": "The battle is won: {{target}} enemy aircraft shot down."
+      },
+      "lost": {
+        "title": "Defeat",
+        "text": "There is no pilot or no aircraft left: the battle is lost."
+      },
+      "restart": "New battle"
+    },
+    "upgrade": {
+      "title": "Upgrade",
+      "hangar": "One more D.520",
+      "workshop": "One more bench",
+      "warehouse": "More room for the stocks",
+      "level": "Level {{level}} of {{max}}",
+      "buy": "Upgrade ({{cost}} command points)",
+      "maxed": "Top level"
+    },
     "hangar": {
       "modules": "Modules",
       "moduleIntact": "{{part}}",
@@ -248,6 +270,10 @@
       "pilotResting": "This pilot is resting.",
       "nothingToRest": "This pilot has no fatigue or stress.",
       "tooManyPilots": "The headquarters cannot house more pilots.",
+      "upgradeAtMaximum": "This upgrade is at its top level.",
+      "insufficientCommandPoints": "Not enough command points.",
+      "battleOver": "The battle is over: start a new one.",
+      "battleOngoing": "The battle is not over.",
       "invalidBody": "The order is not understood.",
       "signInRequired": "Sign in first.",
       "apiDown": "The API does not answer."

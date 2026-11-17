@@ -116,6 +116,28 @@
     },
     "alert": "Mission terminée",
     "fireAlert": "Avion en feu",
+    "battle": {
+      "kills": "Avions ennemis abattus",
+      "progress": "{{kills}} sur {{target}}",
+      "won": {
+        "title": "Victoire",
+        "text": "La bataille est gagnée : {{target}} avions ennemis abattus."
+      },
+      "lost": {
+        "title": "Défaite",
+        "text": "Il ne reste plus de pilote ou plus d'avion : la bataille est perdue."
+      },
+      "restart": "Nouvelle bataille"
+    },
+    "upgrade": {
+      "title": "Amélioration",
+      "hangar": "Un D.520 de plus",
+      "workshop": "Un établi de plus",
+      "warehouse": "Plus de place pour les stocks",
+      "level": "Niveau {{level}} sur {{max}}",
+      "buy": "Améliorer ({{cost}} points de commandement)",
+      "maxed": "Niveau maximal"
+    },
     "hangar": {
       "modules": "Modules",
       "moduleIntact": "{{part}}",
@@ -248,6 +270,10 @@
       "pilotResting": "Ce pilote est au repos.",
       "nothingToRest": "Ce pilote n'a ni fatigue ni stress.",
       "tooManyPilots": "Le Quartier Général ne peut pas loger plus de pilotes.",
+      "upgradeAtMaximum": "Cette amélioration est au niveau maximal.",
+      "insufficientCommandPoints": "Pas assez de points de commandement.",
+      "battleOver": "La bataille est terminée : lance-en une nouvelle.",
+      "battleOngoing": "La bataille n'est pas terminée.",
       "invalidBody": "La commande n'est pas comprise.",
       "signInRequired": "Connecte-toi d'abord.",
       "apiDown": "L'API ne répond pas."

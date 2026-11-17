@@ -36,7 +36,7 @@ enum MissionType: string
                 fuelPerAircraft: new IntegerRange(30, 50),
                 ammunitionPerAircraft: new IntegerRange(0, 0),
                 risk: new IntegerRange(1, 2),
-                suppliesPerAircraft: new IntegerRange(80, 120),
+                suppliesPerRiskPoint: new IntegerRange(85, 120),
                 commandPointsPerAircraft: 1,
             ),
             self::AirCombat => new MissionProfile(
@@ -46,7 +46,7 @@ enum MissionType: string
                 fuelPerAircraft: new IntegerRange(40, 60),
                 ammunitionPerAircraft: new IntegerRange(20, 40),
                 risk: new IntegerRange(2, 3),
-                suppliesPerAircraft: new IntegerRange(120, 180),
+                suppliesPerRiskPoint: new IntegerRange(125, 170),
                 commandPointsPerAircraft: 2,
             ),
             self::Bombing => new MissionProfile(
@@ -56,7 +56,7 @@ enum MissionType: string
                 fuelPerAircraft: new IntegerRange(50, 70),
                 ammunitionPerAircraft: new IntegerRange(30, 50),
                 risk: new IntegerRange(2, 3),
-                suppliesPerAircraft: new IntegerRange(160, 240),
+                suppliesPerRiskPoint: new IntegerRange(160, 215),
                 commandPointsPerAircraft: 3,
             ),
         };

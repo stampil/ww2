@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from './formatDuration'
-import type { HangarAircraft, Part, Squadron } from './useBase'
+import type { HangarAircraft, Part, Squadron, UpgradeInfo, UpgradeName } from './useBase'
+import UpgradeCard from './UpgradeCard'
 
 const PARTS: Part[] = ['engine', 'wings', 'fuselage', 'armament']
 
@@ -9,10 +10,13 @@ type Props = {
   hangarAircraft: HangarAircraft[]
   busyAircraftIds: number[]
   onRepair: (aircraftId: number) => void
+  upgrade: UpgradeInfo
+  commandPoints: number
+  onUpgrade: (upgrade: UpgradeName) => void
 }
 
 /** The aircraft of the squadron with their modules; one that is damaged can be repaired, if a mechanic and the spare parts are there. */
-function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, onRepair }: Props) {
+function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, onRepair, upgrade, commandPoints, onUpgrade }: Props) {
   const { t } = useTranslation()
 
   return (
@@ -62,6 +66,7 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, onRepair }: Pr
             </li>
           )
         })}
+        <UpgradeCard info={upgrade} commandPoints={commandPoints} onBuy={onUpgrade} />
       </ul>
     </>
   )

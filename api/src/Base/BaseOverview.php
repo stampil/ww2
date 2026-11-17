@@ -21,6 +21,8 @@ final class BaseOverview
         private readonly Headquarters $headquarters,
         private readonly Hangar $hangar,
         private readonly Roster $roster,
+        private readonly Upgrades $upgrades,
+        private readonly Battle $battle,
         private readonly SquadronStore $squadrons,
         private readonly EventLog $events,
         private readonly GameClockStore $clocks,
@@ -41,7 +43,7 @@ final class BaseOverview
             'terrainPlan' => $this->bases->terrainPlanOf($playerId),
             'resources' => $this->bases->resourcesOf($playerId)->toArray(),
             'buildings' => array_map(static fn (Building $building): string => $building->value, Building::cases()),
-            'warehouse' => $this->warehouse->describe(),
+            'warehouse' => $this->warehouse->describe($playerId),
             'clock' => $clock->toArray(),
             'workshop' => $this->workshop->describe($playerId, $clock),
             'headquarters' => $headquarters,
@@ -52,6 +54,8 @@ final class BaseOverview
                 'aircraft' => array_map(static fn (Aircraft $aircraft): array => $aircraft->toArray(), $this->squadrons->aircraftOf($playerId)),
             ],
             'events' => $this->events->latest($playerId),
+            'upgrades' => $this->upgrades->describe($playerId),
+            'battle' => $this->battle->describe($playerId),
         ];
     }
 }

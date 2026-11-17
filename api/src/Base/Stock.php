@@ -17,8 +17,8 @@ enum Stock: string
     {
         return match ($this) {
             self::Fuel => 1,
-            self::Ammunition => 2,
-            self::Materials => 3,
+            self::Ammunition => 1,
+            self::Materials => 2,
         };
     }
 }

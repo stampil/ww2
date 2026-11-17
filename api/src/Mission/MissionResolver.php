@@ -33,7 +33,7 @@ final class MissionResolver
     private const STRESS_ON_FAILURE = 10;
     private const STRESS_ON_AIRCRAFT_LOST = 15;
     private const GAUGE_MAX = 100;
-    private const DAMAGE_PER_MODULE_HIT = 8;
+    private const DAMAGE_PER_MODULE_HIT = 10;
     private const FIRE_DURABILITY_PERCENT = 25;
 
     public function __construct(private readonly Randomizer $random = new Randomizer())

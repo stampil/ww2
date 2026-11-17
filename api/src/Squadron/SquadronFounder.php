@@ -29,10 +29,17 @@ final class SquadronFounder
             foreach (self::PILOT_RANKS as $rank) {
                 $this->squadrons->addPilot($playerId, $this->pilots->generate($rank));
             }
-            $model = $this->squadrons->modelByCode(self::AIRCRAFT_CODE);
             for ($count = 0; $count < self::AIRCRAFT_COUNT; $count += 1) {
-                $this->squadrons->addAircraft($playerId, $model);
+                $this->addStartingAircraft($playerId);
             }
         });
+    }
+
+    /**
+     * Adds one aircraft of the type the squadron starts with.
+     */
+    public function addStartingAircraft(int $playerId): void
+    {
+        $this->squadrons->addAircraft($playerId, $this->squadrons->modelByCode(self::AIRCRAFT_CODE));
     }
 }

@@ -5,11 +5,14 @@ import type { BuildingName } from '../plans/terrainPlan'
 import BaseMap from './BaseMap'
 import AlertButton from './AlertButton'
 import { busyCrews, unavailableCrews } from './flights'
+import BattleOver from './BattleOver'
+import BattleProgress from './BattleProgress'
 import GameClock from './GameClock'
 import HangarPanel from './HangarPanel'
 import HeadquartersPanel from './HeadquartersPanel'
 import type { Player } from './useAccount'
 import { useBase } from './useBase'
+import type { UpgradeName } from './useBase'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
 
@@ -18,7 +21,7 @@ const RESOURCES = ['supplies', 'fuel', 'ammunition', 'materials', 'commandPoints
 /** The base of the player who is signed in: a band of the game clock and the resources, the airfield, and the panel of the building opened on it. */
 function BaseScreen({ player }: { player: Player }) {
   const { t } = useTranslation()
-  const { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot } = useBase(player)
+  const { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot, buyUpgrade, restartBattle } = useBase(player)
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
 
@@ -34,6 +37,7 @@ function BaseScreen({ player }: { player: Player }) {
   const unavailable = unavailableCrews(busy, rests, hangarAircraft)
   const hasLandedFlight = flights.some((flight) => flight.remainingSeconds === 0)
   const hasBurningAircraft = hangarAircraft.some((state) => state.fireSeconds !== null)
+  const upgradeOf = (building: UpgradeName) => base.upgrades.find((candidate) => candidate.upgrade === building)!
   const repairingAircraftIds = hangarAircraft.filter((state) => state.repairSeconds !== null).map((state) => state.aircraftId)
 
   function toggle(building: BuildingName): void {
@@ -45,6 +49,7 @@ function BaseScreen({ player }: { player: Player }) {
       <h2>{t('base.title')}</h2>
       <div className="base-band">
         <GameClock gameTime={gameTime} />
+        <BattleProgress battle={base.battle} />
         {hasLandedFlight && <AlertButton label={t('base.alert')} onOpen={() => setOpenBuilding('headquarters')} />}
         {hasBurningAircraft && <AlertButton label={t('base.fireAlert')} onOpen={() => setOpenBuilding('hangar')} />}
         <ul className="resources">
@@ -56,6 +61,8 @@ function BaseScreen({ player }: { player: Player }) {
           ))}
         </ul>
       </div>
+
+      {base.battle.status !== 'ongoing' && <BattleOver battle={base.battle} onRestart={() => void order(restartBattle())} />}
 
       <BaseMap plan={TERRAIN_PLANS[base.terrainPlan]} repairingAircraftIds={repairingAircraftIds} openBuilding={openBuilding} onSelect={toggle} />
 
@@ -93,6 +100,9 @@ function BaseScreen({ player }: { player: Player }) {
               workshop={base.workshop}
               jobs={jobs}
               onProduce={(part, withMechanic) => void order(produce(part, withMechanic))}
+              upgrade={upgradeOf('workshop')}
+              commandPoints={base.resources.commandPoints}
+              onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
             />
           )}
           {openBuilding === 'warehouse' && (
@@ -100,6 +110,8 @@ function BaseScreen({ player }: { player: Player }) {
               resources={base.resources}
               warehouse={base.warehouse}
               onBuy={(stock, quantity) => void order(buy(stock, quantity))}
+              upgrade={upgradeOf('warehouse')}
+              onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
             />
           )}
           {openBuilding === 'hangar' && (
@@ -108,6 +120,9 @@ function BaseScreen({ player }: { player: Player }) {
               hangarAircraft={hangarAircraft}
               busyAircraftIds={busy.aircraftIds}
               onRepair={(aircraftId) => void order(repairAircraft(aircraftId))}
+              upgrade={upgradeOf('hangar')}
+              commandPoints={base.resources.commandPoints}
+              onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
             />
           )}
         </section>

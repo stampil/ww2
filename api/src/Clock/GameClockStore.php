@@ -19,7 +19,7 @@ final class GameClockStore
     public function of(int $baseId): GameClock
     {
         $rows = $this->database->fetchAll(
-            'SELECT TIMESTAMPDIFF(SECOND, instances.started_at, NOW()) AS game_seconds
+            'SELECT TIMESTAMPDIFF(SECOND, instances.started_at, NOW()) AS game_seconds, TIME_TO_SEC(instances.started_at) AS start_second_of_day
              FROM bases JOIN instances ON instances.id = bases.instance_id WHERE bases.id = :base_id',
             ['base_id' => $baseId],
         );
@@ -27,6 +27,6 @@ final class GameClockStore
             throw new LogicException('The base does not exist.');
         }
 
-        return new GameClock((int) $rows[0]['game_seconds']);
+        return new GameClock((int) $rows[0]['game_seconds'], (int) $rows[0]['start_second_of_day']);
     }
 }

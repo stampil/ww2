@@ -8,16 +8,20 @@ use DateTimeImmutable;
 use DateTimeZone;
 
 /**
- * The game time of an instance: the seconds gone by since the battle began. It never stops.
+ * The game time of an instance: the seconds gone by since the battle began, which never stops. The battle began on 10 May 1940
+ * at the hour of the server when the instance was created, so the hour of the game is the real hour of the server.
  */
 final readonly class GameClock
 {
-    private const BATTLE_START = '1940-05-10 06:00:00';
+    private const BATTLE_DAY = '1940-05-10';
     private const GAME_TIME_FORMAT = 'Y-m-d\TH:i:s';
     // The game date follows no real time zone, so UTC keeps daylight saving from shifting it.
     private const TIME_ZONE = 'UTC';
 
-    public function __construct(public int $gameSeconds)
+    /**
+     * @param int $startSecondOfDay the seconds since midnight, by the clock of the server, at which the instance was created
+     */
+    public function __construct(public int $gameSeconds, private int $startSecondOfDay)
     {
     }
 
@@ -26,8 +30,9 @@ final readonly class GameClock
      */
     public function toArray(): array
     {
-        $battleStart = new DateTimeImmutable(self::BATTLE_START, new DateTimeZone(self::TIME_ZONE));
+        $battleDay = new DateTimeImmutable(self::BATTLE_DAY, new DateTimeZone(self::TIME_ZONE));
+        $elapsedSeconds = $this->startSecondOfDay + $this->gameSeconds;
 
-        return ['gameTime' => $battleStart->modify('+' . $this->gameSeconds . ' seconds')->format(self::GAME_TIME_FORMAT)];
+        return ['gameTime' => $battleDay->modify('+' . $elapsedSeconds . ' seconds')->format(self::GAME_TIME_FORMAT)];
     }
 }

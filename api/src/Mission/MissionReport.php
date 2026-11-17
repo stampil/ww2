@@ -23,11 +23,12 @@ final readonly class MissionReport
     }
 
     /**
-     * @return array{type: string, success: bool, windSpeed: int, suppliesWon: int, commandPointsWon: int, crews: list<array<string, int|string|bool>>}
+     * @return array{kind: string, type: string, success: bool, windSpeed: int, suppliesWon: int, commandPointsWon: int, crews: list<array<string, int|string|bool>>}
      */
     public function toArray(): array
     {
         return [
+            'kind' => 'mission',
             'type' => $this->type->value,
             'success' => $this->success,
             'windSpeed' => $this->windSpeed,

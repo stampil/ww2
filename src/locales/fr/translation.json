@@ -115,6 +115,21 @@
       "label": "Horloge de jeu"
     },
     "alert": "Mission terminée",
+    "fireAlert": "Avion en feu",
+    "hangar": {
+      "modules": "Modules",
+      "moduleIntact": "{{part}}",
+      "moduleDestroyed": "{{part}} (détruit)",
+      "repair": "Réparer ({{time}})",
+      "repairing": "En réparation : {{time}}",
+      "onFire": "En feu : explose dans {{time}}"
+    },
+    "event": {
+      "explosion": "Explosion sur la piste",
+      "explosionAlone": "Un {{aircraft}} en feu a explosé sur la piste.",
+      "explosionKilled": "Un {{aircraft}} en feu a explosé sur la piste ; {{pilot}} est tué.",
+      "explosionSafe": "Un {{aircraft}} en feu a explosé sur la piste ; {{pilot}} s'en sort."
+    },
     "mission": {
       "types": {
         "reconnaissance": "Reconnaissance",
@@ -139,7 +154,7 @@
       "prepare": "Préparer",
       "briefing": "Préparation : {{type}}",
       "weather": "Météo : vent de {{windSpeed}} km/h",
-      "reports": "Rapports de mission",
+      "reports": "Journal de la base",
       "succeeded": "réussie",
       "failed": "échouée",
       "gains": "Gains : ravitaillement {{supplies}}, points de commandement {{points}}",
@@ -148,6 +163,13 @@
       "crewDamaged": "{{pilot}} ({{aircraft}}) : {{damage}} de durabilité perdue",
       "crewLost": "{{pilot}} ({{aircraft}}) : avion perdu, pilote sauf",
       "crewKilled": "{{pilot}} ({{aircraft}}) : avion perdu, pilote tué",
+      "modulesDestroyed": "modules détruits : {{modules}}",
+      "burning": "avion en feu",
+      "rest": "Faire reposer",
+      "resting": "Au repos : {{time}}",
+      "recruit": "Recruter un pilote",
+      "recruitCost": "{{cost}} de ravitaillement",
+      "recruitButton": "Recruter",
       "launch": "Lancer la mission",
       "slot": "Avion {{number}}",
       "pilot": "Pilote",
@@ -187,7 +209,7 @@
       "building": {
       "headquarters": {
         "name": "Quartier Général",
-        "text": "Les missions et les pilotes ; le recrutement est à venir."
+        "text": "Les missions, les pilotes, le repos et le recrutement."
       },
       "workshop": {
         "name": "Atelier",
@@ -199,7 +221,7 @@
       },
       "hangar": {
         "name": "Hangar et piste",
-        "text": "Abrite les avions ; la réparation est à venir."
+        "text": "Abrite et répare les avions."
       }
     },
     "errors": {
@@ -217,6 +239,15 @@
       "insufficientFuel": "Pas assez de carburant en stock.",
       "insufficientAmmunition": "Pas assez de munitions en stock.",
       "stillInFlight": "L'escadrille n'est pas encore rentrée.",
+      "unknownAircraft": "Cet avion n'existe pas.",
+      "aircraftGrounded": "Cet avion est cloué au sol : il faut le réparer.",
+      "aircraftUnderRepair": "Cet avion est déjà en réparation.",
+      "nothingToRepair": "Cet avion n'a rien à réparer.",
+      "missingSparePart": "Il manque une pièce prête à l'atelier.",
+      "unknownPilot": "Ce pilote n'existe pas.",
+      "pilotResting": "Ce pilote est au repos.",
+      "nothingToRest": "Ce pilote n'a ni fatigue ni stress.",
+      "tooManyPilots": "Le Quartier Général ne peut pas loger plus de pilotes.",
       "invalidBody": "La commande n'est pas comprise.",
       "signInRequired": "Connecte-toi d'abord.",
       "apiDown": "L'API ne répond pas."

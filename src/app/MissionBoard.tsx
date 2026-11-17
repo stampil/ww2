@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { formatDuration } from './formatDuration'
 import type { BusyCrews } from './flights'
 import MissionBriefing from './MissionBriefing'
-import type { Base, Offer } from './useBase'
-import type { Squadron } from './useSquadron'
+import type { Base, Offer, Squadron } from './useBase'
 
 type Props = {
   weather: Base['headquarters']['weather']

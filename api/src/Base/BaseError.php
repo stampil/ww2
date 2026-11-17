@@ -23,4 +23,13 @@ enum BaseError: string
     case InsufficientFuel = 'insufficientFuel';
     case InsufficientAmmunition = 'insufficientAmmunition';
     case StillInFlight = 'stillInFlight';
+    case UnknownAircraft = 'unknownAircraft';
+    case AircraftGrounded = 'aircraftGrounded';
+    case AircraftUnderRepair = 'aircraftUnderRepair';
+    case NothingToRepair = 'nothingToRepair';
+    case MissingSparePart = 'missingSparePart';
+    case UnknownPilot = 'unknownPilot';
+    case PilotResting = 'pilotResting';
+    case NothingToRest = 'nothingToRest';
+    case TooManyPilots = 'tooManyPilots';
 }

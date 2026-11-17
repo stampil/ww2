@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from './formatDuration'
-import type { Flight } from './useBase'
-import type { Squadron } from './useSquadron'
+import type { Flight, Squadron } from './useBase'
 
 type Props = {
   flights: Flight[]

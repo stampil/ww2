@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Ww2\Mission;
 
 use Random\Randomizer;
+use Ww2\Base\SparePart;
 use Ww2\Squadron\Aircraft;
 use Ww2\Squadron\Pilot;
 
 /**
  * Works out the result of a flight without a mini-game: the strength of the crews against the risk of the mission decides
- * whether it succeeds, then each aircraft takes damage and each pilot tires. The figures are mine.
+ * whether it succeeds, then each aircraft takes damage, which destroys modules and may set it on fire, and each pilot tires. The figures are mine.
  */
 final class MissionResolver
 {
@@ -32,6 +33,8 @@ final class MissionResolver
     private const STRESS_ON_FAILURE = 10;
     private const STRESS_ON_AIRCRAFT_LOST = 15;
     private const GAUGE_MAX = 100;
+    private const DAMAGE_PER_MODULE_HIT = 8;
+    private const FIRE_DURABILITY_PERCENT = 25;
 
     public function __construct(private readonly Randomizer $random = new Randomizer())
     {
@@ -109,6 +112,9 @@ final class MissionResolver
         $durability = max(0, $aircraft->durability - $this->random->getInt(0, $damagePerRisk * $mission->risk));
         $aircraftLost = $durability === 0;
         $pilotKilled = $aircraftLost && $this->random->getInt(1, self::PERCENT) > $pilot->effectiveResilience();
+        $hits = min(count(SparePart::cases()), intdiv($aircraft->durability - $durability, self::DAMAGE_PER_MODULE_HIT));
+        $destroyedModules = $aircraftLost ? [] : array_slice($this->random->shuffleArray(SparePart::cases()), 0, $hits);
+        $burning = !$aircraftLost && $durability * self::PERCENT <= $aircraft->model->durability * self::FIRE_DURABILITY_PERCENT;
 
         $fatigue = $pilot->fatigue + intdiv($mission->durationSeconds, self::SECONDS_PER_MINUTE) * self::FATIGUE_PER_MINUTE;
         $stress = $pilot->stress + self::STRESS_PER_RISK * $mission->risk;
@@ -126,6 +132,8 @@ final class MissionResolver
             $aircraft->model->name,
             $aircraft->durability - $durability,
             $durability,
+            $destroyedModules,
+            $burning,
             $aircraftLost,
             $pilotKilled,
             min(self::GAUGE_MAX, $fatigue),

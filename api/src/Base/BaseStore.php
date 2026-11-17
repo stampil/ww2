@@ -83,11 +83,32 @@ final class BaseStore
         );
     }
 
+    /**
+     * Takes one finished part of that kind out of the workshop for a repair.
+     *
+     * @return bool whether there was one
+     */
+    public function useReadyPart(int $playerId, SparePart $part, int $gameSeconds): bool
+    {
+        return $this->database->execute(
+            'DELETE FROM production_jobs WHERE player_id = :player_id AND part = :part AND finish_game_second <= :game_seconds LIMIT 1',
+            ['player_id' => $playerId, 'part' => $part->value, 'game_seconds' => $gameSeconds],
+        ) === 1;
+    }
+
     public function addRewards(int $playerId, int $supplies, int $commandPoints): void
     {
         $this->database->execute(
             'UPDATE base_resources SET supplies = supplies + :supplies, command_points = command_points + :command_points WHERE player_id = :player_id',
             ['supplies' => $supplies, 'command_points' => $commandPoints, 'player_id' => $playerId],
+        );
+    }
+
+    public function spendSupplies(int $playerId, int $amount): void
+    {
+        $this->database->execute(
+            'UPDATE base_resources SET supplies = supplies - :amount WHERE player_id = :player_id',
+            ['amount' => $amount, 'player_id' => $playerId],
         );
     }
 

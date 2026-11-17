@@ -115,6 +115,21 @@
       "label": "Game clock"
     },
     "alert": "Mission finished",
+    "fireAlert": "Aircraft on fire",
+    "hangar": {
+      "modules": "Modules",
+      "moduleIntact": "{{part}}",
+      "moduleDestroyed": "{{part}} (destroyed)",
+      "repair": "Repair ({{time}})",
+      "repairing": "Being repaired: {{time}}",
+      "onFire": "On fire: explodes in {{time}}"
+    },
+    "event": {
+      "explosion": "Explosion on the runway",
+      "explosionAlone": "A burning {{aircraft}} exploded on the runway.",
+      "explosionKilled": "A burning {{aircraft}} exploded on the runway; {{pilot}} is killed.",
+      "explosionSafe": "A burning {{aircraft}} exploded on the runway; {{pilot}} gets out."
+    },
     "mission": {
       "types": {
         "reconnaissance": "Reconnaissance",
@@ -139,7 +154,7 @@
       "prepare": "Prepare",
       "briefing": "Briefing: {{type}}",
       "weather": "Weather: wind of {{windSpeed}} km/h",
-      "reports": "Mission reports",
+      "reports": "Base log",
       "succeeded": "succeeded",
       "failed": "failed",
       "gains": "Rewards: supplies {{supplies}}, command points {{points}}",
@@ -148,6 +163,13 @@
       "crewDamaged": "{{pilot}} ({{aircraft}}): {{damage}} durability lost",
       "crewLost": "{{pilot}} ({{aircraft}}): aircraft lost, pilot safe",
       "crewKilled": "{{pilot}} ({{aircraft}}): aircraft lost, pilot killed",
+      "modulesDestroyed": "modules destroyed: {{modules}}",
+      "burning": "aircraft on fire",
+      "rest": "Send to rest",
+      "resting": "Resting: {{time}}",
+      "recruit": "Recruit a pilot",
+      "recruitCost": "{{cost}} supplies",
+      "recruitButton": "Recruit",
       "launch": "Launch the mission",
       "slot": "Aircraft {{number}}",
       "pilot": "Pilot",
@@ -187,7 +209,7 @@
       "building": {
       "headquarters": {
         "name": "Headquarters",
-        "text": "The missions and the pilots; recruitment is coming."
+        "text": "The missions, the pilots, their rest and recruitment."
       },
       "workshop": {
         "name": "Workshop",
@@ -199,7 +221,7 @@
       },
       "hangar": {
         "name": "Hangar and runway",
-        "text": "Shelters the aircraft; repairs are coming."
+        "text": "Shelters and repairs the aircraft."
       }
     },
     "errors": {
@@ -217,6 +239,15 @@
       "insufficientFuel": "Not enough fuel in stock.",
       "insufficientAmmunition": "Not enough ammunition in stock.",
       "stillInFlight": "The squadron is not back yet.",
+      "unknownAircraft": "This aircraft does not exist.",
+      "aircraftGrounded": "This aircraft is grounded: it needs a repair.",
+      "aircraftUnderRepair": "This aircraft is already being repaired.",
+      "nothingToRepair": "This aircraft has nothing to repair.",
+      "missingSparePart": "A finished part is missing at the workshop.",
+      "unknownPilot": "This pilot does not exist.",
+      "pilotResting": "This pilot is resting.",
+      "nothingToRest": "This pilot has no fatigue or stress.",
+      "tooManyPilots": "The headquarters cannot house more pilots.",
       "invalidBody": "The order is not understood.",
       "signInRequired": "Sign in first.",
       "apiDown": "The API does not answer."

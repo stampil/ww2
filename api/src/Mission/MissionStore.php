@@ -131,29 +131,11 @@ final class MissionStore
         return null;
     }
 
-    public function addReport(int $playerId, MissionReport $report): void
+    public function isOnFlight(int $aircraftId): bool
     {
-        $this->database->execute(
-            'INSERT INTO mission_reports (player_id, report) VALUES (:player_id, :report)',
-            ['player_id' => $playerId, 'report' => json_encode($report->toArray(), JSON_THROW_ON_ERROR)],
-        );
-    }
+        $rows = $this->database->fetchAll('SELECT COUNT(*) AS total FROM mission_crews WHERE aircraft_id = :aircraft_id', ['aircraft_id' => $aircraftId]);
 
-    /**
-     * @return list<array<string, mixed>> the latest reports, the newest first, each with its id
-     */
-    public function reportsOf(int $playerId, int $limit): array
-    {
-        $rows = $this->database->fetchAll(
-            'SELECT id, report FROM mission_reports WHERE player_id = :player_id ORDER BY id DESC LIMIT ' . $limit,
-            ['player_id' => $playerId],
-        );
-        $reports = [];
-        foreach ($rows as $row) {
-            $reports[] = ['id' => (int) $row['id'], ...json_decode((string) $row['report'], true, flags: JSON_THROW_ON_ERROR)];
-        }
-
-        return $reports;
+        return (int) $rows[0]['total'] > 0;
     }
 
     /**

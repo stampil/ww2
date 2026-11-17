@@ -15,13 +15,13 @@ use Ww2\Database\Database;
 final class Workshop
 {
     private const BENCHES = 2;
-    private const MECHANICS = 2;
     private const MECHANIC_TIME_DIVISOR = 2;
 
     public function __construct(
         private readonly Database $database,
         private readonly BaseStore $bases,
         private readonly GameClockStore $clocks,
+        private readonly Mechanics $mechanics,
     ) {
     }
 
@@ -37,7 +37,7 @@ final class Workshop
             if (count($running) >= self::BENCHES) {
                 throw new BaseException(BaseError::WorkshopBusy);
             }
-            if ($withMechanic && $this->busyMechanics($running) >= self::MECHANICS) {
+            if ($withMechanic && $this->mechanics->freeAt($playerId, $gameSeconds) < 1) {
                 throw new BaseException(BaseError::NoMechanicFree);
             }
             if ($resources->materials < $part->materialCost()) {
@@ -63,25 +63,10 @@ final class Workshop
 
         return [
             'benches' => self::BENCHES,
-            'freeMechanics' => self::MECHANICS - $this->busyMechanics($running),
+            'freeMechanics' => $this->mechanics->freeAt($playerId, $clock->gameSeconds),
             'parts' => $parts,
             'jobs' => array_map(static fn (ProductionJob $job): array => $job->toArray(), $running),
             'readyParts' => $this->bases->readyParts($playerId, $clock->gameSeconds),
         ];
-    }
-
-    /**
-     * @param list<ProductionJob> $running
-     */
-    private function busyMechanics(array $running): int
-    {
-        $busy = 0;
-        foreach ($running as $job) {
-            if ($job->hasMechanic) {
-                $busy += 1;
-            }
-        }
-
-        return $busy;
     }
 }

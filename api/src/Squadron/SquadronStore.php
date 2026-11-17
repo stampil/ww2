@@ -64,6 +64,37 @@ final class SquadronStore
         );
     }
 
+    public function startRest(int $pilotId, int $finishGameSecond): void
+    {
+        $this->database->execute(
+            'INSERT INTO pilot_rests (pilot_id, finish_game_second) VALUES (:pilot_id, :finish_game_second)',
+            ['pilot_id' => $pilotId, 'finish_game_second' => $finishGameSecond],
+        );
+    }
+
+    public function finishRest(int $pilotId): void
+    {
+        $this->database->execute('DELETE FROM pilot_rests WHERE pilot_id = :pilot_id', ['pilot_id' => $pilotId]);
+    }
+
+    /**
+     * @return array<int, int> the game second at which each rest is over, by the id of the pilot
+     */
+    public function restsOf(int $playerId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT pilot_rests.pilot_id, pilot_rests.finish_game_second
+             FROM pilot_rests JOIN pilots ON pilots.id = pilot_rests.pilot_id WHERE pilots.player_id = :player_id',
+            ['player_id' => $playerId],
+        );
+        $rests = [];
+        foreach ($rows as $row) {
+            $rests[(int) $row['pilot_id']] = (int) $row['finish_game_second'];
+        }
+
+        return $rests;
+    }
+
     public function removePilot(int $pilotId): void
     {
         $this->database->execute('DELETE FROM pilots WHERE id = :id', ['id' => $pilotId]);

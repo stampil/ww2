@@ -543,12 +543,37 @@ button.base-sprite {
   }
 }
 
+.modules {
+  @include flex($gap: 0.3rem);
+  flex-wrap: wrap;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: 0.1rem 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  li[data-destroyed='true'] {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.card .on-fire {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .briefing-load {
   @include flex($gap: 0.75rem);
   flex-wrap: wrap;
 }
 
-.mission-alert {
+.alert-button {
   @include flex($display: inline-flex, $align: center, $gap: 0.5rem);
   position: relative;
   height: 2rem;

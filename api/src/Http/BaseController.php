@@ -12,27 +12,28 @@ use Psr\Http\Message\ServerRequestInterface;
 use Ww2\Account\PlayerSession;
 use Ww2\Base\BaseError;
 use Ww2\Base\BaseException;
-use Ww2\Base\BaseStore;
-use Ww2\Base\Building;
+use Ww2\Base\BaseOverview;
+use Ww2\Base\Hangar;
 use Ww2\Base\Headquarters;
+use Ww2\Base\Roster;
 use Ww2\Base\SparePart;
 use Ww2\Base\Stock;
 use Ww2\Base\Warehouse;
 use Ww2\Base\Workshop;
-use Ww2\Clock\GameClockStore;
 
 /**
  * Shows the base of the player who is signed in, and takes their orders: buy a stock, make a spare part,
- * send a mission out and receive its squadron back.
+ * send a mission out and receive its squadron back, repair an aircraft, rest a pilot, recruit a pilot.
  */
 final class BaseController
 {
     public function __construct(
-        private readonly BaseStore $bases,
+        private readonly BaseOverview $overview,
         private readonly Warehouse $warehouse,
         private readonly Workshop $workshop,
         private readonly Headquarters $headquarters,
-        private readonly GameClockStore $clocks,
+        private readonly Hangar $hangar,
+        private readonly Roster $roster,
         private readonly PlayerSession $session,
     ) {
     }
@@ -43,7 +44,7 @@ final class BaseController
      */
     public function show(): array
     {
-        return $this->overview($this->signedInPlayerId());
+        return $this->overview->of($this->signedInPlayerId());
     }
 
     /**
@@ -59,7 +60,7 @@ final class BaseController
         $quantity = JsonRequestBody::integers($request, 'quantity')['quantity'];
         $this->carryOut(fn () => $this->warehouse->buy($playerId, $stock, $quantity));
 
-        return $this->overview($playerId);
+        return $this->overview->of($playerId);
     }
 
     /**
@@ -75,7 +76,7 @@ final class BaseController
         $withMechanic = JsonRequestBody::booleans($request, 'withMechanic')['withMechanic'];
         $this->carryOut(fn () => $this->workshop->start($playerId, $part, $withMechanic));
 
-        return $this->overview($playerId);
+        return $this->overview->of($playerId);
     }
 
     /**
@@ -97,7 +98,7 @@ final class BaseController
             $numbers['ammunition'],
         ));
 
-        return $this->overview($playerId);
+        return $this->overview->of($playerId);
     }
 
     /**
@@ -111,7 +112,47 @@ final class BaseController
         $missionId = JsonRequestBody::integers($request, 'missionId')['missionId'];
         $this->carryOut(fn () => $this->headquarters->receive($playerId, $missionId));
 
-        return $this->overview($playerId);
+        return $this->overview->of($playerId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function repairAircraft(ServerRequestInterface $request): array
+    {
+        $playerId = $this->signedInPlayerId();
+        $aircraftId = JsonRequestBody::integers($request, 'aircraftId')['aircraftId'];
+        $this->carryOut(fn () => $this->hangar->repair($playerId, $aircraftId));
+
+        return $this->overview->of($playerId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function restPilot(ServerRequestInterface $request): array
+    {
+        $playerId = $this->signedInPlayerId();
+        $pilotId = JsonRequestBody::integers($request, 'pilotId')['pilotId'];
+        $this->carryOut(fn () => $this->roster->rest($playerId, $pilotId));
+
+        return $this->overview->of($playerId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     */
+    public function recruitPilot(): array
+    {
+        $playerId = $this->signedInPlayerId();
+        $this->carryOut(fn () => $this->roster->recruit($playerId));
+
+        return $this->overview->of($playerId);
     }
 
     private function signedInPlayerId(): int
@@ -140,23 +181,5 @@ final class BaseController
                 default => new ConflictException($exception->error->value),
             };
         }
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function overview(int $playerId): array
-    {
-        $clock = $this->clocks->of($playerId);
-
-        return [
-            'terrainPlan' => $this->bases->terrainPlanOf($playerId),
-            'resources' => $this->bases->resourcesOf($playerId)->toArray(),
-            'buildings' => array_map(static fn (Building $building): string => $building->value, Building::cases()),
-            'warehouse' => $this->warehouse->describe(),
-            'clock' => $clock->toArray(),
-            'workshop' => $this->workshop->describe($playerId, $clock),
-            'headquarters' => $this->headquarters->describe($playerId, $clock),
-        ];
     }
 }

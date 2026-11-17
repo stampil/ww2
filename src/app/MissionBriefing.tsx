@@ -1,8 +1,7 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { BusyCrews } from './flights'
-import type { Offer } from './useBase'
-import type { Squadron } from './useSquadron'
+import type { Offer, Squadron } from './useBase'
 
 type Props = {
   offer: Offer

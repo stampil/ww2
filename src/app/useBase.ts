@@ -28,16 +28,54 @@ export type Flight = {
   crews: { pilotId: number; aircraftId: number }[]
 }
 
-/** What a mission did to each crew, and what it paid; the newest report comes first. */
-export type Report = {
+export type Pilot = {
+  id: number
+  name: string
+  rank: number
+  fatigue: number
+  stress: number
+  effectiveAccuracy: number
+  effectiveResilience: number
+}
+export type Aircraft = {
+  id: number
+  durability: number
+  model: { name: string; category: string; durability: number; maneuverability: number; fuelCapacity: number; ammunitionCapacity: number }
+}
+export type Squadron = { pilots: Pilot[]; aircraft: Aircraft[] }
+
+/** What the hangar knows of an aircraft: the modules destroyed, and the seconds left of a repair or before a fire reaches the fuel. */
+export type HangarAircraft = {
+  aircraftId: number
+  destroyedModules: Part[]
+  repairDurationSeconds: number
+  repairSeconds: number | null
+  fireSeconds: number | null
+}
+export type Rest = { pilotId: number; remainingSeconds: number }
+
+/** What a mission did to each crew, and what it paid. */
+export type MissionReport = {
+  kind: 'mission'
   id: number
   type: MissionType
   success: boolean
   windSpeed: number
   suppliesWon: number
   commandPointsWon: number
-  crews: { pilotName: string; aircraftName: string; damage: number; aircraftLost: boolean; pilotKilled: boolean }[]
+  crews: {
+    pilotName: string
+    aircraftName: string
+    damage: number
+    destroyedModules: Part[]
+    burning: boolean
+    aircraftLost: boolean
+    pilotKilled: boolean
+  }[]
 }
+export type ExplosionEvent = { kind: 'explosion'; id: number; aircraftName: string; pilotName: string | null; pilotKilled: boolean }
+/** What happened at the base; the newest event comes first. */
+export type BaseEvent = MissionReport | ExplosionEvent
 
 export type Base = {
   terrainPlan: string
@@ -52,7 +90,11 @@ export type Base = {
     jobs: { id: number; part: Part; remainingSeconds: number; hasMechanic: boolean }[]
     readyParts: Record<Part, number>
   }
-  headquarters: { weather: { windSpeed: number }; offers: Offer[]; flights: Flight[]; reports: Report[] }
+  headquarters: { weather: { windSpeed: number }; offers: Offer[]; flights: Flight[] }
+  roster: { rests: Rest[]; recruitment: { cost: number; maxPilots: number } }
+  hangar: { aircraft: HangarAircraft[] }
+  squadron: Squadron
+  events: BaseEvent[]
 }
 
 type ErrorPayload = { reason_phrase: string }
@@ -94,13 +136,30 @@ function hasEnded(received: { remainingSeconds: number }[], shown: { remainingSe
   return false
 }
 
+/** The seconds left of something that may not be running, taken down by the seconds gone by, to zero. */
+function remainingAfter(seconds: number | null, elapsedSeconds: number): number | null {
+  return seconds === null ? null : Math.max(0, seconds - elapsedSeconds)
+}
+
+/** Whether the aircraft of the hangar have a repair or a fire whose countdown has run out since the API sent it. */
+function hasHangarCountdownEnded(received: HangarAircraft[], shown: HangarAircraft[]): boolean {
+  for (let place = 0; place < shown.length; place += 1) {
+    const repairEnded = (received[place].repairSeconds ?? 0) > 0 && shown[place].repairSeconds === 0
+    const fireEnded = (received[place].fireSeconds ?? 0) > 0 && shown[place].fireSeconds === 0
+    if (repairEnded || fireEnded) {
+      return true
+    }
+  }
+  return false
+}
+
 /** The game time of the base, moved on by the seconds gone by since the API sent it. */
 function gameTimeAfter(base: Base, elapsedSeconds: number): Date {
   const receivedGameTime = Date.parse(`${base.clock.gameTime}${UTC_DESIGNATOR}`)
   return new Date(receivedGameTime + elapsedSeconds * MILLISECONDS_PER_SECOND)
 }
 
-/** The base of the signed-in player, the orders they can give, the game time, and the seconds left on each part being made and each flight. */
+/** The base of the signed-in player, the orders they can give, the game time, and the seconds left on each part being made, flight, repair, fire and rest. */
 export function useBase(player: Player | null) {
   const [base, setBase] = useState<Base | null>(null)
   const [receivedAt, setReceivedAt] = useState(0)
@@ -132,9 +191,18 @@ export function useBase(player: Player | null) {
   const elapsedSeconds = Math.floor((now - receivedAt) / MILLISECONDS_PER_SECOND)
   const receivedJobs = base?.workshop.jobs ?? []
   const receivedFlights = base?.headquarters.flights ?? []
+  const receivedHangar = base?.hangar.aircraft ?? []
+  const receivedRests = base?.roster.rests ?? []
   const jobs = countDown(receivedJobs, elapsedSeconds)
   const flights = countDown(receivedFlights, elapsedSeconds)
-  const hasEndedCountdown = hasEnded(receivedJobs, jobs) || hasEnded(receivedFlights, flights)
+  const rests = countDown(receivedRests, elapsedSeconds)
+  const hangarAircraft = receivedHangar.map((state) => ({
+    ...state,
+    repairSeconds: remainingAfter(state.repairSeconds, elapsedSeconds),
+    fireSeconds: remainingAfter(state.fireSeconds, elapsedSeconds),
+  }))
+  const hasEndedCountdown =
+    hasEnded(receivedJobs, jobs) || hasEnded(receivedFlights, flights) || hasEnded(receivedRests, rests) || hasHangarCountdownEnded(receivedHangar, hangarAircraft)
   const gameTime = base === null ? null : gameTimeAfter(base, elapsedSeconds)
 
   useEffect(() => {
@@ -160,5 +228,17 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/missions/return`, { missionId }))
   }
 
-  return { base, jobs, flights, gameTime, buy, produce, launchMission, receiveSquadron }
+  async function repairAircraft(aircraftId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/hangar/repair`, { aircraftId }))
+  }
+
+  async function restPilot(pilotId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/pilots/rest`, { pilotId }))
+  }
+
+  async function recruitPilot(): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/pilots/recruit`, {}))
+  }
+
+  return { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot }
 }

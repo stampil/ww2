@@ -3,14 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { TERRAIN_PLANS } from '../plans/terrainPlan'
 import type { BuildingName } from '../plans/terrainPlan'
 import BaseMap from './BaseMap'
-import { busyCrews } from './flights'
+import AlertButton from './AlertButton'
+import { busyCrews, unavailableCrews } from './flights'
 import GameClock from './GameClock'
 import HangarPanel from './HangarPanel'
 import HeadquartersPanel from './HeadquartersPanel'
-import MissionAlert from './MissionAlert'
 import type { Player } from './useAccount'
 import { useBase } from './useBase'
-import { useSquadron } from './useSquadron'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
 
@@ -19,8 +18,7 @@ const RESOURCES = ['supplies', 'fuel', 'ammunition', 'materials', 'commandPoints
 /** The base of the player who is signed in: a band of the game clock and the resources, the airfield, and the panel of the building opened on it. */
 function BaseScreen({ player }: { player: Player }) {
   const { t } = useTranslation()
-  const { base, jobs, flights, gameTime, buy, produce, launchMission, receiveSquadron } = useBase(player)
-  const squadron = useSquadron(player, base?.headquarters.reports[0]?.id ?? null)
+  const { base, jobs, flights, hangarAircraft, rests, gameTime, buy, produce, launchMission, receiveSquadron, repairAircraft, restPilot, recruitPilot } = useBase(player)
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
 
@@ -33,7 +31,9 @@ function BaseScreen({ player }: { player: Player }) {
   }
 
   const busy = busyCrews(flights)
+  const unavailable = unavailableCrews(busy, rests, hangarAircraft)
   const hasLandedFlight = flights.some((flight) => flight.remainingSeconds === 0)
+  const hasBurningAircraft = hangarAircraft.some((state) => state.fireSeconds !== null)
 
   function toggle(building: BuildingName): void {
     setOpenBuilding(openBuilding === building ? null : building)
@@ -44,7 +44,8 @@ function BaseScreen({ player }: { player: Player }) {
       <h2>{t('base.title')}</h2>
       <div className="base-band">
         <GameClock gameTime={gameTime} />
-        {hasLandedFlight && <MissionAlert onOpen={() => setOpenBuilding('headquarters')} />}
+        {hasLandedFlight && <AlertButton label={t('base.alert')} onOpen={() => setOpenBuilding('headquarters')} />}
+        {hasBurningAircraft && <AlertButton label={t('base.fireAlert')} onOpen={() => setOpenBuilding('hangar')} />}
         <ul className="resources">
           {RESOURCES.map((resource) => (
             <li key={resource}>
@@ -69,16 +70,21 @@ function BaseScreen({ player }: { player: Player }) {
           <p className="squadron-hint">{t(`base.building.${openBuilding}.text`)}</p>
           {openBuilding === 'headquarters' && (
             <HeadquartersPanel
-              squadron={squadron}
+              squadron={base.squadron}
               weather={base.headquarters.weather}
               offers={base.headquarters.offers}
-              reports={base.headquarters.reports}
               flights={flights}
+              rests={rests}
+              recruitment={base.roster.recruitment}
+              events={base.events}
               busy={busy}
+              unavailable={unavailable}
               onLaunch={(missionId, pilotIds, aircraftIds, fuel, ammunition) =>
                 void order(launchMission(missionId, pilotIds, aircraftIds, fuel, ammunition))
               }
               onReceive={(missionId) => void order(receiveSquadron(missionId))}
+              onRest={(pilotId) => void order(restPilot(pilotId))}
+              onRecruit={() => void order(recruitPilot())}
             />
           )}
           {openBuilding === 'workshop' && (
@@ -95,7 +101,14 @@ function BaseScreen({ player }: { player: Player }) {
               onBuy={(stock, quantity) => void order(buy(stock, quantity))}
             />
           )}
-          {openBuilding === 'hangar' && <HangarPanel squadron={squadron} busyAircraftIds={busy.aircraftIds} />}
+          {openBuilding === 'hangar' && (
+            <HangarPanel
+              squadron={base.squadron}
+              hangarAircraft={hangarAircraft}
+              busyAircraftIds={busy.aircraftIds}
+              onRepair={(aircraftId) => void order(repairAircraft(aircraftId))}
+            />
+          )}
         </section>
       )}
     </section>

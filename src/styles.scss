@@ -279,6 +279,7 @@ h1 {
 }
 
 .squadron,
+.base,
 .squadron-hint {
   width: 100%;
   max-width: 54rem;
@@ -290,7 +291,9 @@ h1 {
   font-size: 0.8rem;
 }
 
-.squadron-cards {
+.cards,
+.resources,
+.jobs {
   @include flex($gap: 0.75rem);
   flex-wrap: wrap;
   margin: 0;
@@ -298,7 +301,7 @@ h1 {
   list-style: none;
 }
 
-.squadron-card {
+.card {
   @include flex($direction: column, $gap: 0.2rem);
   flex: 1 1 11rem;
   max-width: 14rem;
@@ -326,6 +329,42 @@ h1 {
   meter {
     width: 100%;
   }
+}
+
+.resources {
+  li {
+    @include flex($direction: column);
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+
+    span {
+      color: var(--muted);
+    }
+  }
+}
+
+.card-actions {
+  @include flex($gap: 0.4rem);
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.card button {
+  height: 2rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.jobs {
+  flex-direction: column;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
 }
 
 .model-viewer-hint {

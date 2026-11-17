@@ -102,5 +102,62 @@
       "fighter": "Fighter",
       "bomber": "Bomber"
     }
+  },
+  "base": {
+    "title": "Base",
+    "resources": {
+      "supplies": "Supplies",
+      "fuel": "Fuel",
+      "ammunition": "Ammunition",
+      "materials": "Materials",
+      "commandPoints": "Command points"
+    },
+    "warehouse": "Warehouse",
+    "stored": "{{stored}} / {{capacity}}",
+    "buy": "Buy {{quantity}} ({{cost}} supplies)",
+    "workshop": "Workshop",
+    "mechanics": "Free mechanics: {{count}}",
+    "parts": {
+      "engine": "Engine",
+      "wings": "Wings",
+      "fuselage": "Fuselage",
+      "armament": "Armament"
+    },
+    "partCost": "{{cost}} materials, {{time}}",
+    "ready": "Ready: {{count}}",
+    "make": "Make",
+    "makeWithMechanic": "With a mechanic",
+    "running": "Being made",
+    "withMechanic": "with a mechanic",
+    "buildings": "Buildings",
+    "building": {
+      "headquarters": {
+        "name": "Headquarters",
+        "text": "Missions and recruitment: coming."
+      },
+      "workshop": {
+        "name": "Workshop",
+        "text": "Makes the parts of the aircraft."
+      },
+      "warehouse": {
+        "name": "Warehouse",
+        "text": "Keeps the fuel, the ammunition and the materials."
+      },
+      "hangar": {
+        "name": "Hangar and runway",
+        "text": "Shelters the aircraft; repairs are coming."
+      }
+    },
+    "errors": {
+      "invalidQuantity": "The quantity must be positive.",
+      "insufficientSupplies": "Not enough supplies.",
+      "warehouseFull": "The warehouse has no room.",
+      "insufficientMaterials": "Not enough materials.",
+      "workshopBusy": "Every bench is taken.",
+      "noMechanicFree": "No mechanic is free.",
+      "invalidBody": "The order is not understood.",
+      "signInRequired": "Sign in first.",
+      "apiDown": "The API does not answer."
+    }
   }
 }

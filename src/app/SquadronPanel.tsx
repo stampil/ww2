@@ -46,9 +46,9 @@ function SquadronPanel({ player }: { player: Player | null }) {
       {squadron !== null && (
         <>
           <h3>{t('squadron.pilots')}</h3>
-          <ul className="squadron-cards">
+          <ul className="cards">
             {squadron.pilots.map((pilot) => (
-              <li key={pilot.id} className="squadron-card">
+              <li key={pilot.id} className="card">
                 <strong>{pilot.name}</strong>
                 <span>{t(`squadron.ranks.${pilot.rank}`)}</span>
                 <dl>
@@ -69,9 +69,9 @@ function SquadronPanel({ player }: { player: Player | null }) {
             ))}
           </ul>
           <h3>{t('squadron.aircraft')}</h3>
-          <ul className="squadron-cards">
+          <ul className="cards">
             {squadron.aircraft.map((aircraft) => (
-              <li key={aircraft.id} className="squadron-card">
+              <li key={aircraft.id} className="card">
                 <strong>{aircraft.model.name}</strong>
                 <span>{t(`squadron.categories.${aircraft.model.category}`)}</span>
                 <dl>

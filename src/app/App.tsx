@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import AccountPanel from './AccountPanel'
 import AircraftViewer from './AircraftViewer'
+import BasePanel from './BasePanel'
 import CockpitViewer from './CockpitViewer'
 import SquadronPanel from './SquadronPanel'
 import TakeoffView from './TakeoffView'
@@ -57,6 +58,7 @@ function App() {
         </div>
         <TerrainTest />
         <SquadronPanel player={account.player} />
+        <BasePanel player={account.player} />
         <p className="description">{t('description')}</p>
         <div className="status-line">
           <span className="status-dot" data-status={apiStatus} aria-hidden="true" />

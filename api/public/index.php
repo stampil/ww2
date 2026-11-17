@@ -11,9 +11,14 @@ use Nyholm\Psr7Server\ServerRequestCreator;
 use Ww2\Account\AccountService;
 use Ww2\Account\PlayerSession;
 use Ww2\Account\PlayerStore;
+use Ww2\Base\BaseFounder;
+use Ww2\Base\BaseStore;
+use Ww2\Base\Warehouse;
+use Ww2\Base\Workshop;
 use Ww2\Database\DatabaseSettings;
 use Ww2\Database\PdoDatabase;
 use Ww2\Http\AccountController;
+use Ww2\Http\BaseController;
 use Ww2\Http\HealthController;
 use Ww2\Http\SessionController;
 use Ww2\Http\SquadronController;
@@ -36,15 +41,21 @@ $accounts = new AccountService($players);
 $session = new PlayerSession();
 $squadrons = new SquadronStore($database);
 $founder = new SquadronFounder($database, $squadrons);
+$bases = new BaseStore($database);
+$baseFounder = new BaseFounder($bases);
+$baseController = new BaseController($bases, new Warehouse($database, $bases), new Workshop($database, $bases), $session);
 
 $router = new Router();
 $router->setStrategy(new JsonStrategy($psr17Factory));
-$router->group('/api', function (RouteGroup $routes) use ($database, $accounts, $players, $session, $squadrons, $founder): void {
+$router->group('/api', function (RouteGroup $routes) use ($database, $accounts, $players, $session, $squadrons, $founder, $baseFounder, $baseController): void {
     $routes->get('/health', new HealthController($database));
     $routes->get('/terrain', new TerrainController(new TerrainGenerator()));
     $routes->get('/terrain/patch', new TerrainPatchController(new TilePatchGenerator()));
-    $routes->post('/account', new AccountController($accounts, $founder, $session));
+    $routes->post('/account', new AccountController($accounts, $founder, $baseFounder, $session));
     $routes->get('/squadron', new SquadronController($squadrons, $session));
+    $routes->get('/base', [$baseController, 'show']);
+    $routes->post('/base/purchase', [$baseController, 'buy']);
+    $routes->post('/base/production', [$baseController, 'produce']);
     $sessionController = new SessionController($accounts, $players, $session);
     $routes->get('/session', [$sessionController, 'show']);
     $routes->post('/session', [$sessionController, 'signIn']);

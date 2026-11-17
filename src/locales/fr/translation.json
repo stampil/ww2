@@ -102,5 +102,62 @@
       "fighter": "Chasseur",
       "bomber": "Bombardier"
     }
+  },
+  "base": {
+    "title": "Base",
+    "resources": {
+      "supplies": "Ravitaillement",
+      "fuel": "Carburant",
+      "ammunition": "Munitions",
+      "materials": "Matériaux",
+      "commandPoints": "Points de commandement"
+    },
+    "warehouse": "Entrepôt",
+    "stored": "{{stored}} / {{capacity}}",
+    "buy": "Acheter {{quantity}} ({{cost}} de ravitaillement)",
+    "workshop": "Atelier",
+    "mechanics": "Mécaniciens libres : {{count}}",
+    "parts": {
+      "engine": "Moteur",
+      "wings": "Ailes",
+      "fuselage": "Fuselage",
+      "armament": "Armement"
+    },
+    "partCost": "{{cost}} matériaux, {{time}}",
+    "ready": "Prêtes : {{count}}",
+    "make": "Fabriquer",
+    "makeWithMechanic": "Avec un mécanicien",
+    "running": "En fabrication",
+    "withMechanic": "avec un mécanicien",
+    "buildings": "Bâtiments",
+    "building": {
+      "headquarters": {
+        "name": "Quartier Général",
+        "text": "Missions et recrutement : à venir."
+      },
+      "workshop": {
+        "name": "Atelier",
+        "text": "Fabrique les pièces des avions."
+      },
+      "warehouse": {
+        "name": "Entrepôt",
+        "text": "Garde le carburant, les munitions et les matériaux."
+      },
+      "hangar": {
+        "name": "Hangar et piste",
+        "text": "Abrite les avions ; la réparation est à venir."
+      }
+    },
+    "errors": {
+      "invalidQuantity": "La quantité doit être positive.",
+      "insufficientSupplies": "Pas assez de ravitaillement.",
+      "warehouseFull": "L'entrepôt n'a pas la place.",
+      "insufficientMaterials": "Pas assez de matériaux.",
+      "workshopBusy": "Tous les établis sont pris.",
+      "noMechanicFree": "Aucun mécanicien n'est libre.",
+      "invalidBody": "La commande n'est pas comprise.",
+      "signInRequired": "Connecte-toi d'abord.",
+      "apiDown": "L'API ne répond pas."
+    }
   }
 }

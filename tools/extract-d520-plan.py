@@ -14,9 +14,12 @@ WINGSPAN_METERS = 10.2
 LENGTH_METERS = 8.6
 TEXTURE_WIDTH_PIXELS = 1024
 BACKGROUND_COLOR = (255, 0, 255)
-OPAQUE_DISTANCE = 200
-TRANSPARENT_DISTANCE = 40
 MASK_DISTANCE = 110
+NEIGHBORHOOD_PIXELS = 6
+DESPILL_RING_PIXELS = 4
+EROSION_PIXELS = 1
+EDGE_LOW = 0.25
+EDGE_HIGH = 0.75
 WING_ROOT_HALF_WIDTH_METERS = 0.6
 WING_SAMPLE_STEP_METERS = 0.1
 
@@ -40,30 +43,49 @@ PLAN_MODULE = PROJECT_ROOT / "src" / "three" / "d520Plan.ts"
 
 
 def keyed_texture(image_path):
-    """Returns the aircraft as an RGBA array cropped to its silhouette, background made transparent."""
+    """Returns the aircraft colors and its mask, cropped to the silhouette, without the magenta of the rim.
+
+    The rim pixels are part magenta: their red and blue are held down to the green, the mask is pulled in by a pixel,
+    and the colors are spread outward from what is left, so the edge carries no magenta.
+    """
     pixels = numpy.asarray(Image.open(image_path).convert("RGB")).astype(float)
     distance = numpy.abs(pixels[:, :, 0] - BACKGROUND_COLOR[0]) + pixels[:, :, 1] + numpy.abs(pixels[:, :, 2] - BACKGROUND_COLOR[2])
-    foreground = ndimage.binary_opening(distance >= MASK_DISTANCE, iterations=1)
-    labels, count = ndimage.label(foreground)
-    sizes = ndimage.sum(foreground, labels, range(1, count + 1))
-    aircraft = ndimage.binary_dilation(labels == 1 + int(numpy.argmax(sizes)), iterations=3)
+    solid = distance >= MASK_DISTANCE
+    labels, count = ndimage.label(ndimage.binary_opening(solid, iterations=1))
+    sizes = ndimage.sum(solid & (labels > 0), labels, range(1, count + 1))
+    near_aircraft = ndimage.binary_dilation(labels == 1 + int(numpy.argmax(sizes)), iterations=NEIGHBORHOOD_PIXELS)
+    aircraft = ndimage.binary_fill_holes(solid & near_aircraft)
 
-    alpha = numpy.clip((distance - TRANSPARENT_DISTANCE) / (OPAQUE_DISTANCE - TRANSPARENT_DISTANCE), 0, 1)
-    alpha[~aircraft] = 0
-    background = numpy.array(BACKGROUND_COLOR, dtype=float)
-    safe_alpha = numpy.maximum(alpha, 0.05)[:, :, None]
-    color = numpy.clip((pixels - (1 - alpha[:, :, None]) * background) / safe_alpha, 0, 255)
+    depth = ndimage.distance_transform_edt(aircraft)
+    rim = aircraft & (depth <= DESPILL_RING_PIXELS)
+    cleaned = pixels.copy()
+    for channel in (0, 2):
+        cleaned[:, :, channel] = numpy.where(rim, numpy.minimum(pixels[:, :, channel], pixels[:, :, 1]), pixels[:, :, channel])
+
+    core = depth > EROSION_PIXELS
+    _, nearest = ndimage.distance_transform_edt(~core, return_indices=True)
+    spread = cleaned[nearest[0], nearest[1]]
 
     rows = numpy.where(aircraft.any(axis=1))[0]
     columns = numpy.where(aircraft.any(axis=0))[0]
-    rgba = numpy.dstack([color, alpha * 255]).astype("uint8")
-    return rgba[rows[0]:rows[-1] + 1, columns[0]:columns[-1] + 1]
+    window = (slice(rows[0], rows[-1] + 1), slice(columns[0], columns[-1] + 1))
+    return spread[window], core[window].astype(float)
 
 
-def save_texture(rgba, height_pixels, output_path):
-    image = Image.fromarray(rgba, "RGBA").resize((TEXTURE_WIDTH_PIXELS, height_pixels), Image.LANCZOS)
-    image.save(output_path)
-    return numpy.asarray(image)
+def smooth_step(low, high, values):
+    progress = numpy.clip((values - low) / (high - low), 0, 1)
+    return progress * progress * (3 - 2 * progress)
+
+
+def save_texture(colors, mask, height_pixels, output_path):
+    """Resizes colors and mask apart, then gives the mask a soft edge a pixel or two wide."""
+    size = (TEXTURE_WIDTH_PIXELS, height_pixels)
+    color_image = Image.fromarray(numpy.clip(colors, 0, 255).astype("uint8")).resize(size, Image.LANCZOS)
+    mask_image = Image.fromarray((mask * 255).astype("uint8")).resize(size, Image.LANCZOS)
+    alpha = smooth_step(EDGE_LOW, EDGE_HIGH, numpy.asarray(mask_image) / 255.0)
+    rgba = numpy.dstack([numpy.asarray(color_image), (alpha * 255).astype("uint8")])
+    Image.fromarray(rgba, "RGBA").save(output_path)
+    return rgba
 
 
 def wing_edges(alpha, meters_per_pixel):
@@ -129,15 +151,15 @@ def main():
     french_path, german_path = sys.argv[1], sys.argv[2]
     TEXTURE_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
-    french = keyed_texture(french_path)
-    german = keyed_texture(german_path)
-    height_pixels = round(TEXTURE_WIDTH_PIXELS * french.shape[0] / french.shape[1])
-    french_resized = save_texture(french, height_pixels, TEXTURE_DIRECTORY / "d520-francais.png")
-    save_texture(german, height_pixels, TEXTURE_DIRECTORY / "d520-allemand.png")
+    french_colors, french_mask = keyed_texture(french_path)
+    german_colors, german_mask = keyed_texture(german_path)
+    height_pixels = round(TEXTURE_WIDTH_PIXELS * french_colors.shape[0] / french_colors.shape[1])
+    french_rgba = save_texture(french_colors, french_mask, height_pixels, TEXTURE_DIRECTORY / "d520-francais.png")
+    save_texture(german_colors, german_mask, height_pixels, TEXTURE_DIRECTORY / "d520-allemand.png")
 
     meters_per_pixel = WINGSPAN_METERS / TEXTURE_WIDTH_PIXELS
     print("texture", TEXTURE_WIDTH_PIXELS, "x", height_pixels, "longueur", round(height_pixels * meters_per_pixel, 3), "m (réel", LENGTH_METERS, ")")
-    write_plan_module(wing_edges(french_resized[:, :, 3], meters_per_pixel), fuselage_sections())
+    write_plan_module(wing_edges(french_rgba[:, :, 3], meters_per_pixel), fuselage_sections())
     print("écrit", PLAN_MODULE)
 
 

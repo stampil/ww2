@@ -10,12 +10,16 @@
     "apiDown": "The API is not answering."
   },
   "takeoff": {
-    "title": "D.520 takeoff",
-    "livery": "Livery",
-    "liveries": {
-      "french": "French",
-      "german": "German"
-    }
+    "title": "D.520 takeoff"
+  },
+  "viewer": {
+    "title": "The D.520 in 3D",
+    "hint": "Drag to turn the aircraft"
+  },
+  "liveries": {
+    "label": "Livery",
+    "french": "French",
+    "german": "German"
   },
   "footer": "Made with care, in France.",
   "localeName": "English"

@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TakeoffScene } from '../three/TakeoffScene'
-import type { Livery } from '../three/TakeoffScene'
-
-const LIVERIES: Livery[] = ['french', 'german']
+import type { Livery } from '../three/liveries'
+import LiverySwitch from './LiverySwitch'
 
 function TakeoffView() {
   const { t } = useTranslation()
@@ -27,13 +26,7 @@ function TakeoffView() {
   return (
     <section className="takeoff" aria-label={t('takeoff.title')}>
       <div className="takeoff-canvas" ref={containerRef} />
-      <div className="takeoff-liveries" role="group" aria-label={t('takeoff.livery')}>
-        {LIVERIES.map((name) => (
-          <button key={name} type="button" aria-pressed={livery === name} onClick={() => setLivery(name)}>
-            {t(`takeoff.liveries.${name}`)}
-          </button>
-        ))}
-      </div>
+      <LiverySwitch livery={livery} onChange={setLivery} />
     </section>
   )
 }

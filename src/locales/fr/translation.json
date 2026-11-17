@@ -10,12 +10,16 @@
     "apiDown": "L'API ne répond pas."
   },
   "takeoff": {
-    "title": "Décollage du D.520",
-    "livery": "Livrée",
-    "liveries": {
-      "french": "Française",
-      "german": "Allemande"
-    }
+    "title": "Décollage du D.520"
+  },
+  "viewer": {
+    "title": "Le D.520 en 3D",
+    "hint": "Faites glisser pour tourner l'avion"
+  },
+  "liveries": {
+    "label": "Livrée",
+    "french": "Française",
+    "german": "Allemande"
   },
   "footer": "Conçu avec soin, en France.",
   "localeName": "Français"

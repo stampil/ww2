@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import AircraftViewer from './AircraftViewer'
 import TakeoffView from './TakeoffView'
 import { useApiStatus } from './useApiStatus'
 
@@ -37,6 +38,7 @@ function App() {
       <section className="intro" aria-labelledby="welcome-title">
         <p className="eyebrow">{t('eyebrow')}</p>
         <h1 id="welcome-title">{t('title')}</h1>
+        <AircraftViewer />
         <p className="description">{t('description')}</p>
         <div className="status-line">
           <span className="status-dot" data-status={apiStatus} aria-hidden="true" />

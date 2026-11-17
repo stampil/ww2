@@ -90,6 +90,60 @@ final class HangarStore
         return $count;
     }
 
+    /**
+     * Notes that the aircraft came back damaged and must be inspected; an inspection already done or under way starts again.
+     */
+    public function requireInspection(int $aircraftId): void
+    {
+        $this->database->execute(
+            'INSERT INTO inspections (aircraft_id) VALUES (:aircraft_id) ON DUPLICATE KEY UPDATE finish_game_second = NULL',
+            ['aircraft_id' => $aircraftId],
+        );
+    }
+
+    public function startInspection(int $aircraftId, int $finishGameSecond): void
+    {
+        $this->database->execute(
+            'UPDATE inspections SET finish_game_second = :finish_game_second WHERE aircraft_id = :aircraft_id',
+            ['aircraft_id' => $aircraftId, 'finish_game_second' => $finishGameSecond],
+        );
+    }
+
+    public function finishInspection(int $aircraftId): void
+    {
+        $this->database->execute('DELETE FROM inspections WHERE aircraft_id = :aircraft_id', ['aircraft_id' => $aircraftId]);
+    }
+
+    /**
+     * @return array<int, int|null> the aircraft to inspect, by id, with the game second at which the inspection is done, or null when it has not begun
+     */
+    public function inspectionsOf(int $baseId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT inspections.aircraft_id, inspections.finish_game_second
+             FROM inspections JOIN aircraft ON aircraft.id = inspections.aircraft_id WHERE aircraft.base_id = :base_id',
+            ['base_id' => $baseId],
+        );
+        $inspections = [];
+        foreach ($rows as $row) {
+            $inspections[(int) $row['aircraft_id']] = $row['finish_game_second'] === null ? null : (int) $row['finish_game_second'];
+        }
+
+        return $inspections;
+    }
+
+    public function runningInspectionCount(int $baseId, int $gameSeconds): int
+    {
+        $count = 0;
+        foreach ($this->inspectionsOf($baseId) as $finishGameSecond) {
+            if ($finishGameSecond !== null && $finishGameSecond > $gameSeconds) {
+                $count += 1;
+            }
+        }
+
+        return $count;
+    }
+
     public function ignite(int $aircraftId, int $pilotId, int $explodesAtGameSecond): void
     {
         $this->database->execute(
@@ -125,13 +179,14 @@ final class HangarStore
     }
 
     /**
-     * @return list<int> the aircraft that cannot take off: with a destroyed module, under repair, or on fire
+     * @return list<int> the aircraft that cannot take off: to inspect, with a destroyed module, under repair, or on fire
      */
     public function groundedAircraftIds(int $baseId): array
     {
         $rows = $this->database->fetchAll(
             'SELECT id FROM aircraft WHERE base_id = :base_id AND (
-                id IN (SELECT aircraft_id FROM destroyed_modules)
+                id IN (SELECT aircraft_id FROM inspections)
+                OR id IN (SELECT aircraft_id FROM destroyed_modules)
                 OR id IN (SELECT aircraft_id FROM repairs)
                 OR id IN (SELECT aircraft_id FROM burning_aircraft)
              )',

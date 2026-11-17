@@ -16,20 +16,20 @@ const CREW_START_DELAY_MILLISECONDS = 1500
 const AIRCRAFT_WIDTH_TILES = 1.4
 
 /** What shows on a parked aircraft: nothing when it is fit, else the trouble it is in. */
-export type StandStatus = 'ready' | 'damaged' | 'repairing' | 'burning'
+export type StandStatus = 'ready' | 'damaged' | 'inspecting' | 'repairing' | 'burning'
 export type ParkedAircraft = { id: number; stand: Cell; status: StandStatus }
 /** An aircraft that has just been sent on a mission: it takes off from the stand it stood on, after a delay. */
 export type Departure = { aircraftId: number; stand: Cell; delayMilliseconds: number }
 /** Something that needs the player at a building: a marker over it, which opens it. */
 export type MapAlert = { kind: 'mission' | 'fire'; building: BuildingName; label: string }
 
-const STATUS_ICONS: Record<Exclude<StandStatus, 'ready'>, IconName> = { damaged: 'warning', repairing: 'repair', burning: 'fire' }
+const STATUS_ICONS: Record<Exclude<StandStatus, 'ready'>, IconName> = { damaged: 'warning', inspecting: 'reconnaissance', repairing: 'repair', burning: 'fire' }
 const ALERT_ICONS: Record<MapAlert['kind'], IconName> = { mission: 'warning', fire: 'fire' }
 
 type Props = {
   plan: TerrainPlan
-  /** The aircraft being repaired: a mechanic walks to the hangar for each. */
-  repairingAircraftIds: number[]
+  /** The aircraft being inspected or repaired: a mechanic walks to the hangar for each. */
+  servicedAircraftIds: number[]
   /** The aircraft on the ground, each at its stand, and their picture seen from above, once it is drawn. */
   parkedAircraft: ParkedAircraft[]
   aircraftSprite: string | null
@@ -54,7 +54,7 @@ function standPlacement(stand: Cell): CSSProperties {
 }
 
 /** The base seen from above: the tiles of its terrain plan, the sprites standing on them, the aircraft parked or taking off, the mechanics at work and the alerts; a click on a building opens it. */
-function BaseMap({ plan, repairingAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, alerts, openBuilding, onSelect }: Props) {
+function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, alerts, openBuilding, onSelect }: Props) {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gridSize = { '--rows': plan.tiles.length, '--columns': plan.tiles[0].length } as CSSProperties
@@ -142,7 +142,7 @@ function BaseMap({ plan, repairingAircraftIds, parkedAircraft, aircraftSprite, d
             </button>
           )
         })}
-        {repairingAircraftIds.map((aircraftId, place) => (
+        {servicedAircraftIds.map((aircraftId, place) => (
           <MaintenanceCrew key={aircraftId} plan={plan} delayMilliseconds={place * CREW_START_DELAY_MILLISECONDS} />
         ))}
       </div>

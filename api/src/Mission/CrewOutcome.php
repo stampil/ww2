@@ -31,7 +31,9 @@ final readonly class CrewOutcome
     }
 
     /**
-     * @return array{pilotName: string, aircraftName: string, damage: int, destroyedModules: list<string>, burning: bool, aircraftLost: bool, pilotKilled: bool}
+     * The destroyed modules are left out: only an inspection of the aircraft tells them.
+     *
+     * @return array{pilotName: string, aircraftName: string, damage: int, burning: bool, aircraftLost: bool, pilotKilled: bool}
      */
     public function toArray(): array
     {
@@ -39,7 +41,6 @@ final readonly class CrewOutcome
             'pilotName' => $this->pilotName,
             'aircraftName' => $this->aircraftName,
             'damage' => $this->damage,
-            'destroyedModules' => array_map(static fn (SparePart $part): string => $part->value, $this->destroyedModules),
             'burning' => $this->burning,
             'aircraftLost' => $this->aircraftLost,
             'pilotKilled' => $this->pilotKilled,

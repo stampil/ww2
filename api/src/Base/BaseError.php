@@ -27,6 +27,9 @@ enum BaseError: string
     case AircraftGrounded = 'aircraftGrounded';
     case AircraftUnderRepair = 'aircraftUnderRepair';
     case NothingToRepair = 'nothingToRepair';
+    case NotInspected = 'notInspected';
+    case NothingToInspect = 'nothingToInspect';
+    case AircraftUnderInspection = 'aircraftUnderInspection';
     case MissingSparePart = 'missingSparePart';
     case UnknownPilot = 'unknownPilot';
     case PilotResting = 'pilotResting';

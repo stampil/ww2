@@ -44,11 +44,17 @@ export type Aircraft = {
 }
 export type Squadron = { pilots: Pilot[]; aircraft: Aircraft[] }
 
-/** What the hangar knows of an aircraft: the modules destroyed, and the seconds left of a repair or before a fire reaches the fuel. */
+/**
+ * What the hangar knows of an aircraft: whether it is to inspect and the seconds left of the inspection, the modules destroyed, and the
+ * seconds left of a repair or before a fire reaches the fuel. While an aircraft is to inspect, its modules and its repair are not known (null).
+ */
 export type HangarAircraft = {
   aircraftId: number
-  destroyedModules: Part[]
-  repairDurationSeconds: number
+  needsInspection: boolean
+  inspectionDurationSeconds: number
+  inspectionSeconds: number | null
+  destroyedModules: Part[] | null
+  repairDurationSeconds: number | null
   repairSeconds: number | null
   fireSeconds: number | null
 }
@@ -67,7 +73,6 @@ export type MissionReport = {
     pilotName: string
     aircraftName: string
     damage: number
-    destroyedModules: Part[]
     burning: boolean
     aircraftLost: boolean
     pilotKilled: boolean
@@ -153,12 +158,13 @@ function remainingAfter(seconds: number | null, elapsedSeconds: number): number 
   return seconds === null ? null : Math.max(0, seconds - elapsedSeconds)
 }
 
-/** Whether the aircraft of the hangar have a repair or a fire whose countdown has run out since the API sent it. */
+/** Whether the aircraft of the hangar have an inspection, a repair or a fire whose countdown has run out since the API sent it. */
 function hasHangarCountdownEnded(received: HangarAircraft[], shown: HangarAircraft[]): boolean {
   for (let place = 0; place < shown.length; place += 1) {
+    const inspectionEnded = (received[place].inspectionSeconds ?? 0) > 0 && shown[place].inspectionSeconds === 0
     const repairEnded = (received[place].repairSeconds ?? 0) > 0 && shown[place].repairSeconds === 0
     const fireEnded = (received[place].fireSeconds ?? 0) > 0 && shown[place].fireSeconds === 0
-    if (repairEnded || fireEnded) {
+    if (inspectionEnded || repairEnded || fireEnded) {
       return true
     }
   }
@@ -218,6 +224,7 @@ export function useBase(player: Player | null) {
   const rests = countDown(receivedRests, elapsedSeconds)
   const hangarAircraft = receivedHangar.map((state) => ({
     ...state,
+    inspectionSeconds: remainingAfter(state.inspectionSeconds, elapsedSeconds),
     repairSeconds: remainingAfter(state.repairSeconds, elapsedSeconds),
     fireSeconds: remainingAfter(state.fireSeconds, elapsedSeconds),
   }))
@@ -246,6 +253,10 @@ export function useBase(player: Player | null) {
 
   async function receiveSquadron(missionId: number): Promise<string | null> {
     return receive(await request(`${BASE_URL}/missions/return`, { missionId }))
+  }
+
+  async function inspectAircraft(aircraftId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/hangar/inspect`, { aircraftId }))
   }
 
   async function repairAircraft(aircraftId: number): Promise<string | null> {
@@ -285,6 +296,7 @@ export function useBase(player: Player | null) {
     produce,
     launchMission,
     receiveSquadron,
+    inspectAircraft,
     repairAircraft,
     restPilot,
     recruitPilot,

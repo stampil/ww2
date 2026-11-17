@@ -27,7 +27,7 @@ use Ww2\World\Bases;
 
 /**
  * Shows the base of the player who is signed in (the first they hold), and takes their orders: buy a stock, make a spare part,
- * send a mission out and receive its squadron back, repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade.
+ * send a mission out and receive its squadron back, inspect and repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade.
  * Once the battle is over the orders are refused, except the one that starts a new battle.
  */
 final class BaseController
@@ -120,6 +120,20 @@ final class BaseController
         $baseId = $this->ongoingBattleBaseId();
         $missionId = JsonRequestBody::integers($request, 'missionId')['missionId'];
         $this->carryOut(fn () => $this->headquarters->receive($baseId, $missionId));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function inspectAircraft(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ongoingBattleBaseId();
+        $aircraftId = JsonRequestBody::integers($request, 'aircraftId')['aircraftId'];
+        $this->carryOut(fn () => $this->hangar->inspect($baseId, $aircraftId));
 
         return $this->overview->of($baseId);
     }

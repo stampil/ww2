@@ -214,6 +214,9 @@ final class Headquarters
             foreach ($crew->destroyedModules as $part) {
                 $this->hangar->destroyModule($crew->aircraftId, $part);
             }
+            if ($crew->damage > 0 || $crew->burning) {
+                $this->hangar->requireInspection($crew->aircraftId);
+            }
             if ($crew->burning) {
                 $this->hangar->ignite($crew->aircraftId, $crew->pilotId, $gameSeconds + self::FIRE_SECONDS);
             }

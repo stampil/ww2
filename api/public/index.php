@@ -97,6 +97,7 @@ $router->group('/api', function (RouteGroup $routes) use ($accounts, $players, $
     $routes->post('/base/production', [$baseController, 'produce']);
     $routes->post('/base/missions/launch', [$baseController, 'launchMission']);
     $routes->post('/base/missions/return', [$baseController, 'receiveMission']);
+    $routes->post('/base/hangar/inspect', [$baseController, 'inspectAircraft']);
     $routes->post('/base/hangar/repair', [$baseController, 'repairAircraft']);
     $routes->post('/base/pilots/rest', [$baseController, 'restPilot']);
     $routes->post('/base/pilots/recruit', [$baseController, 'recruitPilot']);

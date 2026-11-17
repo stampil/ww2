@@ -24,10 +24,13 @@ function standStatusOf(state: HangarAircraft, aircraft: Aircraft): StandStatus {
   if (state.fireSeconds !== null) {
     return 'burning'
   }
+  if (state.inspectionSeconds !== null) {
+    return 'inspecting'
+  }
   if (state.repairSeconds !== null) {
     return 'repairing'
   }
-  if (state.destroyedModules.length > 0 || aircraft.durability < aircraft.model.durability) {
+  if (state.needsInspection || (state.destroyedModules ?? []).length > 0 || aircraft.durability < aircraft.model.durability) {
     return 'damaged'
   }
   return 'ready'
@@ -48,6 +51,7 @@ function BaseScreen({ player }: { player: Player }) {
     produce,
     launchMission,
     receiveSquadron,
+    inspectAircraft,
     repairAircraft,
     restPilot,
     recruitPilot,
@@ -91,7 +95,7 @@ function BaseScreen({ player }: { player: Player }) {
   const busy = busyCrews(flights)
   const unavailable = unavailableCrews(busy, rests, hangarAircraft)
   const upgradeOf = (building: UpgradeName) => base.upgrades.find((candidate) => candidate.upgrade === building)!
-  const repairingAircraftIds = hangarAircraft.filter((state) => state.repairSeconds !== null).map((state) => state.aircraftId)
+  const servicedAircraftIds = hangarAircraft.filter((state) => state.inspectionSeconds !== null || state.repairSeconds !== null).map((state) => state.aircraftId)
 
   const parkedAircraft: ParkedAircraft[] = []
   for (let place = 0; place < base.squadron.aircraft.length; place += 1) {
@@ -124,7 +128,7 @@ function BaseScreen({ player }: { player: Player }) {
         <Hud gameTime={gameTime} base={base} />
         <BaseMap
           plan={plan}
-          repairingAircraftIds={repairingAircraftIds}
+          servicedAircraftIds={servicedAircraftIds}
           parkedAircraft={parkedAircraft}
           aircraftSprite={aircraftSprite}
           departures={departures}
@@ -182,6 +186,7 @@ function BaseScreen({ player }: { player: Player }) {
               hangarAircraft={hangarAircraft}
               busyAircraftIds={busy.aircraftIds}
               sprite={aircraftSprite}
+              onInspect={(aircraftId) => void order(inspectAircraft(aircraftId))}
               onRepair={(aircraftId) => void order(repairAircraft(aircraftId))}
               upgrade={upgradeOf('hangar')}
               commandPoints={base.resources.commandPoints}

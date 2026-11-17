@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ww2\Base;
 
 /**
- * The mechanics of a base: a few of them, shared by the workshop that makes parts and the hangar that repairs aircraft.
+ * The mechanics of a base: a few of them, shared by the workshop that makes parts and the hangar that inspects and repairs aircraft.
  */
 final class Mechanics
 {
@@ -17,7 +17,7 @@ final class Mechanics
 
     public function freeAt(int $baseId, int $gameSeconds): int
     {
-        $busy = $this->hangar->runningRepairCount($baseId, $gameSeconds);
+        $busy = $this->hangar->runningRepairCount($baseId, $gameSeconds) + $this->hangar->runningInspectionCount($baseId, $gameSeconds);
         foreach ($this->bases->runningJobs($baseId, $gameSeconds) as $job) {
             if ($job->hasMechanic) {
                 $busy += 1;

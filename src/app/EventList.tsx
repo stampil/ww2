@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import Pane from './Pane'
-import type { BaseEvent, ExplosionEvent, MissionReport, Part } from './useBase'
+import type { BaseEvent, ExplosionEvent, MissionReport } from './useBase'
 
 function crewOutcomeKey(crew: MissionReport['crews'][number]): string {
   if (crew.pilotKilled) {
@@ -17,10 +17,6 @@ function MissionReportItem({ report }: { report: MissionReport }) {
 
   function crewLine(crew: MissionReport['crews'][number]): string {
     const details = [t(crewOutcomeKey(crew), { pilot: crew.pilotName, aircraft: crew.aircraftName, damage: crew.damage })]
-    if (crew.destroyedModules.length > 0) {
-      const names = crew.destroyedModules.map((part: Part) => t(`base.parts.${part}`))
-      details.push(t('base.mission.modulesDestroyed', { modules: names.join(', ') }))
-    }
     if (crew.burning) {
       details.push(t('base.mission.burning'))
     }

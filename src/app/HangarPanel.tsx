@@ -14,14 +14,15 @@ type Props = {
   busyAircraftIds: number[]
   /** The picture of the aircraft seen from above, once it is drawn. */
   sprite: string | null
+  onInspect: (aircraftId: number) => void
   onRepair: (aircraftId: number) => void
   upgrade: UpgradeInfo
   commandPoints: number
   onUpgrade: (upgrade: UpgradeName) => void
 }
 
-/** The aircraft of the squadron with their modules; one that is damaged can be repaired, if a mechanic and the spare parts are there. */
-function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, sprite, onRepair, upgrade, commandPoints, onUpgrade }: Props) {
+/** The aircraft of the squadron with their modules; one back damaged is inspected to show its damage, then repaired, if a mechanic and the spare parts are there. */
+function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, sprite, onInspect, onRepair, upgrade, commandPoints, onUpgrade }: Props) {
   const { t } = useTranslation()
 
   return (
@@ -30,6 +31,7 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, sprite, onRepa
         {squadron.aircraft.map((aircraft) => {
           const state = hangarAircraft.find((candidate) => candidate.aircraftId === aircraft.id)!
           const isFlying = busyAircraftIds.includes(aircraft.id)
+          const destroyedModules = state.destroyedModules
 
           return (
             <li key={aircraft.id} className="card">
@@ -37,6 +39,12 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, sprite, onRepa
               <strong>{aircraft.model.name}</strong>
               <span>{t(`squadron.categories.${aircraft.model.category}`)}</span>
               {isFlying && <span className="status">{t('base.mission.inFlight')}</span>}
+              {state.inspectionSeconds !== null && (
+                <span className="status">
+                  <Icon name="reconnaissance" />
+                  {t('base.hangar.inspecting', { time: formatDuration(state.inspectionSeconds) })}
+                </span>
+              )}
               {state.repairSeconds !== null && (
                 <span className="status">
                   <Icon name="repair" />
@@ -64,18 +72,30 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, sprite, onRepa
                   {aircraft.model.ammunitionCapacity}
                 </li>
               </ul>
-              <ul className="modules" aria-label={t('base.hangar.modules')}>
-                {PARTS.map((part) => {
-                  const isDestroyed = state.destroyedModules.includes(part)
-                  return (
-                    <li key={part} data-destroyed={isDestroyed}>
-                      <Icon name={part} />
-                      {t(isDestroyed ? 'base.hangar.moduleDestroyed' : 'base.hangar.moduleIntact', { part: t(`base.parts.${part}`) })}
-                    </li>
-                  )
-                })}
-              </ul>
-              {state.repairDurationSeconds > 0 && state.repairSeconds === null && (
+              {destroyedModules === null ? (
+                <p className="status">{t('base.hangar.unknownDamage')}</p>
+              ) : (
+                <ul className="modules" aria-label={t('base.hangar.modules')}>
+                  {PARTS.map((part) => {
+                    const isDestroyed = destroyedModules.includes(part)
+                    return (
+                      <li key={part} data-destroyed={isDestroyed}>
+                        <Icon name={part} />
+                        {t(isDestroyed ? 'base.hangar.moduleDestroyed' : 'base.hangar.moduleIntact', { part: t(`base.parts.${part}`) })}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+              {state.needsInspection && state.inspectionSeconds === null && (
+                <div className="card-actions">
+                  <button type="button" onClick={() => onInspect(aircraft.id)}>
+                    <Icon name="reconnaissance" />
+                    {t('base.hangar.inspect', { time: formatDuration(state.inspectionDurationSeconds) })}
+                  </button>
+                </div>
+              )}
+              {state.repairDurationSeconds !== null && state.repairDurationSeconds > 0 && state.repairSeconds === null && (
                 <div className="card-actions">
                   <button type="button" disabled={isFlying} onClick={() => onRepair(aircraft.id)}>
                     <Icon name="repair" />

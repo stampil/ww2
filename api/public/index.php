@@ -16,8 +16,11 @@ use Ww2\Database\PdoDatabase;
 use Ww2\Http\AccountController;
 use Ww2\Http\HealthController;
 use Ww2\Http\SessionController;
+use Ww2\Http\SquadronController;
 use Ww2\Http\TerrainPatchController;
 use Ww2\Http\TerrainController;
+use Ww2\Squadron\SquadronFounder;
+use Ww2\Squadron\SquadronStore;
 use Ww2\Terrain\TerrainGenerator;
 use Ww2\Terrain\TilePatchGenerator;
 
@@ -31,14 +34,17 @@ $requestCreator = new ServerRequestCreator($psr17Factory, $psr17Factory, $psr17F
 $players = new PlayerStore($database);
 $accounts = new AccountService($players);
 $session = new PlayerSession();
+$squadrons = new SquadronStore($database);
+$founder = new SquadronFounder($database, $squadrons);
 
 $router = new Router();
 $router->setStrategy(new JsonStrategy($psr17Factory));
-$router->group('/api', function (RouteGroup $routes) use ($database, $accounts, $players, $session): void {
+$router->group('/api', function (RouteGroup $routes) use ($database, $accounts, $players, $session, $squadrons, $founder): void {
     $routes->get('/health', new HealthController($database));
     $routes->get('/terrain', new TerrainController(new TerrainGenerator()));
     $routes->get('/terrain/patch', new TerrainPatchController(new TilePatchGenerator()));
-    $routes->post('/account', new AccountController($accounts, $session));
+    $routes->post('/account', new AccountController($accounts, $founder, $session));
+    $routes->get('/squadron', new SquadronController($squadrons, $session));
     $sessionController = new SessionController($accounts, $players, $session);
     $routes->get('/session', [$sessionController, 'show']);
     $routes->post('/session', [$sessionController, 'signIn']);

@@ -26,6 +26,8 @@ async function send(method: string, url: string, body?: object): Promise<{ playe
   }
 }
 
+export type Account = ReturnType<typeof useAccount>
+
 /** Who is signed in, found when the page opens, and the ways to sign in, create an account and sign out. */
 export function useAccount() {
   const [player, setPlayer] = useState<Player | null>(null)

@@ -76,5 +76,31 @@
     "title": "Tile test",
     "generate": "Generate the terrain",
     "seed": "Seed {{seed}}"
+  },
+  "squadron": {
+    "title": "Squadron of {{nickname}}",
+    "signInHint": "Sign in to see your squadron.",
+    "pilots": "Pilots",
+    "aircraft": "Aircraft",
+    "fatigue": "Fatigue",
+    "stress": "Stress",
+    "accuracy": "Accuracy",
+    "resilience": "Resilience",
+    "durability": "Durability",
+    "maneuverability": "Maneuverability",
+    "fuel": "Fuel",
+    "ammunition": "Ammunition",
+    "ranks": {
+      "1": "Sergeant",
+      "2": "Staff sergeant",
+      "3": "Warrant officer",
+      "4": "Second lieutenant",
+      "5": "Lieutenant",
+      "6": "Captain"
+    },
+    "categories": {
+      "fighter": "Fighter",
+      "bomber": "Bomber"
+    }
   }
 }

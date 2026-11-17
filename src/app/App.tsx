@@ -2,8 +2,10 @@ import { useTranslation } from 'react-i18next'
 import AccountPanel from './AccountPanel'
 import AircraftViewer from './AircraftViewer'
 import CockpitViewer from './CockpitViewer'
+import SquadronPanel from './SquadronPanel'
 import TakeoffView from './TakeoffView'
 import TerrainTest from './TerrainTest'
+import { useAccount } from './useAccount'
 import { useApiStatus } from './useApiStatus'
 
 const MODEL_SOURCE_URL = 'https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/D520/'
@@ -13,6 +15,7 @@ const MODEL_ATTRIBUTION_URL = '/models/d520/ATTRIBUTION.txt'
 function App() {
   const { t, i18n } = useTranslation()
   const apiStatus = useApiStatus()
+  const account = useAccount()
 
   return (
     <main className="page-shell">
@@ -22,7 +25,7 @@ function App() {
           <span>French Touch</span>
         </a>
         <div className="topbar-tools">
-          <AccountPanel />
+          <AccountPanel account={account} />
           <nav className="language-switch" aria-label={t('language')}>
             <button
               type="button"
@@ -53,6 +56,7 @@ function App() {
           <CockpitViewer />
         </div>
         <TerrainTest />
+        <SquadronPanel player={account.player} />
         <p className="description">{t('description')}</p>
         <div className="status-line">
           <span className="status-dot" data-status={apiStatus} aria-hidden="true" />

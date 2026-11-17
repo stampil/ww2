@@ -26,4 +26,14 @@ interface Database
      * @throws DatabaseException when the database cannot run it
      */
     public function execute(string $statement, array $parameters = []): int;
+
+    /**
+     * Runs the work in one transaction: every statement of it sticks, or none does.
+     *
+     * @template Result
+     * @param callable(): Result $work
+     * @return Result
+     * @throws DatabaseException when the database cannot run it
+     */
+    public function transaction(callable $work): mixed;
 }

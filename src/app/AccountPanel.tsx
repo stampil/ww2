@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAccount } from './useAccount'
-import type { AccountMode } from './useAccount'
+import type { Account, AccountMode } from './useAccount'
 
 /** Shows who is signed in with a button to sign out, or a form to sign in or to create an account. */
-function AccountPanel() {
+function AccountPanel({ account: { player, submit, signOut } }: { account: Account }) {
   const { t } = useTranslation()
-  const { player, submit, signOut } = useAccount()
   const [isOpen, setIsOpen] = useState(false)
   const [errorCode, setErrorCode] = useState<string | null>(null)
 

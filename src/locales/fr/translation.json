@@ -76,5 +76,31 @@
     "title": "Test des tuiles",
     "generate": "Générer le terrain",
     "seed": "Graine {{seed}}"
+  },
+  "squadron": {
+    "title": "Escadrille de {{nickname}}",
+    "signInHint": "Connecte-toi pour voir ton escadrille.",
+    "pilots": "Pilotes",
+    "aircraft": "Avions",
+    "fatigue": "Fatigue",
+    "stress": "Stress",
+    "accuracy": "Précision",
+    "resilience": "Résistance",
+    "durability": "Durabilité",
+    "maneuverability": "Maniabilité",
+    "fuel": "Carburant",
+    "ammunition": "Munitions",
+    "ranks": {
+      "1": "Sergent",
+      "2": "Sergent-chef",
+      "3": "Adjudant",
+      "4": "Sous-lieutenant",
+      "5": "Lieutenant",
+      "6": "Capitaine"
+    },
+    "categories": {
+      "fighter": "Chasseur",
+      "bomber": "Bombardier"
+    }
   }
 }

@@ -6,6 +6,7 @@ namespace Ww2\Database;
 
 use PDO;
 use PDOException;
+use Throwable;
 
 /**
  * The game database over PDO, connected on first use.
@@ -42,6 +43,23 @@ final class PdoDatabase implements Database
             return $prepared->rowCount();
         } catch (PDOException $exception) {
             throw new DatabaseException($exception->getMessage(), previous: $exception);
+        }
+    }
+
+    public function transaction(callable $work): mixed
+    {
+        try {
+            $connection = $this->connection();
+            $connection->beginTransaction();
+            $result = $work();
+            $connection->commit();
+
+            return $result;
+        } catch (Throwable $failure) {
+            if (isset($connection) && $connection->inTransaction()) {
+                $connection->rollBack();
+            }
+            throw $failure instanceof PDOException ? new DatabaseException($failure->getMessage(), previous: $failure) : $failure;
         }
     }
 

@@ -3,13 +3,11 @@ import { TILE_SIZE_METERS } from './airfield'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
 import { renderTileImage, TILE_IMAGE_PIXELS } from './tileImages'
-import type { TerrainTextures } from './tileImages'
+import { loadTerrainTextures } from './terrainTextures'
 import { BUSHES } from './tiles'
 import type { Tile } from './tiles'
 
 const TERRAIN_URL = '/api/terrain'
-const GRASS_URL = '/textures/herbe.png'
-const CONCRETE_URL = '/textures/beton.png'
 const GROUND_CELLS = 200
 const GROUND_DEPTH_METERS = 0.1
 const BUSH_TURN_STEP_RADIANS = 2.4
@@ -17,15 +15,6 @@ const BUSH_TURN_STEP_RADIANS = 2.4
 type Runway = { row: number; firstColumn: number }
 /** What the API sends for a seed: the runway and the tiles, rows from the north and columns from the west. */
 type TerrainMap = { columns: number; runway: Runway; tiles: Tile[][] }
-
-function loadImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error(`Cannot load ${url}`))
-    image.src = url
-  })
-}
 
 /** The world has its origin on the left end of the runway, at the middle of its row; x grows to the east, y to the north. */
 function tileCenter(runway: Runway, row: number, column: number): THREE.Vector2 {
@@ -57,9 +46,8 @@ export class Terrain {
   }
 
   private async build(): Promise<void> {
-    const [grass, concrete] = await Promise.all([loadImage(GRASS_URL), loadImage(CONCRETE_URL)])
-    const textures: TerrainTextures = { grass, concrete }
-    this.addGrassPlain(grass)
+    const textures = await loadTerrainTextures()
+    this.addGrassPlain(textures.grass)
     const response = await fetch(`${TERRAIN_URL}?seed=${this.seed}`)
     const map = (await response.json()) as TerrainMap
     const geometry = new THREE.PlaneGeometry(TILE_SIZE_METERS, TILE_SIZE_METERS)

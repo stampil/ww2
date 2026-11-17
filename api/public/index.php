@@ -16,8 +16,10 @@ use Ww2\Database\PdoDatabase;
 use Ww2\Http\AccountController;
 use Ww2\Http\HealthController;
 use Ww2\Http\SessionController;
+use Ww2\Http\TerrainPatchController;
 use Ww2\Http\TerrainController;
 use Ww2\Terrain\TerrainGenerator;
+use Ww2\Terrain\TilePatchGenerator;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -35,6 +37,7 @@ $router->setStrategy(new JsonStrategy($psr17Factory));
 $router->group('/api', function (RouteGroup $routes) use ($database, $accounts, $players, $session): void {
     $routes->get('/health', new HealthController($database));
     $routes->get('/terrain', new TerrainController(new TerrainGenerator()));
+    $routes->get('/terrain/patch', new TerrainPatchController(new TilePatchGenerator()));
     $routes->post('/account', new AccountController($accounts, $session));
     $sessionController = new SessionController($accounts, $players, $session);
     $routes->get('/session', [$sessionController, 'show']);

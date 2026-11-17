@@ -8,7 +8,7 @@ use Random\Engine\Xoshiro256StarStar;
 use Random\Randomizer;
 
 /**
- * Makes an airfield from a seed: a straight runway, taxiways that leave it, then grass with a few bushes.
+ * Makes an airfield from a seed: a straight runway whose middle tiles may each have an exit, taxiways, then grass and bushes.
  * Every tile touches its neighbours with the same edge kind, so any seed gives a valid terrain.
  */
 final class TerrainGenerator
@@ -25,7 +25,7 @@ final class TerrainGenerator
     private const MIN_BUSHES = 4;
     private const MAX_BUSHES = 8;
     private const PERCENT = 100;
-    private const SECOND_TAXIWAY_PERCENT = 60;
+    private const EXIT_PERCENT = 50;
     private const CROSSING_PERCENT = 30;
     private const LATERAL_BRANCH_PERCENT = 50;
     private const END_APRON_PERCENT = 50;
@@ -44,21 +44,27 @@ final class TerrainGenerator
             }
         }
 
-        return new TileMap($seed, $runway, $this->withBushes($random, $tiles));
+        return new TileMap($seed, $runway, new TileGrid($this->withBushes($random, $tiles)));
     }
 
     private function layTaxiways(Randomizer $random, Runway $runway): TaxiwayNetwork
     {
         $network = new TaxiwayNetwork();
-        $junctionColumns = range($runway->firstColumn + 1, $runway->lastColumn() - 1);
-        $junctionColumns = $random->shuffleArray($junctionColumns);
-        foreach ($junctionColumns as $index => $column) {
-            if ($index === 0 || $this->happens($random, self::SECOND_TAXIWAY_PERCENT)) {
-                $outward = $random->getInt(0, 1) === 0 ? Side::North : Side::South;
-                $this->layTaxiway($random, $network, $runway, $column, $outward);
-                if ($this->happens($random, self::CROSSING_PERCENT)) {
-                    $this->layTaxiway($random, $network, $runway, $column, $outward->opposite());
-                }
+        $innerColumns = range($runway->firstColumn + 1, $runway->lastColumn() - 1);
+        $exitColumns = [];
+        foreach ($innerColumns as $column) {
+            if ($this->happens($random, self::EXIT_PERCENT)) {
+                $exitColumns[] = $column;
+            }
+        }
+        if ($exitColumns === []) {
+            $exitColumns[] = $innerColumns[$random->getInt(0, count($innerColumns) - 1)];
+        }
+        foreach ($exitColumns as $column) {
+            $outward = $random->getInt(0, 1) === 0 ? Side::North : Side::South;
+            $this->layTaxiway($random, $network, $runway, $column, $outward);
+            if ($this->happens($random, self::CROSSING_PERCENT)) {
+                $this->layTaxiway($random, $network, $runway, $column, $outward->opposite());
             }
         }
 

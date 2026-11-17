@@ -186,6 +186,10 @@ Le texte exact de l'utilisateur, puis ce qui en est compris. Ce sont des règles
 
 **Fumée inclinée par la vitesse** — « pour les degat, ok pour l'idée de la fumée, mais tu saurais l'inclinée en fonction du vecteur vitesse de l'avion ??? » (17/11). Compris, pris comme le go : la fumée et les flammes restent dans l'air pendant que l'avion avance, donc elles traînent à l'opposé de son vecteur vitesse ; `DamageEffects.setVelocity` ajoute aux particules la vitesse opposée, dans le repère de l'avion ; l'avion de l'accueil, immobile, reçoit une vitesse de vol de 10 m/s vers l'avant pour que la fumée s'étire derrière lui (valeur de ma main). « ok pour l'idée de la fumée » valide cette partie de la question 5 ; le reste de la question 5 reste ouvert.
 
+**Bouton « Générer le terrain » : carré de tuiles au hasard** — « fait un btn accuiel "generer terrain" au clique sa prend des tuiles au hasard, rotate par angles de 90deg  au hasard , mis bout a bout en 4x4 pour tester le rendu. la piste d'atterissage doit etre une possibilité d'aligner plusieurs tuiles, toute tuile genere des sorties de piste intermediaire. » (17/11). Compris, pris comme le go : bouton de l'accueil, route de l'API qui rend un carré 4 × 4 de tuiles tirées au hasard avec rotation au hasard, emboîtées (bords de même type) ; affichage à plat de 4 × 4 images de tuiles bout à bout, avec la graine ; dans le terrain du décollage, chaque tuile intermédiaire de la piste peut porter une sortie (au moins une au total). Deux points posés en questions : tirage emboîté ou libre, piste de longueur variable.
+
+**Pilote et Avion : mes valeurs** — réponse à ma question « Pour Pilote et Avion, je pars sur mes valeurs ? » : « oui » (17/11). Compris, pris comme le go : tranche (b) du jeu avec les valeurs proposées par moi (le D.520 au POC), à corriger ensuite ; le suivi ne la garde que pour ce qui reste.
+
 ## Fait au « go » (16/11, « dépile un peu avance, ta toute les biles »)
 
 - Dépôt de développement `stampil/ww2` cloné dans `~/PERSONNEL/ww2`, branche `POC` créée depuis `main`, scaffold de `french_touch` reporté ; `french_touch` reste tel quel.

@@ -23,11 +23,6 @@ final class TerrainController
      */
     public function __invoke(ServerRequestInterface $request): array
     {
-        $seed = filter_var($request->getQueryParams()['seed'] ?? null, FILTER_VALIDATE_INT);
-        if ($seed === false) {
-            throw new BadRequestException('The seed must be an integer.');
-        }
-
-        return $this->generator->generate($seed)->toArray();
+        return $this->generator->generate(SeedParameter::read($request))->toArray();
     }
 }

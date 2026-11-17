@@ -71,5 +71,10 @@
       "invalidBody": "Fill in the nickname and the password.",
       "apiDown": "The API does not answer."
     }
+  },
+  "terrainTest": {
+    "title": "Tile test",
+    "generate": "Generate the terrain",
+    "seed": "Seed {{seed}}"
   }
 }

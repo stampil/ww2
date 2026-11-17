@@ -264,6 +264,20 @@ h1 {
   }
 }
 
+.terrain-test {
+  @include flex($direction: column, $gap: 0.75rem);
+  width: 100%;
+  max-width: 40rem;
+  margin-top: 2rem;
+}
+
+.terrain-test-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 0.75rem;
+}
+
 .model-viewer-hint {
   margin: 0;
   color: var(--muted);

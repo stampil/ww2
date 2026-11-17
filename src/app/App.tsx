@@ -3,6 +3,7 @@ import AccountPanel from './AccountPanel'
 import AircraftViewer from './AircraftViewer'
 import CockpitViewer from './CockpitViewer'
 import TakeoffView from './TakeoffView'
+import TerrainTest from './TerrainTest'
 import { useApiStatus } from './useApiStatus'
 
 const MODEL_SOURCE_URL = 'https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/D520/'
@@ -51,6 +52,7 @@ function App() {
           <AircraftViewer />
           <CockpitViewer />
         </div>
+        <TerrainTest />
         <p className="description">{t('description')}</p>
         <div className="status-line">
           <span className="status-dot" data-status={apiStatus} aria-hidden="true" />

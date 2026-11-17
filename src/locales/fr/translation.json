@@ -71,5 +71,10 @@
       "invalidBody": "Remplis le pseudo et le mot de passe.",
       "apiDown": "L'API ne répond pas."
     }
+  },
+  "terrainTest": {
+    "title": "Test des tuiles",
+    "generate": "Générer le terrain",
+    "seed": "Graine {{seed}}"
   }
 }

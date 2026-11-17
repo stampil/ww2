@@ -10,7 +10,7 @@ use Ww2\Database\Database;
 use Ww2\Mission\AlertKind;
 use Ww2\Mission\FlightAlertStore;
 use Ww2\Mission\Dogfight\Dogfight;
-use Ww2\Mission\Dogfight\DogfightState;
+use Ww2\Mission\Dogfight\DogfightOutcome;
 use Ww2\Mission\Dogfight\Maneuver;
 use Ww2\Mission\Mission;
 use Ww2\Mission\MissionType;
@@ -18,14 +18,15 @@ use Ww2\Squadron\Aircraft;
 use Ww2\Squadron\Pilot;
 
 /**
- * The calls to the player during a flight, the toasts of the mini-games: an air combat mission calls for one dogfight per aircraft,
- * at a game second drawn between a quarter and three quarters of the flight. Played or not, the flight is received as usual.
+ * The calls to the player during a flight, the toasts of the mini-games: an interception of bombers calls for one dogfight on the grid per aircraft, an air combat
+ * one dogfight from the cockpit, at a game second drawn between a quarter and three quarters of the flight. Played or not, the flight is received as usual.
  */
 final class Alerts
 {
     private const EARLIEST_PERCENT = 25;
     private const LATEST_PERCENT = 75;
     private const PERCENT = 100;
+    private const NO_MOVES = 0;
 
     public function __construct(
         private readonly Database $database,
@@ -45,14 +46,19 @@ final class Alerts
      */
     public function schedule(Mission $mission, array $pilots, array $aircraft, int $launchGameSecond): void
     {
-        if ($mission->type !== MissionType::AirCombat) {
+        $kind = match ($mission->type) {
+            MissionType::AirCombat => AlertKind::Dogfight,
+            MissionType::FighterCombat => AlertKind::Cockpit,
+            default => null,
+        };
+        if ($kind === null) {
             return;
         }
         $earliest = intdiv($mission->durationSeconds * self::EARLIEST_PERCENT, self::PERCENT);
         $latest = intdiv($mission->durationSeconds * self::LATEST_PERCENT, self::PERCENT);
         foreach ($aircraft as $place => $flown) {
-            $moves = $this->dogfight->movesFor($flown->model->maneuverability, $pilots[$place]->rank);
-            $this->store->add($mission->id, $flown->id, AlertKind::Dogfight, $launchGameSecond + $this->random->getInt($earliest, $latest), $moves);
+            $moves = $kind === AlertKind::Dogfight ? $this->dogfight->movesFor($flown->model->maneuverability, $pilots[$place]->rank) : self::NO_MOVES;
+            $this->store->add($mission->id, $flown->id, $kind, $launchGameSecond + $this->random->getInt($earliest, $latest), $moves);
         }
     }
 
@@ -70,14 +76,14 @@ final class Alerts
     }
 
     /**
-     * @return array<int, DogfightState> the dogfights of a flight that are over, by the id of the aircraft
+     * @return array<int, DogfightOutcome> how the dogfights of a flight that are over ended, by the id of the aircraft
      */
     public function finishedDuelsOf(int $baseId, int $missionId): array
     {
         $duels = [];
         foreach ($this->store->of($baseId) as $alert) {
             if ($alert->missionId === $missionId && $alert->isFinished()) {
-                $duels[$alert->aircraftId] = $alert->state;
+                $duels[$alert->aircraftId] = $alert->outcome();
             }
         }
 
@@ -100,7 +106,9 @@ final class Alerts
             if ($alert->dueGameSecond > $this->clocks->of($baseId)->gameSeconds) {
                 throw new BaseException(BaseError::AlertNotDue);
             }
-            if ($alert->state === null) {
+            if ($alert->kind === AlertKind::Cockpit) {
+                $this->store->startCockpit($alertId);
+            } elseif ($alert->state === null) {
                 $this->store->saveState($alertId, $this->dogfight->begin());
             }
         });
@@ -116,6 +124,9 @@ final class Alerts
         $this->database->transaction(function () use ($baseId, $alertId, $maneuver): void {
             $this->bases->lockResources($baseId);
             $alert = $this->store->find($baseId, $alertId) ?? throw new BaseException(BaseError::UnknownAlert);
+            if ($alert->kind !== AlertKind::Dogfight) {
+                throw new BaseException(BaseError::AlertWrongKind);
+            }
             if ($alert->state === null) {
                 throw new BaseException(BaseError::AlertNotStarted);
             }
@@ -123,6 +134,29 @@ final class Alerts
                 throw new BaseException(BaseError::AlertDone);
             }
             $this->store->saveState($alertId, $this->dogfight->play($alert->state, $alert->moves, $maneuver));
+        });
+    }
+
+    /**
+     * Keeps the result of a dogfight flown from the cockpit, which the browser has played.
+     *
+     * @throws BaseException when the base has no such alert, it is not a cockpit dogfight, it was not started, or it is over
+     */
+    public function finish(int $baseId, int $alertId, DogfightOutcome $outcome): void
+    {
+        $this->database->transaction(function () use ($baseId, $alertId, $outcome): void {
+            $this->bases->lockResources($baseId);
+            $alert = $this->store->find($baseId, $alertId) ?? throw new BaseException(BaseError::UnknownAlert);
+            if ($alert->kind !== AlertKind::Cockpit) {
+                throw new BaseException(BaseError::AlertWrongKind);
+            }
+            if ($alert->cockpit === null) {
+                throw new BaseException(BaseError::AlertNotStarted);
+            }
+            if ($alert->isFinished()) {
+                throw new BaseException(BaseError::AlertDone);
+            }
+            $this->store->finishCockpit($alertId, $outcome);
         });
     }
 }

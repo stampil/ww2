@@ -32,13 +32,23 @@ export function unavailableCrews(busy: BusyCrews, rests: Rest[], hangarAircraft:
 /** An alert of a flight, with the flight it belongs to. */
 export type FlightAlertOf = { alert: FlightAlert; flight: Flight }
 
+/** Whether the player has begun the mini-game of the alert. */
+export function isAlertStarted(alert: FlightAlert): boolean {
+  return alert.state !== null || alert.cockpit !== null
+}
+
+/** Whether the mini-game of the alert has been played to its end. */
+export function isAlertOver(alert: FlightAlert): boolean {
+  return (alert.state?.outcome ?? alert.cockpit?.outcome ?? null) !== null
+}
+
 /** The alerts that call the player now: due, not over, on a flight that is still in the air. */
 export function dueAlerts(flights: Flight[]): FlightAlertOf[] {
   const due: FlightAlertOf[] = []
   for (const flight of flights) {
     if (flight.remainingSeconds > 0) {
       for (const alert of flight.alerts) {
-        if (alert.dueSeconds === 0 && alert.state?.outcome == null) {
+        if (alert.dueSeconds === 0 && !isAlertOver(alert)) {
           due.push({ alert, flight })
         }
       }

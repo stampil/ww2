@@ -236,7 +236,7 @@ final class Headquarters
             }
         }
         $this->bases->addRewards($baseId, $report->suppliesWon, $report->commandPointsWon);
-        if ($report->type === MissionType::AirCombat) {
+        if ($report->type->isAirCombat()) {
             $kills = 0;
             foreach ($report->crews as $crew) {
                 if ($crew->succeeded) {

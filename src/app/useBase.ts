@@ -3,7 +3,7 @@ import type { Player } from './useAccount'
 
 export type Stock = 'fuel' | 'ammunition' | 'materials'
 export type Part = 'engine' | 'wings' | 'fuselage' | 'armament'
-export type MissionType = 'reconnaissance' | 'airCombat' | 'bombing'
+export type MissionType = 'reconnaissance' | 'airCombat' | 'fighterCombat' | 'bombing'
 
 /** A mission on the table; the category is the only one that can fly it, or null when any aircraft can. */
 export type Offer = {
@@ -24,7 +24,17 @@ export type DogfightOutcome = 'won' | 'escaped'
 export type DogfightState = { turn: number; player: DogfightPosition; enemy: DogfightPosition; outcome: DogfightOutcome | null }
 export type Maneuver = 'accelerate' | 'turnLeft' | 'turnRight' | 'slipLeft' | 'slipRight'
 /** A call to the player during a flight: a dogfight for one aircraft, that shows when `dueSeconds` is down to zero, and is won or lost in `moves` moves. */
-export type FlightAlert = { id: number; kind: 'dogfight'; aircraftId: number; dueSeconds: number; arenaSize: number; moves: number; state: DogfightState | null }
+export type FlightAlert = {
+  id: number
+  kind: 'dogfight' | 'cockpit'
+  aircraftId: number
+  dueSeconds: number
+  arenaSize: number
+  moves: number
+  state: DogfightState | null
+  /** For a dogfight flown from the cockpit: null before the player takes the controls, then how it ended once it is over. */
+  cockpit: { outcome: DogfightOutcome | null } | null
+}
 
 /** A mission under way: its crews, what each aircraft carries, the game seconds left before it is back, and its alerts. */
 export type Flight = {
@@ -273,6 +283,10 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/alerts/play`, { alertId, maneuver }))
   }
 
+  async function finishAlert(alertId: number, outcome: DogfightOutcome): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/alerts/finish`, { alertId, outcome }))
+  }
+
   async function receiveSquadron(missionId: number): Promise<string | null> {
     return receive(await request(`${BASE_URL}/missions/return`, { missionId }))
   }
@@ -323,6 +337,7 @@ export function useBase(player: Player | null) {
     launchMission,
     startAlert,
     playAlert,
+    finishAlert,
     receiveSquadron,
     inspectAircraft,
     repairAircraft,

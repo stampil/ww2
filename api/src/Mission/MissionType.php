@@ -14,6 +14,7 @@ enum MissionType: string
 {
     case Reconnaissance = 'reconnaissance';
     case AirCombat = 'airCombat';
+    case FighterCombat = 'fighterCombat';
     case Bombing = 'bombing';
 
     /**
@@ -24,6 +25,12 @@ enum MissionType: string
         $required = $this->profile()->category;
 
         return $required === null || in_array($required, $categories, true);
+    }
+
+    /** Whether the aircraft of the squadron fight enemy aircraft on this mission, which count among those the battle asks for. */
+    public function isAirCombat(): bool
+    {
+        return $this === self::AirCombat || $this === self::FighterCombat;
     }
 
     public function profile(): MissionProfile
@@ -39,7 +46,7 @@ enum MissionType: string
                 suppliesPerRiskPoint: new IntegerRange(85, 120),
                 commandPointsPerAircraft: 1,
             ),
-            self::AirCombat => new MissionProfile(
+            self::AirCombat, self::FighterCombat => new MissionProfile(
                 category: AircraftCategory::Fighter,
                 aircraftCount: new IntegerRange(1, 2),
                 durationSeconds: new IntegerRange(120, 240),

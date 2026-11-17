@@ -10,4 +10,5 @@ namespace Ww2\Mission;
 enum AlertKind: string
 {
     case Dogfight = 'dogfight';
+    case Cockpit = 'cockpit';
 }

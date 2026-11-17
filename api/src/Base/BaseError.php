@@ -31,6 +31,7 @@ enum BaseError: string
     case AlertNotDue = 'alertNotDue';
     case AlertNotStarted = 'alertNotStarted';
     case AlertDone = 'alertDone';
+    case AlertWrongKind = 'alertWrongKind';
     case NotInspected = 'notInspected';
     case NothingToInspect = 'nothingToInspect';
     case AircraftUnderInspection = 'aircraftUnderInspection';

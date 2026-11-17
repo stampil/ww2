@@ -67,6 +67,33 @@
       "role": "Bombardier moyen allemand"
     }
   },
+  "combat": {
+    "title": "Combat aérien",
+    "hint": "Tu es aux commandes face à un {{enemy}} : place-toi derrière lui et tire pour l'abattre avant la fin du temps.",
+    "controls": "Pilote avec les flèches ou en tenant le doigt sur la vue ; tire avec la barre d'espace ou le bouton.",
+    "toast": "Chasseurs ennemis en vue : {{pilot}} peut prendre les commandes.",
+    "toastResume": "Combat en cours : {{pilot}}.",
+    "take": "Piloter",
+    "enemy": "Ennemi",
+    "ammunition": "Munitions : {{count}}",
+    "fire": "Tirer",
+    "starting": "Mise en route…",
+    "won": "Avion ennemi abattu !",
+    "escaped": "L'ennemi s'est échappé.",
+    "enemies": {
+      "bf109": "Messerschmitt Bf 109",
+      "vichyD520": "Dewoitine D.520 de Vichy"
+    },
+    "pilot": {
+      "fire": "Feu !",
+      "behind": "Il est derrière toi !",
+      "left": "Tourne à gauche !",
+      "right": "Tourne à droite !",
+      "up": "Monte !",
+      "down": "Descends !",
+      "ahead": "Droit devant"
+    }
+  },
   "duel": {
     "toast": "Avion ennemi en vue : {{pilot}} peut attaquer.",
     "toastResume": "Combat en cours : {{pilot}}.",
@@ -281,7 +308,8 @@
     "mission": {
       "types": {
         "reconnaissance": "Reconnaissance",
-        "airCombat": "Combat aérien",
+        "airCombat": "Interception de bombardiers",
+        "fighterCombat": "Combat aérien",
         "bombing": "Bombardement"
       },
       "title": "Missions",
@@ -383,6 +411,7 @@
       "alertNotDue": "Cet appel n'est pas encore arrivé.",
       "alertNotStarted": "Ce combat n'a pas commencé.",
       "alertDone": "Ce combat est terminé.",
+      "alertWrongKind": "Ce combat ne se joue pas ainsi.",
       "invalidCrew": "Les équipages choisis ne conviennent pas.",
       "crewBusy": "Un pilote ou un avion est déjà en vol.",
       "aircraftNotSuited": "Cet avion ne convient pas à la mission.",

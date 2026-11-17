@@ -7,7 +7,6 @@ namespace Ww2\Mission;
 use Random\Randomizer;
 use Ww2\Base\SparePart;
 use Ww2\Mission\Dogfight\DogfightOutcome;
-use Ww2\Mission\Dogfight\DogfightState;
 use Ww2\Squadron\Aircraft;
 use Ww2\Squadron\Pilot;
 
@@ -46,7 +45,7 @@ final class MissionResolver
     /**
      * @param array<int, Pilot> $pilots the pilots of the flight, by id
      * @param array<int, Aircraft> $aircraft the aircraft of the flight, by id
-     * @param array<int, DogfightState> $duels the dogfights of the flight that were played to their end, by the id of the aircraft
+     * @param array<int, DogfightOutcome> $duels how the dogfights of the flight that were played to their end ended, by the id of the aircraft
      */
     public function resolve(Flight $flight, array $pilots, array $aircraft, array $duels = []): MissionReport
     {
@@ -54,7 +53,7 @@ final class MissionResolver
         $unplayed = [];
         foreach ($flight->crews as $crew) {
             if (isset($duels[$crew['aircraftId']])) {
-                $successes[$crew['aircraftId']] = $duels[$crew['aircraftId']]->outcome === DogfightOutcome::Won;
+                $successes[$crew['aircraftId']] = $duels[$crew['aircraftId']] === DogfightOutcome::Won;
             } else {
                 $unplayed[] = $crew;
             }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ww2\Mission;
 
 use Ww2\Mission\Dogfight\Dogfight;
+use Ww2\Mission\Dogfight\DogfightOutcome;
 use Ww2\Mission\Dogfight\DogfightState;
 
 /**
@@ -20,16 +21,23 @@ final readonly class FlightAlert
         public int $dueGameSecond,
         public int $moves,
         public ?DogfightState $state,
+        public ?CockpitDuel $cockpit,
     ) {
     }
 
     public function isFinished(): bool
     {
-        return $this->state?->outcome !== null;
+        return $this->outcome() !== null;
+    }
+
+    /** How the mini-game ended, whichever way it was played; null while it goes on or has not begun. */
+    public function outcome(): ?DogfightOutcome
+    {
+        return $this->state?->outcome ?? $this->cockpit?->outcome;
     }
 
     /**
-     * @return array{id: int, kind: string, aircraftId: int, dueSeconds: int, arenaSize: int, moves: int, state: array<string, mixed>|null}
+     * @return array{id: int, kind: string, aircraftId: int, dueSeconds: int, arenaSize: int, moves: int, state: array<string, mixed>|null, cockpit: array{outcome: string|null}|null}
      */
     public function toArray(int $gameSeconds): array
     {
@@ -41,6 +49,7 @@ final readonly class FlightAlert
             'arenaSize' => Dogfight::ARENA_SIZE,
             'moves' => $this->moves,
             'state' => $this->state?->toArray(),
+            'cockpit' => $this->cockpit === null ? null : ['outcome' => $this->cockpit->outcome?->value],
         ];
     }
 }

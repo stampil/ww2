@@ -487,6 +487,223 @@ button.base-sprite {
   }
 }
 
+// The dogfight flown from the cockpit: the view, with the gunsight, the figures, the head of the pilot and the fire button laid over it.
+.cockpit-view {
+  @include inset-frame;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 60vh;
+  margin: 0 auto;
+  overflow: hidden;
+  touch-action: none;
+  cursor: crosshair;
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.cockpit-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cockpit-hud-top {
+  @include flex($align: center, $justify: space-between, $gap: 1rem);
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  padding: 0.4rem 0.75rem;
+  background: rgba($outline, 0.55);
+  color: $text;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.cockpit-health {
+  display: inline-block;
+  width: 6rem;
+  height: 0.6rem;
+  margin-left: 0.5rem;
+  border: 2px solid $outline;
+  background: $panel;
+  vertical-align: middle;
+
+  span {
+    display: block;
+    height: 100%;
+    background: $alarm;
+  }
+}
+
+.cockpit-gunsight {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3.4rem;
+  height: 3.4rem;
+  border: 2px solid rgba($text, 0.7);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background: rgba($text, 0.7);
+  }
+
+  &::before {
+    top: 50%;
+    right: -0.6rem;
+    left: -0.6rem;
+    height: 2px;
+  }
+
+  &::after {
+    top: -0.6rem;
+    bottom: -0.6rem;
+    left: 50%;
+    width: 2px;
+  }
+
+  &[data-in-sight='true'] {
+    border-color: $alarm;
+    box-shadow: 0 0 0.8rem $alarm;
+
+    &::before,
+    &::after {
+      background: $alarm;
+    }
+  }
+}
+
+.cockpit-fire {
+  @include button;
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  min-width: 6rem;
+  min-height: 3rem;
+  background: $alarm;
+  color: $text;
+  font-size: 1rem;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.cockpit-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  color: $text;
+  transform: translate(-50%, -50%);
+}
+
+.cockpit-result {
+  @include frame;
+  @include flex($direction: column, $align: center, $gap: 0.75rem);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 1rem 1.5rem;
+  transform: translate(-50%, -50%);
+
+  strong {
+    font-family: $title-font;
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+  }
+
+  &[data-outcome='won'] strong {
+    color: $go;
+  }
+
+  &[data-outcome='escaped'] strong {
+    color: $alarm;
+  }
+}
+
+// The head of the pilot, at the lower left of the view: it turns toward the enemy, and its words say which way to turn.
+.pilot-head {
+  @include flex($direction: column, $align: center, $gap: 0.15rem);
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.75rem;
+  width: 6.5rem;
+
+  svg {
+    width: 100%;
+    height: auto;
+  }
+
+  &[data-direction='fire'] .pilot-head-words {
+    background: $alarm;
+    color: $text;
+  }
+}
+
+.pilot-head-words {
+  padding: 0.1rem 0.4rem;
+  background: rgba($outline, 0.7);
+  color: $gold;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pilot-head-frame {
+  fill: rgba($outline, 0.45);
+  stroke: $frame;
+  stroke-width: 2;
+}
+
+.pilot-head-overalls {
+  fill: #4b5d6b;
+}
+
+.pilot-head-skin {
+  fill: #dcae85;
+}
+
+.pilot-head-cap {
+  fill: #6b6a4a;
+}
+
+.pilot-head-strap {
+  fill: #3a3426;
+}
+
+.pilot-head-goggles {
+  fill: #9fc3c9;
+  stroke: #1f1c15;
+  stroke-width: 1.5;
+}
+
+.pilot-head-eye {
+  fill: #f4f1e8;
+  stroke: #3a3426;
+  stroke-width: 0.6;
+}
+
+.pilot-head-pupil {
+  fill: #1a1612;
+}
+
+.pilot-head-mouth {
+  fill: none;
+  stroke: #6e3b2c;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
 .game-tools {
   @include flex($justify: flex-end);
   margin: 0.5rem 0;

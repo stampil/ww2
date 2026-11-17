@@ -55,6 +55,21 @@ function fractionOf(random: SeededRandom): number {
   return random.integer(0, RANDOM_RESOLUTION) / RANDOM_RESOLUTION
 }
 
+/** The inside of a sphere painted from the horizon (pale) up to the zenith (deep blue), above and below. */
+export function createSkyDome(): THREE.Mesh {
+  const geometry = new THREE.SphereGeometry(DOME_RADIUS_METERS, DOME_SEGMENTS, DOME_SEGMENTS)
+  const positions = geometry.getAttribute('position')
+  const colors: number[] = []
+  const color = new THREE.Color()
+  for (let index = 0; index < positions.count; index += 1) {
+    const heightShare = Math.abs(positions.getZ(index)) / DOME_RADIUS_METERS
+    color.copy(HORIZON_COLOR).lerp(ZENITH_COLOR, heightShare)
+    colors.push(color.r, color.g, color.b)
+  }
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+  return new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false }))
+}
+
 /**
  * A sky in three dimensions: a dome from deep blue to a pale horizon, with clouds made of soft puffs at different depths that drift
  * toward the tail of an aircraft flying nose along +y, so that they go by with the perspective of a real flight.
@@ -64,7 +79,7 @@ export class Sky {
   private readonly clouds: Cloud[] = []
 
   constructor(private readonly layout: SkyLayout) {
-    this.object.add(this.dome())
+    this.object.add(createSkyDome())
     const random = new SeededRandom(CLOUD_SEED)
     const puff = new THREE.IcosahedronGeometry(PUFF_RADIUS_METERS, 2)
     const material = new THREE.MeshStandardMaterial({ color: CLOUD_COLOR, roughness: 1, transparent: true, opacity: CLOUD_OPACITY, fog: false })
@@ -107,20 +122,5 @@ export class Sky {
 
   private between(random: SeededRandom, range: Range): number {
     return range.from + fractionOf(random) * (range.to - range.from)
-  }
-
-  /** The inside of a sphere painted from the horizon (pale) up to the zenith (deep blue), above and below. */
-  private dome(): THREE.Mesh {
-    const geometry = new THREE.SphereGeometry(DOME_RADIUS_METERS, DOME_SEGMENTS, DOME_SEGMENTS)
-    const positions = geometry.getAttribute('position')
-    const colors: number[] = []
-    const color = new THREE.Color()
-    for (let index = 0; index < positions.count; index += 1) {
-      const heightShare = Math.abs(positions.getZ(index)) / DOME_RADIUS_METERS
-      color.copy(HORIZON_COLOR).lerp(ZENITH_COLOR, heightShare)
-      colors.push(color.r, color.g, color.b)
-    }
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
-    return new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false }))
   }
 }

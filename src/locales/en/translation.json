@@ -67,6 +67,33 @@
       "role": "German medium bomber"
     }
   },
+  "combat": {
+    "title": "Air combat",
+    "hint": "You are at the controls facing a {{enemy}}: get behind it and fire to shoot it down before time runs out.",
+    "controls": "Steer with the arrow keys or by holding a finger on the view; fire with the space bar or the button.",
+    "toast": "Enemy fighters in sight: {{pilot}} can take the controls.",
+    "toastResume": "Dogfight under way: {{pilot}}.",
+    "take": "Fly",
+    "enemy": "Enemy",
+    "ammunition": "Ammunition: {{count}}",
+    "fire": "Fire",
+    "starting": "Starting up…",
+    "won": "Enemy aircraft shot down!",
+    "escaped": "The enemy got away.",
+    "enemies": {
+      "bf109": "Messerschmitt Bf 109",
+      "vichyD520": "Vichy Dewoitine D.520"
+    },
+    "pilot": {
+      "fire": "Fire!",
+      "behind": "He is behind you!",
+      "left": "Turn left!",
+      "right": "Turn right!",
+      "up": "Climb!",
+      "down": "Dive!",
+      "ahead": "Straight ahead"
+    }
+  },
   "duel": {
     "toast": "Enemy aircraft in sight: {{pilot}} can attack.",
     "toastResume": "Dogfight under way: {{pilot}}.",
@@ -281,7 +308,8 @@
     "mission": {
       "types": {
         "reconnaissance": "Reconnaissance",
-        "airCombat": "Air combat",
+        "airCombat": "Bomber interception",
+        "fighterCombat": "Air combat",
         "bombing": "Bombing"
       },
       "title": "Missions",
@@ -383,6 +411,7 @@
       "alertNotDue": "This call has not come yet.",
       "alertNotStarted": "This dogfight has not begun.",
       "alertDone": "This dogfight is over.",
+      "alertWrongKind": "This combat is not played that way.",
       "invalidCrew": "The crews chosen do not fit.",
       "crewBusy": "A pilot or an aircraft is already on a flight.",
       "aircraftNotSuited": "This aircraft does not suit the mission.",

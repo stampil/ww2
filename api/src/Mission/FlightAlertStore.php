@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ww2\Mission;
 
 use Ww2\Database\Database;
+use Ww2\Mission\Dogfight\DogfightOutcome;
 use Ww2\Mission\Dogfight\DogfightState;
 
 /**
@@ -12,7 +13,7 @@ use Ww2\Mission\Dogfight\DogfightState;
  */
 final class FlightAlertStore
 {
-    private const COLUMNS = 'flight_alerts.id, flight_alerts.mission_id, flight_alerts.aircraft_id, flight_alerts.kind, flight_alerts.due_game_second, flight_alerts.moves, flight_alerts.state';
+    private const COLUMNS = 'flight_alerts.id, flight_alerts.mission_id, flight_alerts.aircraft_id, flight_alerts.kind, flight_alerts.due_game_second, flight_alerts.moves, flight_alerts.state, cockpit_duels.alert_id AS cockpit_alert_id, cockpit_duels.outcome AS cockpit_outcome';
 
     public function __construct(private readonly Database $database)
     {
@@ -33,6 +34,7 @@ final class FlightAlertStore
     {
         $rows = $this->database->fetchAll(
             'SELECT ' . self::COLUMNS . ' FROM flight_alerts JOIN missions ON missions.id = flight_alerts.mission_id
+             LEFT JOIN cockpit_duels ON cockpit_duels.alert_id = flight_alerts.id
              WHERE missions.base_id = :base_id ORDER BY flight_alerts.id',
             ['base_id' => $baseId],
         );
@@ -44,6 +46,7 @@ final class FlightAlertStore
     {
         $rows = $this->database->fetchAll(
             'SELECT ' . self::COLUMNS . ' FROM flight_alerts JOIN missions ON missions.id = flight_alerts.mission_id
+             LEFT JOIN cockpit_duels ON cockpit_duels.alert_id = flight_alerts.id
              WHERE missions.base_id = :base_id AND flight_alerts.id = :alert_id',
             ['base_id' => $baseId, 'alert_id' => $alertId],
         );
@@ -59,6 +62,18 @@ final class FlightAlertStore
         );
     }
 
+    /** Notes that the player has taken the controls; a second call changes nothing. */
+    public function startCockpit(int $alertId): void
+    {
+        $this->database->execute('INSERT IGNORE INTO cockpit_duels (alert_id) VALUES (:alert_id)', ['alert_id' => $alertId]);
+    }
+
+    /** Keeps the result of a dogfight flown from the cockpit, if it has none yet. */
+    public function finishCockpit(int $alertId, DogfightOutcome $outcome): void
+    {
+        $this->database->execute('UPDATE cockpit_duels SET outcome = :outcome WHERE alert_id = :alert_id AND outcome IS NULL', ['outcome' => $outcome->value, 'alert_id' => $alertId]);
+    }
+
     /**
      * @param array<string, mixed> $row
      */
@@ -72,6 +87,7 @@ final class FlightAlertStore
             (int) $row['due_game_second'],
             (int) $row['moves'],
             $row['state'] === null ? null : DogfightState::fromArray(json_decode((string) $row['state'], true, 512, JSON_THROW_ON_ERROR)),
+            $row['cockpit_alert_id'] === null ? null : new CockpitDuel($row['cockpit_outcome'] === null ? null : DogfightOutcome::from((string) $row['cockpit_outcome'])),
         );
     }
 }

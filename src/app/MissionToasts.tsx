@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { dueAlerts } from './flights'
+import { dueAlerts, isAlertStarted } from './flights'
 import Icon from './Icon'
 import type { Flight, Squadron } from './useBase'
 
@@ -24,12 +24,13 @@ function MissionToasts({ flights, squadron, onOpen }: Props) {
       {due.map(({ alert, flight }) => {
         const crew = flight.crews.find((candidate) => candidate.aircraftId === alert.aircraftId)!
         const pilot = squadron.pilots.find((candidate) => candidate.id === crew.pilotId)!
-        const isStarted = alert.state !== null
+        const isStarted = isAlertStarted(alert)
+        const namespace = alert.kind === 'cockpit' ? 'combat' : 'duel'
         return (
           <button key={alert.id} type="button" className="mission-toast" onClick={() => onOpen(alert.id)}>
             <Icon name="warning" />
-            <span>{t(isStarted ? 'duel.toastResume' : 'duel.toast', { pilot: pilot.name })}</span>
-            <strong>{t(isStarted ? 'duel.resume' : 'duel.attack')}</strong>
+            <span>{t(isStarted ? `${namespace}.toastResume` : `${namespace}.toast`, { pilot: pilot.name })}</span>
+            <strong>{t(isStarted ? 'duel.resume' : `${namespace}.take`)}</strong>
           </button>
         )
       })}

@@ -24,6 +24,7 @@ use Ww2\Base\Upgrade;
 use Ww2\Base\Upgrades;
 use Ww2\Base\Warehouse;
 use Ww2\Base\Workshop;
+use Ww2\Mission\Dogfight\DogfightOutcome;
 use Ww2\Mission\Dogfight\Maneuver;
 use Ww2\World\Bases;
 
@@ -152,6 +153,21 @@ final class BaseController
         $alertId = JsonRequestBody::integers($request, 'alertId')['alertId'];
         $maneuver = Maneuver::tryFrom(JsonRequestBody::texts($request, 'maneuver')['maneuver']) ?? throw new BadRequestException('invalidBody');
         $this->carryOut(fn () => $this->alerts->play($baseId, $alertId, $maneuver));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function finishAlert(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ongoingBattleBaseId();
+        $alertId = JsonRequestBody::integers($request, 'alertId')['alertId'];
+        $outcome = DogfightOutcome::tryFrom(JsonRequestBody::texts($request, 'outcome')['outcome']) ?? throw new BadRequestException('invalidBody');
+        $this->carryOut(fn () => $this->alerts->finish($baseId, $alertId, $outcome));
 
         return $this->overview->of($baseId);
     }

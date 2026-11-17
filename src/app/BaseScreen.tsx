@@ -7,6 +7,7 @@ import BaseMap from './BaseMap'
 import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
 import type { Arrival, Departure } from './AirfieldView'
+import CockpitCombatWindow from './CockpitCombatWindow'
 import DogfightWindow from './DogfightWindow'
 import { busyCrews, findAlert, unavailableCrews } from './flights'
 import { damageLevelOf } from '../three/damageStages'
@@ -61,6 +62,7 @@ function BaseScreen({ player }: { player: Player }) {
     launchMission,
     startAlert,
     playAlert,
+    finishAlert,
     receiveSquadron,
     inspectAircraft,
     repairAircraft,
@@ -170,6 +172,14 @@ function BaseScreen({ player }: { player: Player }) {
   }
 
   const duel = duelAlertId === null ? undefined : findAlert(flights, duelAlertId)
+  const duelCrewPlace = duel?.flight.crews.find((crew) => crew.aircraftId === duel.alert.aircraftId)
+  const duelCrew =
+    duelCrewPlace === undefined
+      ? undefined
+      : {
+          pilot: base.squadron.pilots.find((pilot) => pilot.id === duelCrewPlace.pilotId)!,
+          aircraft: base.squadron.aircraft.find((aircraft) => aircraft.id === duelCrewPlace.aircraftId)!,
+        }
 
   const guideStep = guideStepOf(guideStatus, { flights, eventCount: base.events.length, hangarAircraft })
   const markedBuilding = guideStep === null ? undefined : markedBuildingOf(guideStep)
@@ -268,11 +278,22 @@ function BaseScreen({ player }: { player: Player }) {
         </GameWindow>
       )}
 
-      {duel !== undefined && (
+      {duel !== undefined && duel.alert.kind === 'dogfight' && (
         <DogfightWindow
           alert={duel.alert}
           onStart={(alertId) => order(startAlert(alertId))}
           onPlay={(alertId, maneuver) => order(playAlert(alertId, maneuver))}
+          onClose={() => setDuelAlertId(null)}
+        />
+      )}
+      {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
+        <CockpitCombatWindow
+          alert={duel.alert}
+          ammunitionLoaded={duel.flight.ammunitionLoaded}
+          maneuverability={duelCrew.aircraft.model.maneuverability}
+          accuracy={duelCrew.pilot.effectiveAccuracy}
+          onStart={(alertId) => order(startAlert(alertId))}
+          onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}
           onClose={() => setDuelAlertId(null)}
         />
       )}

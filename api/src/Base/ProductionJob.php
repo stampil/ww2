@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ww2\Base;
 
 /**
- * A part being made at the workshop, with the seconds left by the clock of the database.
+ * A part being made at the workshop, with the game seconds left before it is done.
  */
 final readonly class ProductionJob
 {

@@ -15,6 +15,7 @@ use Ww2\Base\BaseFounder;
 use Ww2\Base\BaseStore;
 use Ww2\Base\Warehouse;
 use Ww2\Base\Workshop;
+use Ww2\Clock\GameClockStore;
 use Ww2\Database\DatabaseSettings;
 use Ww2\Database\PdoDatabase;
 use Ww2\Http\AccountController;
@@ -42,8 +43,9 @@ $session = new PlayerSession();
 $squadrons = new SquadronStore($database);
 $founder = new SquadronFounder($database, $squadrons);
 $bases = new BaseStore($database);
-$baseFounder = new BaseFounder($bases);
-$baseController = new BaseController($bases, new Warehouse($database, $bases), new Workshop($database, $bases), $session);
+$clocks = new GameClockStore($database);
+$baseFounder = new BaseFounder($bases, $clocks);
+$baseController = new BaseController($bases, new Warehouse($database, $bases), new Workshop($database, $bases, $clocks), $clocks, $session);
 
 $router = new Router();
 $router->setStrategy(new JsonStrategy($psr17Factory));
@@ -56,6 +58,7 @@ $router->group('/api', function (RouteGroup $routes) use ($database, $accounts, 
     $routes->get('/base', [$baseController, 'show']);
     $routes->post('/base/purchase', [$baseController, 'buy']);
     $routes->post('/base/production', [$baseController, 'produce']);
+    $routes->post('/base/clock', [$baseController, 'setPaused']);
     $sessionController = new SessionController($accounts, $players, $session);
     $routes->get('/session', [$sessionController, 'show']);
     $routes->post('/session', [$sessionController, 'signIn']);

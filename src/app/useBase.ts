@@ -8,6 +8,7 @@ export type Base = {
   terrainPlan: string
   resources: { supplies: number; fuel: number; ammunition: number; materials: number; commandPoints: number }
   buildings: string[]
+  clock: { gameTime: string; paused: boolean }
   warehouse: { capacity: number; prices: Record<Stock, number> }
   workshop: {
     benches: number
@@ -23,6 +24,8 @@ type ErrorPayload = { reason_phrase: string }
 const BASE_URL = '/api/base'
 const API_DOWN = 'apiDown'
 const MILLISECONDS_PER_SECOND = 1000
+// The API writes the game time without a time zone; read as UTC it shows as written.
+const UTC_DESIGNATOR = 'Z'
 
 async function request(url: string, body?: object): Promise<{ base: Base } | { error: string }> {
   try {
@@ -40,7 +43,13 @@ async function request(url: string, body?: object): Promise<{ base: Base } | { e
   }
 }
 
-/** The base of the signed-in player, the orders they can give, and the seconds left on each part being made. */
+/** The game clock of the base, moved on by the seconds gone by since the API sent it. */
+function clockAfter(base: Base, elapsedSeconds: number): { gameTime: Date; paused: boolean } {
+  const receivedGameTime = Date.parse(`${base.clock.gameTime}${UTC_DESIGNATOR}`)
+  return { gameTime: new Date(receivedGameTime + elapsedSeconds * MILLISECONDS_PER_SECOND), paused: base.clock.paused }
+}
+
+/** The base of the signed-in player, the orders they can give, the game clock, and the seconds left on each part being made. */
 export function useBase(player: Player | null) {
   const [base, setBase] = useState<Base | null>(null)
   const [receivedAt, setReceivedAt] = useState(0)
@@ -69,9 +78,11 @@ export function useBase(player: Player | null) {
     return () => clearInterval(timer)
   }, [])
 
-  const elapsedSeconds = Math.floor((now - receivedAt) / MILLISECONDS_PER_SECOND)
+  const isRunning = base !== null && !base.clock.paused
+  const elapsedSeconds = isRunning ? Math.floor((now - receivedAt) / MILLISECONDS_PER_SECOND) : 0
   const jobs = (base?.workshop.jobs ?? []).map((job) => ({ ...job, remainingSeconds: Math.max(0, job.remainingSeconds - elapsedSeconds) }))
   const hasFinishedJob = jobs.some((job) => job.remainingSeconds === 0)
+  const clock = base === null ? null : clockAfter(base, elapsedSeconds)
 
   useEffect(() => {
     if (hasFinishedJob) {
@@ -88,5 +99,9 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/production`, { part, withMechanic }))
   }
 
-  return { base, jobs, buy, produce }
+  async function setPaused(paused: boolean): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/clock`, { paused }))
+  }
+
+  return { base, jobs, clock, buy, produce, setPaused }
 }

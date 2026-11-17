@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { TERRAIN_PLANS } from '../plans/terrainPlan'
 import type { BuildingName } from '../plans/terrainPlan'
 import BaseMap from './BaseMap'
+import GameClock from './GameClock'
 import HangarPanel from './HangarPanel'
 import HeadquartersPanel from './HeadquartersPanel'
 import type { Player } from './useAccount'
@@ -13,15 +14,15 @@ import WorkshopPanel from './WorkshopPanel'
 
 const RESOURCES = ['supplies', 'fuel', 'ammunition', 'materials', 'commandPoints'] as const
 
-/** The base of the player who is signed in: a band of resources, the airfield, and the panel of the building opened on it. */
+/** The base of the player who is signed in: a band of the game clock and the resources, the airfield, and the panel of the building opened on it. */
 function BaseScreen({ player }: { player: Player }) {
   const { t } = useTranslation()
-  const { base, jobs, buy, produce } = useBase(player)
+  const { base, jobs, clock, buy, produce, setPaused } = useBase(player)
   const squadron = useSquadron(player)
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
 
-  if (base === null) {
+  if (base === null || clock === null) {
     return null
   }
 
@@ -36,14 +37,17 @@ function BaseScreen({ player }: { player: Player }) {
   return (
     <section className="base" aria-label={t('base.title')}>
       <h2>{t('base.title')}</h2>
-      <ul className="resources">
-        {RESOURCES.map((resource) => (
-          <li key={resource}>
-            <span>{t(`base.resources.${resource}`)}</span>
-            <strong>{base.resources[resource]}</strong>
-          </li>
-        ))}
-      </ul>
+      <div className="base-band">
+        <GameClock gameTime={clock.gameTime} paused={clock.paused} onPausedChange={(paused) => void order(setPaused(paused))} />
+        <ul className="resources">
+          {RESOURCES.map((resource) => (
+            <li key={resource}>
+              <span>{t(`base.resources.${resource}`)}</span>
+              <strong>{base.resources[resource]}</strong>
+            </li>
+          ))}
+        </ul>
+      </div>
       {errorCode !== null && (
         <p className="account-error" role="alert">
           {t(`base.errors.${errorCode}`)}

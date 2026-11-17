@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Ww2\Base;
 
+use Ww2\Clock\GameClockStore;
+
 /**
- * Gives a new player a base to start with: the starting airfield, some supplies and stocks, and no command points yet.
+ * Gives a new player a base to start with: the starting airfield, some supplies and stocks, no command points yet,
+ * and a game clock that runs from the start of the battle.
  */
 final class BaseFounder
 {
@@ -16,7 +19,7 @@ final class BaseFounder
     private const STARTING_MATERIALS = 200;
     private const STARTING_COMMAND_POINTS = 0;
 
-    public function __construct(private readonly BaseStore $bases)
+    public function __construct(private readonly BaseStore $bases, private readonly GameClockStore $clocks)
     {
     }
 
@@ -29,5 +32,6 @@ final class BaseFounder
             self::STARTING_MATERIALS,
             self::STARTING_COMMAND_POINTS,
         ), self::STARTING_TERRAIN_PLAN);
+        $this->clocks->start($playerId);
     }
 }

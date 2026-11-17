@@ -111,6 +111,10 @@
   "base": {
     "title": "Base",
     "map": "Plan de la base",
+    "clock": {
+      "label": "Horloge de jeu",
+      "pause": "Pause"
+    },
     "resources": {
       "supplies": "Ravitaillement",
       "fuel": "Carburant",

@@ -83,31 +83,32 @@ final class BaseStore
         );
     }
 
-    public function addJob(int $playerId, SparePart $part, int $seconds, bool $hasMechanic): void
+    public function addJob(int $playerId, SparePart $part, int $finishGameSecond, bool $hasMechanic): void
     {
         $this->database->execute(
-            'INSERT INTO production_jobs (player_id, part, has_mechanic, finish_at)
-             VALUES (:player_id, :part, :has_mechanic, DATE_ADD(NOW(), INTERVAL :seconds SECOND))',
-            ['player_id' => $playerId, 'part' => $part->value, 'has_mechanic' => (int) $hasMechanic, 'seconds' => $seconds],
+            'INSERT INTO production_jobs (player_id, part, has_mechanic, finish_game_second)
+             VALUES (:player_id, :part, :has_mechanic, :finish_game_second)',
+            ['player_id' => $playerId, 'part' => $part->value, 'has_mechanic' => (int) $hasMechanic, 'finish_game_second' => $finishGameSecond],
         );
     }
 
     /**
+     * @param int $gameSeconds the game time now, which the jobs are counted against
      * @return list<ProductionJob> the parts still being made, the next to finish first
      */
-    public function runningJobs(int $playerId): array
+    public function runningJobs(int $playerId, int $gameSeconds): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT id, part, has_mechanic, TIMESTAMPDIFF(SECOND, NOW(), finish_at) AS remaining_seconds
-             FROM production_jobs WHERE player_id = :player_id AND finish_at > NOW() ORDER BY finish_at',
-            ['player_id' => $playerId],
+            'SELECT id, part, has_mechanic, finish_game_second
+             FROM production_jobs WHERE player_id = :player_id AND finish_game_second > :game_seconds ORDER BY finish_game_second',
+            ['player_id' => $playerId, 'game_seconds' => $gameSeconds],
         );
 
         return array_map(
             static fn (array $row): ProductionJob => new ProductionJob(
                 (int) $row['id'],
                 SparePart::from((string) $row['part']),
-                (int) $row['remaining_seconds'],
+                (int) $row['finish_game_second'] - $gameSeconds,
                 (bool) $row['has_mechanic'],
             ),
             $rows,
@@ -115,13 +116,15 @@ final class BaseStore
     }
 
     /**
+     * @param int $gameSeconds the game time now, which the jobs are counted against
      * @return array<string, int> how many parts of each kind are finished, by the name of the part
      */
-    public function readyParts(int $playerId): array
+    public function readyParts(int $playerId, int $gameSeconds): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT part, COUNT(*) AS total FROM production_jobs WHERE player_id = :player_id AND finish_at <= NOW() GROUP BY part',
-            ['player_id' => $playerId],
+            'SELECT part, COUNT(*) AS total FROM production_jobs
+             WHERE player_id = :player_id AND finish_game_second <= :game_seconds GROUP BY part',
+            ['player_id' => $playerId, 'game_seconds' => $gameSeconds],
         );
         $ready = array_fill_keys(array_map(static fn (SparePart $part): string => $part->value, SparePart::cases()), 0);
         foreach ($rows as $row) {

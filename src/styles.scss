@@ -379,6 +379,11 @@ button.base-sprite {
   margin-top: 1.5rem;
 }
 
+.base-band {
+  @include flex($align: center, $gap: 0.75rem 1.5rem);
+  flex-wrap: wrap;
+}
+
 .cards,
 .resources,
 .jobs {
@@ -520,8 +525,18 @@ button.base-sprite {
 }
 
 .livery-switch,
-.control-buttons {
+.control-buttons,
+.game-clock {
   @include chip-row;
+}
+
+.game-clock {
+  align-items: center;
+
+  time {
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .footer {

@@ -18,9 +18,10 @@ use Ww2\Base\SparePart;
 use Ww2\Base\Stock;
 use Ww2\Base\Warehouse;
 use Ww2\Base\Workshop;
+use Ww2\Clock\GameClockStore;
 
 /**
- * Shows the base of the player who is signed in, and takes their orders: buy a stock, make a spare part.
+ * Shows the base of the player who is signed in, and takes their orders: buy a stock, make a spare part, pause or resume the clock.
  */
 final class BaseController
 {
@@ -28,6 +29,7 @@ final class BaseController
         private readonly BaseStore $bases,
         private readonly Warehouse $warehouse,
         private readonly Workshop $workshop,
+        private readonly GameClockStore $clocks,
         private readonly PlayerSession $session,
     ) {
     }
@@ -73,6 +75,24 @@ final class BaseController
         return $this->overview($playerId);
     }
 
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function setPaused(ServerRequestInterface $request): array
+    {
+        $playerId = $this->signedInPlayerId();
+        $paused = JsonRequestBody::booleans($request, 'paused')['paused'];
+        if ($paused) {
+            $this->clocks->pause($playerId);
+        } else {
+            $this->clocks->resume($playerId);
+        }
+
+        return $this->overview($playerId);
+    }
+
     private function signedInPlayerId(): int
     {
         $playerId = $this->session->playerId();
@@ -103,12 +123,15 @@ final class BaseController
      */
     private function overview(int $playerId): array
     {
+        $clock = $this->clocks->of($playerId);
+
         return [
             'terrainPlan' => $this->bases->terrainPlanOf($playerId),
             'resources' => $this->bases->resourcesOf($playerId)->toArray(),
             'buildings' => array_map(static fn (Building $building): string => $building->value, Building::cases()),
             'warehouse' => $this->warehouse->describe(),
-            'workshop' => $this->workshop->describe($playerId),
+            'clock' => $clock->toArray(),
+            'workshop' => $this->workshop->describe($playerId, $clock),
         ];
     }
 }

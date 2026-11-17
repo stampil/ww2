@@ -41,5 +41,18 @@
   "cockpit": {
     "title": "The cockpit in 3D",
     "hint": "Drag to turn the cockpit"
+  },
+  "damage": {
+    "label": "Damage",
+    "inflict": "Inflict damage",
+    "repair": "Repair",
+    "status": "Damage: {{stage}} ({{level}}/{{max}})",
+    "stage": {
+      "none": "intact",
+      "bullets": "bullet hits",
+      "shrapnel": "shrapnel",
+      "wrecked": "wrecked",
+      "destroyed": "destroyed"
+    }
   }
 }

@@ -66,7 +66,7 @@ const THRESHOLD_BAR_OFFSETS = [-0.19, -0.07, 0.07, 0.19]
 const THRESHOLD_START_RATIO = 0.6
 const THRESHOLD_END_RATIO = 0.72
 const THRESHOLD_BAR_RATIO = 1 / 32
-const BUSHES = [
+export const BUSHES = [
   { x: 0.38, y: 0.4, radius: 0.1 },
   { x: 0.5, y: 0.33, radius: 0.08 },
   { x: 0.58, y: 0.5, radius: 0.1 },

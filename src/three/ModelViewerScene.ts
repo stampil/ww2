@@ -40,6 +40,14 @@ export class ModelViewerScene extends OrbitViewScene {
     this.aircraft.setControl(control, isActive)
   }
 
+  inflictDamage(): number {
+    return this.aircraft.inflictDamage()
+  }
+
+  repair(): void {
+    this.aircraft.repair()
+  }
+
   dispose(): void {
     super.dispose()
     this.liveries.dispose()

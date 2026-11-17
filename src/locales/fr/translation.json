@@ -41,5 +41,18 @@
   "cockpit": {
     "title": "Le cockpit en 3D",
     "hint": "Faites glisser pour tourner le cockpit"
+  },
+  "damage": {
+    "label": "Dégâts",
+    "inflict": "Infliger des dégâts",
+    "repair": "Réparer",
+    "status": "Dégâts : {{stage}} ({{level}}/{{max}})",
+    "stage": {
+      "none": "intact",
+      "bullets": "impacts de balles",
+      "shrapnel": "éclats d'obus",
+      "wrecked": "ravagé",
+      "destroyed": "détruit"
+    }
   }
 }

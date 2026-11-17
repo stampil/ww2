@@ -1,3 +1,9 @@
+export type Range = { min: number; max: number }
+
+export function randomBetween(range: Range): number {
+  return range.min + Math.random() * (range.max - range.min)
+}
+
 function approach(value: number, target: number, maxStep: number): number {
   if (Math.abs(target - value) <= maxStep) {
     return target

@@ -256,6 +256,11 @@ h1 {
       background: color-mix(in srgb, var(--accent) 14%, transparent);
       color: var(--accent);
     }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.45;
+    }
   }
 }
 

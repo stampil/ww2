@@ -1,7 +1,10 @@
 import * as THREE from 'three'
 import { RUNWAY_TILE_COUNT, TILE_SIZE_METERS } from './airfield'
+import { Bushes } from './Bushes'
+import type { BushPlacement } from './Bushes'
 import { renderTileImage, TILE_IMAGE_PIXELS } from './tileImages'
 import type { TerrainTextures } from './tileImages'
+import { BUSHES } from './tiles'
 import type { Tile } from './tiles'
 
 const COLUMNS = 14
@@ -12,6 +15,7 @@ const GRASS_URL = '/textures/herbe.png'
 const CONCRETE_URL = '/textures/beton.png'
 const GROUND_CELLS = 200
 const GROUND_DEPTH_METERS = 0.1
+const BUSH_TURN_STEP_RADIANS = 2.4
 const BUSH_POSITIONS = [
   { row: 1, column: 3 },
   { row: 7, column: 1 },
@@ -53,6 +57,20 @@ function buildTileMap(): Tile[][] {
   return tiles
 }
 
+function tileCenter(row: number, column: number): THREE.Vector2 {
+  return new THREE.Vector2((column - RUNWAY_FIRST_COLUMN + 0.5) * TILE_SIZE_METERS, (RUNWAY_ROW - row) * TILE_SIZE_METERS)
+}
+
+/** One 3D bush on every spot where the bushes tile paints one, as wide as the painted one, turned differently each time. */
+function bushesOnTile(center: THREE.Vector2, tileNumber: number): BushPlacement[] {
+  return BUSHES.map((bush, index) => ({
+    x: center.x + (bush.x - 0.5) * TILE_SIZE_METERS,
+    y: center.y + (0.5 - bush.y) * TILE_SIZE_METERS,
+    widthMeters: 2 * bush.radius * TILE_SIZE_METERS,
+    turnRadians: (tileNumber + index) * BUSH_TURN_STEP_RADIANS,
+  }))
+}
+
 /** The ground: a map of 2D tiles, one textured square each, so any tile can be moved or turned, on a vast grass plain. */
 export class Terrain {
   readonly object = new THREE.Group()
@@ -67,6 +85,7 @@ export class Terrain {
     this.addGrassPlain(grass)
     const geometry = new THREE.PlaneGeometry(TILE_SIZE_METERS, TILE_SIZE_METERS)
     const materials = new Map<string, THREE.MeshBasicMaterial>()
+    const bushPlacements: BushPlacement[] = []
     buildTileMap().forEach((rowTiles, row) => {
       rowTiles.forEach((tile, column) => {
         const key = `${tile.kind}:${tile.quarterTurns}`
@@ -78,10 +97,15 @@ export class Terrain {
           materials.set(key, material)
         }
         const mesh = new THREE.Mesh(geometry, material)
-        mesh.position.set((column - RUNWAY_FIRST_COLUMN + 0.5) * TILE_SIZE_METERS, (RUNWAY_ROW - row) * TILE_SIZE_METERS, 0)
+        const center = tileCenter(row, column)
+        mesh.position.set(center.x, center.y, 0)
         this.object.add(mesh)
+        if (tile.kind === 'bushes') {
+          bushPlacements.push(...bushesOnTile(center, row * COLUMNS + column))
+        }
       })
     })
+    this.object.add(new Bushes(bushPlacements).object)
   }
 
   /** The grass texture repeated far past the tiles, in step with the grass of the tiles, so the ground never ends. */

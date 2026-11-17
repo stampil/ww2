@@ -2,11 +2,16 @@ import * as THREE from 'three'
 import { buildGeometry, buildMaterials, loadModelData } from './ac3d'
 import type { AircraftState } from './aircraftState'
 import { CockpitModel } from './CockpitModel'
+import { DamageEffects } from './DamageEffects'
+import { DamagePainter } from './DamagePainter'
+import { DESTROYED_LEVEL } from './damageStages'
+import { Debris } from './Debris'
 import { directionFromFlightGear, pointFromFlightGear } from './flightGearFrame'
 import { EasedValue } from './motion'
 
 const MODEL_NAME = 'd520'
 const BLADES_PART = 'helice'
+const SPINNER_PART = 'bol'
 const BLUR_PART = 'propblur'
 const CANOPY_PARTS = ['canopy', 'tourcanopy']
 const DEGREES = Math.PI / 180
@@ -107,6 +112,8 @@ const GEAR_SIDES = [
 export class D520Model {
   readonly object = new THREE.Group()
   private readonly cockpit = new CockpitModel()
+  private readonly effects = new DamageEffects()
+  private readonly debris = new Debris()
   private readonly parts = new Map<string, THREE.Mesh>()
   private readonly surfaceHinges = new Map<SurfaceName, Hinge>()
   private readonly gearSides: GearSideHinges[] = []
@@ -125,18 +132,47 @@ export class D520Model {
   private blurMaterial: THREE.MeshStandardMaterial | undefined
   private blurOpacity = 0
   private texture: THREE.Texture | undefined
+  private liveryTexture: THREE.Texture | undefined
+  private damagePainter: DamagePainter | undefined
+  private damageTexture: THREE.CanvasTexture | undefined
+  private damageLevel = 0
   private wheelAngle = 0
   private deflection = { aileron: 0, rudder: 0, elevator: 0 }
   private sweepPhase = 0
 
   constructor() {
     this.object.add(this.cockpit.object)
+    this.object.add(this.effects.object)
     void this.load()
   }
 
   setLivery(texture: THREE.Texture): void {
-    this.texture = texture
-    this.applyTexture()
+    this.liveryTexture = texture
+    this.damagePainter?.useImage(texture.image as HTMLImageElement)
+    this.showTexture()
+  }
+
+  /** One more level of damage, up to destruction; returns the level reached. */
+  inflictDamage(): number {
+    if (this.damageLevel >= DESTROYED_LEVEL) {
+      return this.damageLevel
+    }
+    this.damageLevel += 1
+    this.showTexture()
+    this.effects.setLevel(this.damageLevel)
+    if (this.damageLevel === DESTROYED_LEVEL) {
+      this.destroy()
+    }
+    return this.damageLevel
+  }
+
+  /** Puts the aircraft back in one piece, without damage. */
+  repair(): void {
+    this.damageLevel = 0
+    this.damagePainter = undefined
+    this.effects.reset()
+    this.debris.putBack()
+    this.showTexture()
   }
 
   /** Starts or stops one animation: it eases in and out, and the canopy slides along with the cockpit's. */
@@ -160,6 +196,11 @@ export class D520Model {
   update(deltaSeconds: number): void {
     this.cockpit.update(deltaSeconds)
     CANOPY_PARTS.forEach((name) => this.parts.get(name)?.position.copy(this.cockpit.canopyTranslation))
+    this.effects.update(deltaSeconds)
+    if (this.debris.isFlying) {
+      this.debris.update(deltaSeconds)
+      return
+    }
     Object.values(this.eased).forEach((value) => value.update(deltaSeconds))
     this.sweepPhase += (FULL_TURN_RADIANS * deltaSeconds) / SWEEP_SECONDS
     this.turnPropeller(deltaSeconds)
@@ -214,6 +255,50 @@ export class D520Model {
 
   private turn(hinge: Hinge, radians: number): void {
     hinge.group.quaternion.setFromAxisAngle(hinge.axis, radians)
+  }
+
+  /** The livery, with the marks of the damage painted on it when the aircraft is damaged. */
+  private showTexture(): void {
+    if (this.liveryTexture === undefined) {
+      return
+    }
+    if (this.damageLevel === 0) {
+      this.texture = this.liveryTexture
+    } else {
+      this.damagePainter ??= new DamagePainter(this.liveryTexture.image as HTMLImageElement)
+      this.damagePainter.setLevel(this.damageLevel)
+      const canvas = this.damagePainter.canvas
+      if (this.damageTexture === undefined || this.damageTexture.image !== canvas || this.damageTexture.userData.pixels !== canvas.width) {
+        this.damageTexture?.dispose()
+        this.damageTexture = new THREE.CanvasTexture(canvas)
+        this.damageTexture.userData.pixels = canvas.width
+        this.damageTexture.colorSpace = THREE.SRGBColorSpace
+        this.damageTexture.anisotropy = this.liveryTexture.anisotropy
+      }
+      this.damageTexture.needsUpdate = true
+      this.texture = this.damageTexture
+    }
+    this.applyTexture()
+  }
+
+  /** The explosion: the control surfaces, the wheels and the propeller are torn off. */
+  private destroy(): void {
+    this.effects.explode()
+    const pieces: THREE.Object3D[] = []
+    this.surfaceHinges.forEach((hinge) => pieces.push(hinge.group))
+    for (const side of this.gearSides) {
+      pieces.push(side.wheel.group)
+    }
+    for (const name of [BLADES_PART, SPINNER_PART]) {
+      const part = this.parts.get(name)
+      if (part !== undefined) {
+        pieces.push(part)
+      }
+    }
+    this.debris.tearOff(pieces)
+    if (this.blurMaterial !== undefined) {
+      this.blurMaterial.opacity = 0
+    }
   }
 
   private applyTexture(): void {

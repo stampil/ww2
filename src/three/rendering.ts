@@ -19,9 +19,11 @@ export function fitToContainer(renderer: THREE.WebGLRenderer, camera: THREE.Pers
 }
 
 function disposeMaterial(material: THREE.Material): void {
-  if (material instanceof THREE.MeshBasicMaterial || material instanceof THREE.MeshStandardMaterial) {
-    material.map?.dispose()
-  }
+  Object.values(material).forEach((value) => {
+    if (value instanceof THREE.Texture) {
+      value.dispose()
+    }
+  })
   material.dispose()
 }
 
@@ -32,6 +34,9 @@ export function disposeScene(scene: THREE.Scene, renderer: THREE.WebGLRenderer):
       object.geometry.dispose()
       const materials: THREE.Material[] = Array.isArray(object.material) ? object.material : [object.material]
       materials.forEach(disposeMaterial)
+    }
+    if (object instanceof THREE.Sprite) {
+      disposeMaterial(object.material)
     }
   })
   renderer.dispose()

@@ -22,5 +22,24 @@
     "german": "Allemande"
   },
   "footer": "Conçu avec soin, en France.",
-  "localeName": "Français"
+  "localeName": "Français",
+  "credits": {
+    "model": "Modèle 3D du D.520 :",
+    "adapted": "adapté pour ce site"
+  },
+  "controls": {
+    "label": "Animations",
+    "retractGear": "Rentrer le train",
+    "spinWheels": "Faire tourner les roues",
+    "openCanopy": "Ouvrir la verrière",
+    "runEngine": "Moteur en marche",
+    "lowerFlaps": "Sortir les volets",
+    "moveAilerons": "Bouger les ailerons",
+    "moveRudder": "Bouger la gouverne de direction",
+    "moveElevator": "Bouger la gouverne de profondeur"
+  },
+  "cockpit": {
+    "title": "Le cockpit en 3D",
+    "hint": "Faites glisser pour tourner le cockpit"
+  }
 }

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RUNWAY_TILE_COUNT, TILE_SIZE_METERS } from './airfield'
-import { renderTileImage } from './tileImages'
+import { renderTileImage, TILE_IMAGE_PIXELS } from './tileImages'
 import type { TerrainTextures } from './tileImages'
 import type { Tile } from './tiles'
 
@@ -10,6 +10,8 @@ const RUNWAY_FIRST_COLUMN = 2
 const RUNWAY_ROW = 4
 const GRASS_URL = '/textures/herbe.png'
 const CONCRETE_URL = '/textures/beton.png'
+const GROUND_CELLS = 200
+const GROUND_DEPTH_METERS = 0.1
 const BUSH_POSITIONS = [
   { row: 1, column: 3 },
   { row: 7, column: 1 },
@@ -51,17 +53,18 @@ function buildTileMap(): Tile[][] {
   return tiles
 }
 
-/** The ground: a map of 2D tiles, one textured square each, so any tile can be moved or turned. */
+/** The ground: a map of 2D tiles, one textured square each, so any tile can be moved or turned, on a vast grass plain. */
 export class Terrain {
   readonly object = new THREE.Group()
 
-  constructor() {
+  constructor(private readonly maxAnisotropy: number) {
     void this.build()
   }
 
   private async build(): Promise<void> {
     const [grass, concrete] = await Promise.all([loadImage(GRASS_URL), loadImage(CONCRETE_URL)])
     const textures: TerrainTextures = { grass, concrete }
+    this.addGrassPlain(grass)
     const geometry = new THREE.PlaneGeometry(TILE_SIZE_METERS, TILE_SIZE_METERS)
     const materials = new Map<string, THREE.MeshBasicMaterial>()
     buildTileMap().forEach((rowTiles, row) => {
@@ -79,5 +82,21 @@ export class Terrain {
         this.object.add(mesh)
       })
     })
+  }
+
+  /** The grass texture repeated far past the tiles, in step with the grass of the tiles, so the ground never ends. */
+  private addGrassPlain(grass: HTMLImageElement): void {
+    const cellMeters = (TILE_SIZE_METERS * grass.width) / TILE_IMAGE_PIXELS
+    const texture = new THREE.Texture(grass)
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
+    texture.repeat.set(GROUND_CELLS, GROUND_CELLS)
+    texture.colorSpace = THREE.SRGBColorSpace
+    texture.anisotropy = this.maxAnisotropy
+    texture.needsUpdate = true
+    const sizeMeters = cellMeters * GROUND_CELLS
+    const plain = new THREE.Mesh(new THREE.PlaneGeometry(sizeMeters, sizeMeters), new THREE.MeshBasicMaterial({ map: texture }))
+    plain.position.z = -GROUND_DEPTH_METERS
+    this.object.add(plain)
   }
 }

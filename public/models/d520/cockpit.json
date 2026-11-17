@@ -1,0 +1,262 @@
+{
+ "license": "GPL-2.0",
+ "source": "FlightGear FGAddon, Aircraft/D520, Emmanuel Baranger, converted by tools/convert-ac3d.py",
+ "materials": [
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "interior.png"
+  },
+  {
+   "name": "transparent",
+   "opacity": 0.15,
+   "texture": "interior.png"
+  },
+  {
+   "name": "DefaultWhite.001",
+   "opacity": 1.0,
+   "texture": "interior.png"
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "panel.png"
+  },
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "seat.png"
+  }
+ ],
+ "parts": [
+  {
+   "name": "interieur",
+   "vertexCount": 126,
+   "indexCount": 534,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 534
+    }
+   ],
+   "positionsOffset": 0,
+   "normalsOffset": 1512,
+   "uvsOffset": 3024,
+   "indicesOffset": 4032
+  },
+  {
+   "name": "inttour",
+   "vertexCount": 122,
+   "indexCount": 348,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 120
+    },
+    {
+     "material": 2,
+     "start": 120,
+     "count": 228
+    }
+   ],
+   "positionsOffset": 6168,
+   "normalsOffset": 7632,
+   "uvsOffset": 9096,
+   "indicesOffset": 10072
+  },
+  {
+   "name": "inttourvitres",
+   "vertexCount": 280,
+   "indexCount": 1254,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1254
+    }
+   ],
+   "positionsOffset": 11464,
+   "normalsOffset": 14824,
+   "uvsOffset": 18184,
+   "indicesOffset": 20424
+  },
+  {
+   "name": "inttourcanopy",
+   "vertexCount": 248,
+   "indexCount": 1104,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1104
+    }
+   ],
+   "positionsOffset": 25440,
+   "normalsOffset": 28416,
+   "uvsOffset": 31392,
+   "indicesOffset": 33376
+  },
+  {
+   "name": "armature",
+   "vertexCount": 244,
+   "indexCount": 720,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 720
+    }
+   ],
+   "positionsOffset": 37792,
+   "normalsOffset": 40720,
+   "uvsOffset": 43648,
+   "indicesOffset": 45600
+  },
+  {
+   "name": "structure",
+   "vertexCount": 240,
+   "indexCount": 1164,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 1164
+    }
+   ],
+   "positionsOffset": 48480,
+   "normalsOffset": 51360,
+   "uvsOffset": 54240,
+   "indicesOffset": 56160
+  },
+  {
+   "name": "fond",
+   "vertexCount": 26,
+   "indexCount": 84,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 84
+    }
+   ],
+   "positionsOffset": 60816,
+   "normalsOffset": 61128,
+   "uvsOffset": 61440,
+   "indicesOffset": 61648
+  },
+  {
+   "name": "renfort",
+   "vertexCount": 2003,
+   "indexCount": 9180,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 9180
+    }
+   ],
+   "positionsOffset": 61984,
+   "normalsOffset": 86020,
+   "uvsOffset": 110056,
+   "indicesOffset": 126080
+  },
+  {
+   "name": "planchet",
+   "vertexCount": 12,
+   "indexCount": 36,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 36
+    }
+   ],
+   "positionsOffset": 162800,
+   "normalsOffset": 162944,
+   "uvsOffset": 163088,
+   "indicesOffset": 163184
+  },
+  {
+   "name": "bloc1",
+   "vertexCount": 3563,
+   "indexCount": 18276,
+   "groups": [
+    {
+     "material": 0,
+     "start": 0,
+     "count": 18276
+    }
+   ],
+   "positionsOffset": 163328,
+   "normalsOffset": 206084,
+   "uvsOffset": 248840,
+   "indicesOffset": 277344
+  },
+  {
+   "name": "intvitres",
+   "vertexCount": 221,
+   "indexCount": 978,
+   "groups": [
+    {
+     "material": 1,
+     "start": 0,
+     "count": 978
+    }
+   ],
+   "positionsOffset": 350448,
+   "normalsOffset": 353100,
+   "uvsOffset": 355752,
+   "indicesOffset": 357520
+  },
+  {
+   "name": "intcanopy",
+   "vertexCount": 58,
+   "indexCount": 168,
+   "groups": [
+    {
+     "material": 1,
+     "start": 0,
+     "count": 168
+    }
+   ],
+   "positionsOffset": 361432,
+   "normalsOffset": 362128,
+   "uvsOffset": 362824,
+   "indicesOffset": 363288
+  },
+  {
+   "name": "panel",
+   "vertexCount": 448,
+   "indexCount": 2436,
+   "groups": [
+    {
+     "material": 3,
+     "start": 0,
+     "count": 2436
+    }
+   ],
+   "positionsOffset": 363960,
+   "normalsOffset": 369336,
+   "uvsOffset": 374712,
+   "indicesOffset": 378296
+  },
+  {
+   "name": "seat",
+   "vertexCount": 231,
+   "indexCount": 1326,
+   "groups": [
+    {
+     "material": 4,
+     "start": 0,
+     "count": 1326
+    }
+   ],
+   "positionsOffset": 388040,
+   "normalsOffset": 390812,
+   "uvsOffset": 393584,
+   "indicesOffset": 395432
+  }
+ ]
+}

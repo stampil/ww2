@@ -1,0 +1,23 @@
+Dewoitine D.520, 3D model and cockpit
+
+Original work: Emmanuel Baranger (helijah), "Dewoitine D520", FlightGear aircraft, 2010 to 2025.
+Source: https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/D520/
+License: GNU General Public License, version 2 (the COPYING file next to this one, also the file of that FlightGear aircraft).
+
+Changes made for this site (French Touch, https://github.com/stampil/ww2):
+- the AC3D models (Models/d520.ac, Models/Interior/interior.ac, Panel/panel.ac and Seat/seat.ac) were converted by
+  tools/convert-ac3d.py into d520.json, d520.bin, cockpit.json and cockpit.bin: only 29 of the 41 parts of the aircraft are
+  kept (machine guns, holes, antennas, lights, pitot, high-detail glass copies and the propeller disc are dropped), as well
+  as the 12 parts of the interior without the HDR copies, the panel and the seat (the instruments are not included);
+  the axes are turned (x right, y nose, z up), the origin is put on the thrust axis, and the panel and the seat get the
+  offsets that FlightGear gives them;
+- the animations (gear, wheels, canopy, flaps, ailerons, rudder, elevator, propeller) are redone in Three.js from the
+  pivots, axes and angles of Models/d520.xml and Models/Interior/interior.xml;
+- texture-francais.png is the unchanged texture.png of the original;
+- texture-allemand.png is for now a copy of texture-francais.png, until the second livery is made;
+- cockpit/interior.png, cockpit/panel.png and cockpit/seat.png are the unchanged textures of the original.
+
+These files (d520.json, d520.bin, cockpit.json, cockpit.bin, texture-francais.png, texture-allemand.png and the cockpit
+textures) are under the GPL v2, like the original.
+The rest of the repository is under its own license (see the LICENSE file at its root).
+The converter is in the repository, so the conversion can be redone from the original files.

@@ -22,5 +22,24 @@
     "german": "German"
   },
   "footer": "Made with care, in France.",
-  "localeName": "English"
+  "localeName": "English",
+  "credits": {
+    "model": "D.520 3D model:",
+    "adapted": "adapted for this site"
+  },
+  "controls": {
+    "label": "Animations",
+    "retractGear": "Retract the gear",
+    "spinWheels": "Spin the wheels",
+    "openCanopy": "Open the canopy",
+    "runEngine": "Engine running",
+    "lowerFlaps": "Lower the flaps",
+    "moveAilerons": "Move the ailerons",
+    "moveRudder": "Move the rudder",
+    "moveElevator": "Move the elevator"
+  },
+  "cockpit": {
+    "title": "The cockpit in 3D",
+    "hint": "Drag to turn the cockpit"
+  }
 }

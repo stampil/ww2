@@ -159,13 +159,29 @@ h1 {
   }
 }
 
-.aircraft-viewer {
-  @include flex($direction: column, $gap: 0.75rem);
-  width: min(100%, 40rem);
+.viewers {
+  @include flex($direction: column, $gap: 2rem);
+  width: 100%;
   margin-top: 2rem;
+
+  @include from('expanded') {
+    flex-direction: row;
+    align-items: flex-start;
+  }
 }
 
-.aircraft-viewer-canvas {
+.model-viewer {
+  @include flex($direction: column, $gap: 0.75rem);
+  width: 100%;
+  max-width: 40rem;
+  min-width: 0;
+
+  @include from('expanded') {
+    flex: 1 1 0;
+  }
+}
+
+.model-viewer-canvas {
   width: 100%;
   aspect-ratio: 3 / 2;
   overflow: hidden;
@@ -184,7 +200,7 @@ h1 {
   }
 }
 
-.aircraft-viewer-hint {
+.model-viewer-hint {
   margin: 0;
   color: var(--muted);
   font-size: 0.75rem;
@@ -214,8 +230,9 @@ h1 {
   }
 }
 
-.livery-switch {
+@mixin chip-row {
   @include flex($gap: 0.5rem);
+  flex-wrap: wrap;
 
   button {
     position: relative;
@@ -242,12 +259,31 @@ h1 {
   }
 }
 
+.livery-switch,
+.control-buttons {
+  @include chip-row;
+}
+
 .footer {
   min-height: 4.5rem;
+  padding-block: 1rem;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.72rem;
   animation: arrive 600ms 200ms ease-out both;
+}
+
+.footer-text {
+  @include flex($direction: column, $gap: 0.35rem);
+}
+
+.credits {
+  font-size: 0.65rem;
+
+  a {
+    color: inherit;
+    text-decoration-color: var(--line);
+  }
 }
 
 .footer-index {

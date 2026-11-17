@@ -1,205 +1,279 @@
 import * as THREE from 'three'
-import { FUSELAGE_SECTIONS, LENGTH_METERS, WING_EDGES, WINGSPAN_METERS } from './d520Plan'
-import type { FuselageSection, WingEdge } from './d520Plan'
+import { buildGeometry, buildMaterials, loadModelData } from './ac3d'
+import type { AircraftState } from './aircraftState'
+import { CockpitModel } from './CockpitModel'
+import { directionFromFlightGear, pointFromFlightGear } from './flightGearFrame'
+import { EasedValue } from './motion'
 
-const GRID_COLUMNS = 256
-const GRID_ROWS = Math.round((GRID_COLUMNS * LENGTH_METERS) / WINGSPAN_METERS)
-const SILHOUETTE_ALPHA = 0.5
-const NORMAL_STEP_METERS = 0.02
-const WING_ROOT_Z_METERS = -0.77
-const WING_DIHEDRAL_RADIANS = (5 * Math.PI) / 180
-const WING_ROOT_THICKNESS_METERS = 0.25
-const WING_TIP_THICKNESS_METERS = 0.08
-const FLAT_PART_THICKNESS_METERS = 0.04
-const WING_BAND_MARGIN_METERS = 0.08
-const UNDERSIDE_COLOR = 0x555555
-const SURFACE_ROUGHNESS = 0.85
-const TOP = 1
-const BOTTOM = -1
+const MODEL_NAME = 'd520'
+const BLADES_PART = 'helice'
+const BLUR_PART = 'propblur'
+const CANOPY_PARTS = ['canopy', 'tourcanopy']
+const DEGREES = Math.PI / 180
+const FULL_TURN_RADIANS = 2 * Math.PI
+const MAX_PROPELLER_TURNS_PER_SECOND = 10
+const BLADES_FADED_OPACITY = 0.25
+const WHEEL_TURNS_PER_SECOND = 3
+const GEAR_WHEEL_RADIANS = 85 * DEGREES
+const GEAR_DOOR_RADIANS = 90 * DEGREES
+const FLAP_RADIANS = 40 * DEGREES
+const AILERON_RADIANS = 15 * DEGREES
+const ELEVATOR_RADIANS = 15 * DEGREES
+const RUDDER_RADIANS = -15 * DEGREES
+const SWEEP_SECONDS = 3
+const ENGINE_SPOOL_SECONDS = 2
+const WHEEL_SPIN_UP_SECONDS = 1
+const GEAR_TRAVEL_SECONDS = 2
+const FLAP_TRAVEL_SECONDS = 2
+const SWEEP_FADE_SECONDS = 0.5
 
-type Side = typeof TOP | typeof BOTTOM
-type Corner = { column: number; row: number; alpha: number }
-type Point = { x: number; y: number; isCut: boolean }
+export type AircraftControl =
+  | 'retractGear'
+  | 'spinWheels'
+  | 'openCanopy'
+  | 'runEngine'
+  | 'lowerFlaps'
+  | 'moveAilerons'
+  | 'moveRudder'
+  | 'moveElevator'
+export const AIRCRAFT_CONTROLS: AircraftControl[] = [
+  'retractGear',
+  'spinWheels',
+  'openCanopy',
+  'runEngine',
+  'lowerFlaps',
+  'moveAilerons',
+  'moveRudder',
+  'moveElevator',
+]
+type ExteriorControl = Exclude<AircraftControl, 'openCanopy'>
 
-const WING_ROOT_HALF_WIDTH_METERS = WING_EDGES[0].x
-const WING_STEP_METERS = WING_EDGES[1].x - WING_EDGES[0].x
-const WING_HALF_SPAN_METERS = WINGSPAN_METERS / 2
+/** The distance from the thrust axis down to the wheels, so the aircraft can stand on the ground. */
+export const D520_LOWEST_POINT_METERS = 2.08
 
-function wingEdgesAt(distance: number): WingEdge {
-  const index = Math.round((distance - WING_ROOT_HALF_WIDTH_METERS) / WING_STEP_METERS)
-  return WING_EDGES[Math.min(Math.max(index, 0), WING_EDGES.length - 1)]
+type Hinge = { group: THREE.Group; axis: THREE.Vector3 }
+type GearSideHinges = { wheel: Hinge; door: Hinge; doorMesh: THREE.Mesh; doorRest: THREE.Vector3; direction: 1 | -1 }
+type SurfaceName = 'elevator' | 'rudder' | 'aileronLeft' | 'aileronRight' | 'flapLeft' | 'flapRight'
+type SurfaceSpec = { part: string; pivot: THREE.Vector3; axis: THREE.Vector3 }
+type Point = [number, number, number]
+
+// The pivots, axes and angles below are the ones of the animations in FlightGear's d520.xml, turned into our frame.
+function surfaceThrough(part: string, from: Point, to: Point): SurfaceSpec {
+  const axis: Point = [to[0] - from[0], to[1] - from[1], to[2] - from[2]]
+  return { part, pivot: pointFromFlightGear(...from), axis: directionFromFlightGear(...axis) }
 }
 
-function fuselageAt(y: number): FuselageSection | undefined {
-  for (let index = 0; index < FUSELAGE_SECTIONS.length - 1; index += 1) {
-    const tailSide = FUSELAGE_SECTIONS[index]
-    const noseSide = FUSELAGE_SECTIONS[index + 1]
-    if (y >= tailSide.y && y <= noseSide.y) {
-      const share = (y - tailSide.y) / (noseSide.y - tailSide.y)
-      return {
-        y,
-        halfWidth: tailSide.halfWidth + share * (noseSide.halfWidth - tailSide.halfWidth),
-        top: tailSide.top + share * (noseSide.top - tailSide.top),
-        bottom: tailSide.bottom + share * (noseSide.bottom - tailSide.bottom),
-      }
-    }
-  }
-  return undefined
+const SURFACES: Record<SurfaceName, SurfaceSpec> = {
+  elevator: { part: 'profondeur', pivot: pointFromFlightGear(3.3838, 0, 0.6178), axis: directionFromFlightGear(0, 1, 0) },
+  rudder: { part: 'direction', pivot: pointFromFlightGear(3.65748, 0, 0.59525), axis: directionFromFlightGear(0, 0, 1) },
+  aileronLeft: surfaceThrough('aileronG', [-0.971, -4.633, -0.147], [-0.856, -3.026, -0.228]),
+  aileronRight: surfaceThrough('aileronD', [-0.856, 3.026, -0.228], [-0.971, 4.633, -0.147]),
+  flapLeft: surfaceThrough('voletG', [-0.798, -3.027, -0.268], [-0.617, -0.662, -0.418]),
+  flapRight: surfaceThrough('voletD', [-0.617, 0.662, -0.418], [-0.798, 3.027, -0.268]),
 }
 
-/** Height of the top or the bottom surface at a point: a thin wing with dihedral, joined to the lofted fuselage. */
-function surfaceHeight(x: number, y: number, side: Side): number {
-  const distance = Math.abs(x)
-  const wing = wingEdgesAt(distance)
-  let middle = 0
-  let thickness = FLAT_PART_THICKNESS_METERS
-  if (y >= wing.trailing - WING_BAND_MARGIN_METERS && y <= wing.leading + WING_BAND_MARGIN_METERS) {
-    const outward = Math.max(0, distance - WING_ROOT_HALF_WIDTH_METERS)
-    const span = outward / (WING_HALF_SPAN_METERS - WING_ROOT_HALF_WIDTH_METERS)
-    middle = WING_ROOT_Z_METERS + Math.tan(WING_DIHEDRAL_RADIANS) * outward
-    thickness = WING_ROOT_THICKNESS_METERS + span * (WING_TIP_THICKNESS_METERS - WING_ROOT_THICKNESS_METERS)
-  }
-  const height = middle + (side * thickness) / 2
-
-  const fuselage = fuselageAt(y)
-  if (fuselage === undefined || distance >= fuselage.halfWidth) {
-    return height
-  }
-  const roundness = Math.sqrt(1 - (distance / fuselage.halfWidth) ** 2)
-  const center = (fuselage.top + fuselage.bottom) / 2
-  const radius = (fuselage.top - fuselage.bottom) / 2
-  const fuselageHeight = center + side * radius * roundness
-  return side === TOP ? Math.max(height, fuselageHeight) : Math.min(height, fuselageHeight)
-}
-
-function surfaceNormal(x: number, y: number, side: Side): THREE.Vector3 {
-  const slopeX = (surfaceHeight(x + NORMAL_STEP_METERS, y, side) - surfaceHeight(x - NORMAL_STEP_METERS, y, side)) / (2 * NORMAL_STEP_METERS)
-  const slopeY = (surfaceHeight(x, y + NORMAL_STEP_METERS, side) - surfaceHeight(x, y - NORMAL_STEP_METERS, side)) / (2 * NORMAL_STEP_METERS)
-  return new THREE.Vector3(-slopeX, -slopeY, 1).normalize().multiplyScalar(side)
-}
-
-/** The alpha of the livery at every vertex of the grid, with a bilinear read so the outline stays smooth. */
-function readAlphaGrid(texture: THREE.Texture): Float32Array {
-  const image = texture.image as HTMLImageElement
-  const canvas = document.createElement('canvas')
-  canvas.width = image.width
-  canvas.height = image.height
-  const context = canvas.getContext('2d', { willReadFrequently: true })!
-  context.drawImage(image, 0, 0)
-  const pixels = context.getImageData(0, 0, image.width, image.height).data
-  const alphaAt = (pixelColumn: number, pixelRow: number): number => pixels[(pixelRow * image.width + pixelColumn) * 4 + 3] / 255
-
-  const alphas = new Float32Array((GRID_ROWS + 1) * (GRID_COLUMNS + 1))
-  for (let row = 0; row <= GRID_ROWS; row += 1) {
-    for (let column = 0; column <= GRID_COLUMNS; column += 1) {
-      const u = (column / GRID_COLUMNS) * (image.width - 1)
-      const v = (row / GRID_ROWS) * (image.height - 1)
-      const left = Math.floor(u)
-      const top = Math.floor(v)
-      const right = Math.min(left + 1, image.width - 1)
-      const bottom = Math.min(top + 1, image.height - 1)
-      const shareX = u - left
-      const shareY = v - top
-      const upper = alphaAt(left, top) * (1 - shareX) + alphaAt(right, top) * shareX
-      const lower = alphaAt(left, bottom) * (1 - shareX) + alphaAt(right, bottom) * shareX
-      alphas[row * (GRID_COLUMNS + 1) + column] = upper * (1 - shareY) + lower * shareY
-    }
-  }
-  return alphas
-}
-
-function gridPoint(column: number, row: number, isCut: boolean): Point {
-  return { x: (column / GRID_COLUMNS - 0.5) * WINGSPAN_METERS, y: (0.5 - row / GRID_ROWS) * LENGTH_METERS, isCut }
-}
-
-/** The part of one grid cell that lies inside the silhouette, with the outline cut where the alpha crosses the threshold. */
-function silhouettePolygon(corners: Corner[]): Point[] {
-  const polygon: Point[] = []
-  corners.forEach((corner, index) => {
-    const next = corners[(index + 1) % corners.length]
-    const cornerInside = corner.alpha >= SILHOUETTE_ALPHA
-    const nextInside = next.alpha >= SILHOUETTE_ALPHA
-    if (cornerInside) {
-      polygon.push(gridPoint(corner.column, corner.row, false))
-    }
-    if (cornerInside !== nextInside) {
-      const share = (SILHOUETTE_ALPHA - corner.alpha) / (next.alpha - corner.alpha)
-      polygon.push(gridPoint(corner.column + share * (next.column - corner.column), corner.row + share * (next.row - corner.row), true))
-    }
-  })
-  return polygon
-}
+const GEAR_AXIS = directionFromFlightGear(1, 0, 0)
+const GEAR_DOOR_SLIDE = directionFromFlightGear(0, 0, -0.2)
+const TAIL_WHEEL_PART = 'roueA'
+const TAIL_WHEEL_PIVOT = pointFromFlightGear(3.362, 0, -0.331)
+const TAIL_WHEEL_AXIS = directionFromFlightGear(0, -1, 0)
+const GEAR_SIDES = [
+  {
+    wheelPart: 'roueG',
+    strutPart: 'axeG',
+    doorPart: 'porteG',
+    direction: 1 as const,
+    wheelPivot: pointFromFlightGear(-1.665, -1.442, -0.373),
+    doorPivot: pointFromFlightGear(-1.663, -1.508, -0.431),
+    axlePivot: pointFromFlightGear(-1.983, -1.379, -1.42),
+    axleAxis: directionFromFlightGear(0.001, -0.149, 0.011),
+  },
+  {
+    wheelPart: 'roueD',
+    strutPart: 'axeD',
+    doorPart: 'porteD',
+    direction: -1 as const,
+    wheelPivot: pointFromFlightGear(-1.665, 1.442, -0.373),
+    doorPivot: pointFromFlightGear(-1.663, 1.508, -0.431),
+    axlePivot: pointFromFlightGear(-1.984, 1.23, -1.431),
+    axleAxis: directionFromFlightGear(-0.001, -0.149, -0.011),
+  },
+]
 
 /**
- * One surface, only where the livery is opaque: its edge is the geometry itself, so it is smoothed by the multisampling.
- * The top surface also carries the thin wall that closes the outline down to the bottom surface.
- */
-function buildSurface(side: Side, alphas: Float32Array): THREE.BufferGeometry {
-  const positions: number[] = []
-  const normals: number[] = []
-  const uvs: number[] = []
-  const rowSize = GRID_COLUMNS + 1
-  const addVertex = (point: Point, surfaceSide: Side, normal: THREE.Vector3 = surfaceNormal(point.x, point.y, surfaceSide)): void => {
-    positions.push(point.x, point.y, surfaceHeight(point.x, point.y, surfaceSide))
-    normals.push(normal.x, normal.y, normal.z)
-    uvs.push(point.x / WINGSPAN_METERS + 0.5, point.y / LENGTH_METERS + 0.5)
-  }
-  const addWall = (from: Point, to: Point): void => {
-    const outward = new THREE.Vector3(from.y - to.y, to.x - from.x, 0).normalize()
-    addVertex(from, TOP, outward)
-    addVertex(to, BOTTOM, outward)
-    addVertex(from, BOTTOM, outward)
-    addVertex(from, TOP, outward)
-    addVertex(to, TOP, outward)
-    addVertex(to, BOTTOM, outward)
-  }
-  for (let row = 0; row < GRID_ROWS; row += 1) {
-    for (let column = 0; column < GRID_COLUMNS; column += 1) {
-      const polygon = silhouettePolygon([
-        { column, row, alpha: alphas[row * rowSize + column] },
-        { column: column + 1, row, alpha: alphas[row * rowSize + column + 1] },
-        { column: column + 1, row: row + 1, alpha: alphas[(row + 1) * rowSize + column + 1] },
-        { column, row: row + 1, alpha: alphas[(row + 1) * rowSize + column] },
-      ])
-      for (let index = 1; index < polygon.length - 1; index += 1) {
-        const triangle = side === TOP ? [polygon[0], polygon[index + 1], polygon[index]] : [polygon[0], polygon[index], polygon[index + 1]]
-        triangle.forEach((point) => addVertex(point, side))
-      }
-      if (side === TOP) {
-        polygon.forEach((point, index) => {
-          const next = polygon[(index + 1) % polygon.length]
-          if (point.isCut && next.isCut) {
-            addWall(point, next)
-          }
-        })
-      }
-    }
-  }
-  const geometry = new THREE.BufferGeometry()
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-  geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3))
-  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
-  return geometry
-}
-
-/**
- * The D.520 as two surfaces cut to the silhouette of its livery, built from the plan: wing, dihedral, fuselage sections.
- * Nose along +y, right wing along +x, up along +z, built and shown when the first livery arrives.
+ * The D.520 of the FlightGear model by Emmanuel Baranger (GPL v2), loaded from the files made by tools/convert-ac3d.py.
+ * Nose along +y, right wing along +x, up along +z, origin on the thrust axis, in meters. Shown once loaded.
  */
 export class D520Model {
   readonly object = new THREE.Group()
-  private readonly topMaterial = new THREE.MeshStandardMaterial({ roughness: SURFACE_ROUGHNESS })
-  private readonly bottomMaterial = new THREE.MeshStandardMaterial({ roughness: SURFACE_ROUGHNESS, color: UNDERSIDE_COLOR })
+  private readonly cockpit = new CockpitModel()
+  private readonly parts = new Map<string, THREE.Mesh>()
+  private readonly surfaceHinges = new Map<SurfaceName, Hinge>()
+  private readonly gearSides: GearSideHinges[] = []
+  private readonly wheelHinges: Hinge[] = []
+  private readonly eased: Record<ExteriorControl, EasedValue> = {
+    retractGear: new EasedValue(GEAR_TRAVEL_SECONDS),
+    spinWheels: new EasedValue(WHEEL_SPIN_UP_SECONDS),
+    runEngine: new EasedValue(ENGINE_SPOOL_SECONDS),
+    lowerFlaps: new EasedValue(FLAP_TRAVEL_SECONDS),
+    moveAilerons: new EasedValue(SWEEP_FADE_SECONDS),
+    moveRudder: new EasedValue(SWEEP_FADE_SECONDS),
+    moveElevator: new EasedValue(SWEEP_FADE_SECONDS),
+  }
+  private materials: THREE.MeshStandardMaterial[] = []
+  private bladesMaterial: THREE.MeshStandardMaterial | undefined
+  private blurMaterial: THREE.MeshStandardMaterial | undefined
+  private blurOpacity = 0
+  private texture: THREE.Texture | undefined
+  private wheelAngle = 0
+  private deflection = { aileron: 0, rudder: 0, elevator: 0 }
+  private sweepPhase = 0
+
+  constructor() {
+    this.object.add(this.cockpit.object)
+    void this.load()
+  }
 
   setLivery(texture: THREE.Texture): void {
-    if (this.object.children.length === 0) {
-      const alphas = readAlphaGrid(texture)
-      this.object.add(new THREE.Mesh(buildSurface(TOP, alphas), this.topMaterial))
-      this.object.add(new THREE.Mesh(buildSurface(BOTTOM, alphas), this.bottomMaterial))
+    this.texture = texture
+    this.applyTexture()
+  }
+
+  /** Starts or stops one animation: it eases in and out, and the canopy slides along with the cockpit's. */
+  setControl(control: AircraftControl, isActive: boolean): void {
+    if (control === 'openCanopy') {
+      this.cockpit.setControl(control, isActive)
+    } else {
+      this.eased[control].setTarget(isActive ? 1 : 0)
     }
-    this.topMaterial.map = texture
-    this.bottomMaterial.map = texture
-    this.topMaterial.needsUpdate = true
-    this.bottomMaterial.needsUpdate = true
+  }
+
+  /** Puts every moving part where the state says, at once, for a flight that drives them (the buttons ease them instead). */
+  setState(state: AircraftState): void {
+    this.eased.runEngine.snap(state.engine)
+    this.eased.retractGear.snap(state.gearRetraction)
+    this.eased.lowerFlaps.snap(state.flaps)
+    this.eased.spinWheels.snap(state.wheels)
+    this.deflection = { aileron: state.aileron, rudder: state.rudder, elevator: state.elevator }
+  }
+
+  update(deltaSeconds: number): void {
+    this.cockpit.update(deltaSeconds)
+    CANOPY_PARTS.forEach((name) => this.parts.get(name)?.position.copy(this.cockpit.canopyTranslation))
+    Object.values(this.eased).forEach((value) => value.update(deltaSeconds))
+    this.sweepPhase += (FULL_TURN_RADIANS * deltaSeconds) / SWEEP_SECONDS
+    this.turnPropeller(deltaSeconds)
+    this.turnWheels(deltaSeconds)
+    this.moveGear()
+    this.moveSurfaces()
+  }
+
+  private turnPropeller(deltaSeconds: number): void {
+    const blades = this.parts.get(BLADES_PART)
+    if (blades === undefined || this.bladesMaterial === undefined || this.blurMaterial === undefined) {
+      return
+    }
+    const share = this.eased.runEngine.position
+    blades.rotation.y += share * MAX_PROPELLER_TURNS_PER_SECOND * FULL_TURN_RADIANS * deltaSeconds
+    this.bladesMaterial.opacity = 1 - share * (1 - BLADES_FADED_OPACITY)
+    this.blurMaterial.opacity = this.blurOpacity * share
+  }
+
+  private turnWheels(deltaSeconds: number): void {
+    this.wheelAngle += this.eased.spinWheels.position * WHEEL_TURNS_PER_SECOND * FULL_TURN_RADIANS * deltaSeconds
+    this.wheelHinges.forEach((hinge) => this.turn(hinge, this.wheelAngle))
+  }
+
+  private moveGear(): void {
+    const retraction = this.eased.retractGear.position
+    for (const side of this.gearSides) {
+      this.turn(side.wheel, side.direction * GEAR_WHEEL_RADIANS * retraction)
+      this.turn(side.door, side.direction * GEAR_DOOR_RADIANS * retraction)
+      side.doorMesh.position.copy(side.doorRest).addScaledVector(GEAR_DOOR_SLIDE, retraction)
+    }
+  }
+
+  private moveSurfaces(): void {
+    const sweep = Math.sin(this.sweepPhase)
+    const aileron = AILERON_RADIANS * (this.deflection.aileron + sweep * this.eased.moveAilerons.position)
+    const flaps = FLAP_RADIANS * this.eased.lowerFlaps.position
+    this.turnSurface('elevator', ELEVATOR_RADIANS * (this.deflection.elevator + sweep * this.eased.moveElevator.position))
+    this.turnSurface('rudder', RUDDER_RADIANS * (this.deflection.rudder + sweep * this.eased.moveRudder.position))
+    this.turnSurface('aileronLeft', aileron)
+    this.turnSurface('aileronRight', -aileron)
+    this.turnSurface('flapLeft', flaps)
+    this.turnSurface('flapRight', flaps)
+  }
+
+  private turnSurface(name: SurfaceName, radians: number): void {
+    const hinge = this.surfaceHinges.get(name)
+    if (hinge !== undefined) {
+      this.turn(hinge, radians)
+    }
+  }
+
+  private turn(hinge: Hinge, radians: number): void {
+    hinge.group.quaternion.setFromAxisAngle(hinge.axis, radians)
+  }
+
+  private applyTexture(): void {
+    const materials = this.bladesMaterial === undefined ? this.materials : [...this.materials, this.bladesMaterial]
+    materials.forEach((material) => {
+      material.map = this.texture ?? null
+      material.needsUpdate = true
+    })
+  }
+
+  private async load(): Promise<void> {
+    const { manifest, buffer } = await loadModelData(MODEL_NAME)
+    this.materials = buildMaterials(manifest)
+    this.bladesMaterial = this.materials[0].clone()
+    this.bladesMaterial.transparent = true
+    const blurMaterialIndex = manifest.parts.find((part) => part.name === BLUR_PART)!.groups[0].material
+    this.blurMaterial = this.materials[blurMaterialIndex]
+    this.blurOpacity = manifest.materials[blurMaterialIndex].opacity
+    this.blurMaterial.opacity = 0
+
+    for (const entry of manifest.parts) {
+      const isBlades = entry.name === BLADES_PART
+      const mesh = new THREE.Mesh(buildGeometry(entry, buffer, !isBlades), isBlades ? this.bladesMaterial : this.materials)
+      this.parts.set(entry.name, mesh)
+      this.object.add(mesh)
+    }
+    this.buildRig()
+    this.applyTexture()
+  }
+
+  /** Puts the moving parts in hinges, so that turning a hinge turns its parts around the axis of d520.xml. */
+  private buildRig(): void {
+    for (const name of Object.keys(SURFACES) as SurfaceName[]) {
+      const surface = SURFACES[name]
+      this.surfaceHinges.set(name, this.hinge([this.part(surface.part)], surface.pivot, surface.axis))
+    }
+    for (const side of GEAR_SIDES) {
+      const wheelSpin = this.hinge([this.part(side.wheelPart)], side.axlePivot, side.axleAxis)
+      this.wheelHinges.push(wheelSpin)
+      const doorMesh = this.part(side.doorPart)
+      const door = this.hinge([doorMesh], side.doorPivot, GEAR_AXIS)
+      const wheel = this.hinge([this.part(side.strutPart), wheelSpin.group], side.wheelPivot, GEAR_AXIS)
+      this.gearSides.push({ wheel, door, doorMesh, doorRest: doorMesh.position.clone(), direction: side.direction })
+    }
+    this.wheelHinges.push(this.hinge([this.part(TAIL_WHEEL_PART)], TAIL_WHEEL_PIVOT, TAIL_WHEEL_AXIS))
+  }
+
+  private part(name: string): THREE.Mesh {
+    return this.parts.get(name)!
+  }
+
+  private hinge(children: THREE.Object3D[], pivot: THREE.Vector3, axis: THREE.Vector3): Hinge {
+    const group = new THREE.Group()
+    group.position.copy(pivot)
+    children.forEach((child) => {
+      child.removeFromParent()
+      child.position.sub(pivot)
+      group.add(child)
+    })
+    this.object.add(group)
+    return { group, axis: axis.clone().normalize() }
   }
 }

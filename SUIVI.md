@@ -45,6 +45,8 @@ Un suivi ne garde que les tâches à faire et les questions en suspens ; les dé
 - la protection anti-robot d'InfinityFree ne bloque pas les appels `fetch` du jeu ;
 - une inscription et la prise d'une base marchent (les tables se créent à la première visite).
 
+**5. Skin Vichy historique** — « fait moi faire les prompt image, en effet le ski vichy n'est pas historique » (17/11). Compris : le skin Vichy généré le 17/11 (`public/models/d520/texture-vichy.png`) n'est pas fidèle ; je te donne le prompt d'une texture refaite avec les marques réelles (sources lues : Stormo Magazine, instruction du 24 juin 1941, directive de l'automne 1941, circulaire du 14 novembre 1942 ; Wikipédia anglais). Prompt donné dans le message final, avec la texture française en image 1 ; l'image générée est attendue dans `~/Téléchargements` : je contrôle qu'aucune pièce n'a bougé (comparaison avec la texture française hors des zones repeintes) avant de remplacer `texture-vichy.png`. Non établi par les sources : le nombre et la largeur des bandes (mes choix : six sur le capot, quatre à six sur la dérive), les marques de l'empennage horizontal, un anneau jaune de cocarde.
+
 ## Questions en suspens
 
 Aucune.

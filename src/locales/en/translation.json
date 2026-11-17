@@ -113,6 +113,18 @@
     "escaped": "The bomber got away.",
     "continue": "Continue"
   },
+  "strafe": {
+    "title": "Ground attack",
+    "hint": "You strafe a German convoy that drives toward you: get on its lane, and your aircraft fires by itself at what is ahead. Destroy {{required}} of {{total}} before it has gone by.",
+    "controls": "Steer with the left and right arrow keys, or by holding a finger to the left or right of the view.",
+    "toast": "A German convoy on the road: {{pilot}} can strafe it.",
+    "toastResume": "Attack under way: {{pilot}}.",
+    "take": "Attack",
+    "destroyed": "Destroyed: {{count}} of {{total}} ({{required}} to succeed)",
+    "starting": "Starting up…",
+    "won": "Convoy destroyed!",
+    "escaped": "The convoy got away."
+  },
   "music": {
     "label": "Music"
   },
@@ -303,6 +315,7 @@
         "reconnaissance": "Reconnaissance",
         "airCombat": "Bomber interception",
         "fighterCombat": "Air combat",
+        "groundAttack": "Ground attack",
         "bombing": "Bombing"
       },
       "title": "Missions",

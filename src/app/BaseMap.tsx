@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
 import AirfieldView from './AirfieldView'
-import type { Arrival, Departure } from './AirfieldView'
+import type { Arrival, Departure, Emergence } from './AirfieldView'
 import Icon from './Icon'
 import type { IconName } from './iconPaths'
 import MaintenanceCrews from './MaintenanceCrews'
@@ -36,6 +36,8 @@ type Props = {
   onDeparted: (aircraftId: number) => void
   /** The aircraft that land and taxi to their stands, and what to do once one has got there. */
   arrivals: Arrival[]
+  /** The aircraft that come out of the hangar to a stand that has been freed; once one is there, the same call as for a landing. */
+  emergences: Emergence[]
   onLanded: (aircraftId: number) => void
   alerts: MapAlert[]
   openBuilding: BuildingName | null
@@ -55,7 +57,7 @@ function standPlacement(stand: Cell): CSSProperties {
 }
 
 /** The base seen from above: the tiles of its terrain plan, the sprites standing on them, the aircraft parked, taking off or landing, the mechanics at work and the alerts; a click on a building opens it. */
-function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, arrivals, onLanded, alerts, openBuilding, onSelect }: Props) {
+function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, arrivals, emergences, onLanded, alerts, openBuilding, onSelect }: Props) {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gridSize = { '--rows': plan.tiles.length, '--columns': plan.tiles[0].length } as CSSProperties
@@ -76,11 +78,12 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
     <div className="base-map-viewport">
       <div className="base-map" role="group" aria-label={t('base.map')} style={gridSize}>
         <canvas className="base-map-canvas" ref={canvasRef} />
-        {(departures.length > 0 || arrivals.length > 0) && aircraftSprite !== null && (
+        {(departures.length > 0 || arrivals.length > 0 || emergences.length > 0) && aircraftSprite !== null && (
           <AirfieldView
             plan={plan}
             departures={departures}
             arrivals={arrivals}
+            emergences={emergences}
             aircraftSprite={aircraftSprite}
             aircraftWidthTiles={AIRCRAFT_WIDTH_TILES}
             parkedStands={parkedAircraft.map((aircraft) => aircraft.stand)}

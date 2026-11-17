@@ -1,13 +1,21 @@
 import { useTranslation } from 'react-i18next'
 import { dueAlerts, isAlertStarted } from './flights'
 import Icon from './Icon'
-import type { Flight, Squadron } from './useBase'
+import type { Flight, FlightAlert, Squadron } from './useBase'
 
 type Props = {
   flights: Flight[]
   squadron: Squadron
   /** Opens the mini-game of an alert. */
   onOpen: (alertId: number) => void
+}
+
+/** The texts of the toast and of the window of a mini-game: the grid duel, the strafing run of a ground attack, or the dogfight from the cockpit. */
+function namespaceOf(alert: FlightAlert, flight: Flight): 'duel' | 'strafe' | 'combat' {
+  if (alert.kind === 'dogfight') {
+    return 'duel'
+  }
+  return flight.type === 'groundAttack' ? 'strafe' : 'combat'
 }
 
 /** The calls of the flights in the air, as toasts over the game: one for each mini-game that waits for the player, which a click opens. */
@@ -25,7 +33,7 @@ function MissionToasts({ flights, squadron, onOpen }: Props) {
         const crew = flight.crews.find((candidate) => candidate.aircraftId === alert.aircraftId)!
         const pilot = squadron.pilots.find((candidate) => candidate.id === crew.pilotId)!
         const isStarted = isAlertStarted(alert)
-        const namespace = alert.kind === 'cockpit' ? 'combat' : 'duel'
+        const namespace = namespaceOf(alert, flight)
         return (
           <button key={alert.id} type="button" className="mission-toast" onClick={() => onOpen(alert.id)}>
             <Icon name="warning" />

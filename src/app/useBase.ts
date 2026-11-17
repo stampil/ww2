@@ -3,7 +3,7 @@ import type { Player } from './useAccount'
 
 export type Stock = 'fuel' | 'ammunition' | 'materials'
 export type Part = 'engine' | 'wings' | 'fuselage' | 'armament'
-export type MissionType = 'reconnaissance' | 'airCombat' | 'fighterCombat' | 'bombing'
+export type MissionType = 'reconnaissance' | 'airCombat' | 'fighterCombat' | 'groundAttack' | 'bombing'
 
 /** A mission on the table; the category is the only one that can fly it, or null when any aircraft can. */
 export type Offer = {

@@ -30,11 +30,14 @@ function costOf(kind: TileKind): number {
   return ROAD_COST
 }
 
-/** The tiles that have a sprite on them: nobody walks through a building. The start and the goal are left out, so a path can begin and end at one. */
-function blockedKeys(plan: TerrainPlan, start: Cell, goal: Cell): Set<string> {
+/** The tiles that have a sprite on them, and the others given: nobody walks through a building or an aircraft. The start and the goal are left out, so a path can begin and end at one. */
+function blockedKeys(plan: TerrainPlan, start: Cell, goal: Cell, occupied: Cell[]): Set<string> {
   const blocked = new Set<string>()
   for (const sprite of plan.sprites) {
     blocked.add(keyOf({ row: sprite.row, column: sprite.column }))
+  }
+  for (const cell of occupied) {
+    blocked.add(keyOf(cell))
   }
   blocked.delete(keyOf(start))
   blocked.delete(keyOf(goal))
@@ -49,11 +52,11 @@ function pathEndingAt(last: Node): PathStep[] {
   return steps
 }
 
-/** The cheapest path from one tile to another over the grid of a terrain, found by A*; empty when there is none. */
-export function findPath(plan: TerrainPlan, start: Cell, goal: Cell): PathStep[] {
+/** The cheapest path from one tile to another over the grid of a terrain, found by A*, around the tiles `occupied`; empty when there is none. */
+export function findPath(plan: TerrainPlan, start: Cell, goal: Cell, occupied: Cell[] = []): PathStep[] {
   const rows = plan.tiles.length
   const columns = plan.tiles[0].length
-  const blocked = blockedKeys(plan, start, goal)
+  const blocked = blockedKeys(plan, start, goal, occupied)
   const bestCosts = new Map<string, number>([[keyOf(start), 0]])
   const open: Node[] = [{ cell: start, cost: 0, estimate: (Math.abs(goal.row - start.row) + Math.abs(goal.column - start.column)) * ROAD_COST, previous: null }]
 

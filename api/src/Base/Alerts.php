@@ -19,7 +19,7 @@ use Ww2\Squadron\Pilot;
 
 /**
  * The calls to the player during a flight, the toasts of the mini-games: an interception of bombers calls for one dogfight on the grid per aircraft, an air combat
- * one dogfight from the cockpit, at a game second drawn between a quarter and three quarters of the flight. Played or not, the flight is received as usual.
+ * one dogfight from the cockpit, a ground attack one strafing run, at a game second drawn between a quarter and three quarters of the flight. Played or not, the flight is received as usual.
  */
 final class Alerts
 {
@@ -48,7 +48,7 @@ final class Alerts
     {
         $kind = match ($mission->type) {
             MissionType::AirCombat => AlertKind::Dogfight,
-            MissionType::FighterCombat => AlertKind::Cockpit,
+            MissionType::FighterCombat, MissionType::GroundAttack => AlertKind::Cockpit,
             default => null,
         };
         if ($kind === null) {

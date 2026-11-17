@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TERRAIN_PLANS } from '../plans/terrainPlan'
 import type { BuildingName } from '../plans/terrainPlan'
@@ -6,9 +6,10 @@ import BaseChoice from './BaseChoice'
 import BaseMap from './BaseMap'
 import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
-import type { Arrival, Departure } from './AirfieldView'
+import type { Arrival, Departure, Emergence } from './AirfieldView'
 import CockpitCombatWindow from './CockpitCombatWindow'
 import DogfightWindow from './DogfightWindow'
+import GroundAttackWindow from './GroundAttackWindow'
 import { busyCrews, findAlert, unavailableCrews } from './flights'
 import { useStands } from './useStands'
 import { damageLevelOf } from '../three/damageStages'
@@ -79,6 +80,7 @@ function BaseScreen({ player }: { player: Player }) {
   const [errorCode, setErrorCode] = useState<string | null>(null)
   const [departures, setDepartures] = useState<Departure[]>([])
   const [landingIds, setLandingIds] = useState<number[]>([])
+  const [emergingIds, setEmergingIds] = useState<number[]>([])
   const [guideStatus, setGuideStatus] = useGuideStatus(player.id)
   const [isConfirmingReset, setIsConfirmingReset] = useState(false)
   const [duelAlertId, setDuelAlertId] = useState<number | null>(null)
@@ -87,9 +89,16 @@ function BaseScreen({ player }: { player: Player }) {
   }, [])
   const removeLanding = useCallback((aircraftId: number) => {
     setLandingIds((current) => current.filter((landingId) => landingId !== aircraftId))
+    setEmergingIds((current) => current.filter((emergingId) => emergingId !== aircraftId))
   }, [])
   const busy = busyCrews(flights)
-  const stands = useStands(base?.squadron.aircraft.map((aircraft) => aircraft.id) ?? [], busy.aircraftIds, base === null ? 0 : TERRAIN_PLANS[base.terrainPlan].stands.length)
+  const { stands, emergedIds } = useStands(base?.squadron.aircraft.map((aircraft) => aircraft.id) ?? [], busy.aircraftIds, base === null ? 0 : TERRAIN_PLANS[base.terrainPlan].stands.length)
+  const canAnimate = aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches
+  useEffect(() => {
+    if (emergedIds.length > 0 && canAnimate) {
+      setEmergingIds((current) => [...current, ...emergedIds])
+    }
+  }, [emergedIds, canAnimate])
 
   if (hasNoBase) {
     return <BaseChoice onClaim={claimBase} />
@@ -110,6 +119,7 @@ function BaseScreen({ player }: { player: Player }) {
     setDuelAlertId(null)
     setDepartures([])
     setLandingIds([])
+    setEmergingIds([])
     const resetErrorCode = await resetGame()
     setErrorCode(resetErrorCode)
     if (resetErrorCode === null) {
@@ -151,6 +161,7 @@ function BaseScreen({ player }: { player: Player }) {
 
   const parkedAircraft: ParkedAircraft[] = []
   const arrivals: Arrival[] = []
+  const emergences: Emergence[] = []
   for (const aircraft of base.squadron.aircraft) {
     const standNumber = stands.get(aircraft.id)
     if (standNumber === undefined) {
@@ -159,6 +170,8 @@ function BaseScreen({ player }: { player: Player }) {
     const stand = plan.stands[standNumber]
     if (landingIds.includes(aircraft.id)) {
       arrivals.push({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability) })
+    } else if (emergingIds.includes(aircraft.id) || (canAnimate && emergedIds.includes(aircraft.id))) {
+      emergences.push({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability) })
     } else {
       const state = hangarAircraft.find((candidate) => candidate.aircraftId === aircraft.id)!
       parkedAircraft.push({ id: aircraft.id, number: aircraft.number, stand, status: standStatusOf(state, aircraft) })
@@ -209,6 +222,7 @@ function BaseScreen({ player }: { player: Player }) {
           departures={departures}
           onDeparted={removeDeparture}
           arrivals={arrivals}
+          emergences={emergences}
           onLanded={removeLanding}
           alerts={alerts}
           openBuilding={openBuilding}
@@ -288,7 +302,15 @@ function BaseScreen({ player }: { player: Player }) {
           onClose={() => setDuelAlertId(null)}
         />
       )}
-      {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
+      {duel !== undefined && duel.alert.kind === 'cockpit' && duel.flight.type === 'groundAttack' && (
+        <GroundAttackWindow
+          alert={duel.alert}
+          onStart={(alertId) => order(startAlert(alertId))}
+          onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}
+          onClose={() => setDuelAlertId(null)}
+        />
+      )}
+      {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && duel.flight.type === 'fighterCombat' && (
         <CockpitCombatWindow
           alert={duel.alert}
           maneuverability={duelCrew.aircraft.model.maneuverability}

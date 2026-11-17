@@ -15,6 +15,7 @@ enum MissionType: string
     case Reconnaissance = 'reconnaissance';
     case AirCombat = 'airCombat';
     case FighterCombat = 'fighterCombat';
+    case GroundAttack = 'groundAttack';
     case Bombing = 'bombing';
 
     /**
@@ -46,7 +47,7 @@ enum MissionType: string
                 suppliesPerRiskPoint: new IntegerRange(85, 120),
                 commandPointsPerAircraft: 1,
             ),
-            self::AirCombat, self::FighterCombat => new MissionProfile(
+            self::AirCombat, self::FighterCombat, self::GroundAttack => new MissionProfile(
                 category: AircraftCategory::Fighter,
                 aircraftCount: new IntegerRange(1, 2),
                 durationSeconds: new IntegerRange(120, 240),

@@ -6,6 +6,8 @@ import { disposeScene } from './rendering'
 
 const SPRITE_PIXELS = 512
 const VIEW_HALF_METERS = 6
+/** How wide the picture is on the ground, in meters, at the true size of the aircraft. */
+export const AIRCRAFT_SPRITE_WIDTH_METERS = 2 * VIEW_HALF_METERS
 const CAMERA_HEIGHT_METERS = 20
 const CAMERA_FAR_METERS = 50
 const LIGHT_COLOR = 0xffffff

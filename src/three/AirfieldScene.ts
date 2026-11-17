@@ -49,6 +49,7 @@ const PIVOT_SECONDS = 1
 const TAXI_SPEED_METERS_PER_SECOND = 30
 // An aircraft that has landed taxis more slowly to its stand, and the next one lands this long after it.
 const LANDED_TAXI_SPEED_METERS_PER_SECOND = 18
+const HANGAR_TAXI_SPEED_METERS_PER_SECOND = 10
 const LANDING_SPACING_SECONDS = 7
 const APPROACH_DISTANCE_METERS = 360
 const TOUCHDOWN_BEFORE_END_METERS = 40
@@ -64,6 +65,13 @@ const FULL_TURN_DEGREES = 360
 const DEGREES = Math.PI / 180
 
 type LandingAircraft = {
+  aircraftId: number
+  model: D520Model
+  startSeconds: number
+  path: TaxiPath
+}
+
+type EmergingAircraft = {
   aircraftId: number
   model: D520Model
   startSeconds: number
@@ -136,6 +144,7 @@ export class AirfieldScene {
   private readonly idleModels: D520Model[] = []
   private readonly departing: DepartingAircraft[] = []
   private readonly landing: LandingAircraft[] = []
+  private readonly emerging: EmergingAircraft[] = []
   private readonly liveries: LiveryTextures
   private readonly parked = new THREE.Group()
   private readonly topPosition = new THREE.Vector3()
@@ -228,6 +237,15 @@ export class AirfieldScene {
     this.landing.push({ aircraftId, model, startSeconds, path: this.taxiPathToStand(stand) })
   }
 
+  /** Brings an aircraft out of the hangar, from behind the building, and down the taxiways to its stand, with the damage it has. */
+  emerge(aircraftId: number, stand: Cell, damageLevel: number, tailNumber: number): void {
+    const model = this.acquireModel(tailNumber)
+    for (let level = 0; level < damageLevel; level += 1) {
+      model.inflictDamage()
+    }
+    this.emerging.push({ aircraftId, model, startSeconds: this.secondsNow(), path: this.taxiPathFromHangar(stand) })
+  }
+
   dispose(): void {
     this.renderer.setAnimationLoop(null)
     this.resizeObserver.disconnect()
@@ -248,6 +266,13 @@ export class AirfieldScene {
       points.push(tileCenterOf(this.runway, step.cell.row, step.cell.column))
     }
     return new TaxiPath(points)
+  }
+
+  /** From the hangar, the way an aircraft takes to its stand: down the taxiways and around the aircraft parked, starting from the middle of the tile of the hangar, which hides it. */
+  private taxiPathFromHangar(stand: Cell): TaxiPath {
+    const hangar = this.plan.sprites.find((sprite) => sprite.building === 'hangar')!
+    const steps = findPath(this.plan, { row: hangar.row, column: hangar.column }, stand, this.parkedStands)
+    return new TaxiPath(steps.map((step) => tileCenterOf(this.runway, step.cell.row, step.cell.column)))
   }
 
   private secondsNow(): number {
@@ -374,8 +399,32 @@ export class AirfieldScene {
       }
       aircraft.model.update(deltaSeconds)
     }
+    for (let index = this.emerging.length - 1; index >= 0; index -= 1) {
+      const aircraft = this.emerging[index]
+      if (this.moveEmerging(aircraft, seconds)) {
+        aircraft.model.object.visible = false
+        this.idleModels.push(aircraft.model)
+        this.emerging.splice(index, 1)
+        this.onLanded(aircraft.aircraftId)
+        continue
+      }
+      aircraft.model.update(deltaSeconds)
+    }
     this.placeCamera(seconds)
     this.renderer.render(this.scene, this.camera)
+  }
+
+  /** Moves an aircraft that comes out of the hangar; true once it has reached its stand. */
+  private moveEmerging(aircraft: EmergingAircraft, seconds: number): boolean {
+    const distance = (seconds - aircraft.startSeconds) * HANGAR_TAXI_SPEED_METERS_PER_SECOND
+    if (distance >= aircraft.path.lengthMeters) {
+      return true
+    }
+    const place = aircraft.path.pointAt(distance)
+    aircraft.model.object.visible = true
+    aircraft.model.setState({ engine: TAXI_ENGINE, gearRetraction: 0, flaps: 1, wheels: TAXI_WHEELS, aileron: 0, rudder: 0, elevator: 0 })
+    this.place(aircraft.model, place.x, place.y, 0, aircraft.path.headingAt(distance, HEADING_SPAN_METERS), D520_GROUND_PITCH_RADIANS, 0)
+    return false
   }
 
   /** Moves a landing aircraft; true once it has reached its stand. It stays out of sight until its turn to come in. */

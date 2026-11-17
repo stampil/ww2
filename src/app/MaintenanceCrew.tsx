@@ -12,8 +12,8 @@ const SHEET_URL = assetUrl('sprites/crew/mechanic.png')
 const FRAME_ROWS = 4
 const ROW_SHARE = PERCENT / (FRAME_ROWS - 1)
 const WALK_ROWS = { down: 0, right: 1, up: 2 }
-// The mechanic stands beside the wing, a little below the middle of the stand, and his feet are the point that moves.
-const WORK_OFFSET = { column: 0.45, row: 0.2 }
+// The mechanic kneels left of the aircraft, a little below the middle of the stand, facing it as he looks to the right; his feet are the point that moves.
+const WORK_OFFSET = { column: -0.45, row: 0.2 }
 const FEET_OFFSET_ROWS = 0.35
 
 type Pose = { row: number; isFlipped: boolean }

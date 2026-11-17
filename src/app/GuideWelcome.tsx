@@ -21,7 +21,7 @@ function GuideWelcome({ onBegin, onSkip }: Props) {
             {t('guide.welcome.begin')}
           </button>
           <button type="button" onClick={onSkip}>
-            {t('guide.skip')}
+            {t('guide.welcome.decline')}
           </button>
         </div>
       </div>

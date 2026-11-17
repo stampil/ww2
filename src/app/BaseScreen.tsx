@@ -199,7 +199,6 @@ function BaseScreen({ player }: { player: Player }) {
               squadron={base.squadron}
               hangarAircraft={hangarAircraft}
               busyAircraftIds={busy.aircraftIds}
-              sprite={aircraftSprite}
               onInspect={(aircraftId) => void order(inspectAircraft(aircraftId))}
               onRepair={(aircraftId) => void order(repairAircraft(aircraftId))}
               upgrade={upgradeOf('hangar')}

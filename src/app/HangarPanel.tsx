@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import { damageLevelOf } from '../three/damageStages'
+import AircraftPicture from './AircraftPicture'
 import { formatDuration } from './formatDuration'
 import Gauge from './Gauge'
 import Icon from './Icon'
@@ -12,8 +14,6 @@ type Props = {
   squadron: Squadron
   hangarAircraft: HangarAircraft[]
   busyAircraftIds: number[]
-  /** The picture of the aircraft seen from above, once it is drawn. */
-  sprite: string | null
   onInspect: (aircraftId: number) => void
   onRepair: (aircraftId: number) => void
   upgrade: UpgradeInfo
@@ -21,8 +21,8 @@ type Props = {
   onUpgrade: (upgrade: UpgradeName) => void
 }
 
-/** The aircraft of the squadron with their modules; one back damaged is inspected to show its damage, then repaired, if a mechanic and the spare parts are there. */
-function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, sprite, onInspect, onRepair, upgrade, commandPoints, onUpgrade }: Props) {
+/** The aircraft of the squadron in 3D, on the ground or in flight, with their modules; one back damaged is inspected to show its damage, then repaired, if a mechanic and the spare parts are there. */
+function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, onInspect, onRepair, upgrade, commandPoints, onUpgrade }: Props) {
   const { t } = useTranslation()
 
   return (
@@ -35,7 +35,7 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, sprite, onInsp
 
           return (
             <li key={aircraft.id} className="card">
-              {sprite !== null && <img className="aircraft-picture" src={sprite} alt="" draggable={false} />}
+              <AircraftPicture isFlying={isFlying} damageLevel={damageLevelOf(aircraft.durability, aircraft.model.durability)} />
               <strong>{aircraft.model.name}</strong>
               <span>{t(`squadron.categories.${aircraft.model.category}`)}</span>
               {isFlying && <span className="status">{t('base.mission.inFlight')}</span>}

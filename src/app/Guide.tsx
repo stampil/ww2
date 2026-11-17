@@ -16,14 +16,15 @@ function Guide({ step, onEnd }: Props) {
       <strong>{t(`guide.${step}.title`)}</strong>
       <p>{t(`guide.${step}.text`)}</p>
       <div className="guide-actions">
-        {step === 'free' && (
+        {step === 'free' ? (
           <button type="button" className="go" onClick={onEnd}>
             {t('guide.understood')}
           </button>
+        ) : (
+          <button type="button" onClick={onEnd}>
+            {t('guide.stop')}
+          </button>
         )}
-        <button type="button" onClick={onEnd}>
-          {t('guide.skip')}
-        </button>
       </div>
     </aside>
   )

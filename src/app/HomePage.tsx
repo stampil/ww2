@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import AircraftViewer from './AircraftViewer'
+import BushViewer from './BushViewer'
 import CockpitViewer from './CockpitViewer'
 import Layout from './Layout'
 import TakeoffView from './TakeoffView'
 import TerrainTest from './TerrainTest'
 import { GAME_HASH } from './useHashRoute'
 
-/** The showcase: the D.520 and its cockpit in 3D, the terrain test and the takeoff. It runs in the browser alone, with no server. */
+/** The showcase: every 3D model of the game (the D.520, its cockpit, the bush) turned by dragging, the terrain test and the takeoff. It runs in the browser alone, with no server. */
 function HomePage() {
   const { t } = useTranslation()
 
@@ -18,6 +19,7 @@ function HomePage() {
         <div className="viewers">
           <AircraftViewer />
           <CockpitViewer />
+          <BushViewer />
         </div>
         <TerrainTest />
         <p className="description">{t('description')}</p>

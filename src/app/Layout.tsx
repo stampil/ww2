@@ -6,6 +6,8 @@ import { HOME_HASH } from './useHashRoute'
 const MODEL_SOURCE_URL = 'https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/D520/'
 const MODEL_LICENSE_URL = assetUrl('models/d520/COPYING')
 const MODEL_ATTRIBUTION_URL = assetUrl('models/d520/ATTRIBUTION.txt')
+const BUSH_SOURCE_URL = 'https://poly.pizza/m/ooG6CkLyE8'
+const BUSH_ATTRIBUTION_URL = assetUrl('models/bush/ATTRIBUTION.txt')
 
 /** What every page shares: the top bar, with the tools of the page and the language switch, and the footer with the credits. */
 function Layout({ tools, children }: { tools?: ReactNode; children: ReactNode }) {
@@ -49,7 +51,8 @@ function Layout({ tools, children }: { tools?: ReactNode; children: ReactNode })
           <span>{t('footer')}</span>
           <span className="credits">
             {t('credits.model')} <a href={MODEL_SOURCE_URL}>Emmanuel Baranger</a>, FlightGear,{' '}
-            <a href={MODEL_LICENSE_URL}>GPL v2</a>, <a href={MODEL_ATTRIBUTION_URL}>{t('credits.adapted')}</a>.
+            <a href={MODEL_LICENSE_URL}>GPL v2</a>, <a href={MODEL_ATTRIBUTION_URL}>{t('credits.adapted')}</a>. {t('credits.bush')}{' '}
+            <a href={BUSH_SOURCE_URL}>Quaternius</a>, <a href={BUSH_ATTRIBUTION_URL}>{t('credits.publicDomain')}</a>.
           </span>
         </div>
         <span className="footer-index">01 — 01</span>

@@ -31,7 +31,9 @@
   "localeName": "Français",
   "credits": {
     "model": "Modèle 3D du D.520 :",
-    "adapted": "adapté pour ce site"
+    "adapted": "adapté pour ce site",
+    "bush": "Buisson 3D :",
+    "publicDomain": "domaine public (CC0)"
   },
   "controls": {
     "label": "Animations",
@@ -48,6 +50,10 @@
   "cockpit": {
     "title": "Le cockpit en 3D",
     "hint": "Faites glisser pour tourner le cockpit"
+  },
+  "bush": {
+    "title": "Le buisson en 3D",
+    "hint": "Faites glisser pour tourner le buisson"
   },
   "damage": {
     "label": "Dégâts",
@@ -114,7 +120,8 @@
       "title": "Bienvenue, commandant",
       "hint": "10 mai 1940",
       "text": "L'Allemagne attaque à l'ouest. Tu commandes cette base aérienne et son escadrille de D.520. Pour tenir la bataille, abats 8 avions ennemis ; sans pilote ou sans avion, elle est perdue. Je te guide pour la première journée.",
-      "begin": "Commencer"
+      "begin": "Faire le tutoriel",
+      "decline": "Ne pas le faire"
     },
     "launch": {
       "title": "Étape 1 : une première mission",
@@ -138,7 +145,7 @@
     },
     "here": "Le guide te montre ce bâtiment",
     "understood": "Compris",
-    "skip": "Passer le tutoriel"
+    "stop": "Arrêter le tutoriel"
   },
   "world": {
     "choose": {

@@ -31,7 +31,9 @@
   "localeName": "English",
   "credits": {
     "model": "D.520 3D model:",
-    "adapted": "adapted for this site"
+    "adapted": "adapted for this site",
+    "bush": "Bush 3D model:",
+    "publicDomain": "public domain (CC0)"
   },
   "controls": {
     "label": "Animations",
@@ -48,6 +50,10 @@
   "cockpit": {
     "title": "The cockpit in 3D",
     "hint": "Drag to turn the cockpit"
+  },
+  "bush": {
+    "title": "The bush in 3D",
+    "hint": "Drag to turn the bush"
   },
   "damage": {
     "label": "Damage",
@@ -114,7 +120,8 @@
       "title": "Welcome, commander",
       "hint": "10 May 1940",
       "text": "Germany is attacking in the west. You command this air base and its squadron of D.520s. To hold the battle, shoot down 8 enemy aircraft; with no pilot or no aircraft left, it is lost. I will guide you through the first day.",
-      "begin": "Begin"
+      "begin": "Take the tutorial",
+      "decline": "No tutorial"
     },
     "launch": {
       "title": "Step 1: a first mission",
@@ -138,7 +145,7 @@
     },
     "here": "The guide points at this building",
     "understood": "Understood",
-    "skip": "Skip the tutorial"
+    "stop": "Stop the tutorial"
   },
   "world": {
     "choose": {

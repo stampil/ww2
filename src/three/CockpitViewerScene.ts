@@ -8,6 +8,7 @@ const COCKPIT_VIEW: OrbitView = {
   cameraStart: new THREE.Vector3(0.6, -1, 0.8),
   target: new THREE.Vector3(0, 0.35, 0.15),
   farMeters: 20,
+  isDraggable: true,
 }
 
 /** The D.520 cockpit alone on a clear background, turned in every direction by dragging, with its animations. */

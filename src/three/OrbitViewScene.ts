@@ -14,9 +14,9 @@ const SUN_POSITION = new THREE.Vector3(-30, 20, 60)
 const FILL_LIGHT_INTENSITY = 0.8
 const FILL_POSITION = new THREE.Vector3(30, -20, -10)
 
-export type OrbitView = { cameraStart: THREE.Vector3; target: THREE.Vector3; farMeters: number }
+export type OrbitView = { cameraStart: THREE.Vector3; target: THREE.Vector3; farMeters: number; isDraggable: boolean }
 
-/** A subject alone on a clear background, turned in every direction by dragging. Owns its WebGL canvas. */
+/** A subject alone on a clear background, turned in every direction by dragging unless its view is fixed. Owns its WebGL canvas. */
 export abstract class OrbitViewScene {
   protected readonly renderer: THREE.WebGLRenderer
   protected readonly scene = new THREE.Scene()
@@ -35,6 +35,7 @@ export abstract class OrbitViewScene {
     this.camera.position.copy(view.cameraStart)
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     this.controls.target.copy(view.target)
+    this.controls.enabled = view.isDraggable
     this.controls.enableZoom = false
     this.controls.enablePan = false
     this.controls.enableDamping = true

@@ -10,6 +10,7 @@ const AIRCRAFT_VIEW: OrbitView = {
   cameraStart: new THREE.Vector3(-8, 9, 6),
   target: new THREE.Vector3(0, 0, -0.2),
   farMeters: 100,
+  isDraggable: true,
 }
 
 // The flight speed given to the aircraft on show, nose first, so that its smoke trails behind it.

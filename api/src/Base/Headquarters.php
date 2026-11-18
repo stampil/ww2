@@ -22,11 +22,12 @@ use Ww2\Squadron\SquadronStore;
 
 /**
  * The headquarters: keeps a few missions on the table that the squadron can fly, sends squadrons out on them, and receives them back.
- * A flight lasts game seconds; its result is worked out when the squadron is received.
+ * A flight lasts game seconds; its result is worked out when the squadron is received, and a reconnaissance that succeeded spots one better paid mission.
  */
 final class Headquarters
 {
     private const MISSIONS_ON_TABLE = 3;
+    private const SPOTTED_REWARD_PERCENT = 150;
     private const FIRE_SECONDS = 180;
 
     public function __construct(
@@ -125,8 +126,27 @@ final class Headquarters
             $report = $this->resolver->resolve($flight, $this->pilotsById($baseId), $this->aircraftById($baseId), $duels);
             $this->applyReport($baseId, $report, $gameSeconds);
             $this->missions->remove($missionId);
-            $this->events->record($baseId, $report->toArray());
+            $spotted = false;
+            if ($report->success && $report->type === MissionType::Reconnaissance) {
+                $spotted = $this->spotMission($baseId);
+            }
+            $this->events->record($baseId, $report->toArray() + ['spottedMission' => $spotted]);
         });
+    }
+
+    /**
+     * Puts a mission on the table beyond the usual three, paid more than the usual, unless the table already holds a fourth.
+     *
+     * @return bool whether a mission was put on the table
+     */
+    private function spotMission(int $baseId): bool
+    {
+        if (count($this->missions->offersOf($baseId)) > self::MISSIONS_ON_TABLE) {
+            return false;
+        }
+        $this->missions->addOffer($baseId, $this->generator->draw($this->flyableTypesFor($this->aircraftCategoriesOf($baseId)), self::SPOTTED_REWARD_PERCENT));
+
+        return true;
     }
 
     private function fillTable(int $baseId): void
@@ -145,16 +165,27 @@ final class Headquarters
                     $this->missions->remove($offer->id);
                 }
             }
-            $types = [];
-            foreach (MissionType::cases() as $type) {
-                if ($type->isFlyableBy($categories)) {
-                    $types[] = $type;
-                }
-            }
+            $types = $this->flyableTypesFor($categories);
             for ($drawn = $kept; $drawn < self::MISSIONS_ON_TABLE; $drawn += 1) {
                 $this->missions->addOffer($baseId, $this->generator->draw($types));
             }
         });
+    }
+
+    /**
+     * @param list<AircraftCategory> $categories the categories of the aircraft a squadron has
+     * @return non-empty-list<MissionType> the types of mission such a squadron can fly, a reconnaissance always among them
+     */
+    private function flyableTypesFor(array $categories): array
+    {
+        $types = [];
+        foreach (MissionType::cases() as $type) {
+            if ($type->isFlyableBy($categories)) {
+                $types[] = $type;
+            }
+        }
+
+        return $types;
     }
 
     private function tableIsComplete(int $baseId): bool

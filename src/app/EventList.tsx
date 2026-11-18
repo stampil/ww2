@@ -33,6 +33,7 @@ function MissionReportItem({ report }: { report: MissionReport }) {
         {' · '}
         {t('base.mission.windAtTakeoff', { windSpeed: report.windSpeed })}
       </span>
+      {report.spottedMission === true && <span>{t('base.mission.spotted')}</span>}
       <ul>
         {report.crews.map((crew) => (
           <li key={crew.pilotName}>{crewLine(crew)}</li>

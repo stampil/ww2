@@ -354,6 +354,7 @@
       "failed": "échouée",
       "gains": "Gains : ravitaillement {{supplies}}, points de commandement {{points}}",
       "noGain": "Aucun gain",
+      "spotted": "Une mission mieux payée est apparue au Quartier Général.",
       "windAtTakeoff": "vent au départ : {{windSpeed}} km/h",
       "crewDamaged": "{{pilot}} ({{aircraft}}) : {{damage}} de durabilité perdue",
       "crewLost": "{{pilot}} ({{aircraft}}) : avion perdu, pilote sauf",

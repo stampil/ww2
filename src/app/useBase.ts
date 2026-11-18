@@ -90,6 +90,8 @@ export type MissionReport = {
   windSpeed: number
   suppliesWon: number
   commandPointsWon: number
+  /** Whether the reconnaissance spotted a better paid mission; absent from the reports kept before missions could be spotted. */
+  spottedMission?: boolean
   crews: {
     pilotName: string
     aircraftName: string

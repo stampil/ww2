@@ -15,10 +15,10 @@ Un suivi ne garde que les tâches à faire et les questions en suspens ; les dé
    - **M6, grand : les attaques et les bâtiments détruits.** Résultats des attaques, bâtiments détruits, état des bases : tout est synchronisé par le serveur ; le front relit le serveur toutes les quelques secondes et après chaque ordre ; un journal des événements pour le joueur absent.
 
    **Jalon 2 : les mini-jeux, le cœur tactique** — « il me semble que dans le jeu reel y a des sorte de toast qui s'affiche en mission pour combatre, ou prendre photo , fait aussi les mini jeu ! » puis « c tout le sel de ce jeu » puis « Go pour tout fait au recomandé mais dépile » (17/11). Compris : go pour tout le jalon 2, avec mes choix recommandés, dans l'ordre (« dépile ») ; pendant un vol, une alerte (un « toast » sur la carte) propose le mini-jeu du moment : combattre, prendre des photos, bombarder ; le cahier du jeu la décrit (« une icône d'alerte apparaît à l'écran, cliquer dessus ouvre une fenêtre en vue de dessus »). Mes choix : l'alerte est le mécanisme commun (étape A) ; si le joueur ne joue pas, la mission se règle par le calcul d'E4 au retour, comme aujourd'hui ; le serveur règle chaque mini-jeu (le front envoie les choix, le back résout et répond), conformément au 16/11 ; ordre : A, E7, E8, E9.
-   - **E8, moyen : la reconnaissance, première version faite ; reste : « missions plus rentables débloquées contre un risque d'interception »** (question 1) ; réglages à l'usage (nombre de cibles, vitesse de la jauge de détection). Les cibles sont pour l'instant les véhicules du convoi ; elles prendront le décor (tente, nid de mitrailleuse : voir le point 9) quand ses images arriveront.
+   - **E8, moyen : la reconnaissance, faite ; restent les réglages à l'usage** (nombre de cibles, vitesse de la jauge de détection, les 150 % de la mission repérée). Les cibles sont pour l'instant les véhicules du convoi ; elles prendront le décor (tente, nid de mitrailleuse : voir le point 9) quand ses images arriveront.
    - **E9, grand : le bombardement.** Vitesse, largage au bon moment, dérive du vent affichée, cibles (char, bunker, usine), bombardiers Amiot 143 et LeO 451.
 
-   **Suite des mini-jeux** — « continue a depiler les mini jeu, il faut comme le jeu original pouvoir prendre en photo, ou par mini jeu attaquer un avion ennemi » puis « tu a un jeu en reference, tu te base sur until the last plane » (17/11). Compris, pris comme le go (« dépile ») : les alertes, le duel et la première version d'E8 (la reconnaissance en photos) sont faits ; reste E9, d'après le jeu d'origine.
+   **Suite des mini-jeux** — « continue a depiler les mini jeu, il faut comme le jeu original pouvoir prendre en photo, ou par mini jeu attaquer un avion ennemi » puis « tu a un jeu en reference, tu te base sur until the last plane » (17/11). Compris, pris comme le go (« dépile ») : les alertes, le duel et E8 (la reconnaissance en photos, avec sa mission repérée) sont faits ; reste E9, d'après le jeu d'origine.
 
    **Mini-jeux comme dans Wings** — fait pour le combat aérien vu du cockpit (voir le cahier) ; reste, de tes consignes : l'ennemi qui tire sur toi (l'attaque au sol façon Wings est faite en première version : point 9), et, selon « l'attaque en grille sera contre les bombardiers ennemis et le combat aérien vu cockpit contre 109 et D520 allemand et Vichy » : le D.520 allemand dans le combat du cockpit (il faut sa livrée : `SV-GB.png` de FGAddon, 1 274 820 octets, GPL v2 : j'ai besoin de ton accord pour la télécharger).
 
@@ -57,7 +57,7 @@ Un suivi ne garde que les tâches à faire et les questions en suspens ; les dé
 
 ## Questions en suspens
 
-1. **Reconnaissance : « missions plus rentables débloquées », comment ?** Deux lectures. (a) Chaque photo au-delà du minimum ajoute 20 % de ravitaillement au gain de la reconnaissance : le navigateur dit au serveur combien de photos il a prises, comme il dit déjà le résultat. (b) Une reconnaissance réussie ajoute au Quartier Général une mission de plus, mieux payée. Je recommande (a), plus simple. Rien n'est codé pour cette partie avant ta réponse.
+Aucune.
 
 ## Mis de côté
 

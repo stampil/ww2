@@ -354,6 +354,7 @@
       "failed": "failed",
       "gains": "Rewards: supplies {{supplies}}, command points {{points}}",
       "noGain": "No reward",
+      "spotted": "A better paid mission has appeared at the headquarters.",
       "windAtTakeoff": "wind at takeoff: {{windSpeed}} km/h",
       "crewDamaged": "{{pilot}} ({{aircraft}}): {{damage}} durability lost",
       "crewLost": "{{pilot}} ({{aircraft}}): aircraft lost, pilot safe",

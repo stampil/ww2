@@ -11,14 +11,17 @@ use Random\Randomizer;
  */
 final class MissionGenerator
 {
+    private const FULL_REWARD_PERCENT = 100;
+
     public function __construct(private readonly Randomizer $random = new Randomizer())
     {
     }
 
     /**
      * @param non-empty-list<MissionType> $types the types the mission may be of
+     * @param int $rewardPercent how much of the drawn rewards the mission pays, rounded up
      */
-    public function draw(array $types): Mission
+    public function draw(array $types, int $rewardPercent = self::FULL_REWARD_PERCENT): Mission
     {
         $type = $types[$this->random->getInt(0, count($types) - 1)];
         $profile = $type->profile();
@@ -36,8 +39,13 @@ final class MissionGenerator
             $fuel,
             $ammunition,
             $risk,
-            $profile->suppliesPerRiskPoint->draw($this->random) * $risk * $aircraftCount,
-            $profile->commandPointsPerAircraft * $aircraftCount,
+            $this->scaled($profile->suppliesPerRiskPoint->draw($this->random) * $risk * $aircraftCount, $rewardPercent),
+            $this->scaled($profile->commandPointsPerAircraft * $aircraftCount, $rewardPercent),
         );
+    }
+
+    private function scaled(int $reward, int $percent): int
+    {
+        return (int) ceil($reward * $percent / self::FULL_REWARD_PERCENT);
     }
 }

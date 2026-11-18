@@ -182,7 +182,7 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
 }
 
 .base-map-viewport {
-  overflow: auto hidden;
+  overflow: hidden;
   border: 2px solid $outline;
   box-shadow:
     0 0 0 2px $frame,
@@ -191,7 +191,6 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
 
 .base-map {
   position: relative;
-  min-width: 36rem;
 }
 
 .base-map-canvas {
@@ -237,7 +236,11 @@ button.base-sprite {
   &::after {
     content: '';
     position: absolute;
-    inset: -0.5rem;
+    inset: -0.75rem;
+
+    @include from('medium') {
+      inset: -0.5rem;
+    }
   }
 
   img {

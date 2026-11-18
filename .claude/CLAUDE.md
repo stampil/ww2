@@ -395,6 +395,8 @@ Le texte exact de l'utilisateur, puis ce qui en est compris. Ce sont des règles
 
 **Avions garés en 3D partout : choisi, rien de codé** — « A, 3D partout », « je les ferais partager une seule texture de base avec le numéro posé à part. oui et on reduira la texture, pas besoin qu'elle soit HD là » puis « ne code plus » (17/11). Réponse A à la question sur la scène 3D permanente : la scène 3D est l'affichage de la base, les avions garés sont des `D520Model` vus de dessus partageant une texture de livrée réduite, sans numéro de queue ni dégâts. Le plan relevé dans le code est dans `SUIVI.md`, point 12. Aucun fichier de code n'a été modifié pour ce point.
 
+**Réponses aux questions du suivi ; la Croix-Rouge** — « met de coté » (GitHub), « y a pas de question là ! » (les images de la carte), « A » (plusieurs bases : la bataille se compte pour le joueur sur toutes ses bases, le guide ne sert que la première), « oui fait généré croix-rouge , promt top prio fait le miantenant » (18/11). Le suivi n'a plus de question ; la voie GitHub est dans « Mis de côté ». Croix-Rouge de l'attaque au sol : une ambulance et une tente sanitaire à épargner, chacune en trois états au même angle que le convoi ; prompt donné avec `ref/convoi-allemand-feuille.jpeg` en image 1 (ici l'angle est le même que celui de la référence, donc la référence est utile, contrairement au cas où on veut changer d'angle) ; pénalité de ma main : un élément détruit fait échouer l'attaque. Rien n'est codé.
+
 ## Choix pris au « go » (propositions non contestées, à corriger si besoin)
 
 - Ports locaux : API 8765 (`php -S`), Vite 5173 ; je lance moi-même les serveurs (voir « Les commandes bash, je les lance moi-même »).

@@ -16,9 +16,8 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 
 ## 2. Questions à lever
 
-1. **Bf 109 : le seul anachronisme étant Vichy (« on fera q anachronisme avec vichy »), il faut un Bf 109 E de 1940.** Le modèle 3D que j'ai (FGAddon) est un G-14 de 1944. (a) Je cherche un Bf 109 E libre et je te donne la source avant tout téléchargement. (b) Je garde le G-14 avec une texture de 1940 et le nom « Bf 109 E » : la forme (capot, dérive) reste celle d'un G. (c) Le G-14 reste tel quel, ce qui fait un second anachronisme. Je recommande (a), puis (b).
-2. **Campagne dynamique : trois points à fixer (bloquent E11).** (i) L'objectif de 8 abattus et l'écran de fin de bataille disparaissent : les abattus deviennent un score, la base ne « se termine » jamais. (ii) Un avion perdu se remplace en l'assemblant à l'atelier avec les quatre pièces qu'il fabrique déjà (moteur, ailes, fuselage, armement) : c'est ce qui rend le ravitaillement vital ; un pilote mort se recrute déjà. (iii) Le ravitaillement du front : chaque base touche un ravitaillement régulier qui baisse quand elle est près du front, et les bases de l'arrière peuvent lui en envoyer (M4) avec un délai selon la distance. D'accord, ou à changer ? Je recommande d'accord.
-3. **Le vent ne sert plus à rien sans bombardement.** Il n'affectait que le bombardement. (a) Il pousse l'avion de côté dans l'attaque au sol et dans la reconnaissance, en proportion des km/h : le joueur compense. (b) On retire l'affichage du vent. Je recommande (a).
+1. **Campagne dynamique : trois points à fixer (bloquent E11).** (i) L'objectif de 8 abattus et l'écran de fin de bataille disparaissent : les abattus deviennent un score, la base ne « se termine » jamais. (ii) Un avion perdu se remplace en l'assemblant à l'atelier avec les quatre pièces qu'il fabrique déjà (moteur, ailes, fuselage, armement) : c'est ce qui rend le ravitaillement vital ; un pilote mort se recrute déjà. (iii) Le ravitaillement du front : chaque base touche un ravitaillement régulier qui baisse quand elle est près du front, et les bases de l'arrière peuvent lui en envoyer (M4) avec un délai selon la distance. D'accord, ou à changer ? Je recommande d'accord.
+2. **Le vent ne sert plus à rien sans bombardement.** Il n'affectait que le bombardement. (a) Il pousse l'avion de côté dans l'attaque au sol et dans la reconnaissance, en proportion des km/h : le joueur compense. (b) On retire l'affichage du vent. Je recommande (a).
 
 ## 3. Le travail restant, dans l'ordre
 
@@ -26,12 +25,12 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 |---|---|---|---|
 | 1 | **M3 : les clans** : un clan est un côté, les Français ou l'Axe (Allemands et Vichy) ; les joueurs d'un même côté sont alliés | moyen | — |
 | 2 | **M4 : la gestion intercamps** : échange de ressources, de pilotes, d'équipages et d'avions entre ses bases et entre joueurs d'un clan ; un camp repris est une vraie seconde base (sélecteur de base à l'écran) | grand | M3 |
-| 3 | **M5 : les camps de l'Axe et les camps tenus par l'IA** : un camp sans joueur est tenu par l'IA jusqu'à ce qu'un joueur s'en empare ; l'Axe pilote le Bf 109, le D.520 à livrée allemande et le D.520 à livrée Vichy | grand | M3, question 1, accord SV-GB |
+| 3 | **M5 : les camps de l'Axe et les camps tenus par l'IA** : un camp sans joueur est tenu par l'IA jusqu'à ce qu'un joueur s'en empare ; l'Axe pilote le Bf 109, le D.520 à livrée allemande et le D.520 à livrée Vichy | grand | M3, accord SV-GB |
 | 4 | **M6 : les attaques et les bâtiments détruits** : résultats, bâtiments détruits et état des bases synchronisés par le serveur, relus toutes les quelques secondes ; journal pour le joueur absent | grand | M5 |
-| 5 | **E11 : la campagne dynamique** : le serveur fait vivre la seule bataille de France (mai à juin 1940) ; les pertes comptent ; le ravitaillement tient les bases du front ; plus de « nouvelle bataille » | grand | M3 à M6, question 2 |
+| 5 | **E11 : la campagne dynamique** : le serveur fait vivre la seule bataille de France (mai à juin 1940) ; les pertes comptent ; le ravitaillement tient les bases du front ; plus de « nouvelle bataille » | grand | M3 à M6, question 1 |
 | 6 | **Missions choisies, sur la carte** : aider un camp allié, poser des avions sur un camp déserté pour le récupérer, attaquer un camp ennemi | grand | M3 à M6, images des camps |
-| 7 | **E10 : les assets restants** : Bf 109 E, MS.406 (avion de départ, décision du 16/11), sons, images IA (portraits de pilotes, personnel d'entretien, camion de carburant et pompiers, illustrations des cartes, états abîmé et en réparation des avions, aires de stationnement) | grand | images, question 1 |
-| 8 | **E12 : la finition** : réglages en `localStorage`, performances, nettoyage des outils de lint, retrait du type de mission « bombardement » (plus de bombardier jouable) | moyen | question 3 |
+| 7 | **E10 : les assets restants** : MS.406 (avion de départ, décision du 16/11), sons, images IA (portraits de pilotes, personnel d'entretien, camion de carburant et pompiers, illustrations des cartes, états abîmé et en réparation des avions, aires de stationnement) | grand | images |
+| 8 | **E12 : la finition** : réglages en `localStorage`, performances, nettoyage des outils de lint, retrait du type de mission « bombardement » (plus de bombardier jouable) | moyen | question 2 |
 | 9 | **Ennemi qui tire sur toi** dans les mini-jeux (Wings) | moyen | le décor |
 | 10 | **Réglages à l'usage**, quand tu auras joué : attaque au sol, reconnaissance (cibles, jauge, mission repérée à 150 %), pénalité de la Croix-Rouge | petit | tes essais |
 

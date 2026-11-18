@@ -86,7 +86,7 @@
   "duel": {
     "toast": "Bombardier ennemi en vue : {{pilot}} peut attaquer.",
     "toastResume": "Combat en cours : {{pilot}}.",
-    "attack": "Attaquer",
+    "take": "Attaquer",
     "resume": "Reprendre",
     "title": "Interception de bombardier",
     "hint": "Tu attaques un {{enemy}} par derrière. Joue tes {{moves}} coups : après le dernier, le bombardier est abattu s'il est dans ton cône de tir rouge, sinon il s'échappe.",

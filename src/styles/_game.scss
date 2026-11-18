@@ -1,6 +1,7 @@
 @use 'sass:color';
 @use 'flex' as *;
 @use 'breakpoints' as *;
+@use 'touch' as *;
 
 // The look of the game screen: the colours of the interface of the original game, read off its screenshots on Steam
 // (the panel green, the black outline, the grey-green line of the frame, the gold of the titles, the khaki of the buttons).
@@ -38,7 +39,7 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
 @mixin button {
   @include flex($display: inline-flex, $align: center, $justify: center, $gap: 0.4rem);
   position: relative;
-  min-height: 2rem;
+  min-height: $touch-target;
   padding: 0 0.8rem;
   border: 2px solid $outline;
   border-radius: 0;
@@ -53,6 +54,10 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+
+  @include from('medium') {
+    min-height: 2rem;
+  }
 
   // Reaches the 48px that a finger needs.
   &::after {
@@ -778,7 +783,7 @@ button.base-sprite {
 .window-body {
   @include flex($direction: column, $gap: 0.5rem);
   min-height: 0;
-  padding: 0.5rem 0.25rem 0.25rem;
+  padding: 0.5rem 0.25rem;
   overflow-y: auto;
   scrollbar-color: $khaki $outline;
 }
@@ -1096,13 +1101,17 @@ button.base-sprite {
 
   select,
   input {
-    min-height: 2.1rem;
+    min-height: $touch-target;
     padding: 0 0.6rem;
     border: 2px solid $outline;
     background: $outline;
     box-shadow: inset 0 0 0 1px $frame;
     color: $text;
     font: inherit;
+
+    @include from('medium') {
+      min-height: 2.1rem;
+    }
   }
 
   select:focus-visible,

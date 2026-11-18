@@ -55,11 +55,12 @@ Un suivi ne garde que les tâches à faire et les questions en suspens ; les dé
 
    Véhicules à épargner : « oui fait généré croix-rouge , promt top prio fait le miantenant » (18/11). Compris : il y a des éléments de la Croix-Rouge à ne pas toucher, comme dans Wings : une ambulance et une tente sanitaire, chacune en trois sprites (intact, endommagé, détruit), au même angle que le convoi. Prompt donné le 18/11 avec la feuille du convoi en image 1 ; j'attends ton « généré ». Pénalité, de ma main : détruire un élément de la Croix-Rouge fait échouer l'attaque, quel que soit le nombre de véhicules détruits ; à régler à l'usage.
 
-10. **Tout doit être jouable sur mobile** — « tout doit etre jouable mobile » (17/11). Compris : chaque écran du jeu doit se jouer au doigt, sans clavier ni survol : la base, les fenêtres des bâtiments, les trois mini-jeux (duel sur grille : boutons ; combat du cockpit et attaque au sol : doigt tenu sur la vue, aucun bouton de tir). Les mini-jeux sont déjà faits sans touche de tir. À faire : une passe sur tous les écrans à la largeur d'un téléphone (carte de la base, fenêtres, mini-jeux, boutons assez grands pour le doigt), puis corriger.
+10. **Tout doit être jouable sur mobile** — « tout doit etre jouable mobile » (17/11). Compris : chaque écran du jeu doit se jouer au doigt, sans clavier ni survol. La passe sur tous les écrans à 375 px est faite (cibles de 44 px au moins sur les boutons, les champs et l'en-tête ; fenêtres, trois mini-jeux). Reste : la carte de la base sur téléphone (question 2).
 
 ## Questions en suspens
 
 1. **Reconnaissance : « missions plus rentables débloquées », comment ?** Deux lectures. (a) Chaque photo au-delà du minimum ajoute 20 % de ravitaillement au gain de la reconnaissance : le navigateur dit au serveur combien de photos il a prises, comme il dit déjà le résultat. (b) Une reconnaissance réussie ajoute au Quartier Général une mission de plus, mieux payée. Je recommande (a), plus simple. Rien n'est codé pour cette partie avant ta réponse.
+2. **Carte de la base sur téléphone : elle défile sur le côté ou elle tient dans la largeur ?** Aujourd'hui elle fait au moins 36 rem (576 px) de large dans un cadre d'environ 330 px, donc un bâtiment, avec son alerte, peut être hors de l'écran. (a) Elle tient dans la largeur : tuiles d'environ 24 px, tout est visible, les bâtiments restent touchables par leur zone de 48 px. (b) Elle défile, avec un bouton qui la recentre sur l'alerte. Je recommande (a). Rien n'est codé avant ta réponse.
 
 ## Mis de côté
 

@@ -1,6 +1,7 @@
 @use 'styles/breakpoints' as *;
 @use 'styles/flex' as *;
 @use 'styles/game';
+@use 'styles/touch' as *;
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Saira+Stencil+One&display=swap');
 
@@ -95,7 +96,7 @@ a {
   font-size: 0.8rem;
 
   button {
-    height: 2rem;
+    height: $touch-target;
     padding: 0 0.9rem;
     border: 1px solid var(--line);
     border-radius: 0.5rem;
@@ -103,6 +104,10 @@ a {
     cursor: pointer;
     font-size: 0.8rem;
     font-weight: 500;
+
+    @include from('medium') {
+      height: 2rem;
+    }
   }
 }
 
@@ -118,13 +123,17 @@ a {
 
   input,
   select {
-    height: 2.25rem;
+    height: $touch-target;
     padding: 0 0.75rem;
     border: 1px solid var(--line);
     border-radius: 0.5rem;
     background: transparent;
     color: var(--ink);
     font: inherit;
+
+    @include from('medium') {
+      height: 2.25rem;
+    }
   }
 }
 
@@ -152,7 +161,19 @@ a {
   @include flex($gap: 0.5rem);
 }
 
+// A finger needs 44px; a mouse does not.
+@mixin touch-target {
+  min-width: $touch-target;
+  min-height: $touch-target;
+
+  @include from('medium') {
+    min-width: 0;
+    min-height: 0;
+  }
+}
+
 .music-toggle {
+  @include touch-target;
   padding: 0.4rem 0;
   border: 0;
   background: transparent;
@@ -173,6 +194,7 @@ a {
   font-size: 0.75rem;
 
   button {
+    @include touch-target;
     padding: 0.4rem 0;
     border: 0;
     background: transparent;

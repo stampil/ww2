@@ -86,7 +86,7 @@
   "duel": {
     "toast": "Enemy bomber in sight: {{pilot}} can attack.",
     "toastResume": "Dogfight under way: {{pilot}}.",
-    "attack": "Attack",
+    "take": "Attack",
     "resume": "Resume",
     "title": "Bomber interception",
     "hint": "You attack a {{enemy}} from behind. Play your {{moves}} moves: after the last one, the bomber is shot down if it is in your red firing cone, else it gets away.",

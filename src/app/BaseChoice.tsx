@@ -4,17 +4,19 @@ import GameWindow from './GameWindow'
 import Icon from './Icon'
 import Pane from './Pane'
 import { useSites } from './useSites'
+import WorldMap from './WorldMap'
 
 type Props = {
   /** Takes the site; returns the code of the error the API gave, or null when the base is the player's. */
   onClaim: (site: string) => Promise<string | null>
 }
 
-/** Where a new player picks the site of their base among those still free; the window stays until they have. */
+/** Where a new player picks the site of their base on the map, among those still free; the window stays until they have. */
 function BaseChoice({ onClaim }: Props) {
   const { t } = useTranslation()
   const [sitesVersion, setSitesVersion] = useState(0)
   const sites = useSites(sitesVersion)
+  const [selected, setSelected] = useState<string | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
 
   const claim = (site: string) => {
@@ -30,6 +32,8 @@ function BaseChoice({ onClaim }: Props) {
     return null
   }
 
+  const chosen = sites.find(({ site }) => site === selected)
+
   return (
     <GameWindow title={t('world.choose.title')} hint={t('world.choose.hint')}>
       <Pane title={t('world.sites')}>
@@ -38,27 +42,21 @@ function BaseChoice({ onClaim }: Props) {
             {t(`base.errors.${errorCode}`)}
           </p>
         )}
-        <ul className="cards">
-          {sites.map(({ site, free }) => (
-            <li key={site} className="card">
-              <div className="card-head">
-                <span className="portrait" aria-hidden="true">
-                  <Icon name="site" />
-                </span>
-                <div>
-                  <strong>{t(`world.site.${site}`)}</strong>
-                  <span>{t(free ? 'world.free' : 'world.taken')}</span>
-                </div>
-              </div>
-              <div className="card-actions">
-                <button type="button" className="go" disabled={!free} onClick={() => claim(site)}>
-                  <Icon name="site" />
-                  {t('world.claim')}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="world-choice">
+          {chosen === undefined ? (
+            <p>{t('world.pick')}</p>
+          ) : (
+            <>
+              <strong>{t(`world.site.${chosen.site}`)}</strong>
+              <span>{t(chosen.free ? 'world.free' : 'world.taken')}</span>
+              <button type="button" className="go" disabled={!chosen.free} onClick={() => claim(chosen.site)}>
+                <Icon name="site" />
+                {t('world.claim')}
+              </button>
+            </>
+          )}
+        </div>
+        <WorldMap sites={sites} selected={selected} onSelect={setSelected} />
       </Pane>
     </GameWindow>
   )

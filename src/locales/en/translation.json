@@ -255,6 +255,8 @@
       "hint": "Each free site is a base to run; the other players of this world have taken theirs."
     },
     "sites": "Sites",
+    "map": "Map of France",
+    "pick": "Click a free camp on the map to put your base there.",
     "free": "Free",
     "taken": "Taken",
     "claim": "Take this base",

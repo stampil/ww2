@@ -8,12 +8,11 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 
 | Il me faut | Ça débloque |
 |---|---|
-| **Ton avis sur la carte nettoyée** (`ref/carte-france.png`, envoyée en carte) : la 3e image avait encore des mots, je les ai effacés par code, il reste de légères traînées claires. Bonne comme ça, ou je la trace par code d'après Natural Earth ? | M2, la carte de France, puis tout le monde (M3 à M6) et les missions choisies |
 | **Ton « généré »** du convoi refait : destruction sans feu ni flamme (prompt donné le 18/11, image 1 = la feuille du convoi) | les sprites détruits de l'attaque au sol |
 | **Ton « généré »** de la feuille Croix-Rouge, prompt corrigé le 18/11 (plus de flammes) : ambulance et tente sanitaire, 3 états chacune | les éléments à épargner dans l'attaque au sol |
 | Les images de décor, une à la fois, après la Croix-Rouge : tente, nid de mitrailleuse, fantassins, arbres | le décor de l'attaque au sol, les cibles de la reconnaissance, l'ennemi qui tire sur toi |
 | Ton accord pour télécharger `SV-GB.png` (1 274 820 octets, GPL v2, FGAddon) | le D.520 à livrée allemande, avion de l'Axe |
-| Les trois états de camp restants (tenu par un joueur, tenu par l'IA, attaqué) et une feuille de bâtiments de l'Axe, à demander après la carte | les camps sur la carte, la base de l'Axe |
+| Les trois états de camp restants (tenu par un joueur, tenu par l'IA, attaqué) et une feuille de bâtiments de l'Axe, à demander après le convoi et la Croix-Rouge | les camps sur la carte, la base de l'Axe |
 
 ## 2. Questions à lever
 
@@ -25,17 +24,16 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 
 | # | Chantier | Taille | Attend |
 |---|---|---|---|
-| 1 | **M2 : la carte de France** : bases libres, prises et tenues par l'IA ; camps en calques cliquables ; on choisit sa base en cliquant la carte | moyen | ton avis sur la carte |
-| 2 | **M3 : les clans** : un clan est un côté, les Français ou l'Axe (Allemands et Vichy) ; les joueurs d'un même côté sont alliés | moyen | M2 |
-| 3 | **M4 : la gestion intercamps** : échange de ressources, de pilotes, d'équipages et d'avions entre ses bases et entre joueurs d'un clan ; un camp repris est une vraie seconde base (sélecteur de base à l'écran) | grand | M3 |
-| 4 | **M5 : les camps de l'Axe et les camps tenus par l'IA** : un camp sans joueur est tenu par l'IA jusqu'à ce qu'un joueur s'en empare ; l'Axe pilote le Bf 109, le D.520 à livrée allemande et le D.520 à livrée Vichy | grand | M3, question 1, accord SV-GB |
-| 5 | **M6 : les attaques et les bâtiments détruits** : résultats, bâtiments détruits et état des bases synchronisés par le serveur, relus toutes les quelques secondes ; journal pour le joueur absent | grand | M5 |
-| 6 | **E11 : la campagne dynamique** : le serveur fait vivre la seule bataille de France (mai à juin 1940) ; les pertes comptent ; le ravitaillement tient les bases du front ; plus de « nouvelle bataille » | grand | M2 à M6, question 2 |
-| 7 | **Missions choisies, sur la carte** : aider un camp allié, poser des avions sur un camp déserté pour le récupérer, attaquer un camp ennemi | grand | M2 à M6, images des camps |
-| 8 | **E10 : les assets restants** : Bf 109 E, MS.406 (avion de départ, décision du 16/11), sons, images IA (portraits de pilotes, personnel d'entretien, camion de carburant et pompiers, illustrations des cartes, états abîmé et en réparation des avions, aires de stationnement) | grand | images, question 1 |
-| 9 | **E12 : la finition** : réglages en `localStorage`, performances, nettoyage des outils de lint, retrait du type de mission « bombardement » (plus de bombardier jouable) | moyen | question 3 |
-| 10 | **Ennemi qui tire sur toi** dans les mini-jeux (Wings) | moyen | le décor |
-| 11 | **Réglages à l'usage**, quand tu auras joué : attaque au sol, reconnaissance (cibles, jauge, mission repérée à 150 %), pénalité de la Croix-Rouge | petit | tes essais |
+| 1 | **M3 : les clans** : un clan est un côté, les Français ou l'Axe (Allemands et Vichy) ; les joueurs d'un même côté sont alliés | moyen | — |
+| 2 | **M4 : la gestion intercamps** : échange de ressources, de pilotes, d'équipages et d'avions entre ses bases et entre joueurs d'un clan ; un camp repris est une vraie seconde base (sélecteur de base à l'écran) | grand | M3 |
+| 3 | **M5 : les camps de l'Axe et les camps tenus par l'IA** : un camp sans joueur est tenu par l'IA jusqu'à ce qu'un joueur s'en empare ; l'Axe pilote le Bf 109, le D.520 à livrée allemande et le D.520 à livrée Vichy | grand | M3, question 1, accord SV-GB |
+| 4 | **M6 : les attaques et les bâtiments détruits** : résultats, bâtiments détruits et état des bases synchronisés par le serveur, relus toutes les quelques secondes ; journal pour le joueur absent | grand | M5 |
+| 5 | **E11 : la campagne dynamique** : le serveur fait vivre la seule bataille de France (mai à juin 1940) ; les pertes comptent ; le ravitaillement tient les bases du front ; plus de « nouvelle bataille » | grand | M3 à M6, question 2 |
+| 6 | **Missions choisies, sur la carte** : aider un camp allié, poser des avions sur un camp déserté pour le récupérer, attaquer un camp ennemi | grand | M3 à M6, images des camps |
+| 7 | **E10 : les assets restants** : Bf 109 E, MS.406 (avion de départ, décision du 16/11), sons, images IA (portraits de pilotes, personnel d'entretien, camion de carburant et pompiers, illustrations des cartes, états abîmé et en réparation des avions, aires de stationnement) | grand | images, question 1 |
+| 8 | **E12 : la finition** : réglages en `localStorage`, performances, nettoyage des outils de lint, retrait du type de mission « bombardement » (plus de bombardier jouable) | moyen | question 3 |
+| 9 | **Ennemi qui tire sur toi** dans les mini-jeux (Wings) | moyen | le décor |
+| 10 | **Réglages à l'usage**, quand tu auras joué : attaque au sol, reconnaissance (cibles, jauge, mission repérée à 150 %), pénalité de la Croix-Rouge | petit | tes essais |
 
 ## Mis de côté
 

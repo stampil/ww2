@@ -1,0 +1,60 @@
+import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { assetUrl } from '../assetUrl'
+import { FRANCE_MAP, sitePlace } from '../plans/franceMap'
+import type { SiteChoice } from './useSites'
+
+const MAP_URL = assetUrl('maps/carte-france.jpg')
+const CAMP_URL = assetUrl('sprites/camps/camp-free.png')
+const PERCENT = 100
+
+type Props = {
+  sites: SiteChoice[]
+  /** The site the player has picked, if any. */
+  selected: string | null
+  onSelect: (site: string) => void
+}
+
+/** The map of France with a camp on each site: a free one can be picked, a taken one is greyed. On a phone the map is wider than the screen and slides sideways, from the camps. */
+function WorldMap({ sites, selected, onSelect }: Props) {
+  const { t } = useTranslation()
+  const viewportRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const viewport = viewportRef.current!
+    const middle = sites.reduce((sum, { site }) => sum + sitePlace(site).left, 0) / sites.length
+    viewport.scrollLeft = (middle / PERCENT) * viewport.scrollWidth - viewport.clientWidth / 2
+    // The map is centred on the camps once, when it appears, not every time the list of sites is read again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <div className="world-map-viewport" ref={viewportRef}>
+      <div className="world-map" role="group" aria-label={t('world.map')} style={{ aspectRatio: `${FRANCE_MAP.width} / ${FRANCE_MAP.height}` }}>
+        <img className="world-map-picture" src={MAP_URL} alt="" />
+        {sites.map(({ site, free }) => {
+          const { left, top, labelSide } = sitePlace(site)
+          return (
+            <button
+              key={site}
+              type="button"
+              className="world-camp"
+              data-free={free}
+              data-label-side={labelSide}
+              aria-label={`${t(`world.site.${site}`)} : ${t(free ? 'world.free' : 'world.taken')}`}
+              aria-pressed={selected === site}
+              disabled={!free}
+              style={{ left: `${left}%`, top: `${top}%` }}
+              onClick={() => onSelect(site)}
+            >
+              <img src={CAMP_URL} alt="" />
+              <span aria-hidden="true">{t(`world.site.${site}`)}</span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+export default WorldMap

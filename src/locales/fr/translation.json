@@ -255,6 +255,8 @@
       "hint": "Chaque site libre est une base à gérer ; les autres joueurs de ce monde ont déjà pris les leurs."
     },
     "sites": "Sites",
+    "map": "Carte de la France",
+    "pick": "Clique un camp libre sur la carte pour y poser ta base.",
     "free": "Libre",
     "taken": "Prise",
     "claim": "Prendre cette base",

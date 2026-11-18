@@ -795,7 +795,7 @@ button.base-sprite {
   text-align: center;
 }
 
-.game-window button,
+.game-window button:not(.world-camp),
 .battle-over button,
 .guide button,
 .game-tools button {
@@ -1020,6 +1020,110 @@ button.base-sprite {
   padding-left: 0.4rem;
   border-left: 2px solid $outline;
   font-variant-numeric: tabular-nums;
+}
+
+// The map of France where a new player picks the site of a base: on a phone it is wider than the screen and slides sideways.
+.world-map-viewport {
+  overflow-x: auto;
+  border: 2px solid $outline;
+  box-shadow:
+    0 0 0 2px $frame,
+    0 0 0 4px $outline;
+}
+
+.world-map {
+  position: relative;
+  min-width: 44rem;
+}
+
+.world-map-picture {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.world-camp {
+  position: absolute;
+  width: 4.5%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+
+  // Reaches the 48px that a finger needs around a small camp.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -0.75rem;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 1px 2px rgba($outline, 0.5));
+  }
+
+  span {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-left: 0.25rem;
+    color: $outline;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-shadow: 0 0 3px rgba($text, 0.8);
+    transform: translateY(-50%);
+    white-space: nowrap;
+  }
+
+  &[data-label-side='left'] span {
+    right: 100%;
+    left: auto;
+    margin-right: 0.25rem;
+    margin-left: 0;
+  }
+
+  &[data-free='false'] {
+    cursor: default;
+
+    img {
+      filter: grayscale(1) opacity(0.55);
+    }
+  }
+
+  &:hover:not(:disabled) img,
+  &:focus-visible img,
+  &[aria-pressed='true'] img {
+    filter: drop-shadow(0 0 0.4rem $gold);
+  }
+
+  &:focus-visible,
+  &[aria-pressed='true'] {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+.world-choice {
+  @include flex($align: center, $gap: 0.5rem 1rem);
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+
+  p {
+    margin: 0;
+    color: $muted-text;
+  }
+
+  strong {
+    color: $gold;
+  }
+
+  span {
+    color: $muted-text;
+  }
 }
 
 .card-actions {

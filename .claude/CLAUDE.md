@@ -397,6 +397,8 @@ Le texte exact de l'utilisateur, puis ce qui en est compris. Ce sont des règles
 
 **Réponses aux questions du suivi ; la Croix-Rouge** — « met de coté » (GitHub), « y a pas de question là ! » (les images de la carte), « A » (plusieurs bases : la bataille se compte pour le joueur sur toutes ses bases, le guide ne sert que la première), « oui fait généré croix-rouge , promt top prio fait le miantenant » (18/11). Le suivi n'a plus de question ; la voie GitHub est dans « Mis de côté ». Croix-Rouge de l'attaque au sol : une ambulance et une tente sanitaire à épargner, chacune en trois états au même angle que le convoi ; prompt donné avec `ref/convoi-allemand-feuille.jpeg` en image 1 (ici l'angle est le même que celui de la référence, donc la référence est utile, contrairement au cas où on veut changer d'angle) ; pénalité de ma main : un élément détruit fait échouer l'attaque. Rien n'est codé.
 
+**Réduire et compresser les textures** — « réduit les textures et compresse les » (18/11, à la suite de « on reduira la texture, pas besoin qu'elle soit HD là »). Relevé dans `public/` (14 Mo, 43 images, 8,1 Mo) : livrée française du D.520 en 2048 × 2048 (environ 22 Mo en mémoire, autant par copie peinte), livrée de Vichy et quatre autres avions en 1024 × 1024, sprites en PNG à transparence. Choix proposés dans `SUIVI.md`, point 13 (D.520 à 1024 plus une copie à 512 pour les avions garés, Vichy à 512, JPEG 85 pour les avions opaques, WebP pour les sprites à transparence, pas de KTX2). Rien n'est codé en attendant le go.
+
 ## Choix pris au « go » (propositions non contestées, à corriger si besoin)
 
 - Ports locaux : API 8765 (`php -S`), Vite 5173 ; je lance moi-même les serveurs (voir « Les commandes bash, je les lance moi-même »).

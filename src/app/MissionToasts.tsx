@@ -10,12 +10,15 @@ type Props = {
   onOpen: (alertId: number) => void
 }
 
-/** The texts of the toast and of the window of a mini-game: the grid duel, the strafing run of a ground attack, or the dogfight from the cockpit. */
-function namespaceOf(alert: FlightAlert, flight: Flight): 'duel' | 'strafe' | 'combat' {
+/** The texts of the toast and of the window of a mini-game: the grid duel, the strafing run of a ground attack, the photos of a reconnaissance, or the dogfight from the cockpit. */
+function namespaceOf(alert: FlightAlert, flight: Flight): 'duel' | 'strafe' | 'photo' | 'combat' {
   if (alert.kind === 'dogfight') {
     return 'duel'
   }
-  return flight.type === 'groundAttack' ? 'strafe' : 'combat'
+  if (flight.type === 'groundAttack') {
+    return 'strafe'
+  }
+  return flight.type === 'reconnaissance' ? 'photo' : 'combat'
 }
 
 /** The calls of the flights in the air, as toasts over the game: one for each mini-game that waits for the player, which a click opens. */

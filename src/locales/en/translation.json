@@ -125,6 +125,19 @@
     "won": "Convoy destroyed!",
     "escaped": "The convoy got away."
   },
+  "photo": {
+    "title": "Photo reconnaissance",
+    "hint": "You fly over enemy ground: the camera of your aircraft takes by itself the target it keeps in its frame for a moment. Take {{required}} photos of {{total}} before the enemy spots you: every second and every photo raises the detection.",
+    "controls": "Steer with the left and right arrow keys, or by holding a finger to the left or right of the view: the photo is taken by itself.",
+    "toast": "Enemy ground under the aircraft: {{pilot}} can photograph it.",
+    "toastResume": "Reconnaissance under way: {{pilot}}.",
+    "take": "Photograph",
+    "taken": "Photos: {{count}} of {{total}}",
+    "detection": "Detection",
+    "starting": "Starting up…",
+    "won": "Photos taken!",
+    "escaped": "Reconnaissance failed: too few photos before you were spotted."
+  },
   "music": {
     "label": "Music"
   },

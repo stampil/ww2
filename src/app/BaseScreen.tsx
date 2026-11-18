@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TERRAIN_PLANS } from '../plans/terrainPlan'
 import type { BuildingName } from '../plans/terrainPlan'
@@ -10,6 +11,7 @@ import type { Arrival, Departure, Emergence } from './AirfieldView'
 import CockpitCombatWindow from './CockpitCombatWindow'
 import DogfightWindow from './DogfightWindow'
 import GroundAttackWindow from './GroundAttackWindow'
+import type { GroundRunProps } from './GroundRunWindow'
 import { busyCrews, findAlert, unavailableCrews } from './flights'
 import { useStands } from './useStands'
 import { damageLevelOf } from '../three/damageStages'
@@ -21,16 +23,22 @@ import HangarPanel from './HangarPanel'
 import HeadquartersPanel from './HeadquartersPanel'
 import Hud from './Hud'
 import MissionToasts from './MissionToasts'
+import ReconnaissanceWindow from './ReconnaissanceWindow'
 import type { Player } from './useAccount'
 import { useAircraftSprite } from './useAircraftSprite'
 import ResetConfirm from './ResetConfirm'
 import { useBase } from './useBase'
-import type { Aircraft, HangarAircraft, UpgradeName } from './useBase'
+import type { Aircraft, HangarAircraft, MissionType, UpgradeName } from './useBase'
 import { useGuideStatus } from './useGuideStatus'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
+// The missions whose mini-game is flown from above, with the window that plays it.
+const GROUND_RUN_WINDOWS: Partial<Record<MissionType, ComponentType<GroundRunProps>>> = {
+  groundAttack: GroundAttackWindow,
+  reconnaissance: ReconnaissanceWindow,
+}
 
 function standStatusOf(state: HangarAircraft, aircraft: Aircraft): StandStatus {
   if (state.fireSeconds !== null) {
@@ -187,6 +195,7 @@ function BaseScreen({ player }: { player: Player }) {
   }
 
   const duel = duelAlertId === null ? undefined : findAlert(flights, duelAlertId)
+  const MissionWindow = duel === undefined ? undefined : GROUND_RUN_WINDOWS[duel.flight.type]
   const duelCrewPlace = duel?.flight.crews.find((crew) => crew.aircraftId === duel.alert.aircraftId)
   const duelCrew =
     duelCrewPlace === undefined
@@ -302,8 +311,8 @@ function BaseScreen({ player }: { player: Player }) {
           onClose={() => setDuelAlertId(null)}
         />
       )}
-      {duel !== undefined && duel.alert.kind === 'cockpit' && duel.flight.type === 'groundAttack' && (
-        <GroundAttackWindow
+      {MissionWindow !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
+        <MissionWindow
           alert={duel.alert}
           onStart={(alertId) => order(startAlert(alertId))}
           onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}

@@ -125,6 +125,19 @@
     "won": "Convoi détruit !",
     "escaped": "Le convoi s'est échappé."
   },
+  "photo": {
+    "title": "Reconnaissance photo",
+    "hint": "Tu survoles une zone ennemie : l'appareil photo de ton avion prend seul la cible qu'il garde un instant dans son cadre. Prends {{required}} photos sur {{total}} avant que l'ennemi te repère : chaque seconde et chaque photo font monter la détection.",
+    "controls": "Pilote avec les flèches gauche et droite, ou en tenant le doigt à gauche ou à droite de la vue : la photo part seule.",
+    "toast": "Une zone ennemie sous l'avion : {{pilot}} peut la photographier.",
+    "toastResume": "Reconnaissance en cours : {{pilot}}.",
+    "take": "Photographier",
+    "taken": "Photos : {{count}} sur {{total}}",
+    "detection": "Détection",
+    "starting": "Mise en route…",
+    "won": "Photos prises !",
+    "escaped": "Reconnaissance manquée : pas assez de photos avant d'être repéré."
+  },
   "music": {
     "label": "Musique"
   },

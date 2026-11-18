@@ -86,6 +86,7 @@ export class DogfightScene extends OrbitViewScene {
           this.player.setLivery(texture)
         }
       },
+      'low',
       ['french'],
     )
     this.scene.add(new TileGround([[{ kind: 'grass', quarterTurns: 0 }]], () => new THREE.Vector2(0, 0), this.renderer.capabilities.getMaxAnisotropy()).object)

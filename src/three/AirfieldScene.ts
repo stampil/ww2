@@ -12,6 +12,7 @@ import { ArrivalFlight } from './arrivalFlight'
 import { DepartureFlight } from './departureFlight'
 import { DepartureQueue } from './departureQueue'
 import type { Assignment } from './departureQueue'
+import type { AircraftState } from './aircraftState'
 import { smoothStep } from './easing'
 import { LiveryTextures } from './liveries'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
@@ -35,7 +36,8 @@ const SPRITES_PATH = 'sprites/buildings/'
 const SPRITE_LIFT_METERS = 2
 // An aircraft grows by this share of its size for each meter of altitude, so that it seems to come toward the camera as it climbs.
 const ALTITUDE_GROWTH_PER_METER = 0.0025
-const PARKED_LIFT_METERS = 0.5
+const PARKED_STATE: AircraftState = { engine: 0, gearRetraction: 0, flaps: 0, wheels: 0, aileron: 0, rudder: 0, elevator: 0 }
+const NORTH_HEADING_RADIANS = Math.PI / 2
 // The aircraft in front of which the camera swings, as in the takeoff of the home page, in meters for the real aircraft.
 const REAL_FRONT_DISTANCE_METERS = 18
 const REAL_FRONT_HEIGHT_METERS = 8
@@ -117,10 +119,9 @@ function marginBushes(plan: TerrainPlan, runway: PlanRunway): BushPlacement[] {
   return placements
 }
 
-/** Draws the base again in 3D over its flat map, the same size and seen from the same place, for the aircraft to take off from it and to land on it. */
+/** Draws the base in 3D over its flat map, the same size and seen from the same place: the aircraft parked, taking off and landing. */
 export type AirfieldSceneOptions = {
-  /** The picture of an aircraft seen from above, as the flat map draws the aircraft parked, and how wide it is there, in tiles. */
-  aircraftSprite: string
+  /** How wide an aircraft is on the map, in tiles. */
   aircraftWidthTiles: number
 }
 
@@ -146,7 +147,8 @@ export class AirfieldScene {
   private readonly landing: LandingAircraft[] = []
   private readonly emerging: EmergingAircraft[] = []
   private readonly liveries: LiveryTextures
-  private readonly parked = new THREE.Group()
+  private readonly parkedModels: D520Model[] = []
+  private readonly parkedLiveries: LiveryTextures
   private readonly topPosition = new THREE.Vector3()
   private readonly frontPosition = new THREE.Vector3()
   private readonly lookMatrix = new THREE.Matrix4()
@@ -154,14 +156,13 @@ export class AirfieldScene {
   private readonly frontOrientation = new THREE.Quaternion()
   private readonly startMilliseconds = performance.now()
   private parkedStands: Cell[] = []
-  private parkedTexture: THREE.Texture | undefined
   private lastLandingSeconds = Number.NEGATIVE_INFINITY
   private previousSeconds = 0
 
   constructor(
     private readonly container: HTMLElement,
     private readonly plan: TerrainPlan,
-    private readonly options: AirfieldSceneOptions,
+    options: AirfieldSceneOptions,
     private readonly onDeparted: (aircraftId: number) => void,
     private readonly onLanded: (aircraftId: number) => void,
   ) {
@@ -178,18 +179,23 @@ export class AirfieldScene {
         this.models.forEach((model) => model.setLivery(texture))
       }
     })
+    // The aircraft parked are small and share the small copy of the livery, with no tail number and no damage painted on it.
+    this.parkedLiveries = new LiveryTextures(
+      this.renderer.capabilities.getMaxAnisotropy(),
+      (livery, texture) => {
+        if (livery === 'french') {
+          this.parkedModels.forEach((model) => model.setLivery(texture))
+        }
+      },
+      'low',
+      ['french'],
+    )
 
     this.scene.background = new THREE.Color(GRASS_COLOR)
     const ground = new TileGround(plan.tiles, (row, column) => tileCenterOf(this.runway, row, column), this.renderer.capabilities.getMaxAnisotropy())
     this.scene.add(ground.object)
     this.scene.add(new Bushes(marginBushes(plan, this.runway)).object)
     this.addBuildings()
-    this.scene.add(this.parked)
-    new THREE.TextureLoader().load(options.aircraftSprite, (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace
-      this.parkedTexture = texture
-      this.showParked()
-    })
     this.scene.add(new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY))
     const sun = new THREE.DirectionalLight(LIGHT_COLOR, SUN_LIGHT_INTENSITY)
     sun.position.copy(SUN_POSITION)
@@ -251,6 +257,7 @@ export class AirfieldScene {
     this.resizeObserver.disconnect()
     disposeScene(this.scene, this.renderer)
     this.liveries.dispose()
+    this.parkedLiveries.dispose()
   }
 
   /** Where a landed aircraft leaves the runway: a little beyond the junction where aircraft come onto it, on the way it came. */
@@ -297,21 +304,31 @@ export class AirfieldScene {
     }
   }
 
+  /** A D.520 on each stand, nose to the north and tail down, as the flat map draws it; the models are made as needed and the ones left over are hidden. */
   private showParked(): void {
-    this.parked.clear()
-    if (this.parkedTexture === undefined) {
-      return
-    }
-    const image = this.parkedTexture.image as HTMLImageElement
-    const widthMeters = this.options.aircraftWidthTiles * TILE_SIZE_METERS
-    const geometry = new THREE.PlaneGeometry(widthMeters, (widthMeters * image.height) / image.width)
-    const material = new THREE.MeshBasicMaterial({ map: this.parkedTexture, transparent: true })
-    for (const stand of this.parkedStands) {
+    this.parkedStands.forEach((stand, index) => {
+      const model = this.parkedModels[index] ?? this.createParkedModel()
       const center = tileCenterOf(this.runway, stand.row, stand.column)
-      const picture = new THREE.Mesh(geometry, material)
-      picture.position.set(center.x, center.y, PARKED_LIFT_METERS)
-      this.parked.add(picture)
+      model.object.visible = true
+      model.setState(PARKED_STATE)
+      this.place(model, center.x, center.y, 0, NORTH_HEADING_RADIANS, D520_GROUND_PITCH_RADIANS, 0)
+      model.update(0)
+    })
+    this.parkedModels.slice(this.parkedStands.length).forEach((model) => {
+      model.object.visible = false
+    })
+  }
+
+  private createParkedModel(): D520Model {
+    const model = new D520Model()
+    model.object.scale.setScalar(this.scale)
+    const texture = this.parkedLiveries.get('french')
+    if (texture !== undefined) {
+      model.setLivery(texture)
     }
+    this.scene.add(model.object)
+    this.parkedModels.push(model)
+    return model
   }
 
   /** Places the camera above the middle of the base, high enough for the whole of it to fill the canvas as the flat map does. */

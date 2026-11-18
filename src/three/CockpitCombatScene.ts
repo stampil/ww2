@@ -178,7 +178,7 @@ export class CockpitCombatScene {
       if (livery === 'vichy' && options.enemy === 'vichyD520') {
         this.vichyBody?.setLivery(texture)
       }
-    })
+    }, 'low')
     this.scene.background = new THREE.Color(HORIZON_COLOR)
     this.scene.fog = new THREE.Fog(HORIZON_COLOR, FOG_NEAR_METERS, FOG_FAR_METERS)
     this.sky.renderOrder = -1

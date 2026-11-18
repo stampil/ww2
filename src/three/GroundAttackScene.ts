@@ -171,6 +171,7 @@ export class GroundAttackScene {
           this.player.setLivery(texture)
         }
       },
+      'low',
       ['french'],
     )
     this.scene.add(new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY))

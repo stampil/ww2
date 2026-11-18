@@ -14,8 +14,9 @@ export type EnemyBody = {
 /** An enemy aircraft whose model does not move, with the wingspan measured on it. */
 export type StaticEnemy = EnemyBody & { spanMeters: number }
 
+/** An enemy is far or small on the screen, so it takes the small copies of the textures. */
 export async function createStaticEnemy(aircraftId: string): Promise<StaticEnemy> {
-  const meshes = await loadStaticAircraft(aircraftId)
+  const meshes = await loadStaticAircraft(aircraftId, 'low')
   const effects = new DamageEffects()
   const root = new THREE.Group()
   root.add(meshes, effects.object)

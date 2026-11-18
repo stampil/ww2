@@ -15,8 +15,7 @@ type Props = {
   departures: Departure[]
   arrivals: Arrival[]
   emergences: Emergence[]
-  /** The picture of an aircraft seen from above, as the flat map draws it, and its width there in tiles. */
-  aircraftSprite: string
+  /** How wide an aircraft is on the map, in tiles. */
   aircraftWidthTiles: number
   /** The stands of the aircraft that stay on the ground. */
   parkedStands: Cell[]
@@ -26,8 +25,8 @@ type Props = {
   onLanded: (aircraftId: number) => void
 }
 
-/** The base in 3D over its flat map, the same size, for the squadron to take off and land; it only shows it, the flights last as long as the server says. */
-function AirfieldView({ plan, departures, arrivals, emergences, aircraftSprite, aircraftWidthTiles, parkedStands, onDeparted, onLanded }: Props) {
+/** The base in 3D over its flat map, the same size, with the aircraft parked and the squadron taking off and landing; it only shows it, the flights last as long as the server says. */
+function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTiles, parkedStands, onDeparted, onLanded }: Props) {
   const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<AirfieldScene | null>(null)
@@ -40,7 +39,7 @@ function AirfieldView({ plan, departures, arrivals, emergences, aircraftSprite, 
     const scene = new AirfieldScene(
       containerRef.current!,
       plan,
-      { aircraftSprite, aircraftWidthTiles },
+      { aircraftWidthTiles },
       (aircraftId) => {
         handedDepartureIds.current.delete(aircraftId)
         onDeparted(aircraftId)
@@ -59,13 +58,13 @@ function AirfieldView({ plan, departures, arrivals, emergences, aircraftSprite, 
       scene.dispose()
       sceneRef.current = null
     }
-  }, [plan, aircraftSprite, aircraftWidthTiles, onDeparted, onLanded])
+  }, [plan, aircraftWidthTiles, onDeparted, onLanded])
 
   useEffect(() => {
     sceneRef.current!.setParkedStands(parkedStands)
     // The stands are given again only when their content changes, not on every new array.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parkedKey, plan, aircraftSprite, aircraftWidthTiles, onDeparted, onLanded])
+  }, [parkedKey, plan, aircraftWidthTiles, onDeparted, onLanded])
 
   useEffect(() => {
     for (const departure of departures) {
@@ -86,7 +85,7 @@ function AirfieldView({ plan, departures, arrivals, emergences, aircraftSprite, 
         sceneRef.current!.emerge(emergence.aircraftId, emergence.stand, emergence.damageLevel, emergence.tailNumber)
       }
     }
-  }, [departures, arrivals, emergences, plan, aircraftSprite, aircraftWidthTiles, onDeparted, onLanded])
+  }, [departures, arrivals, emergences, plan, aircraftWidthTiles, onDeparted, onLanded])
 
   return <div className="airfield-view" role="img" aria-label={t('base.airfield')} ref={containerRef} />
 }

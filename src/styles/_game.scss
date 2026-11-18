@@ -206,6 +206,21 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
   pointer-events: none;
 }
 
+// With the 3D view over the map, which draws the buildings, the pictures only give the buttons their size and the buttons are above that view.
+.base-map[data-three='true'] button.base-sprite {
+  z-index: 3;
+
+  img {
+    opacity: 0;
+  }
+
+  &:hover,
+  &:focus-visible,
+  &[aria-pressed='true'] {
+    box-shadow: 0 0 0.6rem $gold;
+  }
+}
+
 button.base-sprite {
   padding: 0;
   border: 0;
@@ -247,12 +262,14 @@ button.base-sprite {
   transform: translate(-50%, -50%);
 }
 
-// An aircraft parked on its stand.
+// An aircraft parked on its stand: the 3D view over the map draws it, this is the place to click, above that view.
 .map-aircraft {
   @include centred-on-tile;
-  z-index: 1;
+  z-index: 3;
+  aspect-ratio: 1;
   padding: 0;
   border: 0;
+  border-radius: 50%;
   background: transparent;
   cursor: pointer;
 
@@ -262,16 +279,9 @@ button.base-sprite {
     inset: -0.5rem;
   }
 
-  img {
-    display: block;
-    width: 100%;
-    height: auto;
-    filter: drop-shadow(0 0.3rem 0.2rem rgba(0, 0, 0, 0.55));
-  }
-
-  &:hover img,
-  &:focus-visible img {
-    filter: drop-shadow(0 0 0.4rem $gold);
+  &:hover,
+  &:focus-visible {
+    box-shadow: 0 0 0.6rem $gold;
   }
 
   &:focus-visible {
@@ -279,8 +289,8 @@ button.base-sprite {
     outline-offset: 2px;
   }
 
-  &[data-status='burning'] img {
-    filter: drop-shadow(0 0 0.5rem $alarm);
+  &[data-status='burning'] {
+    box-shadow: 0 0 0.8rem $alarm;
   }
 }
 
@@ -662,7 +672,7 @@ button.base-sprite {
 // play the four frames of a row one after the other. The row, and the flip of the right-hand walk to walk to the left, are set by his animation.
 .crew-member {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   height: calc(0.6 / var(--rows) * 100%);
   aspect-ratio: 114 / 140;
   background-repeat: no-repeat;

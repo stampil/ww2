@@ -76,15 +76,14 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
 
   return (
     <div className="base-map-viewport">
-      <div className="base-map" role="group" aria-label={t('base.map')} style={gridSize}>
+      <div className="base-map" role="group" aria-label={t('base.map')} style={gridSize} data-three={aircraftSprite !== null}>
         <canvas className="base-map-canvas" ref={canvasRef} />
-        {(departures.length > 0 || arrivals.length > 0 || emergences.length > 0) && aircraftSprite !== null && (
+        {aircraftSprite !== null && (
           <AirfieldView
             plan={plan}
             departures={departures}
             arrivals={arrivals}
             emergences={emergences}
-            aircraftSprite={aircraftSprite}
             aircraftWidthTiles={AIRCRAFT_WIDTH_TILES}
             parkedStands={parkedAircraft.map((aircraft) => aircraft.stand)}
             onDeparted={onDeparted}
@@ -121,7 +120,6 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
               aria-label={t('base.hangar.parked')}
               onClick={() => onSelect('hangar')}
             >
-              <img src={aircraftSprite} alt="" draggable={false} />
               {aircraft.status !== 'ready' && (
                 <span className="map-aircraft-badge">
                   <Icon name={STATUS_ICONS[aircraft.status]} />

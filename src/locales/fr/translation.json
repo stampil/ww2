@@ -273,10 +273,10 @@
     },
     "sites": "Sites",
     "map": "Carte de la France",
-    "legend": "Tes camps sont cerclés d'or, ceux de tes alliés de vert, ceux de l'ennemi sont grisés, les camps libres sont en couleur.",
+    "legend": "Tes camps sont cerclés d'or, ceux de tes alliés de vert, ceux de l'ennemi sont grisés, les camps libres sont en couleur, rouges pour l'Axe. Passe sur un camp pour voir son nom.",
     "side": "Ton côté : {{side}}.",
     "clan": {
-      "french": "les Français",
+      "french": "les Alliés",
       "axe": "l'Axe"
     },
     "relation": {
@@ -310,6 +310,27 @@
       "stuttgart": "Stuttgart",
       "lechfeld": "Lechfeld",
       "muenchen": "Munich"
+    ,
+      "salon": "Salon-de-Provence",
+      "montdemarsan": "Mont-de-Marsan",
+      "caen": "Caen",
+      "bordeaux": "Bordeaux",
+      "toulouse": "Toulouse",
+      "cambrai": "Cambrai",
+      "tours": "Tours",
+      "melun": "Melun",
+      "lebourget": "Le Bourget",
+      "orange": "Orange",
+      "cazaux": "Cazaux",
+      "chartres": "Chartres",
+      "lanveoc": "Lanvéoc",
+      "evere": "Bruxelles",
+      "fuerstenfeldbruck": "Fürstenfeldbruck",
+      "memmingen": "Memmingen",
+      "illesheim": "Illesheim",
+      "pferdsfeld": "Pferdsfeld",
+      "pisa": "Pise",
+      "turin": "Turin"
     },
     "airfield": {
       "lille": "Lille-Lesquin",
@@ -332,6 +353,27 @@
       "stuttgart": "Stuttgart-Echterdingen",
       "lechfeld": "Lechfeld",
       "muenchen": "Munich-Riem"
+    ,
+      "salon": "Salon-de-Provence",
+      "montdemarsan": "Mont-de-Marsan",
+      "caen": "Caen-Carpiquet",
+      "bordeaux": "Bordeaux-Mérignac",
+      "toulouse": "Toulouse-Francazal",
+      "cambrai": "Cambrai-Épinoy",
+      "tours": "Tours",
+      "melun": "Melun-Villaroche",
+      "lebourget": "Paris-Le Bourget",
+      "orange": "Orange-Caritat",
+      "cazaux": "Cazaux",
+      "chartres": "Chartres-Champhol",
+      "lanveoc": "Lanvéoc-Poulmic",
+      "evere": "Bruxelles-Evere",
+      "fuerstenfeldbruck": "Fürstenfeldbruck",
+      "memmingen": "Memmingerberg",
+      "illesheim": "Illesheim",
+      "pferdsfeld": "Pferdsfeld",
+      "pisa": "Pise-San Giusto",
+      "turin": "Turin-Caselle"
     }
   },
   "base": {

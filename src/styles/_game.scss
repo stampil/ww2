@@ -1183,6 +1183,7 @@ button.base-sprite {
     filter: drop-shadow(0 1px 2px rgba($outline, 0.5));
   }
 
+  // Names would cover each other on a full map: one shows for the player's camps and for the camp under the pointer or selected.
   span {
     position: absolute;
     top: 50%;
@@ -1191,9 +1192,24 @@ button.base-sprite {
     color: $outline;
     font-size: 0.7rem;
     font-weight: 700;
+    opacity: 0;
+    pointer-events: none;
     text-shadow: 0 0 3px rgba($text, 0.8);
     transform: translateY(-50%);
     white-space: nowrap;
+  }
+
+  &:hover,
+  &:focus-visible,
+  &[aria-pressed='true'] {
+    z-index: 2;
+  }
+
+  &:hover span,
+  &:focus-visible span,
+  &[aria-pressed='true'] span,
+  &[data-own='true'] span {
+    opacity: 1;
   }
 
   &[data-label-side='left'] span {

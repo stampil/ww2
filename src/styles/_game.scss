@@ -537,14 +537,57 @@ button.base-sprite {
   max-height: 60vh;
   margin: 0 auto;
   overflow: hidden;
-  touch-action: none;
-  cursor: crosshair;
 
   canvas {
     display: block;
     width: 100%;
     height: 100%;
   }
+}
+
+// The stick of a mini-game stays at the bottom of its window, under the view, where a thumb hides nothing of the game.
+.virtual-stick-bar {
+  @include flex($justify: center);
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding: 0.5rem 0;
+  background: $panel;
+}
+
+.virtual-stick {
+  @include inset-frame;
+  position: relative;
+  flex: none;
+  background: $panel-raised;
+  touch-action: none;
+  user-select: none;
+
+  &[data-axes='both'] {
+    width: 9rem;
+    height: 9rem;
+    border-radius: 50%;
+  }
+
+  &[data-axes='horizontal'] {
+    width: min(100%, 20rem);
+    height: 4.5rem;
+    border-radius: 2.25rem;
+  }
+}
+
+.virtual-stick-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 2px solid $outline;
+  border-radius: 50%;
+  background: $khaki;
+  box-shadow:
+    inset 0 2px 0 $khaki-light,
+    inset 0 -2px 0 $khaki-dark;
 }
 
 .cockpit-hud {

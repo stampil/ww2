@@ -70,7 +70,7 @@
   "combat": {
     "title": "Air combat",
     "hint": "You are at the controls facing a {{enemy}}: get behind it and keep it in the gunsight: after a second your aircraft fires by itself and it is shot down, before time runs out.",
-    "controls": "Steer with the arrow keys or by holding a finger on the view. The pilot's head, in the middle of the instrument panel, turns toward the enemy.",
+    "controls": "Steer with the arrow keys or with the stick under the view. The pilot's head, in the middle of the instrument panel, turns toward the enemy.",
     "toast": "Enemy fighters in sight: {{pilot}} can take the controls.",
     "toastResume": "Dogfight under way: {{pilot}}.",
     "take": "Fly",
@@ -116,7 +116,7 @@
   "strafe": {
     "title": "Ground attack",
     "hint": "You strafe a German convoy that drives toward you: get on its lane, and your aircraft fires by itself at what is ahead. Destroy {{required}} of {{total}} before it has gone by.",
-    "controls": "Steer with the left and right arrow keys, or by holding a finger to the left or right of the view.",
+    "controls": "Steer with the left and right arrow keys, or with the stick under the view.",
     "toast": "A German convoy on the road: {{pilot}} can strafe it.",
     "toastResume": "Attack under way: {{pilot}}.",
     "take": "Attack",
@@ -128,7 +128,7 @@
   "photo": {
     "title": "Photo reconnaissance",
     "hint": "You fly over enemy ground: the camera of your aircraft takes by itself the target it keeps in its frame for a moment. Take {{required}} photos of {{total}} before the enemy spots you: every second and every photo raises the detection.",
-    "controls": "Steer with the left and right arrow keys, or by holding a finger to the left or right of the view: the photo is taken by itself.",
+    "controls": "Steer with the left and right arrow keys, or with the stick under the view: the photo is taken by itself.",
     "toast": "Enemy ground under the aircraft: {{pilot}} can photograph it.",
     "toastResume": "Reconnaissance under way: {{pilot}}.",
     "take": "Photograph",
@@ -248,6 +248,9 @@
     "text": "This base is wiped: the squadron, the resources, the upgrades, the missions and the enemy aircraft shot down all start again from zero, and the tutorial is offered to you again. This cannot be undone.",
     "confirm": "Yes, erase everything",
     "cancel": "No, keep my game"
+  },
+  "stick": {
+    "label": "Control stick"
   },
   "world": {
     "choose": {

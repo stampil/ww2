@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { GroundRunScene, RunOutcome } from '../three/GroundRunScene'
 import GameWindow from './GameWindow'
 import { useAircraftSprite } from './useAircraftSprite'
 import type { FlightAlert } from './useBase'
+import VirtualStick from './VirtualStick'
 
 const STEERING_KEYS: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 }
 
@@ -30,7 +31,7 @@ type Props<Status> = GroundRunProps & {
 }
 
 /**
- * A mini-game flown from above, as in Wings: the player steers the D.520 to one side or the other, with the arrow keys or a finger held on the view, and the rules of the scene do the rest.
+ * A mini-game flown from above, as in Wings: the player steers the D.520 to one side or the other, with the arrow keys or the stick under the view, and the rules of the scene do the rest.
  * The browser plays it and tells the server how it ended.
  */
 function GroundRunWindow<Status>({ alert, namespace, hintValues, createScene, renderStatus, onStart, onFinish, onClose }: Props<Status>) {
@@ -96,29 +97,9 @@ function GroundRunWindow<Status>({ alert, namespace, hintValues, createScene, re
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReady, aircraftSprite])
 
-  /** A finger or the mouse held on the view steers toward where it is: the further from the middle, the harder the turn. */
-  function steerToward(event: ReactPointerEvent<HTMLDivElement>): void {
-    const box = event.currentTarget.getBoundingClientRect()
-    sceneRef.current?.setControls(((event.clientX - box.left) / box.width - 0.5) * 2)
-  }
-
   return (
     <GameWindow title={t(`${namespace}.title`)} hint={t(`${namespace}.hint`, hintValues)} onDismiss={onClose}>
-      <div
-        className="cockpit-view"
-        ref={viewRef}
-        onPointerDown={(event) => {
-          event.currentTarget.setPointerCapture(event.pointerId)
-          steerToward(event)
-        }}
-        onPointerMove={(event) => {
-          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-            steerToward(event)
-          }
-        }}
-        onPointerUp={() => sceneRef.current?.setControls(0)}
-        onPointerCancel={() => sceneRef.current?.setControls(0)}
-      >
+      <div className="cockpit-view" ref={viewRef}>
         {status !== null && (
           <div className="cockpit-hud">
             <div className="cockpit-hud-top">{renderStatus(status)}</div>
@@ -135,6 +116,7 @@ function GroundRunWindow<Status>({ alert, namespace, hintValues, createScene, re
         )}
       </div>
       <p className="duel-turn">{t(`${namespace}.controls`)}</p>
+      <VirtualStick axes="horizontal" onChange={(x) => sceneRef.current?.setControls(x)} />
     </GameWindow>
   )
 }

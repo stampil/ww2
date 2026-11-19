@@ -70,7 +70,7 @@
   "combat": {
     "title": "Combat aérien",
     "hint": "Tu es aux commandes face à un {{enemy}} : place-toi derrière lui et garde-le dans le viseur : au bout d'une seconde ton avion tire seul et il est abattu, avant la fin du temps.",
-    "controls": "Pilote avec les flèches ou en tenant le doigt sur la vue. La tête du pilote, au milieu du tableau de bord, se tourne vers l'ennemi.",
+    "controls": "Pilote avec les flèches du clavier ou avec le manche sous la vue. La tête du pilote, au milieu du tableau de bord, se tourne vers l'ennemi.",
     "toast": "Chasseurs ennemis en vue : {{pilot}} peut prendre les commandes.",
     "toastResume": "Combat en cours : {{pilot}}.",
     "take": "Piloter",
@@ -116,7 +116,7 @@
   "strafe": {
     "title": "Attaque au sol",
     "hint": "Tu mitrailles un convoi allemand qui roule vers toi : place-toi sur sa file, ton avion tire seul sur ce qui est devant lui. Détruis-en {{required}} sur {{total}} avant qu'il soit passé.",
-    "controls": "Pilote avec les flèches gauche et droite, ou en tenant le doigt à gauche ou à droite de la vue.",
+    "controls": "Pilote avec les flèches gauche et droite du clavier, ou avec le manche sous la vue.",
     "toast": "Un convoi allemand sur la route : {{pilot}} peut le mitrailler.",
     "toastResume": "Attaque en cours : {{pilot}}.",
     "take": "Attaquer",
@@ -128,7 +128,7 @@
   "photo": {
     "title": "Reconnaissance photo",
     "hint": "Tu survoles une zone ennemie : l'appareil photo de ton avion prend seul la cible qu'il garde un instant dans son cadre. Prends {{required}} photos sur {{total}} avant que l'ennemi te repère : chaque seconde et chaque photo font monter la détection.",
-    "controls": "Pilote avec les flèches gauche et droite, ou en tenant le doigt à gauche ou à droite de la vue : la photo part seule.",
+    "controls": "Pilote avec les flèches gauche et droite du clavier, ou avec le manche sous la vue : la photo part seule.",
     "toast": "Une zone ennemie sous l'avion : {{pilot}} peut la photographier.",
     "toastResume": "Reconnaissance en cours : {{pilot}}.",
     "take": "Photographier",
@@ -248,6 +248,9 @@
     "text": "Cette base est effacée : l'escadrille, les ressources, les améliorations, les missions et les avions abattus repartent de zéro, et le tutoriel est proposé de nouveau. Cela ne peut pas se défaire.",
     "confirm": "Oui, tout effacer",
     "cancel": "Non, garder ma partie"
+  },
+  "stick": {
+    "label": "Manche de pilotage"
   },
   "world": {
     "choose": {

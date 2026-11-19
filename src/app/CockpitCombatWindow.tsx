@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CockpitCombatScene } from '../three/CockpitCombatScene'
 import type { CockpitEnemy, CockpitOutcome, CockpitStatus } from '../three/CockpitCombatScene'
 import GameWindow from './GameWindow'
 import type { FlightAlert } from './useBase'
+import VirtualStick from './VirtualStick'
 
 const ENEMIES: CockpitEnemy[] = ['bf109', 'vichyD520']
 const PERCENT = 100
@@ -32,7 +32,7 @@ type Props = {
 }
 
 /**
- * A dogfight flown in real time from the cockpit, as in Wings: the player steers with the arrow keys or a finger and keeps the enemy in the gunsight, which fires by itself,
+ * A dogfight flown in real time from the cockpit, as in Wings: the player steers with the arrow keys or the stick under the view and keeps the enemy in the gunsight, which fires by itself,
  * while the head of the pilot in the cockpit turns toward the enemy. The browser plays it and tells the server how it ended.
  */
 function CockpitCombatWindow({ alert, maneuverability, accuracy, onStart, onFinish, onClose }: Props) {
@@ -105,32 +105,12 @@ function CockpitCombatWindow({ alert, maneuverability, accuracy, onStart, onFini
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReady])
 
-  /** A finger or the mouse held on the view steers toward where it is: the further from the middle, the harder the turn. */
-  function steerToward(event: ReactPointerEvent<HTMLDivElement>): void {
-    const box = event.currentTarget.getBoundingClientRect()
-    sceneRef.current?.setControls(((event.clientX - box.left) / box.width - 0.5) * 2, -((event.clientY - box.top) / box.height - 0.5) * 2)
-  }
-
   const secondsLeft = Math.ceil(status?.secondsLeft ?? 0)
   const clock = `${Math.floor(secondsLeft / SECONDS_PER_MINUTE)}:${String(secondsLeft % SECONDS_PER_MINUTE).padStart(2, '0')}`
 
   return (
     <GameWindow title={t('combat.title')} hint={t('combat.hint', { enemy: t(`combat.enemies.${enemy}`) })} onDismiss={onClose}>
-      <div
-        className="cockpit-view"
-        ref={viewRef}
-        onPointerDown={(event) => {
-          event.currentTarget.setPointerCapture(event.pointerId)
-          steerToward(event)
-        }}
-        onPointerMove={(event) => {
-          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-            steerToward(event)
-          }
-        }}
-        onPointerUp={() => sceneRef.current?.setControls(0, 0)}
-        onPointerCancel={() => sceneRef.current?.setControls(0, 0)}
-      >
+      <div className="cockpit-view" ref={viewRef}>
         {isReady && status !== null && (
           <div className="cockpit-hud">
             <div className="cockpit-hud-top">
@@ -156,6 +136,7 @@ function CockpitCombatWindow({ alert, maneuverability, accuracy, onStart, onFini
         )}
       </div>
       <p className="duel-turn">{t('combat.controls')}</p>
+      <VirtualStick axes="both" onChange={(x, y) => sceneRef.current?.setControls(x, y)} />
     </GameWindow>
   )
 }

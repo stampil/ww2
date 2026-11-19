@@ -10,9 +10,10 @@ const PERCENT = 100
 
 type Props = {
   sites: SiteChoice[]
-  /** The site the player has picked, if any. */
+  /** The site the player has picked, or the one that is their own, if any. */
   selected: string | null
-  onSelect: (site: string) => void
+  /** What a click on a free camp does; without it the map is only shown. */
+  onSelect?: (site: string) => void
 }
 
 /** The map of France with a camp on each site: a free one can be picked, a taken one is greyed. On a phone the map is wider than the screen and slides sideways, from the camps. */
@@ -43,9 +44,9 @@ function WorldMap({ sites, selected, onSelect }: Props) {
               data-label-side={labelSide}
               aria-label={`${t(`world.site.${site}`)} : ${t(free ? 'world.free' : 'world.taken')}`}
               aria-pressed={selected === site}
-              disabled={!free}
+              disabled={!free || onSelect === undefined}
               style={{ left: `${left}%`, top: `${top}%` }}
-              onClick={() => onSelect(site)}
+              onClick={onSelect === undefined ? undefined : () => onSelect(site)}
             >
               <img src={CAMP_URL} alt="" />
               <span aria-hidden="true">{t(`world.site.${site}`)}</span>

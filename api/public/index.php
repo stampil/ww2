@@ -95,6 +95,7 @@ $router->group('/api', function (RouteGroup $routes) use ($accounts, $players, $
     $routes->get('/terrain/patch', new TerrainPatchController(new TilePatchGenerator()));
     $routes->post('/account', new AccountController($accounts, $session));
     $routes->get('/world/sites', [$worldController, 'sites']);
+    $routes->get('/world/map', [$worldController, 'map']);
     $routes->post('/world/claim', [$worldController, 'claim']);
     $routes->get('/base', [$baseController, 'show']);
     $routes->post('/base/purchase', [$baseController, 'buy']);

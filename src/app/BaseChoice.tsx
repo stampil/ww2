@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import GameWindow from './GameWindow'
 import Icon from './Icon'
 import Pane from './Pane'
-import { useSites } from './useSites'
+import { CHOOSABLE_SITES_URL, useSites } from './useSites'
 import WorldMap from './WorldMap'
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
 function BaseChoice({ onClaim }: Props) {
   const { t } = useTranslation()
   const [sitesVersion, setSitesVersion] = useState(0)
-  const sites = useSites(sitesVersion)
+  const sites = useSites(CHOOSABLE_SITES_URL, sitesVersion)
   const [selected, setSelected] = useState<string | null>(null)
   const [errorCode, setErrorCode] = useState<string | null>(null)
 

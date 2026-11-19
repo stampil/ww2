@@ -8,9 +8,9 @@ export type GuideContext = { flights: Flight[]; eventCount: number; hangarAircra
 
 /** Where each step leads the player: the windows where the guide speaks too, and the building a gold arrow points at. */
 const STEP_PLACES: Partial<Record<GuideStep, { windows: BuildingName[]; marker?: BuildingName }>> = {
-  launch: { windows: ['headquarters'], marker: 'headquarters' },
-  fly: { windows: ['headquarters'] },
-  receive: { windows: ['headquarters'] },
+  launch: { windows: ['controlTower'], marker: 'controlTower' },
+  fly: { windows: ['controlTower'] },
+  receive: { windows: ['controlTower'] },
   maintenance: { windows: ['hangar', 'workshop'], marker: 'hangar' },
 }
 

@@ -1117,6 +1117,11 @@ button.base-sprite {
   }
 }
 
+.world-legend {
+  margin: 0 0 0.6rem;
+  color: $muted-text;
+}
+
 .world-choice {
   @include flex($align: center, $gap: 0.5rem 1rem);
   flex-wrap: wrap;

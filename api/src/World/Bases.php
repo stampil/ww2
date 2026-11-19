@@ -51,12 +51,20 @@ final class Bases
         if ($instanceId === null) {
             return array_map(static fn (Site $site): array => ['site' => $site->value, 'free' => true], Site::cases());
         }
-        $rows = $this->database->fetchAll(
-            'SELECT site, player_id IS NULL AS free FROM bases WHERE instance_id = :instance_id ORDER BY id',
-            ['instance_id' => $instanceId],
-        );
 
-        return array_map(static fn (array $row): array => ['site' => (string) $row['site'], 'free' => (bool) $row['free']], $rows);
+        return $this->sitesOfInstance($instanceId);
+    }
+
+    /**
+     * The sites of the instance a base stands in, each free or held by a player.
+     *
+     * @return list<array{site: string, free: bool}>
+     */
+    public function sitesAround(int $baseId): array
+    {
+        $rows = $this->database->fetchAll('SELECT instance_id FROM bases WHERE id = :base_id', ['base_id' => $baseId]);
+
+        return $this->sitesOfInstance((int) $rows[0]['instance_id']);
     }
 
     /**
@@ -86,5 +94,18 @@ final class Bases
 
             return $baseId;
         });
+    }
+
+    /**
+     * @return list<array{site: string, free: bool}>
+     */
+    private function sitesOfInstance(int $instanceId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT site, player_id IS NULL AS free FROM bases WHERE instance_id = :instance_id ORDER BY id',
+            ['instance_id' => $instanceId],
+        );
+
+        return array_map(static fn (array $row): array => ['site' => (string) $row['site'], 'free' => (bool) $row['free']], $rows);
     }
 }

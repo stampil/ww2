@@ -25,7 +25,7 @@ export const START_SPRITES: PlacedSprite[] = [
   { sprite: 'camouflaged-tents', building: 'workshop', row: 2, column: 6, widthTiles: 2 },
   { sprite: 'depot', building: 'warehouse', row: 2, column: 11, widthTiles: 2 },
   { sprite: 'command-post', building: 'headquarters', row: 8, column: 6, widthTiles: 1.8 },
-  { sprite: 'control-tower', row: 7, column: 9, widthTiles: 1.4 },
+  { sprite: 'control-tower', building: 'controlTower', row: 7, column: 9, widthTiles: 1.4 },
   { sprite: 'windsock', row: 7, column: 1, widthTiles: 0.9 },
   { sprite: 'anti-aircraft-bunker', row: 7, column: 12, widthTiles: 0.9 },
 ]

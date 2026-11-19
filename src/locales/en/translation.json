@@ -220,15 +220,15 @@
     },
     "launch": {
       "title": "Step 1: a first mission",
-      "text": "Open the Headquarters (the gold arrow) and prepare a reconnaissance, the least risky: pick a pilot and an aircraft, then launch the mission."
+      "text": "Open the control tower (the gold arrow) and prepare a reconnaissance, the least risky: pick a pilot and an aircraft, then launch the mission."
     },
     "fly": {
       "title": "Step 2: the squadron is in flight",
-      "text": "The flight lasts a few minutes, in real time. At the Headquarters, watch the fatigue and stress of the pilots: a tired pilot flies worse."
+      "text": "The flight lasts a few minutes, in real time. At the control tower, watch the fatigue and stress of the pilots: a tired pilot flies worse."
     },
     "receive": {
       "title": "Step 3: the return",
-      "text": "The squadron is back: open the Headquarters and receive it, to read the report and collect the rewards."
+      "text": "The squadron is back: open the control tower and receive it, to read the report and collect the rewards."
     },
     "maintenance": {
       "title": "Step 4: the aircraft is damaged",
@@ -256,6 +256,7 @@
     },
     "sites": "Sites",
     "map": "Map of France",
+    "legend": "Your camp is ringed in gold, the camps taken by other players are greyed, the free camps are in colour.",
     "pick": "Click a free camp on the map to put your base there.",
     "free": "Free",
     "taken": "Taken",
@@ -356,7 +357,7 @@
       "failed": "failed",
       "gains": "Rewards: supplies {{supplies}}, command points {{points}}",
       "noGain": "No reward",
-      "spotted": "A better paid mission has appeared at the headquarters.",
+      "spotted": "A better paid mission has appeared at the control tower.",
       "windAtTakeoff": "wind at takeoff: {{windSpeed}} km/h",
       "crewDamaged": "{{pilot}} ({{aircraft}}): {{damage}} durability lost",
       "crewLost": "{{pilot}} ({{aircraft}}): aircraft lost, pilot safe",
@@ -404,9 +405,13 @@
     "running": "Being made",
     "withMechanic": "with a mechanic",
       "building": {
+      "controlTower": {
+        "name": "Control tower",
+        "text": "The missions, the flights, the pilots, their rest and recruitment."
+      },
       "headquarters": {
         "name": "Headquarters",
-        "text": "The missions, the pilots, their rest and recruitment."
+        "text": "The map of France: who holds each camp."
       },
       "workshop": {
         "name": "Workshop",
@@ -452,7 +457,7 @@
       "unknownPilot": "This pilot does not exist.",
       "pilotResting": "This pilot is resting.",
       "nothingToRest": "This pilot has no fatigue or stress.",
-      "tooManyPilots": "The headquarters cannot house more pilots.",
+      "tooManyPilots": "The base cannot house more pilots.",
       "upgradeAtMaximum": "This upgrade is at its top level.",
       "insufficientCommandPoints": "Not enough command points.",
       "battleOver": "The battle is over: start a new one.",

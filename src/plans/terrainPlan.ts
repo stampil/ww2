@@ -1,8 +1,8 @@
 import type { Tile, TileKind } from '../three/tiles'
 import { START_ROWS, START_SPRITES, START_STANDS } from './startPlan'
 
-/** The four buildings a player can open; the names are those the API gives. */
-export type BuildingName = 'headquarters' | 'workshop' | 'warehouse' | 'hangar'
+/** The five buildings a player can open; the control tower is the front's alone, the others are named as the API names them. */
+export type BuildingName = 'controlTower' | 'headquarters' | 'workshop' | 'warehouse' | 'hangar'
 /** The building sprites, named after their files in public/sprites/buildings. */
 export type SpriteName =
   | 'anti-aircraft-bunker'

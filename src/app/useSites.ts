@@ -2,17 +2,20 @@ import { useEffect, useState } from 'react'
 
 export type SiteChoice = { site: string; free: boolean }
 
-const SITES_URL = '/api/world/sites'
+/** The sites where a new player can settle, in the oldest world that has room. */
+export const CHOOSABLE_SITES_URL = '/api/world/sites'
+/** The sites of the world the player already plays in. */
+export const INSTANCE_SITES_URL = '/api/world/map'
 
-/** The sites a new player can choose a base on, once the API has sent them; read again when `version` changes. */
-export function useSites(version: number): SiteChoice[] | null {
+/** The sites that the API gives at this address, once it has sent them; read again when `version` changes. */
+export function useSites(url: string, version = 0): SiteChoice[] | null {
   const [sites, setSites] = useState<SiteChoice[] | null>(null)
 
   useEffect(() => {
-    void fetch(SITES_URL)
+    void fetch(url)
       .then((response) => response.json() as Promise<{ sites: SiteChoice[] }>)
       .then((payload) => setSites(payload.sites))
-  }, [version])
+  }, [url, version])
 
   return sites
 }

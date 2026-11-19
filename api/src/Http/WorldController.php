@@ -9,13 +9,14 @@ use League\Route\Http\Exception\ConflictException;
 use League\Route\Http\Exception\UnauthorizedException;
 use Psr\Http\Message\ServerRequestInterface;
 use Ww2\Account\PlayerSession;
+use Ww2\Base\BaseError;
 use Ww2\Base\BaseException;
 use Ww2\Base\BaseOverview;
 use Ww2\World\Bases;
 use Ww2\World\Site;
 
 /**
- * Shows the player which sites they can choose a base on, and gives them the one they choose.
+ * Shows the player which sites they can choose a base on, and gives them the one they choose; shows who holds the sites of their own world.
  */
 final class WorldController
 {
@@ -35,6 +36,18 @@ final class WorldController
         $this->signedInPlayerId();
 
         return ['sites' => $this->bases->sitesToChoose()];
+    }
+
+    /**
+     * @return array{sites: list<array{site: string, free: bool}>}
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws ConflictException when the player holds no base
+     */
+    public function map(): array
+    {
+        $baseId = $this->bases->idOf($this->signedInPlayerId()) ?? throw new ConflictException(BaseError::NoBase->value);
+
+        return ['sites' => $this->bases->sitesAround($baseId)];
     }
 
     /**

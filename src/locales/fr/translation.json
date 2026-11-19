@@ -220,15 +220,15 @@
     },
     "launch": {
       "title": "Étape 1 : une première mission",
-      "text": "Ouvre le Quartier Général (la flèche dorée) et prépare une reconnaissance, la moins risquée : choisis un pilote et un avion, puis lance la mission."
+      "text": "Ouvre la tour de contrôle (la flèche dorée) et prépare une reconnaissance, la moins risquée : choisis un pilote et un avion, puis lance la mission."
     },
     "fly": {
       "title": "Étape 2 : l'escadrille est en vol",
-      "text": "Le vol dure quelques minutes, en temps réel. Au Quartier Général, surveille la fatigue et le stress des pilotes : un pilote fatigué vole moins bien."
+      "text": "Le vol dure quelques minutes, en temps réel. À la tour de contrôle, surveille la fatigue et le stress des pilotes : un pilote fatigué vole moins bien."
     },
     "receive": {
       "title": "Étape 3 : le retour",
-      "text": "L'escadrille est rentrée : ouvre le Quartier Général et reçois-la, pour lire le rapport et toucher les gains."
+      "text": "L'escadrille est rentrée : ouvre la tour de contrôle et reçois-la, pour lire le rapport et toucher les gains."
     },
     "maintenance": {
       "title": "Étape 4 : l'avion est abîmé",
@@ -256,6 +256,7 @@
     },
     "sites": "Sites",
     "map": "Carte de la France",
+    "legend": "Ton camp est cerclé d'or, les camps pris par d'autres joueurs sont grisés, les camps libres sont en couleur.",
     "pick": "Clique un camp libre sur la carte pour y poser ta base.",
     "free": "Libre",
     "taken": "Prise",
@@ -356,7 +357,7 @@
       "failed": "échouée",
       "gains": "Gains : ravitaillement {{supplies}}, points de commandement {{points}}",
       "noGain": "Aucun gain",
-      "spotted": "Une mission mieux payée est apparue au Quartier Général.",
+      "spotted": "Une mission mieux payée est apparue à la tour de contrôle.",
       "windAtTakeoff": "vent au départ : {{windSpeed}} km/h",
       "crewDamaged": "{{pilot}} ({{aircraft}}) : {{damage}} de durabilité perdue",
       "crewLost": "{{pilot}} ({{aircraft}}) : avion perdu, pilote sauf",
@@ -404,9 +405,13 @@
     "running": "En fabrication",
     "withMechanic": "avec un mécanicien",
       "building": {
+      "controlTower": {
+        "name": "Tour de contrôle",
+        "text": "Les missions, les vols, les pilotes, le repos et le recrutement."
+      },
       "headquarters": {
         "name": "Quartier Général",
-        "text": "Les missions, les pilotes, le repos et le recrutement."
+        "text": "La carte de la France : qui tient chaque camp."
       },
       "workshop": {
         "name": "Atelier",
@@ -452,7 +457,7 @@
       "unknownPilot": "Ce pilote n'existe pas.",
       "pilotResting": "Ce pilote est au repos.",
       "nothingToRest": "Ce pilote n'a ni fatigue ni stress.",
-      "tooManyPilots": "Le Quartier Général ne peut pas loger plus de pilotes.",
+      "tooManyPilots": "La base ne peut pas loger plus de pilotes.",
       "upgradeAtMaximum": "Cette amélioration est au niveau maximal.",
       "insufficientCommandPoints": "Pas assez de points de commandement.",
       "battleOver": "La bataille est terminée : lance-en une nouvelle.",

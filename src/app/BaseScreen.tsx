@@ -9,6 +9,7 @@ import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import BattleOver from './BattleOver'
 import type { Arrival, Departure, Emergence } from './AirfieldView'
 import CockpitCombatWindow from './CockpitCombatWindow'
+import ControlTowerPanel from './ControlTowerPanel'
 import DogfightWindow from './DogfightWindow'
 import GroundAttackWindow from './GroundAttackWindow'
 import type { GroundRunProps } from './GroundRunWindow'
@@ -188,7 +189,7 @@ function BaseScreen({ player }: { player: Player }) {
 
   const alerts: MapAlert[] = []
   if (flights.some((flight) => flight.remainingSeconds === 0)) {
-    alerts.push({ kind: 'mission', building: 'headquarters', label: t('base.alert') })
+    alerts.push({ kind: 'mission', building: 'controlTower', label: t('base.alert') })
   }
   if (hangarAircraft.some((state) => state.fireSeconds !== null)) {
     alerts.push({ kind: 'fire', building: 'hangar', label: t('base.fireAlert') })
@@ -252,8 +253,9 @@ function BaseScreen({ player }: { player: Player }) {
         <GameWindow title={t(`base.building.${openBuilding}.name`)} hint={t(`base.building.${openBuilding}.text`)} onDismiss={() => setOpenBuilding(null)}>
           {guideStep !== null && speaksInWindowOf(guideStep, openBuilding) && guide}
           {errorMessage}
-          {openBuilding === 'headquarters' && (
-            <HeadquartersPanel
+          {openBuilding === 'headquarters' && <HeadquartersPanel site={base.site} />}
+          {openBuilding === 'controlTower' && (
+            <ControlTowerPanel
               squadron={base.squadron}
               weather={base.headquarters.weather}
               offers={base.headquarters.offers}

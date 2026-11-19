@@ -53,11 +53,7 @@ final class SquadronStore
      */
     public function addAircraft(int $baseId, AircraftModel $model): void
     {
-        $rows = $this->database->fetchAll(
-            'SELECT COALESCE(MAX(numbers.number), 0) + 1 AS next_number FROM aircraft_numbers AS numbers
-             JOIN aircraft ON aircraft.id = numbers.aircraft_id WHERE aircraft.base_id = :base_id',
-            ['base_id' => $baseId],
-        );
+        $nextNumber = $this->nextNumberOf($baseId);
         $this->database->execute(
             'INSERT INTO aircraft (base_id, model_id, durability) VALUES (:base_id, :model_id, :durability)',
             ['base_id' => $baseId, 'model_id' => $model->id, 'durability' => $model->durability],
@@ -67,8 +63,37 @@ final class SquadronStore
              SELECT aircraft.id, :number FROM aircraft
              LEFT JOIN aircraft_numbers ON aircraft_numbers.aircraft_id = aircraft.id
              WHERE aircraft.base_id = :base_id AND aircraft_numbers.aircraft_id IS NULL',
-            ['number' => (int) $rows[0]['next_number'], 'base_id' => $baseId],
+            ['number' => $nextNumber, 'base_id' => $baseId],
         );
+    }
+
+    /**
+     * Moves a pilot to another base. The caller holds the transaction and has checked that the pilot is free.
+     */
+    public function movePilot(int $pilotId, int $toBaseId): void
+    {
+        $this->database->execute('UPDATE pilots SET base_id = :base_id WHERE id = :id', ['base_id' => $toBaseId, 'id' => $pilotId]);
+    }
+
+    /**
+     * Moves an aircraft to another base, where it takes the next number, as a number is never given twice in a base. The caller holds the transaction and has checked that the aircraft is free.
+     */
+    public function moveAircraft(int $aircraftId, int $toBaseId): void
+    {
+        $nextNumber = $this->nextNumberOf($toBaseId);
+        $this->database->execute('UPDATE aircraft SET base_id = :base_id WHERE id = :id', ['base_id' => $toBaseId, 'id' => $aircraftId]);
+        $this->database->execute('UPDATE aircraft_numbers SET number = :number WHERE aircraft_id = :id', ['number' => $nextNumber, 'id' => $aircraftId]);
+    }
+
+    private function nextNumberOf(int $baseId): int
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT COALESCE(MAX(numbers.number), 0) + 1 AS next_number FROM aircraft_numbers AS numbers
+             JOIN aircraft ON aircraft.id = numbers.aircraft_id WHERE aircraft.base_id = :base_id',
+            ['base_id' => $baseId],
+        );
+
+        return (int) $rows[0]['next_number'];
     }
 
     public function updatePilotGauges(int $pilotId, int $fatigue, int $stress): void

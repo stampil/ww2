@@ -84,6 +84,9 @@ function BaseScreen({ player }: { player: Player }) {
     restartBattle,
     claimBase,
     selectBase,
+    giveResource,
+    givePilot,
+    giveAircraft,
   } = useBase(player)
   const aircraftSprite = useAircraftSprite()
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
@@ -279,6 +282,8 @@ function BaseScreen({ player }: { player: Player }) {
               onReceive={(missionId) => void receive(missionId)}
               onRest={(pilotId) => void order(restPilot(pilotId))}
               onRecruit={() => void order(recruitPilot())}
+              recipients={base.recipients}
+              onGivePilot={(pilotId, recipientBaseId) => void order(givePilot(recipientBaseId, pilotId))}
             />
           )}
           {openBuilding === 'workshop' && (
@@ -298,6 +303,8 @@ function BaseScreen({ player }: { player: Player }) {
               onBuy={(stock, quantity) => void order(buy(stock, quantity))}
               upgrade={upgradeOf('warehouse')}
               onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
+              recipients={base.recipients}
+              onGive={(recipientBaseId, resource, quantity) => void order(giveResource(recipientBaseId, resource, quantity))}
             />
           )}
           {openBuilding === 'hangar' && (
@@ -310,6 +317,8 @@ function BaseScreen({ player }: { player: Player }) {
               upgrade={upgradeOf('hangar')}
               commandPoints={base.resources.commandPoints}
               onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
+              recipients={base.recipients}
+              onGiveAircraft={(aircraftId, recipientBaseId) => void order(giveAircraft(recipientBaseId, aircraftId))}
             />
           )}
         </GameWindow>

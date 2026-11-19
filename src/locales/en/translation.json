@@ -252,6 +252,17 @@
   "stick": {
     "label": "Control stick"
   },
+  "gift": {
+    "title": "Give",
+    "resource": "Resource",
+    "quantity": "Quantity",
+    "to": "To the base",
+    "give": "Give",
+    "recipient": {
+      "own": "{{site}} (your base)",
+      "ally": "{{site}} ({{holder}}, ally)"
+    }
+  },
   "world": {
     "choose": {
       "title": "Choose your base",
@@ -341,7 +352,11 @@
       "explosion": "Explosion on the runway",
       "explosionAlone": "A burning {{aircraft}} exploded on the runway.",
       "explosionKilled": "A burning {{aircraft}} exploded on the runway; {{pilot}} is killed.",
-      "explosionSafe": "A burning {{aircraft}} exploded on the runway; {{pilot}} gets out."
+      "explosionSafe": "A burning {{aircraft}} exploded on the runway; {{pilot}} gets out.",
+      "gift": "Gift",
+      "giftResource": "{{from}} ({{site}}): {{quantity}} {{resource}}.",
+      "giftPilot": "{{from}} ({{site}}): the pilot {{name}}.",
+      "giftAircraft": "{{from}} ({{site}}): a {{name}}."
     },
     "mission": {
       "types": {
@@ -482,6 +497,10 @@
       "noBase": "You have no base yet.",
       "tooManyBases": "You already hold as many bases as you can.",
       "unknownBase": "This base is not yours.",
+      "invalidRecipient": "This base cannot receive a gift from you.",
+      "ownBasesOnly": "Pilots and aircraft can only be given to your own bases.",
+      "recipientWarehouseFull": "The warehouse of this base is full.",
+      "hangarFull": "This base has no room left for an aircraft.",
       "siteTaken": "This site is taken: choose another.",
       "invalidBody": "The order is not understood.",
       "signInRequired": "Sign in first.",

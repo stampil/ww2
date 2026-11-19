@@ -166,6 +166,42 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
   }
 }
 
+// A choice of base and a button to give something there, in a card or a pane.
+.gift-to,
+.gift-form {
+  @include flex($align: center, $gap: 0.4rem);
+  flex-wrap: wrap;
+
+  select,
+  input {
+    min-height: $touch-target;
+    padding: 0 0.5rem;
+    border: 2px solid $outline;
+    background: $panel;
+    color: $text;
+    font: inherit;
+  }
+
+  @include from('medium') {
+    select,
+    input {
+      min-height: 2rem;
+    }
+  }
+}
+
+.gift-form {
+  label {
+    @include flex($direction: column, $gap: 0.2rem);
+    color: $muted-text;
+    font-size: 0.75rem;
+  }
+
+  input {
+    width: 6rem;
+  }
+}
+
 .hud-bases {
   @include flex($display: inline-flex, $align: center, $gap: 0.3rem);
 }

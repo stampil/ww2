@@ -138,6 +138,13 @@ final class MissionStore
         return (int) $rows[0]['total'] > 0;
     }
 
+    public function isPilotOnFlight(int $pilotId): bool
+    {
+        $rows = $this->database->fetchAll('SELECT COUNT(*) AS total FROM mission_crews WHERE pilot_id = :pilot_id', ['pilot_id' => $pilotId]);
+
+        return (int) $rows[0]['total'] > 0;
+    }
+
     /**
      * Takes a mission off the books; its crews go with it, so its pilots and aircraft are free again.
      */

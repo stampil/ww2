@@ -19,6 +19,7 @@ use Ww2\Base\BaseStore;
 use Ww2\Base\Battle;
 use Ww2\Base\BattleStore;
 use Ww2\Base\EventLog;
+use Ww2\Base\Gifts;
 use Ww2\Base\Hangar;
 use Ww2\Base\HangarStore;
 use Ww2\Base\Headquarters;
@@ -84,7 +85,8 @@ $headquarters = new Headquarters($database, $baseStore, $missions, $squadrons, $
 $hangar = new Hangar($database, $baseStore, $hangarStore, $missions, $squadrons, $clocks, $mechanics, $events);
 $roster = new Roster($database, $baseStore, $missions, $squadrons, $clocks, $pilotGenerator);
 $overview = new BaseOverview($baseStore, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $squadrons, $events, $clocks, $bases);
-$baseController = new BaseController($overview, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $alerts, $bases, $session);
+$gifts = new Gifts($database, $baseStore, $squadrons, $missions, $hangarStore, $warehouse, $bases, $events);
+$baseController = new BaseController($overview, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $alerts, $bases, $session, $gifts);
 $worldController = new WorldController($bases, $overview, $session);
 
 $router = new Router();
@@ -99,6 +101,9 @@ $router->group('/api', function (RouteGroup $routes) use ($accounts, $players, $
     $routes->post('/world/claim', [$worldController, 'claim']);
     $routes->get('/base', [$baseController, 'show']);
     $routes->post('/base/select', [$baseController, 'selectBase']);
+    $routes->post('/base/gifts/resource', [$baseController, 'giveResource']);
+    $routes->post('/base/gifts/pilot', [$baseController, 'givePilot']);
+    $routes->post('/base/gifts/aircraft', [$baseController, 'giveAircraft']);
     $routes->post('/base/purchase', [$baseController, 'buy']);
     $routes->post('/base/production', [$baseController, 'produce']);
     $routes->post('/base/missions/launch', [$baseController, 'launchMission']);

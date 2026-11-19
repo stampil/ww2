@@ -21,7 +21,7 @@ final class Roster
     private const REST_RECOVERY = 40;
     private const RECRUIT_COST = 250;
     private const RECRUIT_RANK = 1;
-    private const MAX_PILOTS = 8;
+    public const MAX_PILOTS = 8;
 
     public function __construct(
         private readonly Database $database,

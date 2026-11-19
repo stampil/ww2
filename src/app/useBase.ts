@@ -102,8 +102,20 @@ export type MissionReport = {
   }[]
 }
 export type ExplosionEvent = { kind: 'explosion'; id: number; aircraftName: string; pilotName: string | null; pilotKilled: boolean }
+/** What can be given to another base: supplies and the three stocks. */
+export type GiftResource = 'supplies' | Stock
+/** A gift from another base: who gave it, from which site, and what, with the quantity of a resource or the name of a pilot or an aircraft. */
+export type GiftEvent = {
+  kind: 'gift'
+  id: number
+  from: string
+  site: string
+  item: GiftResource | 'pilot' | 'aircraft'
+  quantity: number | null
+  name: string | null
+}
 /** What happened at the base; the newest event comes first. */
-export type BaseEvent = MissionReport | ExplosionEvent
+export type BaseEvent = MissionReport | ExplosionEvent | GiftEvent
 
 export type UpgradeName = 'hangar' | 'workshop' | 'warehouse'
 /** What the command points buy for a building; the cost is null at the top level. */
@@ -113,12 +125,15 @@ export type Battle = { kills: number; target: number; status: 'ongoing' | 'won' 
 
 /** A base the player holds, with the site it stands on. */
 export type HeldBase = { id: number; site: string }
+/** A base a gift can go to: one of the player's own, or an ally's, with the nickname of its holder. */
+export type Recipient = { id: number; site: string; holder: string; kinship: 'own' | 'ally' }
 
 export type Base = {
   /** The id of this base, among the bases the player holds (the one they took first at the head), and how many bases a player can hold. */
   baseId: number
   bases: HeldBase[]
   baseLimit: number
+  recipients: Recipient[]
   /** The site the base stands on. */
   site: string
   terrainPlan: string
@@ -329,6 +344,18 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/select`, { baseId }))
   }
 
+  async function giveResource(recipientBaseId: number, resource: GiftResource, quantity: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/gifts/resource`, { recipientBaseId, resource, quantity }))
+  }
+
+  async function givePilot(recipientBaseId: number, pilotId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/gifts/pilot`, { recipientBaseId, pilotId }))
+  }
+
+  async function giveAircraft(recipientBaseId: number, aircraftId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/gifts/aircraft`, { recipientBaseId, aircraftId }))
+  }
+
   async function resetGame(): Promise<string | null> {
     return receive(await request(`${BASE_URL}/reset`, {}))
   }
@@ -361,5 +388,8 @@ export function useBase(player: Player | null) {
     restartBattle,
     claimBase,
     selectBase,
+    giveResource,
+    givePilot,
+    giveAircraft,
   }
 }

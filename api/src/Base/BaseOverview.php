@@ -45,6 +45,7 @@ final class BaseOverview
             'baseId' => $baseId,
             'bases' => $this->sites->heldWith($baseId),
             'baseLimit' => Bases::MAX_PER_PLAYER,
+            'recipients' => array_map(static fn (array $recipient): array => [...$recipient, 'kinship' => $recipient['kinship']->value], $this->sites->recipientsOf($baseId)),
             'site' => $this->sites->siteOf($baseId)->value,
             'terrainPlan' => $this->baseStore->terrainPlanOf($baseId),
             'resources' => $this->baseStore->resourcesOf($baseId)->toArray(),

@@ -69,6 +69,22 @@ final class BaseStore
         );
     }
 
+    /**
+     * Moves a quantity of a resource from one base to another. The caller holds the transaction and has checked the quantities.
+     */
+    public function transfer(int $fromBaseId, int $toBaseId, Resource $resource, int $quantity): void
+    {
+        $column = $resource->value;
+        $this->database->execute(
+            'UPDATE base_resources SET ' . $column . ' = ' . $column . ' - :quantity WHERE base_id = :base_id',
+            ['quantity' => $quantity, 'base_id' => $fromBaseId],
+        );
+        $this->database->execute(
+            'UPDATE base_resources SET ' . $column . ' = ' . $column . ' + :quantity WHERE base_id = :base_id',
+            ['quantity' => $quantity, 'base_id' => $toBaseId],
+        );
+    }
+
     public function spendMaterials(int $baseId, int $amount): void
     {
         $this->database->execute(

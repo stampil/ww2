@@ -252,6 +252,17 @@
   "stick": {
     "label": "Manche de pilotage"
   },
+  "gift": {
+    "title": "Donner",
+    "resource": "Ressource",
+    "quantity": "Quantité",
+    "to": "Vers la base",
+    "give": "Donner",
+    "recipient": {
+      "own": "{{site}} (ta base)",
+      "ally": "{{site}} ({{holder}}, allié)"
+    }
+  },
   "world": {
     "choose": {
       "title": "Choisis ta base",
@@ -341,7 +352,11 @@
       "explosion": "Explosion sur la piste",
       "explosionAlone": "Un {{aircraft}} en feu a explosé sur la piste.",
       "explosionKilled": "Un {{aircraft}} en feu a explosé sur la piste ; {{pilot}} est tué.",
-      "explosionSafe": "Un {{aircraft}} en feu a explosé sur la piste ; {{pilot}} s'en sort."
+      "explosionSafe": "Un {{aircraft}} en feu a explosé sur la piste ; {{pilot}} s'en sort.",
+      "gift": "Don",
+      "giftResource": "{{from}} ({{site}}) : {{quantity}} {{resource}}.",
+      "giftPilot": "{{from}} ({{site}}) : le pilote {{name}}.",
+      "giftAircraft": "{{from}} ({{site}}) : un {{name}}."
     },
     "mission": {
       "types": {
@@ -482,6 +497,10 @@
       "noBase": "Tu n'as pas encore de base.",
       "tooManyBases": "Tu tiens déjà le maximum de bases.",
       "unknownBase": "Cette base n'est pas à toi.",
+      "invalidRecipient": "Cette base ne peut pas recevoir de don de ta part.",
+      "ownBasesOnly": "Les pilotes et les avions ne se donnent qu'à tes propres bases.",
+      "recipientWarehouseFull": "L'entrepôt de cette base est plein.",
+      "hangarFull": "Cette base n'a plus de place pour un avion.",
       "siteTaken": "Ce site est déjà pris : choisis-en un autre.",
       "invalidBody": "La commande n'est pas comprise.",
       "signInRequired": "Connecte-toi d'abord.",

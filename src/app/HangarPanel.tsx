@@ -3,9 +3,10 @@ import { damageLevelOf } from '../three/damageStages'
 import AircraftPicture from './AircraftPicture'
 import { formatDuration } from './formatDuration'
 import Gauge from './Gauge'
+import GiveTo from './GiveTo'
 import Icon from './Icon'
 import Pane from './Pane'
-import type { HangarAircraft, Part, Squadron, UpgradeInfo, UpgradeName } from './useBase'
+import type { HangarAircraft, Part, Recipient, Squadron, UpgradeInfo, UpgradeName } from './useBase'
 import UpgradeCard from './UpgradeCard'
 
 const PARTS: Part[] = ['engine', 'wings', 'fuselage', 'armament']
@@ -19,11 +20,15 @@ type Props = {
   upgrade: UpgradeInfo
   commandPoints: number
   onUpgrade: (upgrade: UpgradeName) => void
+  /** The bases a gift can go to; an aircraft goes to the player's own only. */
+  recipients: Recipient[]
+  onGiveAircraft: (aircraftId: number, recipientBaseId: number) => void
 }
 
 /** The aircraft of the squadron in 3D, on the ground or in flight, with their modules; one back damaged is inspected to show its damage, then repaired, if a mechanic and the spare parts are there. */
-function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, onInspect, onRepair, upgrade, commandPoints, onUpgrade }: Props) {
+function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, onInspect, onRepair, upgrade, commandPoints, onUpgrade, recipients, onGiveAircraft }: Props) {
   const { t } = useTranslation()
+  const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
 
   return (
     <Pane title={t('squadron.aircraft')}>
@@ -32,6 +37,7 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, onInspect, onR
           const state = hangarAircraft.find((candidate) => candidate.aircraftId === aircraft.id)!
           const isFlying = busyAircraftIds.includes(aircraft.id)
           const destroyedModules = state.destroyedModules
+          const isGrounded = state.needsInspection || state.inspectionSeconds !== null || state.repairSeconds !== null || state.fireSeconds !== null || (destroyedModules ?? []).length > 0
 
           return (
             <li key={aircraft.id} className="card">
@@ -103,6 +109,11 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, onInspect, onR
                     <Icon name="repair" />
                     {t('base.hangar.repair', { time: formatDuration(state.repairDurationSeconds) })}
                   </button>
+                </div>
+              )}
+              {ownRecipients.length > 0 && (
+                <div className="card-actions">
+                  <GiveTo recipients={ownRecipients} isDisabled={isFlying || isGrounded} onGive={(recipientBaseId) => onGiveAircraft(aircraft.id, recipientBaseId)} />
                 </div>
               )}
             </li>

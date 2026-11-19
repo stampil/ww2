@@ -4,10 +4,11 @@ import FlightList from './FlightList'
 import { formatDuration } from './formatDuration'
 import type { BusyCrews } from './flights'
 import Gauge from './Gauge'
+import GiveTo from './GiveTo'
 import Icon from './Icon'
 import MissionBoard from './MissionBoard'
 import Pane from './Pane'
-import type { Base, BaseEvent, Flight, Offer, Rest, Squadron } from './useBase'
+import type { Base, BaseEvent, Flight, Offer, Recipient, Rest, Squadron } from './useBase'
 
 const GAUGE_MAX = 100
 
@@ -25,11 +26,15 @@ type Props = {
   onReceive: (missionId: number) => void
   onRest: (pilotId: number) => void
   onRecruit: () => void
+  /** The bases a gift can go to; a pilot goes to the player's own only. */
+  recipients: Recipient[]
+  onGivePilot: (pilotId: number, recipientBaseId: number) => void
 }
 
 /** The flights under way, the latest events, the missions on the table, and the pilots, who can rest and be joined by new ones. */
-function ControlTowerPanel({ squadron, weather, offers, flights, rests, recruitment, events, busy, unavailable, onLaunch, onReceive, onRest, onRecruit }: Props) {
+function ControlTowerPanel({ squadron, weather, offers, flights, rests, recruitment, events, busy, unavailable, onLaunch, onReceive, onRest, onRecruit, recipients, onGivePilot }: Props) {
   const { t } = useTranslation()
+  const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
 
   return (
     <>
@@ -80,6 +85,7 @@ function ControlTowerPanel({ squadron, weather, offers, flights, rests, recruitm
                     <Icon name="rest" />
                     {t('base.mission.rest')}
                   </button>
+                  <GiveTo recipients={ownRecipients} isDisabled={isFlying || rest !== undefined} onGive={(recipientBaseId) => onGivePilot(pilot.id, recipientBaseId)} />
                 </div>
               </li>
             )

@@ -15,8 +15,10 @@ use Ww2\Base\BaseError;
 use Ww2\Base\BaseException;
 use Ww2\Base\BaseOverview;
 use Ww2\Base\Battle;
+use Ww2\Base\Gifts;
 use Ww2\Base\Hangar;
 use Ww2\Base\Headquarters;
+use Ww2\Base\Resource;
 use Ww2\Base\Roster;
 use Ww2\Base\SparePart;
 use Ww2\Base\Stock;
@@ -30,7 +32,7 @@ use Ww2\World\Bases;
 
 /**
  * Shows the base of the player who is signed in (the one they look at, the first they took until they choose another), and takes their orders: buy a stock, make a spare part,
- * send a mission out, answer its alerts and receive its squadron back, inspect and repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade.
+ * send a mission out, answer its alerts and receive its squadron back, inspect and repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade, give resources, a pilot or an aircraft to another base.
  * Once the battle is over the orders are refused, except the one that starts a new battle and the one that starts the game over.
  */
 final class BaseController
@@ -47,6 +49,7 @@ final class BaseController
         private readonly Alerts $alerts,
         private readonly Bases $bases,
         private readonly PlayerSession $session,
+        private readonly Gifts $gifts,
     ) {
     }
 
@@ -104,6 +107,49 @@ final class BaseController
             ?? throw new BadRequestException('invalidBody');
         $withMechanic = JsonRequestBody::booleans($request, 'withMechanic')['withMechanic'];
         $this->carryOut(fn () => $this->workshop->start($baseId, $part, $withMechanic));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function giveResource(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ongoingBattleBaseId();
+        $numbers = JsonRequestBody::integers($request, 'recipientBaseId', 'quantity');
+        $resource = Resource::tryFrom(JsonRequestBody::texts($request, 'resource')['resource']) ?? throw new BadRequestException('invalidBody');
+        $this->carryOut(fn () => $this->gifts->giveResource($baseId, $numbers['recipientBaseId'], $resource, $numbers['quantity']));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function givePilot(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ongoingBattleBaseId();
+        $numbers = JsonRequestBody::integers($request, 'recipientBaseId', 'pilotId');
+        $this->carryOut(fn () => $this->gifts->givePilot($baseId, $numbers['recipientBaseId'], $numbers['pilotId']));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function giveAircraft(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ongoingBattleBaseId();
+        $numbers = JsonRequestBody::integers($request, 'recipientBaseId', 'aircraftId');
+        $this->carryOut(fn () => $this->gifts->giveAircraft($baseId, $numbers['recipientBaseId'], $numbers['aircraftId']));
 
         return $this->overview->of($baseId);
     }

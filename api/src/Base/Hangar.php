@@ -19,6 +19,8 @@ use Ww2\Squadron\SquadronStore;
  */
 final class Hangar
 {
+    /** How many aircraft a hangar takes: the stands of the starting plan, which the front keeps equal. */
+    public const PLACES = 6;
     private const INSPECTION_SECONDS = 20;
     private const HULL_SECONDS_PER_POINT = 1;
     private const MODULE_SECONDS = 30;

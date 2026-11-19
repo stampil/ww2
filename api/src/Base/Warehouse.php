@@ -55,7 +55,7 @@ final class Warehouse
         return ['capacity' => $this->capacityOf($baseId), 'prices' => $prices];
     }
 
-    private function capacityOf(int $baseId): int
+    public function capacityOf(int $baseId): int
     {
         return self::BASE_CAPACITY + self::CAPACITY_PER_LEVEL * $this->upgrades->levelOf($baseId, Upgrade::Warehouse);
     }

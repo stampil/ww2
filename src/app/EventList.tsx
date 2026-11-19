@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import Pane from './Pane'
-import type { BaseEvent, ExplosionEvent, MissionReport } from './useBase'
+import type { BaseEvent, ExplosionEvent, GiftEvent, MissionReport } from './useBase'
 
 function crewOutcomeKey(crew: MissionReport['crews'][number]): string {
   if (crew.pilotKilled) {
@@ -55,14 +55,39 @@ function ExplosionItem({ event }: { event: ExplosionEvent }) {
   )
 }
 
-/** The latest events of the base, the newest first: mission reports, and aircraft that exploded on the runway. */
+function GiftItem({ event }: { event: GiftEvent }) {
+  const { t } = useTranslation()
+  const giver = { from: event.from, site: t(`world.site.${event.site}`) }
+  let text: string
+  if (event.item === 'pilot') {
+    text = t('base.event.giftPilot', { ...giver, name: event.name })
+  } else if (event.item === 'aircraft') {
+    text = t('base.event.giftAircraft', { ...giver, name: event.name })
+  } else {
+    text = t('base.event.giftResource', { ...giver, quantity: event.quantity, resource: t(`base.resources.${event.item}`) })
+  }
+
+  return (
+    <li>
+      <strong>{t('base.event.gift')}</strong>
+      <span>{text}</span>
+    </li>
+  )
+}
+
+/** The latest events of the base, the newest first: mission reports, aircraft that exploded on the runway, and gifts from other bases. */
 function EventList({ events }: { events: BaseEvent[] }) {
   const { t } = useTranslation()
 
   return (
     <Pane title={t('base.mission.reports')}>
       <ul className="reports">
-        {events.map((event) => (event.kind === 'mission' ? <MissionReportItem key={event.id} report={event} /> : <ExplosionItem key={event.id} event={event} />))}
+        {events.map((event) => {
+          if (event.kind === 'mission') {
+            return <MissionReportItem key={event.id} report={event} />
+          }
+          return event.kind === 'gift' ? <GiftItem key={event.id} event={event} /> : <ExplosionItem key={event.id} event={event} />
+        })}
       </ul>
     </Pane>
   )

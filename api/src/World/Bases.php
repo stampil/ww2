@@ -98,6 +98,65 @@ final class Bases
     }
 
     /**
+     * The other bases of the world of a base that its player can give to: their own, and those held by allies of the same side.
+     *
+     * @return list<array{id: int, site: string, holder: string, kinship: Kinship}>
+     */
+    public function recipientsOf(int $baseId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT bases.id AS id, bases.site AS site, bases.player_id AS player_id, players.nickname AS holder FROM bases
+             JOIN players ON players.id = bases.player_id
+             WHERE bases.instance_id = (SELECT instance_id FROM bases WHERE id = :base_id) ORDER BY bases.id',
+            ['base_id' => $baseId],
+        );
+        $giver = null;
+        foreach ($rows as $row) {
+            if ((int) $row['id'] === $baseId) {
+                $giver = $row;
+            }
+        }
+        $recipients = [];
+        foreach ($rows as $row) {
+            if ($giver === null || (int) $row['id'] === $baseId) {
+                continue;
+            }
+            $site = Site::from((string) $row['site']);
+            if ($row['player_id'] === $giver['player_id']) {
+                $kinship = Kinship::Own;
+            } elseif ($site->clan() === Site::from((string) $giver['site'])->clan()) {
+                $kinship = Kinship::Ally;
+            } else {
+                continue;
+            }
+            $recipients[] = ['id' => (int) $row['id'], 'site' => $site->value, 'holder' => (string) $row['holder'], 'kinship' => $kinship];
+        }
+
+        return $recipients;
+    }
+
+    /**
+     * @return Kinship|null how the other base stands to the base, or null when the player cannot give to it
+     */
+    public function kinshipTo(int $fromBaseId, int $toBaseId): ?Kinship
+    {
+        foreach ($this->recipientsOf($fromBaseId) as $recipient) {
+            if ($recipient['id'] === $toBaseId) {
+                return $recipient['kinship'];
+            }
+        }
+
+        return null;
+    }
+
+    public function holderNameOf(int $baseId): string
+    {
+        $rows = $this->database->fetchAll('SELECT players.nickname AS nickname FROM bases JOIN players ON players.id = bases.player_id WHERE bases.id = :base_id', ['base_id' => $baseId]);
+
+        return (string) $rows[0]['nickname'];
+    }
+
+    /**
      * Gives a base back: nobody holds it any more. Its game is erased by the caller.
      */
     public function release(int $baseId): void

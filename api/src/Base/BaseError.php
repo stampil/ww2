@@ -47,5 +47,9 @@ enum BaseError: string
     case NoBase = 'noBase';
     case TooManyBases = 'tooManyBases';
     case UnknownBase = 'unknownBase';
+    case InvalidRecipient = 'invalidRecipient';
+    case OwnBasesOnly = 'ownBasesOnly';
+    case RecipientWarehouseFull = 'recipientWarehouseFull';
+    case HangarFull = 'hangarFull';
     case SiteTaken = 'siteTaken';
 }

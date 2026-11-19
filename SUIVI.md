@@ -8,9 +8,9 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 
 | Il me faut | Ça débloque |
 |---|---|
-| Les images de décor restantes, une à la fois : nid de mitrailleuse, fantassins, arbres (la tente et les barils sont reçus) | le décor de l'attaque au sol, les cibles de la reconnaissance, l'ennemi qui tire sur toi |
+| Ton « généré » de la feuille de décor : nid de mitrailleuse, fantassins, arbres (prompt 1 redonné le 19/11, image 1 = la feuille des barils et de la tente) | le décor de l'attaque au sol, les cibles de la reconnaissance, l'ennemi qui tire sur toi |
 | Ton accord pour télécharger `SV-GB.png` (1 274 820 octets, GPL v2, FGAddon) | le D.520 à livrée allemande, avion de l'Axe |
-| Les trois états de camp restants (tenu par un joueur, tenu par l'IA, attaqué) et une feuille de bâtiments de l'Axe, à demander après le convoi et la Croix-Rouge | les camps sur la carte, la base de l'Axe |
+| Ton « généré » des trois états de camp, tenu par un joueur, tenu par l'IA, attaqué (prompt 2, image 1 = le camp libre), et de la feuille de bâtiments de l'Axe (prompt 3, image 1 = la feuille des bâtiments français) | les camps sur la carte, la base de l'Axe |
 
 ## 2. Questions à lever
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { music } from '../audio/MusicPlayer'
-import GamePage from './GamePage'
 import HomePage from './HomePage'
+import PocPage from './PocPage'
 import { useHashRoute } from './useHashRoute'
 
 function App() {
@@ -11,7 +11,7 @@ function App() {
     music.startOnFirstGesture()
   }, [])
 
-  return route === 'game' ? <GamePage /> : <HomePage />
+  return route === 'poc' ? <PocPage /> : <HomePage />
 }
 
 export default App

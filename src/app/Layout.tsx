@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
 import MusicToggle from './MusicToggle'
-import { HOME_HASH } from './useHashRoute'
+import { HOME_HASH, POC_HASH } from './useHashRoute'
 
 const MODEL_SOURCE_URL = 'https://sourceforge.net/p/flightgear/fgaddon/HEAD/tree/trunk/Aircraft/D520/'
 const MODEL_LICENSE_URL = assetUrl('models/d520/COPYING')
@@ -30,6 +30,9 @@ function Layout({ tools, children }: { tools?: ReactNode; children: ReactNode })
         </a>
         <div className="topbar-tools">
           {tools}
+          <a className="topbar-link" href={POC_HASH}>
+            {t('home.poc')}
+          </a>
           <MusicToggle />
           <nav className="language-switch" aria-label={t('language')}>
             <button

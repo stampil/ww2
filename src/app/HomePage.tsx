@@ -1,42 +1,35 @@
 import { useTranslation } from 'react-i18next'
-import AircraftShowcase from './AircraftShowcase'
-import AircraftViewer from './AircraftViewer'
-import BushViewer from './BushViewer'
-import CockpitViewer from './CockpitViewer'
+import AccountForm from './AccountForm'
+import AccountPanel from './AccountPanel'
+import BaseScreen from './BaseScreen'
 import Layout from './Layout'
-import TakeoffView from './TakeoffView'
-import TerrainTest from './TerrainTest'
-import { GAME_HASH } from './useHashRoute'
+import { useAccount } from './useAccount'
+import { useApiStatus } from './useApiStatus'
 
-const SHOWCASE_AIRCRAFT_IDS = ['ms406', 'bf109', 'ju87', 'he111']
-
-/** The showcase: every 3D model of the game (the D.520 and its cockpit, the other aircraft, the bush) turned by dragging, the terrain test and the takeoff. It runs in the browser alone, with no server. */
+/** The home page is the game, which needs the server: it asks the player to sign in or to create an account, then shows their base, and whether the server answers. */
 function HomePage() {
   const { t } = useTranslation()
+  const apiStatus = useApiStatus()
+  const { player, isKnown, submit, signOut } = useAccount()
 
   return (
-    <Layout>
-      <section className="intro" aria-labelledby="welcome-title">
-        <p className="eyebrow">{t('eyebrow')}</p>
-        <h1 id="welcome-title">{t('title')}</h1>
-        <div className="viewers">
-          <AircraftViewer />
-          <CockpitViewer />
+    <Layout tools={player === null ? undefined : <AccountPanel player={player} onSignOut={() => void signOut()} />}>
+      <section className="game-page" aria-labelledby="game-title">
+        <h1 id="game-title" className="game-title">
+          {t('game.title')}
+        </h1>
+        {isKnown && player === null && (
+          <>
+            <p className="squadron-hint">{t('squadron.signInHint')}</p>
+            <AccountForm onSubmit={submit} />
+          </>
+        )}
+        {player !== null && <BaseScreen player={player} />}
+        <div className="status-line">
+          <span className="status-dot" data-status={apiStatus} aria-hidden="true" />
+          <span>{t(`status.${apiStatus}`)}</span>
         </div>
-        <h2 className="viewers-title">{t('showcase.title')}</h2>
-        <div className="viewers viewers-wrapping">
-          {SHOWCASE_AIRCRAFT_IDS.map((aircraftId) => (
-            <AircraftShowcase key={aircraftId} aircraftId={aircraftId} />
-          ))}
-          <BushViewer />
-        </div>
-        <TerrainTest />
-        <a className="play-link" href={GAME_HASH}>
-          {t('home.play')}
-        </a>
       </section>
-
-      <TakeoffView />
     </Layout>
   )
 }

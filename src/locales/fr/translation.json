@@ -9,7 +9,8 @@
     "apiDown": "Le serveur de jeu est indisponible."
   },
   "home": {
-    "play": "Jouer"
+    "play": "Jouer",
+    "poc": "POC"
   },
   "game": {
     "title": "Le jeu"

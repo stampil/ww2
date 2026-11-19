@@ -34,7 +34,7 @@ Le front répond sur le port 5173, et sur l'adresse du réseau local pour le tes
 
 ## Site statique
 
-L'accueil tourne seul dans le navigateur, sans l'API ni la base : `npm run build` produit le site dans `dist/`, que n'importe quel hébergeur de fichiers sert depuis n'importe quel dossier. Le workflow `.github/workflows/pages.yml` le publie sur GitHub Pages à chaque envoi sur `main` (réglage du dépôt : Pages, source « GitHub Actions »). La page du jeu (`#/jeu`) a besoin de l'API et dit que le serveur est indisponible quand elle est absente.
+L'accueil tourne seul dans le navigateur, sans l'API ni la base : `npm run build` produit le site dans `dist/`, que n'importe quel hébergeur de fichiers sert depuis n'importe quel dossier. Le workflow `.github/workflows/pages.yml` le publie sur GitHub Pages à chaque envoi sur `main` (réglage du dépôt : Pages, source « GitHub Actions »). Sur la branche `POC`, l'accueil (`#/`) est le jeu : connexion ou inscription, puis la base ; il a besoin de l'API. Le POC avec les modèles 3D est à `#/poc`. La vitrine GitHub ne porte que le POC, publié depuis `main`, que je ne touche plus.
 
 ## Mise en ligne sur InfinityFree
 

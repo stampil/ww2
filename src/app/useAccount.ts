@@ -28,15 +28,17 @@ async function send(method: string, url: string, body?: object): Promise<{ playe
 
 export type Account = ReturnType<typeof useAccount>
 
-/** Who is signed in, found when the page opens, and the ways to sign in, create an account and sign out. */
+/** Who is signed in, found when the page opens (`isKnown` tells when it has been), and the ways to sign in, create an account and sign out. */
 export function useAccount() {
   const [player, setPlayer] = useState<Player | null>(null)
+  const [isKnown, setIsKnown] = useState(false)
 
   useEffect(() => {
     void send('GET', SESSION_URL).then((result) => {
       if ('player' in result) {
         setPlayer(result.player)
       }
+      setIsKnown(true)
     })
   }, [])
 
@@ -57,5 +59,5 @@ export function useAccount() {
     }
   }
 
-  return { player, submit, signOut }
+  return { player, isKnown, submit, signOut }
 }

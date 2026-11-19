@@ -28,7 +28,7 @@ final class WorldController
     }
 
     /**
-     * @return array{sites: list<array{site: string, free: bool}>}
+     * @return array{sites: list<array{site: string, free: bool, clan: string, holder: string|null}>}
      * @throws UnauthorizedException when nobody is signed in
      */
     public function sites(): array
@@ -39,7 +39,7 @@ final class WorldController
     }
 
     /**
-     * @return array{sites: list<array{site: string, free: bool}>}
+     * @return array{sites: list<array{site: string, free: bool, clan: string, holder: string|null}>}
      * @throws UnauthorizedException when nobody is signed in
      * @throws ConflictException when the player holds no base
      */

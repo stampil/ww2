@@ -16,4 +16,10 @@ enum Site: string
     case Nancy = 'nancy';
     case Dijon = 'dijon';
     case Orleans = 'orleans';
+
+    /** The side whose camp this is; all the sites are in France for now, the camps of the Axe come with its part of the map. */
+    public function clan(): Clan
+    {
+        return Clan::French;
+    }
 }

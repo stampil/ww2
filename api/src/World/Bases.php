@@ -43,22 +43,27 @@ final class Bases
     /**
      * The sites a new player can choose from: those of the oldest instance that has a free base, else all of a new instance.
      *
-     * @return list<array{site: string, free: bool}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null}>
      */
     public function sitesToChoose(): array
     {
         $instanceId = $this->instances->joinableId();
         if ($instanceId === null) {
-            return array_map(static fn (Site $site): array => ['site' => $site->value, 'free' => true], Site::cases());
+            $states = [];
+            foreach (Site::cases() as $site) {
+                $states[] = $this->siteState($site, null);
+            }
+
+            return $states;
         }
 
         return $this->sitesOfInstance($instanceId);
     }
 
     /**
-     * The sites of the instance a base stands in, each free or held by a player.
+     * The sites of the instance a base stands in, each free or held by a player, with the side it belongs to.
      *
-     * @return list<array{site: string, free: bool}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null}>
      */
     public function sitesAround(int $baseId): array
     {
@@ -97,15 +102,27 @@ final class Bases
     }
 
     /**
-     * @return list<array{site: string, free: bool}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null}>
      */
     private function sitesOfInstance(int $instanceId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT site, player_id IS NULL AS free FROM bases WHERE instance_id = :instance_id ORDER BY id',
+            'SELECT bases.site AS site, players.nickname AS holder FROM bases LEFT JOIN players ON players.id = bases.player_id WHERE bases.instance_id = :instance_id ORDER BY bases.id',
             ['instance_id' => $instanceId],
         );
+        $states = [];
+        foreach ($rows as $row) {
+            $states[] = $this->siteState(Site::from((string) $row['site']), $row['holder'] === null ? null : (string) $row['holder']);
+        }
 
-        return array_map(static fn (array $row): array => ['site' => (string) $row['site'], 'free' => (bool) $row['free']], $rows);
+        return $states;
+    }
+
+    /**
+     * @return array{site: string, free: bool, clan: string, holder: string|null}
+     */
+    private function siteState(Site $site, ?string $holder): array
+    {
+        return ['site' => $site->value, 'free' => $holder === null, 'clan' => $site->clan()->value, 'holder' => $holder];
     }
 }

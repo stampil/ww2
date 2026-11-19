@@ -256,7 +256,17 @@
     },
     "sites": "Sites",
     "map": "Carte de la France",
-    "legend": "Ton camp est cerclé d'or, les camps pris par d'autres joueurs sont grisés, les camps libres sont en couleur.",
+    "legend": "Ton camp est cerclé d'or, ceux de tes alliés de vert, ceux de l'ennemi sont grisés, les camps libres sont en couleur.",
+    "side": "Ton côté : {{side}}.",
+    "clan": {
+      "french": "les Français",
+      "axe": "l'Axe"
+    },
+    "relation": {
+      "own": "ton camp",
+      "ally": "{{holder}}, allié",
+      "enemy": "{{holder}}, ennemi"
+    },
     "pick": "Clique un camp libre sur la carte pour y poser ta base.",
     "free": "Libre",
     "taken": "Prise",

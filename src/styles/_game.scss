@@ -1104,6 +1104,10 @@ button.base-sprite {
     }
   }
 
+  &[data-ally='true'] img {
+    filter: drop-shadow(0 0 0.4rem $go);
+  }
+
   &:hover:not(:disabled) img,
   &:focus-visible img,
   &[aria-pressed='true'] img {
@@ -1120,6 +1124,17 @@ button.base-sprite {
 .world-legend {
   margin: 0 0 0.6rem;
   color: $muted-text;
+}
+
+.world-holders {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  color: $muted-text;
+  list-style: none;
+
+  strong {
+    color: $text;
+  }
 }
 
 .world-choice {

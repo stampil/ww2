@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
-export type SiteChoice = { site: string; free: boolean }
+/** A site of the map: whether it is free, the side it belongs to, and the nickname of the player who holds it. */
+export type SiteChoice = { site: string; free: boolean; clan: string; holder: string | null }
 
 /** The sites where a new player can settle, in the oldest world that has room. */
 export const CHOOSABLE_SITES_URL = '/api/world/sites'

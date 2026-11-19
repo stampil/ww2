@@ -14,10 +14,12 @@ type Props = {
   selected: string | null
   /** What a click on a free camp does; without it the map is only shown. */
   onSelect?: (site: string) => void
+  /** The side of the player: the camps that other players of that side hold are marked as allies. */
+  ownClan?: string
 }
 
-/** The map of France with a camp on each site: a free one can be picked, a taken one is greyed. On a phone the map is wider than the screen and slides sideways, from the camps. */
-function WorldMap({ sites, selected, onSelect }: Props) {
+/** The map of France with a camp on each site: a free one can be picked, a taken one is greyed unless an ally holds it. On a phone the map is wider than the screen and slides sideways, from the camps. */
+function WorldMap({ sites, selected, onSelect, ownClan }: Props) {
   const { t } = useTranslation()
   const viewportRef = useRef<HTMLDivElement>(null)
 
@@ -33,7 +35,7 @@ function WorldMap({ sites, selected, onSelect }: Props) {
     <div className="world-map-viewport" ref={viewportRef}>
       <div className="world-map" role="group" aria-label={t('world.map')} style={{ aspectRatio: `${FRANCE_MAP.width} / ${FRANCE_MAP.height}` }}>
         <img className="world-map-picture" src={MAP_URL} alt="" />
-        {sites.map(({ site, free }) => {
+        {sites.map(({ site, free, clan }) => {
           const { left, top, labelSide } = sitePlace(site)
           return (
             <button
@@ -41,6 +43,7 @@ function WorldMap({ sites, selected, onSelect }: Props) {
               type="button"
               className="world-camp"
               data-free={free}
+              data-ally={!free && site !== selected && clan === ownClan}
               data-label-side={labelSide}
               aria-label={`${t(`world.site.${site}`)} : ${t(free ? 'world.free' : 'world.taken')}`}
               aria-pressed={selected === site}

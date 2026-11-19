@@ -8,7 +8,7 @@ import GiveTo from './GiveTo'
 import Icon from './Icon'
 import Pane from './Pane'
 import StationingForm from './StationingForm'
-import type { AwayAircraft, GuestAircraft, HangarAircraft, Part, Recipient, Squadron, UpgradeInfo, UpgradeName } from './useBase'
+import type { AwayAircraft, Destination, GuestAircraft, HangarAircraft, Part, Recipient, Squadron, UpgradeInfo, UpgradeName } from './useBase'
 import UpgradeCard from './UpgradeCard'
 
 const PARTS: Part[] = ['engine', 'wings', 'fuselage', 'armament']
@@ -32,10 +32,12 @@ type Props = {
   /** The bases a gift can go to; an aircraft goes to the player's own only. */
   recipients: Recipient[]
   onGiveAircraft: (aircraftId: number, recipientBaseId: number) => void
+  /** Where an aircraft can be stationed: the player's own bases, the allies' and the free camps. */
+  destinations: Destination[]
 }
 
 /** The aircraft of the squadron in 3D, on the ground or in flight, with their modules; one back damaged is inspected to show its damage, then repaired, if a mechanic and the spare parts are there. An aircraft can be stationed at another base, and those stationed here are listed. */
-function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, unavailable, away, guests, flightSeconds, onStation, onRecall, onInspect, onRepair, upgrade, commandPoints, onUpgrade, recipients, onGiveAircraft }: Props) {
+function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, unavailable, away, guests, flightSeconds, onStation, onRecall, onInspect, onRepair, upgrade, commandPoints, onUpgrade, recipients, onGiveAircraft, destinations }: Props) {
   const { t } = useTranslation()
   const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
 
@@ -148,7 +150,7 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, unavailable, a
           <UpgradeCard info={upgrade} commandPoints={commandPoints} onBuy={onUpgrade} />
         </ul>
       </Pane>
-      {recipients.length > 0 && <StationingForm squadron={squadron} unavailable={unavailable} recipients={recipients} flightSeconds={flightSeconds} onStation={onStation} />}
+      {destinations.length > 0 && <StationingForm squadron={squadron} unavailable={unavailable} destinations={destinations} flightSeconds={flightSeconds} onStation={onStation} />}
       {guests.length > 0 && (
         <Pane title={t('stationing.guests')}>
           <ul className="reports">
@@ -161,6 +163,13 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, unavailable, a
                   {guest.pilotName} — {t(`gift.recipient.${guest.kinship}`, { site: t(`world.site.${guest.site}`), holder: guest.holder })}
                 </span>
                 <span>{t(`stationing.guestPhase.${guest.phase}`, { time: formatDuration(guest.remainingSeconds) })}</span>
+                {guest.kinship === 'own' && guest.phase === 'stationed' && (
+                  <div className="card-actions">
+                    <button type="button" onClick={() => onRecall(guest.aircraftId)}>
+                      {t('stationing.recall')}
+                    </button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>

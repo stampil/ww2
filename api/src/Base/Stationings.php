@@ -10,10 +10,11 @@ use Ww2\Database\Database;
 use Ww2\Mission\MissionStore;
 use Ww2\Squadron\SquadronStore;
 use Ww2\World\Bases;
+use Ww2\World\Kinship;
 
 /**
- * Aircraft stationed at another base of the world, the player's own or an ally's: an aircraft and its pilot fly out with fuel and ammunition in the hold, unload it when they land,
- * and stay there until the player recalls them, which sends them back. Away, they belong to their own base but cannot fly a mission, rest or be given.
+ * Aircraft stationed at another base of the world, the player's own, an ally's or a free camp, which the aircraft takes by landing first: an aircraft and its pilot fly out with fuel and ammunition
+ * in the hold, unload it when they land, and stay there until the player recalls them, which sends them back. Away, they belong to their own base but cannot fly a mission, rest or be given.
  */
 final class Stationings
 {
@@ -23,6 +24,7 @@ final class Stationings
     public function __construct(
         private readonly Database $database,
         private readonly BaseStore $baseStore,
+        private readonly BaseFounder $baseFounder,
         private readonly StationingStore $stationings,
         private readonly SquadronStore $squadrons,
         private readonly MissionStore $missions,
@@ -76,16 +78,28 @@ final class Stationings
     }
 
     /**
-     * Sends an aircraft and its pilot to another base of the player or of an ally, with a load of fuel and ammunition for it.
+     * Sends an aircraft and its pilot to another base of the player, of an ally, or to a free camp, with a load of fuel and ammunition for it.
      *
-     * @throws BaseException when the destination is not one of the player's bases or an ally's, the pilot or the aircraft is not the base's, rests, flies, is away or grounded,
-     *                       the load is more than the aircraft can carry, the base runs short of it or the destination's warehouse cannot hold it
+     * @throws BaseException when the destination is not one of those, the player holds as many bases as they can and the camp is free, the pilot or the aircraft is not the base's,
+     *                       rests, flies, is away or grounded, the load is more than the aircraft can carry, the base runs short of it or the destination's warehouse cannot hold it
      */
     public function send(int $baseId, int $destinationBaseId, int $pilotId, int $aircraftId, int $fuel, int $ammunition): void
     {
         $this->database->transaction(function () use ($baseId, $destinationBaseId, $pilotId, $aircraftId, $fuel, $ammunition): void {
-            if ($this->bases->kinshipTo($baseId, $destinationBaseId) === null) {
+            $destination = null;
+            foreach ($this->bases->destinationsOf($baseId) as $candidate) {
+                if ($candidate['id'] === $destinationBaseId) {
+                    $destination = $candidate;
+                }
+            }
+            if ($destination === null) {
                 throw new BaseException(BaseError::InvalidRecipient);
+            }
+            if ($destination['kinship'] === Kinship::Free) {
+                if (count($this->bases->idsOf($this->bases->holderIdOf($baseId))) >= Bases::MAX_PER_PLAYER) {
+                    throw new BaseException(BaseError::TooManyBases);
+                }
+                $this->baseFounder->foundEmpty($destinationBaseId);
             }
             $locked = $this->baseStore->lockBoth($baseId, $destinationBaseId);
             $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
@@ -121,9 +135,9 @@ final class Stationings
     }
 
     /**
-     * Recalls a stationed aircraft: it flies back to its base, where it and its pilot are free again.
+     * Recalls a stationed aircraft: it flies back to its base, where it and its pilot are free again. A base of the same player can give the order as well as the aircraft's own.
      *
-     * @throws BaseException when the aircraft is not standing at a camp after being sent from the base: it is not sent, still flying out, or already flying back
+     * @throws BaseException when the aircraft is not standing at a camp after being sent from a base of the player: it is not sent, still flying out, or already flying back
      */
     public function recall(int $baseId, int $aircraftId): void
     {
@@ -131,7 +145,7 @@ final class Stationings
             $this->baseStore->lockResources($baseId);
             $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
             $stationing = $this->stationings->of($aircraftId);
-            if ($stationing === null || $stationing->originBaseId !== $baseId) {
+            if ($stationing === null || ($stationing->originBaseId !== $baseId && $this->bases->kinshipTo($baseId, $stationing->originBaseId) !== Kinship::Own)) {
                 throw new BaseException(BaseError::NotStationed);
             }
             if ($stationing->phaseAt($gameSeconds) !== StationingPhase::Stationed) {

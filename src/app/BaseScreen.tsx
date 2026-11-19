@@ -285,7 +285,7 @@ function BaseScreen({ player }: { player: Player }) {
         <GameWindow title={t(`base.building.${openBuilding}.name`)} hint={t(`base.building.${openBuilding}.text`)} onDismiss={() => setOpenBuilding(null)}>
           {guideStep !== null && speaksInWindowOf(guideStep, openBuilding) && guide}
           {errorMessage}
-          {openBuilding === 'headquarters' && <HeadquartersPanel bases={base.bases} baseLimit={base.baseLimit} onClaim={claimBase} />}
+          {openBuilding === 'headquarters' && <HeadquartersPanel bases={base.bases} baseLimit={base.baseLimit} />}
           {openBuilding === 'controlTower' && (
             <ControlTowerPanel
               squadron={base.squadron}
@@ -344,6 +344,7 @@ function BaseScreen({ player }: { player: Player }) {
               commandPoints={base.resources.commandPoints}
               onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
               recipients={base.recipients}
+              destinations={base.destinations}
               onGiveAircraft={(aircraftId, recipientBaseId) => void order(giveAircraft(recipientBaseId, aircraftId))}
             />
           )}

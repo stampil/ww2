@@ -33,6 +33,26 @@ final class BaseStore
     }
 
     /**
+     * Gives the base resources only if it has none yet: a camp that already holds some keeps them.
+     */
+    public function addIfMissing(int $baseId, BaseResources $resources): void
+    {
+        $this->database->execute(
+            'INSERT INTO base_resources (base_id, supplies, fuel, ammunition, materials, command_points)
+             VALUES (:base_id, :supplies, :fuel, :ammunition, :materials, :command_points)
+             ON DUPLICATE KEY UPDATE base_id = base_id',
+            [
+                'base_id' => $baseId,
+                'supplies' => $resources->supplies,
+                'fuel' => $resources->fuel,
+                'ammunition' => $resources->ammunition,
+                'materials' => $resources->materials,
+                'command_points' => $resources->commandPoints,
+            ],
+        );
+    }
+
+    /**
      * @return string the name of the terrain plan of the base, which the front draws
      */
     public function terrainPlanOf(int $baseId): string

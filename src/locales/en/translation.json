@@ -260,7 +260,8 @@
     "give": "Give",
     "recipient": {
       "own": "{{site}} (your base)",
-      "ally": "{{site}} ({{holder}}, ally)"
+      "ally": "{{site}} ({{holder}}, ally)",
+      "free": "{{site}} (free camp)"
     }
   },
   "world": {
@@ -285,9 +286,8 @@
     "free": "Free",
     "taken": "Taken",
     "claim": "Take this base",
-    "claimPick": "Click a free camp to claim it: it will be empty, to supply.",
-    "claimCamp": "Claim this camp",
-    "claimLimit": "You already hold {{max}} bases, the most you can.",
+    "deserted": "Deserted",
+    "landToClaim": "To take a free camp, send an aircraft there from the Hangar: it is yours while one of your aircraft stands on it, and you can hold {{max}} at most.",
     "site": {
       "lille": "Lille",
       "reims": "Reims",
@@ -358,7 +358,11 @@
       "giftPilot": "{{from}} ({{site}}): the pilot {{name}}.",
       "giftAircraft": "{{from}} ({{site}}): a {{name}}.",
       "landing": "Landing",
-      "landingLoad": "{{from}} ({{site}}): a {{aircraft}} delivered {{fuel}} fuel and {{ammunition}} ammunition."
+      "landingLoad": "{{from}} ({{site}}): a {{aircraft}} delivered {{fuel}} fuel and {{ammunition}} ammunition.",
+      "campTaken": "Camp taken",
+      "campTakenText": "One of your aircraft landed at {{site}}: the camp is yours.",
+      "campLost": "Camp left",
+      "campLostText": "None of your aircraft stands at {{site}} any more: you no longer hold this camp."
     },
     "mission": {
       "types": {
@@ -507,12 +511,13 @@
       "invalidBody": "The order is not understood.",
       "signInRequired": "Sign in first.",
       "apiDown": "The API does not answer.",
-      "notStationed": "This aircraft is not on the ground at a camp: there is nothing to recall."
+      "notStationed": "This aircraft is not on the ground at a camp: there is nothing to recall.",
+      "landingRequired": "To take another camp, send an aircraft there."
     }
   },
   "stationing": {
     "title": "Station an aircraft",
-    "text": "An aircraft and its pilot land at another camp, with fuel and ammunition for it, and stay there until you recall them. While they are away they do not fly, rest or get given.",
+    "text": "An aircraft and its pilot land at another camp, with fuel and ammunition for it, and stay there until you recall them. On a free camp, they take it for you while they are there. While they are away they do not fly, rest or get given.",
     "aircraft": "Aircraft",
     "fuel": "Fuel carried",
     "ammunition": "Ammunition carried",

@@ -12,11 +12,12 @@ use Ww2\Account\PlayerSession;
 use Ww2\Base\BaseError;
 use Ww2\Base\BaseException;
 use Ww2\Base\BaseOverview;
+use Ww2\Base\Holdings;
 use Ww2\World\Bases;
 use Ww2\World\Site;
 
 /**
- * Shows the player which sites they can choose a base on, and gives them the one they choose, the first with a squadron and the next ones empty;
+ * Shows the player which sites they can choose their first base on, and gives them the one they choose, with a squadron;
  * shows who holds the sites of their own world.
  */
 final class WorldController
@@ -25,6 +26,7 @@ final class WorldController
         private readonly Bases $bases,
         private readonly BaseOverview $overview,
         private readonly PlayerSession $session,
+        private readonly Holdings $holdings,
     ) {
     }
 
@@ -46,7 +48,9 @@ final class WorldController
      */
     public function map(): array
     {
-        $baseId = $this->bases->currentOf($this->signedInPlayerId(), $this->session->selectedBaseId()) ?? throw new ConflictException(BaseError::NoBase->value);
+        $playerId = $this->signedInPlayerId();
+        $this->holdings->settleFor($playerId);
+        $baseId = $this->bases->currentOf($playerId, $this->session->selectedBaseId()) ?? throw new ConflictException(BaseError::NoBase->value);
 
         return ['sites' => $this->bases->sitesAround($baseId)];
     }
@@ -55,7 +59,7 @@ final class WorldController
      * @return array<string, mixed> the overview of the new base, which the player now looks at
      * @throws UnauthorizedException when nobody is signed in
      * @throws BadRequestException when the order is not understood
-     * @throws ConflictException when the player holds as many bases as they can, or the site is taken
+     * @throws ConflictException when the player already holds a base, or the site is taken
      */
     public function claim(ServerRequestInterface $request): array
     {

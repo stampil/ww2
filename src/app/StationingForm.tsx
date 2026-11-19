@@ -5,20 +5,20 @@ import { formatDuration } from './formatDuration'
 import Icon from './Icon'
 import Pane from './Pane'
 import RecipientSelect from './RecipientSelect'
-import type { Recipient, Squadron } from './useBase'
+import type { Destination, Squadron } from './useBase'
 
 type Props = {
   squadron: Squadron
   /** The pilots and the aircraft that cannot go now: they fly, rest, are stationed away or need the hangar. */
   unavailable: BusyCrews
-  /** The bases an aircraft can be stationed at: the player's own and the allies'. */
-  recipients: Recipient[]
+  /** The bases an aircraft can be stationed at: the player's own, the allies', and the free camps. */
+  destinations: Destination[]
   flightSeconds: number
   onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => void
 }
 
 /** Where an aircraft and a pilot are sent to stand at another base, with fuel and ammunition for it, until they are recalled. */
-function StationingForm({ squadron, unavailable, recipients, flightSeconds, onStation }: Props) {
+function StationingForm({ squadron, unavailable, destinations, flightSeconds, onStation }: Props) {
   const { t } = useTranslation()
   const freeAircraft = squadron.aircraft.filter((aircraft) => !unavailable.aircraftIds.includes(aircraft.id))
   const freePilots = squadron.pilots.filter((pilot) => !unavailable.pilotIds.includes(pilot.id))
@@ -29,7 +29,7 @@ function StationingForm({ squadron, unavailable, recipients, flightSeconds, onSt
   const [ammunition, setAmmunition] = useState(0)
   const aircraft = freeAircraft.find((candidate) => candidate.id === aircraftId) ?? freeAircraft[0]
   const pilot = freePilots.find((candidate) => candidate.id === pilotId) ?? freePilots[0]
-  const destination = recipients.find((recipient) => recipient.id === destinationId) ?? recipients[0]
+  const destination = destinations.find((candidate) => candidate.id === destinationId) ?? destinations[0]
   const canStation = aircraft !== undefined && pilot !== undefined
 
   function station(): void {
@@ -65,7 +65,7 @@ function StationingForm({ squadron, unavailable, recipients, flightSeconds, onSt
         </label>
         <label>
           <span>{t('gift.to')}</span>
-          <RecipientSelect recipients={recipients} value={destination.id} onChange={setDestinationId} />
+          <RecipientSelect recipients={destinations} value={destination.id} onChange={setDestinationId} />
         </label>
         <label>
           <span>{t('stationing.fuel')}</span>

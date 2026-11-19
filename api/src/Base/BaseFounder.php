@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ww2\Base;
 
 /**
- * Gives a new base what it starts with: some supplies and stocks, and no command points yet; a camp claimed empty has nothing.
+ * Gives a new base what it starts with: some supplies and stocks, and no command points yet; a camp taken by landing on it has nothing, or what it kept.
  */
 final class BaseFounder
 {
@@ -33,6 +33,6 @@ final class BaseFounder
 
     public function foundEmpty(int $baseId): void
     {
-        $this->bases->add($baseId, new BaseResources(self::NOTHING, self::NOTHING, self::NOTHING, self::NOTHING, self::NOTHING));
+        $this->bases->addIfMissing($baseId, new BaseResources(self::NOTHING, self::NOTHING, self::NOTHING, self::NOTHING, self::NOTHING));
     }
 }

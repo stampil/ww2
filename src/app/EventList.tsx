@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import Pane from './Pane'
-import type { BaseEvent, ExplosionEvent, GiftEvent, LandingEvent, MissionReport } from './useBase'
+import type { BaseEvent, CampEvent, ExplosionEvent, GiftEvent, LandingEvent, MissionReport } from './useBase'
 
 function crewOutcomeKey(crew: MissionReport['crews'][number]): string {
   if (crew.pilotKilled) {
@@ -86,7 +86,18 @@ function LandingItem({ event }: { event: LandingEvent }) {
   )
 }
 
-/** The latest events of the base, the newest first: mission reports, aircraft that exploded on the runway, gifts from other bases, and aircraft that landed with a load. */
+function CampItem({ event }: { event: CampEvent }) {
+  const { t } = useTranslation()
+
+  return (
+    <li>
+      <strong>{t(`base.event.${event.kind}`)}</strong>
+      <span>{t(`base.event.${event.kind}Text`, { site: t(`world.site.${event.site}`) })}</span>
+    </li>
+  )
+}
+
+/** The latest events of the base, the newest first: mission reports, aircraft that exploded on the runway, gifts from other bases, aircraft that landed with a load, and camps taken or let go. */
 function EventList({ events }: { events: BaseEvent[] }) {
   const { t } = useTranslation()
 
@@ -102,6 +113,9 @@ function EventList({ events }: { events: BaseEvent[] }) {
           }
           if (event.kind === 'landing') {
             return <LandingItem key={event.id} event={event} />
+          }
+          if (event.kind === 'campTaken' || event.kind === 'campLost') {
+            return <CampItem key={event.id} event={event} />
           }
           return <ExplosionItem key={event.id} event={event} />
         })}

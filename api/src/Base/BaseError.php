@@ -53,4 +53,5 @@ enum BaseError: string
     case HangarFull = 'hangarFull';
     case SiteTaken = 'siteTaken';
     case NotStationed = 'notStationed';
+    case LandingRequired = 'landingRequired';
 }

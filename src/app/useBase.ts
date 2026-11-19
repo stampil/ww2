@@ -116,8 +116,10 @@ export type GiftEvent = {
 }
 /** An aircraft of another base landed here with fuel and ammunition, as much as the warehouse could take. */
 export type LandingEvent = { kind: 'landing'; id: number; from: string; site: string; aircraftName: string; fuel: number; ammunition: number }
+/** The base took a camp, or let one go, when an aircraft landed on it or the last one left. */
+export type CampEvent = { kind: 'campTaken'; id: number; site: string } | { kind: 'campLost'; id: number; site: string }
 /** What happened at the base; the newest event comes first. */
-export type BaseEvent = MissionReport | ExplosionEvent | GiftEvent | LandingEvent
+export type BaseEvent = MissionReport | ExplosionEvent | GiftEvent | LandingEvent | CampEvent
 
 export type UpgradeName = 'hangar' | 'workshop' | 'warehouse'
 /** What the command points buy for a building; the cost is null at the top level. */
@@ -129,6 +131,8 @@ export type Battle = { kills: number; target: number; status: 'ongoing' | 'won' 
 export type HeldBase = { id: number; site: string }
 /** A base a gift can go to: one of the player's own, or an ally's, with the nickname of its holder. */
 export type Recipient = { id: number; site: string; holder: string; kinship: 'own' | 'ally' }
+/** A base an aircraft can be stationed at: a recipient, or a free camp, which the aircraft takes by landing there first. */
+export type Destination = { id: number; site: string; holder: string | null; kinship: 'own' | 'ally' | 'free' }
 
 /** Where a stationed aircraft stands: flying out to the camp, standing there until it is recalled, or flying back. */
 export type StationingPhase = 'outbound' | 'stationed' | 'returning'
@@ -159,6 +163,7 @@ export type Base = {
   bases: HeldBase[]
   baseLimit: number
   recipients: Recipient[]
+  destinations: Destination[]
   /** The site the base stands on. */
   site: string
   terrainPlan: string
@@ -370,7 +375,7 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/upgrades/buy`, { upgrade }))
   }
 
-  /** Takes a free site for the player: a base with a squadron if they hold none yet, else an empty one, which they look at from then on. */
+  /** Takes a free site for the player's first base, with a squadron, which they look at from then on. */
   async function claimBase(site: string): Promise<string | null> {
     return receive(await request(CLAIM_URL, { site }))
   }

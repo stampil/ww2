@@ -18,6 +18,7 @@ use Ww2\Base\Battle;
 use Ww2\Base\Gifts;
 use Ww2\Base\Hangar;
 use Ww2\Base\Headquarters;
+use Ww2\Base\Holdings;
 use Ww2\Base\Resource;
 use Ww2\Base\Roster;
 use Ww2\Base\SparePart;
@@ -52,6 +53,7 @@ final class BaseController
         private readonly PlayerSession $session,
         private readonly Gifts $gifts,
         private readonly Stationings $stationings,
+        private readonly Holdings $holdings,
     ) {
     }
 
@@ -74,6 +76,7 @@ final class BaseController
     public function selectBase(ServerRequestInterface $request): array
     {
         $playerId = $this->signedInPlayerId();
+        $this->holdings->settleFor($playerId);
         $baseId = JsonRequestBody::integers($request, 'baseId')['baseId'];
         $this->carryOut(fn () => $this->bases->assertHeldBy($playerId, $baseId));
         $this->session->selectBase($baseId);
@@ -153,7 +156,7 @@ final class BaseController
         $numbers = JsonRequestBody::integers($request, 'recipientBaseId', 'aircraftId');
         $this->carryOut(fn () => $this->gifts->giveAircraft($baseId, $numbers['recipientBaseId'], $numbers['aircraftId']));
 
-        return $this->overview->of($baseId);
+        return $this->overviewAfterOrder();
     }
 
     /**
@@ -167,7 +170,7 @@ final class BaseController
         $numbers = JsonRequestBody::integers($request, 'destinationBaseId', 'pilotId', 'aircraftId', 'fuel', 'ammunition');
         $this->carryOut(fn () => $this->stationings->send($baseId, $numbers['destinationBaseId'], $numbers['pilotId'], $numbers['aircraftId'], $numbers['fuel'], $numbers['ammunition']));
 
-        return $this->overview->of($baseId);
+        return $this->overviewAfterOrder();
     }
 
     /**
@@ -181,7 +184,7 @@ final class BaseController
         $aircraftId = JsonRequestBody::integers($request, 'aircraftId')['aircraftId'];
         $this->carryOut(fn () => $this->stationings->recall($baseId, $aircraftId));
 
-        return $this->overview->of($baseId);
+        return $this->overviewAfterOrder();
     }
 
     /**
@@ -217,7 +220,7 @@ final class BaseController
         $missionId = JsonRequestBody::integers($request, 'missionId')['missionId'];
         $this->carryOut(fn () => $this->headquarters->receive($baseId, $missionId));
 
-        return $this->overview->of($baseId);
+        return $this->overviewAfterOrder();
     }
 
     /**
@@ -361,6 +364,16 @@ final class BaseController
     }
 
     /**
+     * The overview after an order that can let a camp go: the base is looked up again, as the one the order was given on may no longer be the player's.
+     *
+     * @return array<string, mixed>
+     */
+    private function overviewAfterOrder(): array
+    {
+        return $this->overview->of($this->ownBaseId());
+    }
+
+    /**
      * @throws UnauthorizedException when nobody is signed in
      * @throws ConflictException when the player holds no base yet, or the battle is over
      */
@@ -379,6 +392,7 @@ final class BaseController
     private function ownBaseId(): int
     {
         $playerId = $this->signedInPlayerId();
+        $this->holdings->settleFor($playerId);
 
         return $this->bases->currentOf($playerId, $this->session->selectedBaseId()) ?? throw new ConflictException(BaseError::NoBase->value);
     }

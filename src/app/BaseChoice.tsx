@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import GameWindow from './GameWindow'
 import Icon from './Icon'
 import Pane from './Pane'
-import { CHOOSABLE_SITES_URL, useSites } from './useSites'
+import { CHOOSABLE_SITES_URL, campStateKey, useSites } from './useSites'
 import WorldMap from './WorldMap'
 
 type Props = {
@@ -48,7 +48,7 @@ function BaseChoice({ onClaim }: Props) {
           ) : (
             <>
               <strong>{t(`world.site.${chosen.site}`)}</strong>
-              <span>{t(chosen.free ? 'world.free' : 'world.taken')}</span>
+              <span>{t(campStateKey(chosen.free, chosen.holder))}</span>
               <button type="button" className="go" disabled={!chosen.free} onClick={() => claim(chosen.site)}>
                 <Icon name="site" />
                 {t('world.claim')}

@@ -53,6 +53,31 @@ final class StationingStore
         return array_map(fn (array $row): Stationing => $this->stationingFrom($row), $rows);
     }
 
+    /**
+     * @return list<Stationing> the aircraft standing at the base after landing, not recalled, the first landed first
+     */
+    public function landedAt(int $baseId, int $gameSeconds): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT ' . self::COLUMNS . ' FROM stationings
+             WHERE destination_base_id = :base_id AND returns_game_second IS NULL AND lands_game_second <= :game_seconds ORDER BY lands_game_second, aircraft_id',
+            ['base_id' => $baseId, 'game_seconds' => $gameSeconds],
+        );
+
+        return array_map(fn (array $row): Stationing => $this->stationingFrom($row), $rows);
+    }
+
+    /**
+     * Makes another base the home of an aircraft that is away, when the base it came from is no longer its player's.
+     */
+    public function rehome(int $aircraftId, int $originBaseId): void
+    {
+        $this->database->execute(
+            'UPDATE stationings SET origin_base_id = :origin_base_id WHERE aircraft_id = :aircraft_id',
+            ['origin_base_id' => $originBaseId, 'aircraft_id' => $aircraftId],
+        );
+    }
+
     public function startReturn(int $aircraftId, int $returnsGameSecond): void
     {
         $this->database->execute(

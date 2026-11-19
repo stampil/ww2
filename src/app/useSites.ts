@@ -3,6 +3,14 @@ import { useEffect, useState } from 'react'
 /** A site of the map: whether it is free, the side it belongs to, and the nickname of the player who holds it. */
 export type SiteChoice = { site: string; free: boolean; clan: string; holder: string | null }
 
+/** The text for a camp: free, taken by a player, or deserted, which nobody holds but which already has a stock, so that an aircraft has to land on it. */
+export function campStateKey(free: boolean, holder: string | null): string {
+  if (free) {
+    return 'world.free'
+  }
+  return holder === null ? 'world.deserted' : 'world.taken'
+}
+
 /** The sites where a new player can settle, in the oldest world that has room. */
 export const CHOOSABLE_SITES_URL = '/api/world/sites'
 /** The sites of the world the player already plays in. */

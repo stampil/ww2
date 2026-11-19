@@ -260,7 +260,8 @@
     "give": "Donner",
     "recipient": {
       "own": "{{site}} (ta base)",
-      "ally": "{{site}} ({{holder}}, allié)"
+      "ally": "{{site}} ({{holder}}, allié)",
+      "free": "{{site}} (camp libre)"
     }
   },
   "world": {
@@ -285,9 +286,8 @@
     "free": "Libre",
     "taken": "Prise",
     "claim": "Prendre cette base",
-    "claimPick": "Clique un camp libre pour le revendiquer : il sera vide, à approvisionner.",
-    "claimCamp": "Revendiquer ce camp",
-    "claimLimit": "Tu tiens déjà {{max}} bases, le maximum.",
+    "deserted": "Déserté",
+    "landToClaim": "Pour prendre un camp libre, envoie-y un avion depuis le Hangar : il est à toi tant qu'un de tes avions y est posé, et tu peux en tenir {{max}} au plus.",
     "site": {
       "lille": "Lille",
       "reims": "Reims",
@@ -358,7 +358,11 @@
       "giftPilot": "{{from}} ({{site}}) : le pilote {{name}}.",
       "giftAircraft": "{{from}} ({{site}}) : un {{name}}.",
       "landing": "Atterrissage",
-      "landingLoad": "{{from}} ({{site}}) : un {{aircraft}} a livré {{fuel}} de carburant et {{ammunition}} de munitions."
+      "landingLoad": "{{from}} ({{site}}) : un {{aircraft}} a livré {{fuel}} de carburant et {{ammunition}} de munitions.",
+      "campTaken": "Camp pris",
+      "campTakenText": "Un de tes avions s'est posé à {{site}} : le camp est à toi.",
+      "campLost": "Camp quitté",
+      "campLostText": "Plus aucun de tes avions n'est posé à {{site}} : tu ne tiens plus ce camp."
     },
     "mission": {
       "types": {
@@ -507,12 +511,13 @@
       "invalidBody": "La commande n'est pas comprise.",
       "signInRequired": "Connecte-toi d'abord.",
       "apiDown": "L'API ne répond pas.",
-      "notStationed": "Cet avion n'est pas posé sur un camp : il n'y a rien à rappeler."
+      "notStationed": "Cet avion n'est pas posé sur un camp : il n'y a rien à rappeler.",
+      "landingRequired": "Pour prendre un camp de plus, envoie-y un avion."
     }
   },
   "stationing": {
     "title": "Stationner un avion",
-    "text": "Un avion et son pilote vont se poser sur un autre camp, avec du carburant et des munitions pour lui, et y restent jusqu'à ce que tu les rappelles. Ils ne volent pas, ne se reposent pas et ne se donnent pas tant qu'ils sont partis.",
+    "text": "Un avion et son pilote vont se poser sur un autre camp, avec du carburant et des munitions pour lui, et y restent jusqu'à ce que tu les rappelles. Sur un camp libre, ils le prennent pour toi tant qu'ils y sont. Ils ne volent pas, ne se reposent pas et ne se donnent pas tant qu'ils sont partis.",
     "aircraft": "Avion",
     "fuel": "Carburant emporté",
     "ammunition": "Munitions emportées",

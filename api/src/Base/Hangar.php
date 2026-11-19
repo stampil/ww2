@@ -81,7 +81,7 @@ final class Hangar
         $this->database->transaction(function () use ($baseId, $aircraftId): void {
             $this->bases->lockResources($baseId);
             $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
-            if (!array_key_exists($aircraftId, $this->aircraftOf($baseId))) {
+            if (!array_key_exists($aircraftId, $this->squadrons->aircraftById($baseId))) {
                 throw new BaseException(BaseError::UnknownAircraft);
             }
             $inspections = $this->hangar->inspectionsOf($baseId);
@@ -107,7 +107,7 @@ final class Hangar
         $this->database->transaction(function () use ($baseId, $aircraftId): void {
             $this->bases->lockResources($baseId);
             $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
-            $aircraft = $this->aircraftOf($baseId)[$aircraftId] ?? throw new BaseException(BaseError::UnknownAircraft);
+            $aircraft = $this->squadrons->aircraftById($baseId)[$aircraftId] ?? throw new BaseException(BaseError::UnknownAircraft);
             if ($this->missions->isOnFlight($aircraftId)) {
                 throw new BaseException(BaseError::CrewBusy);
             }
@@ -140,19 +140,6 @@ final class Hangar
         return ($aircraft->model->durability - $aircraft->durability) * self::HULL_SECONDS_PER_POINT + $destroyedModules * self::MODULE_SECONDS;
     }
 
-    /**
-     * @return array<int, Aircraft>
-     */
-    private function aircraftOf(int $baseId): array
-    {
-        $aircraft = [];
-        foreach ($this->squadrons->aircraftOf($baseId) as $owned) {
-            $aircraft[$owned->id] = $owned;
-        }
-
-        return $aircraft;
-    }
-
     private function settle(int $baseId, int $gameSeconds): void
     {
         if (!$this->hasDueWork($baseId, $gameSeconds)) {
@@ -160,7 +147,7 @@ final class Hangar
         }
         $this->database->transaction(function () use ($baseId, $gameSeconds): void {
             $this->bases->lockResources($baseId);
-            $aircraft = $this->aircraftOf($baseId);
+            $aircraft = $this->squadrons->aircraftById($baseId);
             foreach ($this->hangar->inspectionsOf($baseId) as $aircraftId => $finishGameSecond) {
                 if ($finishGameSecond !== null && $finishGameSecond <= $gameSeconds) {
                     $this->hangar->finishInspection($aircraftId);

@@ -61,6 +61,23 @@ final class BaseStore
         return $this->readResources($baseId, ' FOR UPDATE');
     }
 
+    /**
+     * Locks the resources of two bases, the lower id first so that two orders going the other way round cannot wait for each other.
+     *
+     * @return array<int, BaseResources> the resources of each base, by id
+     */
+    public function lockBoth(int $firstBaseId, int $secondBaseId): array
+    {
+        $ids = [$firstBaseId, $secondBaseId];
+        sort($ids);
+        $locked = [];
+        foreach ($ids as $id) {
+            $locked[$id] = $this->lockResources($id);
+        }
+
+        return $locked;
+    }
+
     public function buy(int $baseId, Stock $stock, int $quantity, int $cost): void
     {
         $this->database->execute(
@@ -127,6 +144,14 @@ final class BaseStore
         $this->database->execute(
             'UPDATE base_resources SET supplies = supplies - :amount WHERE base_id = :base_id',
             ['amount' => $amount, 'base_id' => $baseId],
+        );
+    }
+
+    public function addFuelAndAmmunition(int $baseId, int $fuel, int $ammunition): void
+    {
+        $this->database->execute(
+            'UPDATE base_resources SET fuel = fuel + :fuel, ammunition = ammunition + :ammunition WHERE base_id = :base_id',
+            ['fuel' => $fuel, 'ammunition' => $ammunition, 'base_id' => $baseId],
         );
     }
 

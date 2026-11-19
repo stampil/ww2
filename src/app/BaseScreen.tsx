@@ -67,6 +67,8 @@ function BaseScreen({ player }: { player: Player }) {
     flights,
     hangarAircraft,
     rests,
+    away,
+    guests,
     gameTime,
     buy,
     produce,
@@ -87,6 +89,8 @@ function BaseScreen({ player }: { player: Player }) {
     giveResource,
     givePilot,
     giveAircraft,
+    sendStationing,
+    recallStationing,
   } = useBase(player)
   const aircraftSprite = useAircraftSprite()
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
@@ -104,7 +108,7 @@ function BaseScreen({ player }: { player: Player }) {
     setLandingIds((current) => current.filter((landingId) => landingId !== aircraftId))
     setEmergingIds((current) => current.filter((emergingId) => emergingId !== aircraftId))
   }, [])
-  const busy = busyCrews(flights)
+  const busy = busyCrews(flights, away)
   const { stands, emergedIds } = useStands(base?.squadron.aircraft.map((aircraft) => aircraft.id) ?? [], busy.aircraftIds, base === null ? 0 : TERRAIN_PLANS[base.terrainPlan].stands.length)
   const canAnimate = aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches
   useEffect(() => {
@@ -156,10 +160,25 @@ function BaseScreen({ player }: { player: Player }) {
     setErrorCode(launchErrorCode)
     if (launchErrorCode === null) {
       setOpenBuilding(null)
-      if (aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches) {
-        const leaving = departing.map((aircraft) => ({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand: aircraft.stand }))
-        setDepartures((current) => [...current, ...leaving])
-      }
+      showDepartures(departing)
+    }
+  }
+
+  // An aircraft stationed at another base takes off like a squadron sent on a mission.
+  async function station(destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number): Promise<void> {
+    const departing = parkedAircraft.filter((aircraft) => aircraft.id === aircraftId)
+    const stationErrorCode = await sendStationing(destinationBaseId, pilotId, aircraftId, fuel, ammunition)
+    setErrorCode(stationErrorCode)
+    if (stationErrorCode === null) {
+      setOpenBuilding(null)
+      showDepartures(departing)
+    }
+  }
+
+  function showDepartures(departing: ParkedAircraft[]): void {
+    if (aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches) {
+      const leaving = departing.map((aircraft) => ({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand: aircraft.stand }))
+      setDepartures((current) => [...current, ...leaving])
     }
   }
 
@@ -274,6 +293,7 @@ function BaseScreen({ player }: { player: Player }) {
               offers={base.headquarters.offers}
               flights={flights}
               rests={rests}
+              away={away}
               recruitment={base.roster.recruitment}
               events={base.events}
               busy={busy}
@@ -312,6 +332,12 @@ function BaseScreen({ player }: { player: Player }) {
               squadron={base.squadron}
               hangarAircraft={hangarAircraft}
               busyAircraftIds={busy.aircraftIds}
+              unavailable={unavailable}
+              away={away}
+              guests={guests}
+              flightSeconds={base.stationings.flightSeconds}
+              onStation={(destinationBaseId, pilotId, aircraftId, fuel, ammunition) => void station(destinationBaseId, pilotId, aircraftId, fuel, ammunition)}
+              onRecall={(aircraftId) => void order(recallStationing(aircraftId))}
               onInspect={(aircraftId) => void order(inspectAircraft(aircraftId))}
               onRepair={(aircraftId) => void order(repairAircraft(aircraftId))}
               upgrade={upgradeOf('hangar')}

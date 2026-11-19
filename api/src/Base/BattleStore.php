@@ -23,7 +23,7 @@ final class BattleStore
         'base_resources',
     ];
 
-    public function __construct(private readonly Database $database)
+    public function __construct(private readonly Database $database, private readonly StationingStore $stationings)
     {
     }
 
@@ -43,10 +43,12 @@ final class BattleStore
     }
 
     /**
-     * Erases the squadron, the stocks and the battle of the base, so that the game can be founded again there. The caller holds the transaction.
+     * Erases the squadron, the stocks and the battle of the base, so that the game can be founded again there; the aircraft of others stationed there are sent home.
+     * The caller holds the transaction.
      */
     public function eraseGameOf(int $baseId): void
     {
+        $this->stationings->sendGuestsHome($baseId);
         foreach (self::GAME_TABLES as $table) {
             $this->database->execute('DELETE FROM ' . $table . ' WHERE base_id = :base_id', ['base_id' => $baseId]);
         }

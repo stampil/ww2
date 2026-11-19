@@ -114,8 +114,10 @@ export type GiftEvent = {
   quantity: number | null
   name: string | null
 }
+/** An aircraft of another base landed here with fuel and ammunition, as much as the warehouse could take. */
+export type LandingEvent = { kind: 'landing'; id: number; from: string; site: string; aircraftName: string; fuel: number; ammunition: number }
 /** What happened at the base; the newest event comes first. */
-export type BaseEvent = MissionReport | ExplosionEvent | GiftEvent
+export type BaseEvent = MissionReport | ExplosionEvent | GiftEvent | LandingEvent
 
 export type UpgradeName = 'hangar' | 'workshop' | 'warehouse'
 /** What the command points buy for a building; the cost is null at the top level. */
@@ -127,6 +129,29 @@ export type Battle = { kills: number; target: number; status: 'ongoing' | 'won' 
 export type HeldBase = { id: number; site: string }
 /** A base a gift can go to: one of the player's own, or an ally's, with the nickname of its holder. */
 export type Recipient = { id: number; site: string; holder: string; kinship: 'own' | 'ally' }
+
+/** Where a stationed aircraft stands: flying out to the camp, standing there until it is recalled, or flying back. */
+export type StationingPhase = 'outbound' | 'stationed' | 'returning'
+/** An aircraft of the base that is stationed away, with the camp it went to; the seconds left are those of the flight out or back. */
+export type AwayAircraft = {
+  aircraftId: number
+  pilotId: number
+  site: string
+  phase: StationingPhase
+  remainingSeconds: number
+}
+/** An aircraft of another base stationed here, with its pilot and whose it is. */
+export type GuestAircraft = {
+  aircraftId: number
+  aircraftName: string
+  aircraftNumber: number
+  pilotName: string
+  site: string
+  holder: string
+  kinship: 'own' | 'ally'
+  phase: StationingPhase
+  remainingSeconds: number
+}
 
 export type Base = {
   /** The id of this base, among the bases the player holds (the one they took first at the head), and how many bases a player can hold. */
@@ -150,6 +175,7 @@ export type Base = {
   }
   headquarters: { weather: { windSpeed: number }; offers: Offer[]; flights: Flight[] }
   roster: { rests: Rest[]; recruitment: { cost: number; maxPilots: number } }
+  stationings: { flightSeconds: number; away: AwayAircraft[]; guests: GuestAircraft[] }
   hangar: { aircraft: HangarAircraft[] }
   squadron: Squadron
   events: BaseEvent[]
@@ -264,12 +290,16 @@ export function useBase(player: Player | null) {
   const receivedFlights = base?.headquarters.flights ?? []
   const receivedHangar = base?.hangar.aircraft ?? []
   const receivedRests = base?.roster.rests ?? []
+  const receivedAway = base?.stationings.away ?? []
+  const receivedGuests = base?.stationings.guests ?? []
   const jobs = countDown(receivedJobs, elapsedSeconds)
   const flights = countDown(receivedFlights, elapsedSeconds).map((flight) => ({
     ...flight,
     alerts: flight.alerts.map((alert) => ({ ...alert, dueSeconds: Math.max(0, alert.dueSeconds - elapsedSeconds) })),
   }))
   const rests = countDown(receivedRests, elapsedSeconds)
+  const away = countDown(receivedAway, elapsedSeconds)
+  const guests = countDown(receivedGuests, elapsedSeconds)
   const hangarAircraft = receivedHangar.map((state) => ({
     ...state,
     inspectionSeconds: remainingAfter(state.inspectionSeconds, elapsedSeconds),
@@ -277,7 +307,12 @@ export function useBase(player: Player | null) {
     fireSeconds: remainingAfter(state.fireSeconds, elapsedSeconds),
   }))
   const hasEndedCountdown =
-    hasEnded(receivedJobs, jobs) || hasEnded(receivedFlights, flights) || hasEnded(receivedRests, rests) || hasHangarCountdownEnded(receivedHangar, hangarAircraft)
+    hasEnded(receivedJobs, jobs) ||
+    hasEnded(receivedFlights, flights) ||
+    hasEnded(receivedRests, rests) ||
+    hasEnded(receivedAway, away) ||
+    hasEnded(receivedGuests, guests) ||
+    hasHangarCountdownEnded(receivedHangar, hangarAircraft)
   const gameTime = base === null ? null : gameTimeAfter(base, elapsedSeconds)
 
   useEffect(() => {
@@ -356,6 +391,14 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/gifts/aircraft`, { recipientBaseId, aircraftId }))
   }
 
+  async function sendStationing(destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/stationings/send`, { destinationBaseId, pilotId, aircraftId, fuel, ammunition }))
+  }
+
+  async function recallStationing(aircraftId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/stationings/recall`, { aircraftId }))
+  }
+
   async function resetGame(): Promise<string | null> {
     return receive(await request(`${BASE_URL}/reset`, {}))
   }
@@ -371,6 +414,8 @@ export function useBase(player: Player | null) {
     flights,
     hangarAircraft,
     rests,
+    away,
+    guests,
     gameTime,
     buy,
     produce,
@@ -391,5 +436,7 @@ export function useBase(player: Player | null) {
     giveResource,
     givePilot,
     giveAircraft,
+    sendStationing,
+    recallStationing,
   }
 }

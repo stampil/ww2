@@ -52,4 +52,5 @@ enum BaseError: string
     case RecipientWarehouseFull = 'recipientWarehouseFull';
     case HangarFull = 'hangarFull';
     case SiteTaken = 'siteTaken';
+    case NotStationed = 'notStationed';
 }

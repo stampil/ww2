@@ -1,16 +1,20 @@
-import type { Flight, FlightAlert, HangarAircraft, Rest } from './useBase'
+import type { AwayAircraft, Flight, FlightAlert, HangarAircraft, Rest } from './useBase'
 
 /** The pilots and the aircraft that cannot go on a mission now. */
 export type BusyCrews = { pilotIds: number[]; aircraftIds: number[] }
 
-/** The pilots and the aircraft that are on a flight. */
-export function busyCrews(flights: Flight[]): BusyCrews {
+/** The pilots and the aircraft that are on a flight or stationed away. */
+export function busyCrews(flights: Flight[], away: AwayAircraft[]): BusyCrews {
   const busy: BusyCrews = { pilotIds: [], aircraftIds: [] }
   for (const flight of flights) {
     for (const crew of flight.crews) {
       busy.pilotIds.push(crew.pilotId)
       busy.aircraftIds.push(crew.aircraftId)
     }
+  }
+  for (const stationed of away) {
+    busy.pilotIds.push(stationed.pilotId)
+    busy.aircraftIds.push(stationed.aircraftId)
   }
   return busy
 }

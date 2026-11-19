@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ww2\Base;
 
+use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
 use Ww2\Mission\MissionStore;
 use Ww2\Squadron\Pilot;
@@ -13,7 +14,7 @@ use Ww2\World\Kinship;
 
 /**
  * What a base gives to another, at once and for nothing: supplies and stocks to its own bases and to its allies', pilots and aircraft to its own bases only.
- * What flies, rests or is being repaired is not given. The recipient hears of it in its journal.
+ * What flies, is stationed away, rests or is being repaired is not given. The recipient hears of it in its journal.
  */
 final class Gifts
 {
@@ -26,6 +27,8 @@ final class Gifts
         private readonly Warehouse $warehouse,
         private readonly Bases $bases,
         private readonly EventLog $events,
+        private readonly StationingStore $stationings,
+        private readonly GameClockStore $clocks,
     ) {
     }
 
@@ -39,7 +42,7 @@ final class Gifts
         }
         $this->database->transaction(function () use ($fromBaseId, $toBaseId, $resource, $quantity): void {
             $this->kinshipOrFail($fromBaseId, $toBaseId);
-            $locked = $this->lockBoth($fromBaseId, $toBaseId);
+            $locked = $this->baseStore->lockBoth($fromBaseId, $toBaseId);
             if ($resource->in($locked[$fromBaseId]) < $quantity) {
                 throw new BaseException($resource->shortage());
             }
@@ -59,12 +62,12 @@ final class Gifts
     {
         $this->database->transaction(function () use ($fromBaseId, $toBaseId, $pilotId): void {
             $this->ownBaseOrFail($fromBaseId, $toBaseId);
-            $this->lockBoth($fromBaseId, $toBaseId);
+            $this->baseStore->lockBoth($fromBaseId, $toBaseId);
             $pilot = $this->pilotOf($fromBaseId, $pilotId);
             if (isset($this->squadrons->restsOf($fromBaseId)[$pilotId])) {
                 throw new BaseException(BaseError::PilotResting);
             }
-            if ($this->missions->isPilotOnFlight($pilotId)) {
+            if ($this->missions->isPilotOnFlight($pilotId) || $this->stationings->isPilotAway($pilotId, $this->clocks->of($fromBaseId)->gameSeconds)) {
                 throw new BaseException(BaseError::CrewBusy);
             }
             if (count($this->squadrons->pilotsOf($toBaseId)) >= Roster::MAX_PILOTS) {
@@ -82,7 +85,7 @@ final class Gifts
     {
         $this->database->transaction(function () use ($fromBaseId, $toBaseId, $aircraftId): void {
             $this->ownBaseOrFail($fromBaseId, $toBaseId);
-            $this->lockBoth($fromBaseId, $toBaseId);
+            $this->baseStore->lockBoth($fromBaseId, $toBaseId);
             $aircraft = null;
             foreach ($this->squadrons->aircraftOf($fromBaseId) as $candidate) {
                 if ($candidate->id === $aircraftId) {
@@ -92,7 +95,7 @@ final class Gifts
             if ($aircraft === null) {
                 throw new BaseException(BaseError::UnknownAircraft);
             }
-            if ($this->missions->isOnFlight($aircraftId)) {
+            if ($this->missions->isOnFlight($aircraftId) || $this->stationings->isAircraftAway($aircraftId, $this->clocks->of($fromBaseId)->gameSeconds)) {
                 throw new BaseException(BaseError::CrewBusy);
             }
             if (in_array($aircraftId, $this->hangarStore->groundedAircraftIds($fromBaseId), true)) {
@@ -122,23 +125,6 @@ final class Gifts
         if ($this->kinshipOrFail($fromBaseId, $toBaseId) !== Kinship::Own) {
             throw new BaseException(BaseError::OwnBasesOnly);
         }
-    }
-
-    /**
-     * Locks the resources of both bases, the lower id first so that two gifts the other way round cannot wait for each other.
-     *
-     * @return array<int, BaseResources> the resources of each base, by id
-     */
-    private function lockBoth(int $fromBaseId, int $toBaseId): array
-    {
-        $ids = [$fromBaseId, $toBaseId];
-        sort($ids);
-        $locked = [];
-        foreach ($ids as $id) {
-            $locked[$id] = $this->baseStore->lockResources($id);
-        }
-
-        return $locked;
     }
 
     /**

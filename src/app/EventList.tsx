@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import Pane from './Pane'
-import type { BaseEvent, ExplosionEvent, GiftEvent, MissionReport } from './useBase'
+import type { BaseEvent, ExplosionEvent, GiftEvent, LandingEvent, MissionReport } from './useBase'
 
 function crewOutcomeKey(crew: MissionReport['crews'][number]): string {
   if (crew.pilotKilled) {
@@ -75,7 +75,18 @@ function GiftItem({ event }: { event: GiftEvent }) {
   )
 }
 
-/** The latest events of the base, the newest first: mission reports, aircraft that exploded on the runway, and gifts from other bases. */
+function LandingItem({ event }: { event: LandingEvent }) {
+  const { t } = useTranslation()
+
+  return (
+    <li>
+      <strong>{t('base.event.landing')}</strong>
+      <span>{t('base.event.landingLoad', { from: event.from, site: t(`world.site.${event.site}`), aircraft: event.aircraftName, fuel: event.fuel, ammunition: event.ammunition })}</span>
+    </li>
+  )
+}
+
+/** The latest events of the base, the newest first: mission reports, aircraft that exploded on the runway, gifts from other bases, and aircraft that landed with a load. */
 function EventList({ events }: { events: BaseEvent[] }) {
   const { t } = useTranslation()
 
@@ -86,7 +97,13 @@ function EventList({ events }: { events: BaseEvent[] }) {
           if (event.kind === 'mission') {
             return <MissionReportItem key={event.id} report={event} />
           }
-          return event.kind === 'gift' ? <GiftItem key={event.id} event={event} /> : <ExplosionItem key={event.id} event={event} />
+          if (event.kind === 'gift') {
+            return <GiftItem key={event.id} event={event} />
+          }
+          if (event.kind === 'landing') {
+            return <LandingItem key={event.id} event={event} />
+          }
+          return <ExplosionItem key={event.id} event={event} />
         })}
       </ul>
     </Pane>

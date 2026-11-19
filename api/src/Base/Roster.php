@@ -8,7 +8,6 @@ use Ww2\Clock\GameClock;
 use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
 use Ww2\Mission\MissionStore;
-use Ww2\Squadron\Pilot;
 use Ww2\Squadron\PilotGenerator;
 use Ww2\Squadron\SquadronStore;
 
@@ -30,6 +29,7 @@ final class Roster
         private readonly SquadronStore $squadrons,
         private readonly GameClockStore $clocks,
         private readonly PilotGenerator $pilotGenerator,
+        private readonly StationingStore $stationings,
     ) {
     }
 
@@ -60,7 +60,7 @@ final class Roster
         $this->database->transaction(function () use ($baseId, $pilotId): void {
             $this->bases->lockResources($baseId);
             $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
-            $pilot = $this->pilotsById($baseId)[$pilotId] ?? throw new BaseException(BaseError::UnknownPilot);
+            $pilot = $this->squadrons->pilotsById($baseId)[$pilotId] ?? throw new BaseException(BaseError::UnknownPilot);
             if (isset($this->squadrons->restsOf($baseId)[$pilotId])) {
                 throw new BaseException(BaseError::PilotResting);
             }
@@ -70,6 +70,9 @@ final class Roster
                         throw new BaseException(BaseError::CrewBusy);
                     }
                 }
+            }
+            if ($this->stationings->isPilotAway($pilotId, $gameSeconds)) {
+                throw new BaseException(BaseError::CrewBusy);
             }
             if ($pilot->fatigue === 0 && $pilot->stress === 0) {
                 throw new BaseException(BaseError::NothingToRest);
@@ -111,7 +114,7 @@ final class Roster
         }
         $this->database->transaction(function () use ($baseId, $due): void {
             $this->bases->lockResources($baseId);
-            $pilots = $this->pilotsById($baseId);
+            $pilots = $this->squadrons->pilotsById($baseId);
             foreach ($due as $pilotId) {
                 $pilot = $pilots[$pilotId];
                 $this->squadrons->updatePilotGauges($pilotId, max(0, $pilot->fatigue - self::REST_RECOVERY), max(0, $pilot->stress - self::REST_RECOVERY));
@@ -120,16 +123,4 @@ final class Roster
         });
     }
 
-    /**
-     * @return array<int, Pilot>
-     */
-    private function pilotsById(int $baseId): array
-    {
-        $pilots = [];
-        foreach ($this->squadrons->pilotsOf($baseId) as $pilot) {
-            $pilots[$pilot->id] = $pilot;
-        }
-
-        return $pilots;
-    }
 }

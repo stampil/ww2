@@ -356,7 +356,9 @@
       "gift": "Don",
       "giftResource": "{{from}} ({{site}}) : {{quantity}} {{resource}}.",
       "giftPilot": "{{from}} ({{site}}) : le pilote {{name}}.",
-      "giftAircraft": "{{from}} ({{site}}) : un {{name}}."
+      "giftAircraft": "{{from}} ({{site}}) : un {{name}}.",
+      "landing": "Atterrissage",
+      "landingLoad": "{{from}} ({{site}}) : un {{aircraft}} a livré {{fuel}} de carburant et {{ammunition}} de munitions."
     },
     "mission": {
       "types": {
@@ -472,7 +474,7 @@
       "alertDone": "Ce combat est terminé.",
       "alertWrongKind": "Ce combat ne se joue pas ainsi.",
       "invalidCrew": "Les équipages choisis ne conviennent pas.",
-      "crewBusy": "Un pilote ou un avion est déjà en vol.",
+      "crewBusy": "Un pilote ou un avion est déjà en vol ou stationné ailleurs.",
       "aircraftNotSuited": "Cet avion ne convient pas à la mission.",
       "invalidLoad": "La charge dépasse ce qu'un avion emporte.",
       "insufficientFuel": "Pas assez de carburant en stock.",
@@ -497,14 +499,36 @@
       "noBase": "Tu n'as pas encore de base.",
       "tooManyBases": "Tu tiens déjà le maximum de bases.",
       "unknownBase": "Cette base n'est pas à toi.",
-      "invalidRecipient": "Cette base ne peut pas recevoir de don de ta part.",
+      "invalidRecipient": "Cette base n'est ni l'une des tiennes ni celle d'un allié.",
       "ownBasesOnly": "Les pilotes et les avions ne se donnent qu'à tes propres bases.",
       "recipientWarehouseFull": "L'entrepôt de cette base est plein.",
       "hangarFull": "Cette base n'a plus de place pour un avion.",
       "siteTaken": "Ce site est déjà pris : choisis-en un autre.",
       "invalidBody": "La commande n'est pas comprise.",
       "signInRequired": "Connecte-toi d'abord.",
-      "apiDown": "L'API ne répond pas."
+      "apiDown": "L'API ne répond pas.",
+      "notStationed": "Cet avion n'est pas posé sur un camp : il n'y a rien à rappeler."
+    }
+  },
+  "stationing": {
+    "title": "Stationner un avion",
+    "text": "Un avion et son pilote vont se poser sur un autre camp, avec du carburant et des munitions pour lui, et y restent jusqu'à ce que tu les rappelles. Ils ne volent pas, ne se reposent pas et ne se donnent pas tant qu'ils sont partis.",
+    "aircraft": "Avion",
+    "fuel": "Carburant emporté",
+    "ammunition": "Munitions emportées",
+    "send": "Stationner ({{time}})",
+    "nobodyFree": "Il faut un avion et un pilote libres.",
+    "recall": "Rappeler",
+    "guests": "Avions stationnés ici",
+    "phase": {
+      "outbound": "En route vers {{site}} ({{time}})",
+      "stationed": "Posé à {{site}}",
+      "returning": "De retour de {{site}} ({{time}})"
+    },
+    "guestPhase": {
+      "outbound": "Arrive dans {{time}}",
+      "stationed": "Posé sur le camp",
+      "returning": "Repart dans {{time}}"
     }
   }
 }

@@ -17,7 +17,6 @@ use Ww2\Mission\MissionType;
 use Ww2\Mission\WeatherForecast;
 use Ww2\Squadron\Aircraft;
 use Ww2\Squadron\AircraftCategory;
-use Ww2\Squadron\Pilot;
 use Ww2\Squadron\SquadronStore;
 
 /**
@@ -43,6 +42,7 @@ final class Headquarters
         private readonly WeatherForecast $forecast,
         private readonly MissionResolver $resolver,
         private readonly Alerts $alerts,
+        private readonly StationingStore $stationings,
     ) {
     }
 
@@ -98,7 +98,7 @@ final class Headquarters
             foreach ($pilotIds as $place => $pilotId) {
                 $this->missions->addCrew($missionId, $pilotId, $aircraftIds[$place]);
             }
-            $ownedPilots = $this->pilotsById($baseId);
+            $ownedPilots = $this->squadrons->pilotsById($baseId);
             $crewPilots = [];
             foreach ($pilotIds as $pilotId) {
                 $crewPilots[] = $ownedPilots[$pilotId];
@@ -123,7 +123,7 @@ final class Headquarters
                 throw new BaseException(BaseError::StillInFlight);
             }
             $duels = $this->alerts->finishedDuelsOf($baseId, $missionId);
-            $report = $this->resolver->resolve($flight, $this->pilotsById($baseId), $this->aircraftById($baseId), $duels);
+            $report = $this->resolver->resolve($flight, $this->squadrons->pilotsById($baseId), $this->squadrons->aircraftById($baseId), $duels);
             $this->applyReport($baseId, $report, $gameSeconds);
             $this->missions->remove($missionId);
             $spotted = false;
@@ -217,32 +217,6 @@ final class Headquarters
         return $categories;
     }
 
-    /**
-     * @return array<int, Pilot>
-     */
-    private function pilotsById(int $baseId): array
-    {
-        $pilots = [];
-        foreach ($this->squadrons->pilotsOf($baseId) as $pilot) {
-            $pilots[$pilot->id] = $pilot;
-        }
-
-        return $pilots;
-    }
-
-    /**
-     * @return array<int, Aircraft>
-     */
-    private function aircraftById(int $baseId): array
-    {
-        $aircraft = [];
-        foreach ($this->squadrons->aircraftOf($baseId) as $owned) {
-            $aircraft[$owned->id] = $owned;
-        }
-
-        return $aircraft;
-    }
-
     private function applyReport(int $baseId, MissionReport $report, int $gameSeconds): void
     {
         foreach ($report->crews as $crew) {
@@ -292,7 +266,7 @@ final class Headquarters
         if (count(array_unique($pilotIds)) !== count($pilotIds) || count(array_unique($aircraftIds)) !== count($aircraftIds)) {
             throw new BaseException(BaseError::InvalidCrew);
         }
-        $ownedPilots = $this->pilotsById($baseId);
+        $ownedPilots = $this->squadrons->pilotsById($baseId);
         $resting = $this->squadrons->restsOf($baseId);
         foreach ($pilotIds as $pilotId) {
             if (!isset($ownedPilots[$pilotId])) {
@@ -302,7 +276,7 @@ final class Headquarters
                 throw new BaseException(BaseError::PilotResting);
             }
         }
-        $ownedAircraft = $this->aircraftById($baseId);
+        $ownedAircraft = $this->squadrons->aircraftById($baseId);
         $chosen = [];
         $category = $mission->type->profile()->category;
         $grounded = $this->hangar->groundedAircraftIds($baseId);
@@ -323,6 +297,16 @@ final class Headquarters
                 if (in_array($crew['pilotId'], $pilotIds, true) || in_array($crew['aircraftId'], $aircraftIds, true)) {
                     throw new BaseException(BaseError::CrewBusy);
                 }
+            }
+        }
+        foreach ($pilotIds as $pilotId) {
+            if ($this->stationings->isPilotAway($pilotId, $gameSeconds)) {
+                throw new BaseException(BaseError::CrewBusy);
+            }
+        }
+        foreach ($aircraftIds as $aircraftId) {
+            if ($this->stationings->isAircraftAway($aircraftId, $gameSeconds)) {
+                throw new BaseException(BaseError::CrewBusy);
             }
         }
 

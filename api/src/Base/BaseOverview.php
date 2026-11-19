@@ -28,6 +28,7 @@ final class BaseOverview
         private readonly EventLog $events,
         private readonly GameClockStore $clocks,
         private readonly Bases $sites,
+        private readonly Stationings $stationings,
     ) {
     }
 
@@ -40,6 +41,7 @@ final class BaseOverview
         $hangar = $this->hangar->describe($baseId, $clock);
         $roster = $this->roster->describe($baseId, $clock);
         $headquarters = $this->headquarters->describe($baseId, $clock);
+        $stationings = $this->stationings->describe($baseId, $clock);
 
         return [
             'baseId' => $baseId,
@@ -56,6 +58,7 @@ final class BaseOverview
             'headquarters' => $headquarters,
             'hangar' => $hangar,
             'roster' => $roster,
+            'stationings' => $stationings,
             'squadron' => [
                 'pilots' => array_map(static fn (Pilot $pilot): array => $pilot->toArray(), $this->squadrons->pilotsOf($baseId)),
                 'aircraft' => array_map(static fn (Aircraft $aircraft): array => $aircraft->toArray(), $this->squadrons->aircraftOf($baseId)),

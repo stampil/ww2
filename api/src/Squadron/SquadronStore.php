@@ -175,6 +175,32 @@ final class SquadronStore
     }
 
     /**
+     * @return array<int, Pilot> the pilots of the base, by id
+     */
+    public function pilotsById(int $baseId): array
+    {
+        $pilots = [];
+        foreach ($this->pilotsOf($baseId) as $pilot) {
+            $pilots[$pilot->id] = $pilot;
+        }
+
+        return $pilots;
+    }
+
+    /**
+     * @return array<int, Aircraft> the aircraft of the base, by id
+     */
+    public function aircraftById(int $baseId): array
+    {
+        $aircraft = [];
+        foreach ($this->aircraftOf($baseId) as $owned) {
+            $aircraft[$owned->id] = $owned;
+        }
+
+        return $aircraft;
+    }
+
+    /**
      * @return list<Aircraft>
      */
     public function aircraftOf(int $baseId): array

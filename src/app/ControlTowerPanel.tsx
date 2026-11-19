@@ -8,7 +8,7 @@ import GiveTo from './GiveTo'
 import Icon from './Icon'
 import MissionBoard from './MissionBoard'
 import Pane from './Pane'
-import type { Base, BaseEvent, Flight, Offer, Recipient, Rest, Squadron } from './useBase'
+import type { AwayAircraft, Base, BaseEvent, Flight, Offer, Recipient, Rest, Squadron } from './useBase'
 
 const GAUGE_MAX = 100
 
@@ -18,6 +18,8 @@ type Props = {
   offers: Offer[]
   flights: Flight[]
   rests: Rest[]
+  /** The aircraft of the base stationed at another base, with their pilots. */
+  away: AwayAircraft[]
   recruitment: Base['roster']['recruitment']
   events: BaseEvent[]
   busy: BusyCrews
@@ -32,7 +34,7 @@ type Props = {
 }
 
 /** The flights under way, the latest events, the missions on the table, and the pilots, who can rest and be joined by new ones. */
-function ControlTowerPanel({ squadron, weather, offers, flights, rests, recruitment, events, busy, unavailable, onLaunch, onReceive, onRest, onRecruit, recipients, onGivePilot }: Props) {
+function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, recruitment, events, busy, unavailable, onLaunch, onReceive, onRest, onRecruit, recipients, onGivePilot }: Props) {
   const { t } = useTranslation()
   const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
 
@@ -46,6 +48,7 @@ function ControlTowerPanel({ squadron, weather, offers, flights, rests, recruitm
           {squadron.pilots.map((pilot) => {
             const rest = rests.find((candidate) => candidate.pilotId === pilot.id)
             const isFlying = busy.pilotIds.includes(pilot.id)
+            const awayAircraft = away.find((candidate) => candidate.pilotId === pilot.id)
 
             return (
               <li key={pilot.id} className="card">
@@ -61,7 +64,13 @@ function ControlTowerPanel({ squadron, weather, offers, flights, rests, recruitm
                     </span>
                   </div>
                 </div>
-                {isFlying && <span className="status">{t('base.mission.inFlight')}</span>}
+                {isFlying && awayAircraft === undefined && <span className="status">{t('base.mission.inFlight')}</span>}
+                {awayAircraft !== undefined && (
+                  <span className="status">
+                    <Icon name="site" />
+                    {t(`stationing.phase.${awayAircraft.phase}`, { site: t(`world.site.${awayAircraft.site}`), time: formatDuration(awayAircraft.remainingSeconds) })}
+                  </span>
+                )}
                 {rest !== undefined && (
                   <span className="status">
                     <Icon name="rest" />

@@ -21,6 +21,7 @@ use Ww2\Base\Headquarters;
 use Ww2\Base\Resource;
 use Ww2\Base\Roster;
 use Ww2\Base\SparePart;
+use Ww2\Base\Stationings;
 use Ww2\Base\Stock;
 use Ww2\Base\Upgrade;
 use Ww2\Base\Upgrades;
@@ -32,7 +33,7 @@ use Ww2\World\Bases;
 
 /**
  * Shows the base of the player who is signed in (the one they look at, the first they took until they choose another), and takes their orders: buy a stock, make a spare part,
- * send a mission out, answer its alerts and receive its squadron back, inspect and repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade, give resources, a pilot or an aircraft to another base.
+ * send a mission out, answer its alerts and receive its squadron back, inspect and repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade, give resources, a pilot or an aircraft to another base, stationing an aircraft at another base and recalling it.
  * Once the battle is over the orders are refused, except the one that starts a new battle and the one that starts the game over.
  */
 final class BaseController
@@ -50,6 +51,7 @@ final class BaseController
         private readonly Bases $bases,
         private readonly PlayerSession $session,
         private readonly Gifts $gifts,
+        private readonly Stationings $stationings,
     ) {
     }
 
@@ -150,6 +152,34 @@ final class BaseController
         $baseId = $this->ongoingBattleBaseId();
         $numbers = JsonRequestBody::integers($request, 'recipientBaseId', 'aircraftId');
         $this->carryOut(fn () => $this->gifts->giveAircraft($baseId, $numbers['recipientBaseId'], $numbers['aircraftId']));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function sendStationing(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ongoingBattleBaseId();
+        $numbers = JsonRequestBody::integers($request, 'destinationBaseId', 'pilotId', 'aircraftId', 'fuel', 'ammunition');
+        $this->carryOut(fn () => $this->stationings->send($baseId, $numbers['destinationBaseId'], $numbers['pilotId'], $numbers['aircraftId'], $numbers['fuel'], $numbers['ammunition']));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function recallStationing(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ongoingBattleBaseId();
+        $aircraftId = JsonRequestBody::integers($request, 'aircraftId')['aircraftId'];
+        $this->carryOut(fn () => $this->stationings->recall($baseId, $aircraftId));
 
         return $this->overview->of($baseId);
     }

@@ -356,7 +356,9 @@
       "gift": "Gift",
       "giftResource": "{{from}} ({{site}}): {{quantity}} {{resource}}.",
       "giftPilot": "{{from}} ({{site}}): the pilot {{name}}.",
-      "giftAircraft": "{{from}} ({{site}}): a {{name}}."
+      "giftAircraft": "{{from}} ({{site}}): a {{name}}.",
+      "landing": "Landing",
+      "landingLoad": "{{from}} ({{site}}): a {{aircraft}} delivered {{fuel}} fuel and {{ammunition}} ammunition."
     },
     "mission": {
       "types": {
@@ -472,7 +474,7 @@
       "alertDone": "This dogfight is over.",
       "alertWrongKind": "This combat is not played that way.",
       "invalidCrew": "The crews chosen do not fit.",
-      "crewBusy": "A pilot or an aircraft is already on a flight.",
+      "crewBusy": "A pilot or an aircraft is already flying or stationed elsewhere.",
       "aircraftNotSuited": "This aircraft does not suit the mission.",
       "invalidLoad": "The load is more than an aircraft carries.",
       "insufficientFuel": "Not enough fuel in stock.",
@@ -497,14 +499,36 @@
       "noBase": "You have no base yet.",
       "tooManyBases": "You already hold as many bases as you can.",
       "unknownBase": "This base is not yours.",
-      "invalidRecipient": "This base cannot receive a gift from you.",
+      "invalidRecipient": "This base is neither one of yours nor an ally's.",
       "ownBasesOnly": "Pilots and aircraft can only be given to your own bases.",
       "recipientWarehouseFull": "The warehouse of this base is full.",
       "hangarFull": "This base has no room left for an aircraft.",
       "siteTaken": "This site is taken: choose another.",
       "invalidBody": "The order is not understood.",
       "signInRequired": "Sign in first.",
-      "apiDown": "The API does not answer."
+      "apiDown": "The API does not answer.",
+      "notStationed": "This aircraft is not on the ground at a camp: there is nothing to recall."
+    }
+  },
+  "stationing": {
+    "title": "Station an aircraft",
+    "text": "An aircraft and its pilot land at another camp, with fuel and ammunition for it, and stay there until you recall them. While they are away they do not fly, rest or get given.",
+    "aircraft": "Aircraft",
+    "fuel": "Fuel carried",
+    "ammunition": "Ammunition carried",
+    "send": "Station ({{time}})",
+    "nobodyFree": "A free aircraft and a free pilot are needed.",
+    "recall": "Recall",
+    "guests": "Aircraft stationed here",
+    "phase": {
+      "outbound": "Flying to {{site}} ({{time}})",
+      "stationed": "On the ground at {{site}}",
+      "returning": "Flying back from {{site}} ({{time}})"
+    },
+    "guestPhase": {
+      "outbound": "Lands in {{time}}",
+      "stationed": "On the ground at the camp",
+      "returning": "Leaves in {{time}}"
     }
   }
 }

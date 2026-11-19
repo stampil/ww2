@@ -56,7 +56,7 @@ const FIRE: ParticleKind = {
 const WING_ROOT = new THREE.Vector3(-1.6, 0.3, 0.1)
 const ENGINE = new THREE.Vector3(0, 2.2, 0.35)
 const FUSELAGE = new THREE.Vector3(0, -0.5, 0.2)
-const SMOKING_LEVEL = 4
+export const SMOKING_LEVEL = 4
 const BURNING_LEVEL = 6
 const FLAMES_LEVEL = 7
 

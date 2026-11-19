@@ -22,6 +22,7 @@ function GroundAttackWindow(props: GroundRunProps) {
         return (
           <>
             <span>{t('strafe.destroyed', { count: status.destroyed, total: STRAFE_VEHICLE_COUNT, required: STRAFE_REQUIRED_DESTROYED })}</span>
+            {status.isRedCrossHit && <span>{t('strafe.redCross')}</span>}
             <span>{`${Math.floor(secondsLeft / SECONDS_PER_MINUTE)}:${String(secondsLeft % SECONDS_PER_MINUTE).padStart(2, '0')}`}</span>
           </>
         )

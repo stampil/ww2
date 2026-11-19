@@ -1,10 +1,11 @@
 """Cuts sprites out of a sheet drawn on a flat magenta (#FF00FF) background, one transparent PNG per sprite.
 
-Usage: python3 -I tools/cut-out-sprites.py <sheet> <output directory> <name> [<name> ...]
+Usage: python3 -I tools/cut-out-sprites.py [--width <pixels>] <sheet> <output directory> <name> [<name> ...]
 The names are given in reading order (rows from the top, then from the left). The magenta of the edge pixels is taken
 out of their color and turned into transparency, and what is left of the magenta cast is turned to gray.
+With --width, each sprite is then scaled to that many pixels wide.
 """
-import sys
+import argparse
 from pathlib import Path
 
 import numpy
@@ -68,8 +69,20 @@ def in_reading_order(regions):
     return [region for row in rows for region in sorted(row, key=lambda region: region[3] + region[4])]
 
 
+def scaled_to_width(sprite, width):
+    """The sprite scaled to this width, with its color weighed by its opacity so that no color bleeds in from the transparent pixels."""
+    height = round(sprite.height * width / sprite.width)
+    return sprite.convert("RGBa").resize((width, height), Image.LANCZOS).convert("RGBA")
+
+
 def main():
-    sheet, output_directory, names = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3:]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--width", type=int)
+    parser.add_argument("sheet", type=Path)
+    parser.add_argument("output_directory", type=Path)
+    parser.add_argument("names", nargs="+")
+    arguments = parser.parse_args()
+    sheet, output_directory, names = arguments.sheet, arguments.output_directory, arguments.names
     output_directory.mkdir(parents=True, exist_ok=True)
     rgba = cut_out(numpy.array(Image.open(sheet).convert("RGB")).astype(float))
     regions = sprite_regions(rgba[..., 3] / 255.0)
@@ -79,8 +92,11 @@ def main():
         sprite[..., 3] *= mask
         top, left = max(0, top - PADDING_PIXELS), max(0, left - PADDING_PIXELS)
         bottom, right = min(sprite.shape[0], bottom + PADDING_PIXELS + 1), min(sprite.shape[1], right + PADDING_PIXELS + 1)
-        Image.fromarray(numpy.round(sprite[top:bottom, left:right]).astype("uint8"), "RGBA").save(output_directory / f"{name}.png", optimize=True)
-        print(name, right - left, "x", bottom - top)
+        cropped = Image.fromarray(numpy.round(sprite[top:bottom, left:right]).astype("uint8"), "RGBA")
+        if arguments.width is not None:
+            cropped = scaled_to_width(cropped, arguments.width)
+        cropped.save(output_directory / f"{name}.png", optimize=True)
+        print(name, cropped.width, "x", cropped.height)
 
 
 if __name__ == '__main__':

@@ -1,34 +1,41 @@
 import * as THREE from 'three'
-import { DamageEffects } from './DamageEffects'
+import { DamageEffects, SMOKING_LEVEL } from './DamageEffects'
+import { DESTROYED_LEVEL } from './damageStages'
 import {
   AIRCRAFT_ALTITUDE_METERS,
   AIRCRAFT_SCALE,
   GroundRunScene,
   PASSED_BEHIND_METERS,
   ROAD_LIFT_METERS,
+  TARGET_WIDTH_METERS,
   VEHICLE_KIND_NAMES,
   VEHICLE_STATES,
-  VEHICLE_WIDTH_METERS,
 } from './GroundRunScene'
-import type { RunOutcome, VehicleKind } from './GroundRunScene'
+import type { RunOutcome, TargetKind } from './GroundRunScene'
 import { SeededRandom } from './SeededRandom'
 
-export type StrafeStatus = { destroyed: number; secondsLeft: number }
+export type StrafeStatus = { destroyed: number; secondsLeft: number; isRedCrossHit: boolean }
 
 type Vehicle = {
-  kind: VehicleKind
+  kind: TargetKind
   mesh: THREE.Mesh
   position: THREE.Vector2
   fireSeconds: number
   stateIndex: number
+  /** The smoke and the flames of a vehicle that is hit, which the sprites do not draw. */
+  effects: DamageEffects | null
 }
 
 const DESTROYED_INDEX = VEHICLE_STATES.length - 1
 // How long each kind has to be under fire, compared with a truck.
-const ARMOR: Record<VehicleKind, number> = { truck: 1, tanker: 1, 'armored-car': 1.3, 'light-tank': 1.6 }
+const ARMOR: Record<TargetKind, number> = { truck: 1, tanker: 1, 'armored-car': 1.3, 'light-tank': 1.6, motorcycle: 0.6, ambulance: 1, barrels: 0.8, tent: 0.8 }
+// The ambulance of the Red Cross is to be spared; the fuel dump and the tent stand beside the road and do not count in the score.
+const SPARED_KIND: TargetKind = 'ambulance'
+const ROADSIDE_KINDS: TargetKind[] = ['barrels', 'tent']
+// What burns when it is hit: it takes the vehicles near it one state down.
+const EXPLOSIVE_KINDS: TargetKind[] = ['tanker', 'barrels']
 const DAMAGED_AFTER_SECONDS = 0.5
 const DESTROYED_AFTER_SECONDS = 1.1
-// A tanker that blows up takes the vehicles near it one state down.
 const BLAST_RADIUS_METERS = 14
 
 const CONVOY_SPEED_METERS_PER_SECOND = 3
@@ -37,6 +44,13 @@ const VEHICLE_SPACING_METERS = 22
 export const STRAFE_VEHICLE_COUNT = 6
 export const STRAFE_REQUIRED_DESTROYED = 4
 const LANE_OFFSET_METERS = 4
+const ROADSIDE_OFFSET_METERS = 8
+// Where beside the road the fuel dump and the tent stand, in vehicle spacings from the first vehicle.
+const BARRELS_SPACINGS = 1.5
+const TENT_SPACINGS = 4.5
+// The smoke and the flames are made for a truck: they are scaled by the width of the target against it.
+const EFFECTS_REFERENCE_WIDTH_METERS = TARGET_WIDTH_METERS.truck
+const EFFECTS_LIFT_SHARE = 0.25
 // The ground the guns cover, ahead of the aircraft, and how much of a vehicle must be in it.
 const ZONE_START_METERS = 12
 const ZONE_LENGTH_METERS = 24
@@ -57,8 +71,9 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
   private readonly zone: THREE.Mesh
   private readonly tracers: THREE.Line[] = []
   private readonly vehicles: Vehicle[] = []
-  private readonly explosions: DamageEffects[] = []
+  private readonly damageEffects: DamageEffects[] = []
   private destroyed = 0
+  private isRedCrossHit = false
   private tracerSeconds = 0
   private isFiring = false
 
@@ -77,20 +92,21 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
 
   protected animate(deltaSeconds: number): void {
     this.showGuns(deltaSeconds)
-    this.explosions.forEach((explosion) => explosion.update(deltaSeconds))
+    this.damageEffects.forEach((effects) => effects.update(deltaSeconds))
   }
 
   protected isOver(): boolean {
     const hasAllPassed = this.vehicles.every((vehicle) => vehicle.stateIndex === DESTROYED_INDEX || vehicle.position.y < this.position.y - PASSED_BEHIND_METERS)
-    return hasAllPassed || this.secondsFlown > TIME_LIMIT_SECONDS
+    return this.isRedCrossHit || hasAllPassed || this.secondsFlown > TIME_LIMIT_SECONDS
   }
 
+  /** The attack fails when the ambulance of the Red Cross is destroyed, whatever else was. */
   protected outcome(): RunOutcome {
-    return this.destroyed >= STRAFE_REQUIRED_DESTROYED ? 'won' : 'escaped'
+    return !this.isRedCrossHit && this.destroyed >= STRAFE_REQUIRED_DESTROYED ? 'won' : 'escaped'
   }
 
   protected currentStatus(): StrafeStatus {
-    return { destroyed: this.destroyed, secondsLeft: Math.max(0, TIME_LIMIT_SECONDS - this.secondsFlown) }
+    return { destroyed: this.destroyed, secondsLeft: Math.max(0, TIME_LIMIT_SECONDS - this.secondsFlown), isRedCrossHit: this.isRedCrossHit }
   }
 
   /** The ground the guns cover, ahead of the aircraft. */
@@ -120,20 +136,21 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
     await this.loadSprites()
     const random = new SeededRandom(seed)
     const firstLane = random.happens(50) ? 1 : -1
-    for (let index = 0; index < STRAFE_VEHICLE_COUNT; index += 1) {
-      const kind = random.pickOne(VEHICLE_KIND_NAMES)
+    const ambulanceIndex = random.integer(1, STRAFE_VEHICLE_COUNT)
+    for (let index = 0; index <= STRAFE_VEHICLE_COUNT; index += 1) {
       const lane = index % 2 === 0 ? firstLane : -firstLane
-      const vehicle: Vehicle = {
-        kind,
-        mesh: this.createSprite(),
-        position: new THREE.Vector2(lane * LANE_OFFSET_METERS, FIRST_VEHICLE_METERS + index * VEHICLE_SPACING_METERS),
-        fireSeconds: 0,
-        stateIndex: 0,
-      }
-      this.vehicles.push(vehicle)
-      this.showVehicle(vehicle)
+      const kind = index === ambulanceIndex ? SPARED_KIND : random.pickOne(VEHICLE_KIND_NAMES)
+      this.addVehicle(kind, lane * LANE_OFFSET_METERS, FIRST_VEHICLE_METERS + index * VEHICLE_SPACING_METERS)
     }
+    this.addVehicle('barrels', -firstLane * ROADSIDE_OFFSET_METERS, FIRST_VEHICLE_METERS + BARRELS_SPACINGS * VEHICLE_SPACING_METERS)
+    this.addVehicle('tent', firstLane * ROADSIDE_OFFSET_METERS, FIRST_VEHICLE_METERS + TENT_SPACINGS * VEHICLE_SPACING_METERS)
     this.isReady = true
+  }
+
+  private addVehicle(kind: TargetKind, x: number, y: number): void {
+    const vehicle: Vehicle = { kind, mesh: this.createSprite(), position: new THREE.Vector2(x, y), fireSeconds: 0, stateIndex: 0, effects: null }
+    this.vehicles.push(vehicle)
+    this.showVehicle(vehicle)
   }
 
   private showVehicle(vehicle: Vehicle): void {
@@ -142,9 +159,10 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
 
   private moveConvoy(deltaSeconds: number): void {
     for (const vehicle of this.vehicles) {
-      if (vehicle.stateIndex < DESTROYED_INDEX) {
+      if (vehicle.stateIndex < DESTROYED_INDEX && !ROADSIDE_KINDS.includes(vehicle.kind)) {
         vehicle.position.y -= CONVOY_SPEED_METERS_PER_SECOND * deltaSeconds
         this.showVehicle(vehicle)
+        this.placeEffects(vehicle)
       }
     }
   }
@@ -183,27 +201,45 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
   private setState(vehicle: Vehicle, stateIndex: number): void {
     vehicle.stateIndex = stateIndex
     this.showVehicle(vehicle)
-    if (stateIndex === DESTROYED_INDEX) {
+    this.showDamage(vehicle)
+    if (stateIndex !== DESTROYED_INDEX) {
+      return
+    }
+    if (vehicle.kind === SPARED_KIND) {
+      this.isRedCrossHit = true
+    } else if (!ROADSIDE_KINDS.includes(vehicle.kind)) {
       this.destroyed += 1
-      this.explode(vehicle)
-      if (vehicle.kind === 'tanker') {
-        this.blast(vehicle)
-      }
+    }
+    if (EXPLOSIVE_KINDS.includes(vehicle.kind)) {
+      this.blast(vehicle)
     }
   }
 
-  private explode(vehicle: Vehicle): void {
-    const explosion = new DamageEffects()
-    explosion.object.position.set(vehicle.position.x, vehicle.position.y, 0).addScaledVector(this.screenUp, VEHICLE_WIDTH_METERS[vehicle.kind] * 0.25)
-    explosion.explode()
-    this.scene.add(explosion.object)
-    this.explosions.push(explosion)
+  /** The sprites draw no smoke and no fire: a vehicle that is hit smokes, and a wreck blows up, then burns. */
+  private showDamage(vehicle: Vehicle): void {
+    if (vehicle.effects === null) {
+      vehicle.effects = new DamageEffects()
+      vehicle.effects.object.scale.setScalar(TARGET_WIDTH_METERS[vehicle.kind] / EFFECTS_REFERENCE_WIDTH_METERS)
+      this.scene.add(vehicle.effects.object)
+      this.damageEffects.push(vehicle.effects)
+    }
+    this.placeEffects(vehicle)
+    if (vehicle.stateIndex === DESTROYED_INDEX) {
+      vehicle.effects.explode()
+      vehicle.effects.setLevel(DESTROYED_LEVEL)
+    } else {
+      vehicle.effects.setLevel(SMOKING_LEVEL)
+    }
   }
 
-  /** The fuel of a tanker that blows up burns the vehicles close to it: each takes a state down. */
-  private blast(tanker: Vehicle): void {
+  private placeEffects(vehicle: Vehicle): void {
+    vehicle.effects?.object.position.set(vehicle.position.x, vehicle.position.y, 0).addScaledVector(this.screenUp, TARGET_WIDTH_METERS[vehicle.kind] * EFFECTS_LIFT_SHARE)
+  }
+
+  /** The fuel of a tanker or a dump that burns takes the vehicles close to it a state down. */
+  private blast(source: Vehicle): void {
     for (const vehicle of this.vehicles) {
-      if (vehicle !== tanker && vehicle.stateIndex < DESTROYED_INDEX && vehicle.position.distanceTo(tanker.position) < BLAST_RADIUS_METERS) {
+      if (vehicle !== source && vehicle.stateIndex < DESTROYED_INDEX && vehicle.position.distanceTo(source.position) < BLAST_RADIUS_METERS) {
         const armor = ARMOR[vehicle.kind]
         vehicle.fireSeconds = Math.max(vehicle.fireSeconds, vehicle.stateIndex === 0 ? DAMAGED_AFTER_SECONDS * armor : DESTROYED_AFTER_SECONDS * armor)
         this.updateState(vehicle)

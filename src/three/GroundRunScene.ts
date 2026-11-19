@@ -10,13 +10,24 @@ import { SeededRandom } from './SeededRandom'
 import { loadTerrainTextures } from './terrainTextures'
 
 export type RunOutcome = 'won' | 'escaped'
-export type VehicleKind = 'truck' | 'tanker' | 'armored-car' | 'light-tank'
+export type VehicleKind = 'truck' | 'tanker' | 'armored-car' | 'light-tank' | 'motorcycle'
+/** What a run can show on the ground: the vehicles of a convoy, an ambulance of the Red Cross, and a fuel dump and a tent beside the road. */
+export type TargetKind = VehicleKind | 'ambulance' | 'barrels' | 'tent'
 
 export const VEHICLE_STATES = ['intact', 'damaged', 'destroyed'] as const
 export type VehicleState = (typeof VEHICLE_STATES)[number]
-// What the sheet of the convoy shows: the size of each vehicle on the screen, in meters.
-export const VEHICLE_WIDTH_METERS: Record<VehicleKind, number> = { truck: 6.2, tanker: 6.4, 'armored-car': 5, 'light-tank': 5.2 }
-export const VEHICLE_KIND_NAMES = Object.keys(VEHICLE_WIDTH_METERS) as VehicleKind[]
+// The size of each target on the screen, in meters: its real length and width, seen from a corner.
+export const TARGET_WIDTH_METERS: Record<TargetKind, number> = {
+  truck: 6.2,
+  tanker: 6.4,
+  'armored-car': 5,
+  'light-tank': 5.2,
+  motorcycle: 2.8,
+  ambulance: 6.2,
+  barrels: 2.8,
+  tent: 5.5,
+}
+export const VEHICLE_KIND_NAMES: VehicleKind[] = ['truck', 'tanker', 'armored-car', 'light-tank', 'motorcycle']
 export const AIRCRAFT_ALTITUDE_METERS = 9
 export const AIRCRAFT_SCALE = 1.3
 export const ROAD_LIFT_METERS = 0.02
@@ -193,7 +204,8 @@ export abstract class GroundRunScene<Status> {
 
   protected async loadSprites(): Promise<void> {
     const loader = new THREE.TextureLoader()
-    const names = VEHICLE_KIND_NAMES.flatMap((kind) => VEHICLE_STATES.map((state) => `${kind}-${state}`))
+    const kinds = Object.keys(TARGET_WIDTH_METERS) as TargetKind[]
+    const names = kinds.flatMap((kind) => VEHICLE_STATES.map((state) => `${kind}-${state}`))
     await Promise.all(
       names.map(async (name) => {
         const texture = await loader.loadAsync(assetUrl(`${SPRITES_PATH}${name}.png`))
@@ -203,9 +215,9 @@ export abstract class GroundRunScene<Status> {
     )
   }
 
-  /** Puts the picture of the vehicle, for its state, on the ground where the vehicle is. */
-  protected showSprite(sprite: THREE.Mesh, kind: VehicleKind, state: VehicleState, position: THREE.Vector2): void {
-    this.showPicture(sprite, this.textures.get(`${kind}-${state}`)!, VEHICLE_WIDTH_METERS[kind], position)
+  /** Puts the picture of the target, for its state, on the ground where it stands. */
+  protected showSprite(sprite: THREE.Mesh, kind: TargetKind, state: VehicleState, position: THREE.Vector2): void {
+    this.showPicture(sprite, this.textures.get(`${kind}-${state}`)!, TARGET_WIDTH_METERS[kind], position)
   }
 
   /** Puts a picture, this wide on the screen, on the ground where its subject stands: its foot a little below the point on the ground. */

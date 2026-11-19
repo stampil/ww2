@@ -115,12 +115,13 @@
   },
   "strafe": {
     "title": "Ground attack",
-    "hint": "You strafe a German convoy that drives toward you: get on its lane, and your aircraft fires by itself at what is ahead. Destroy {{required}} of {{total}} before it has gone by.",
+    "hint": "You strafe a German convoy that drives toward you: get on its lane, and your aircraft fires by itself at what is ahead. Destroy {{required}} of {{total}} before it has gone by. Spare the Red Cross ambulance: destroying it fails the attack.",
     "controls": "Steer with the left and right arrow keys, or with the stick under the view.",
     "toast": "A German convoy on the road: {{pilot}} can strafe it.",
     "toastResume": "Attack under way: {{pilot}}.",
     "take": "Attack",
     "destroyed": "Destroyed: {{count}} of {{total}} ({{required}} to succeed)",
+    "redCross": "Red Cross hit!",
     "starting": "Starting up…",
     "won": "Convoy destroyed!",
     "escaped": "The convoy got away."

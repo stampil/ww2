@@ -115,12 +115,13 @@
   },
   "strafe": {
     "title": "Attaque au sol",
-    "hint": "Tu mitrailles un convoi allemand qui roule vers toi : place-toi sur sa file, ton avion tire seul sur ce qui est devant lui. Détruis-en {{required}} sur {{total}} avant qu'il soit passé.",
+    "hint": "Tu mitrailles un convoi allemand qui roule vers toi : place-toi sur sa file, ton avion tire seul sur ce qui est devant lui. Détruis-en {{required}} sur {{total}} avant qu'il soit passé. Épargne l'ambulance de la Croix-Rouge : la détruire fait échouer l'attaque.",
     "controls": "Pilote avec les flèches gauche et droite du clavier, ou avec le manche sous la vue.",
     "toast": "Un convoi allemand sur la route : {{pilot}} peut le mitrailler.",
     "toastResume": "Attaque en cours : {{pilot}}.",
     "take": "Attaquer",
     "destroyed": "Détruits : {{count}} sur {{total}} ({{required}} pour réussir)",
+    "redCross": "Croix-Rouge touchée !",
     "starting": "Mise en route…",
     "won": "Convoi détruit !",
     "escaped": "Le convoi s'est échappé."

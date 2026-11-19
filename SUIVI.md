@@ -36,7 +36,7 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 | 7 | **E10 : les assets restants** : MS.406 (avion de départ, décision du 16/11), sons, images IA (portraits de pilotes, personnel d'entretien, camion de carburant et pompiers, illustrations des cartes, états abîmé et en réparation des avions, aires de stationnement) | grand | images |
 | 8 | **E12 : la finition** : réglages en `localStorage`, performances, nettoyage des outils de lint, retrait du type de mission « bombardement » (plus de bombardier jouable) | moyen | question 2 |
 | 9 | **Ennemi qui tire sur toi** dans les mini-jeux (Wings) | moyen | le décor |
-| 10 | **Réglages à l'usage**, quand tu auras joué : attaque au sol, reconnaissance (cibles, jauge, mission repérée à 150 %), pénalité de la Croix-Rouge, taille de l'avion en fin de vol (estimée à environ ×3,3 vu de dessus à 350 m, sans l'avoir vue), assiette et ombre des vols en 3D | petit | tes essais |
+| 10 | **Réglages à l'usage**, quand tu auras joué : attaque au sol, reconnaissance (cibles, tours, vitesse, jauge, mission repérée à 150 %), pénalité de la Croix-Rouge, taille de l'avion en fin de vol (estimée à environ ×3,3 vu de dessus à 350 m, sans l'avoir vue), assiette et ombre des vols en 3D | petit | tes essais |
 
 ## Mis de côté
 

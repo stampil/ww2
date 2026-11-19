@@ -74,7 +74,8 @@ $hangarStore = new HangarStore($database);
 $events = new EventLog($database);
 $upgrades = new Upgrades($database, $baseStore, $squadronFounder);
 $battleStore = new BattleStore($database);
-$battle = new Battle($database, $battleStore, $squadrons, $squadronFounder, $baseFounder);
+$bases = new Bases($database, new Instances($database), $squadronFounder, $baseFounder);
+$battle = new Battle($database, $battleStore, $squadrons, $squadronFounder, $baseFounder, $bases);
 $warehouse = new Warehouse($database, $baseStore, $upgrades);
 $mechanics = new Mechanics($baseStore, $hangarStore);
 $workshop = new Workshop($database, $baseStore, $clocks, $mechanics, $upgrades);
@@ -82,7 +83,6 @@ $alerts = new Alerts($database, $baseStore, $clocks, new FlightAlertStore($datab
 $headquarters = new Headquarters($database, $baseStore, $missions, $squadrons, $clocks, $hangarStore, $events, $battleStore, new MissionGenerator(), new WeatherForecast(), new MissionResolver(), $alerts);
 $hangar = new Hangar($database, $baseStore, $hangarStore, $missions, $squadrons, $clocks, $mechanics, $events);
 $roster = new Roster($database, $baseStore, $missions, $squadrons, $clocks, $pilotGenerator);
-$bases = new Bases($database, new Instances($database), $squadronFounder, $baseFounder);
 $overview = new BaseOverview($baseStore, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $squadrons, $events, $clocks, $bases);
 $baseController = new BaseController($overview, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $alerts, $bases, $session);
 $worldController = new WorldController($bases, $overview, $session);
@@ -98,6 +98,7 @@ $router->group('/api', function (RouteGroup $routes) use ($accounts, $players, $
     $routes->get('/world/map', [$worldController, 'map']);
     $routes->post('/world/claim', [$worldController, 'claim']);
     $routes->get('/base', [$baseController, 'show']);
+    $routes->post('/base/select', [$baseController, 'selectBase']);
     $routes->post('/base/purchase', [$baseController, 'buy']);
     $routes->post('/base/production', [$baseController, 'produce']);
     $routes->post('/base/missions/launch', [$baseController, 'launchMission']);

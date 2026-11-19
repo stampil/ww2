@@ -21,18 +21,30 @@ function HudItem({ icon, label, children }: { icon: IconName; label: string; chi
 type Props = {
   gameTime: Date
   base: Base
+  /** Called with the id of the base the player picks to look at. */
+  onSelectBase: (baseId: number) => void
 }
 
-/** The strip over the map: the site of the base, the game time, the aircraft and the pilots, the resources, and the battle, each with its icon. */
-function Hud({ gameTime, base }: Props) {
+/** The strip over the map: the site of the base, or one button for each base the player holds, the game time, the aircraft and the pilots, the resources, and the battle, each with its icon. */
+function Hud({ gameTime, base, onSelectBase }: Props) {
   const { t, i18n } = useTranslation()
   const formatter = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'medium', timeZone: GAME_TIME_ZONE })
 
   return (
     <div className="hud" role="group" aria-label={t('base.hud')}>
-      <HudItem icon="site" label={t('base.site')}>
-        {t(`world.site.${base.site}`)}
-      </HudItem>
+      {base.bases.length > 1 ? (
+        <span className="hud-bases" role="group" aria-label={t('base.switch')}>
+          {base.bases.map((held) => (
+            <button key={held.id} type="button" className="hud-base" aria-pressed={held.id === base.baseId} onClick={() => onSelectBase(held.id)}>
+              {t(`world.site.${held.site}`)}
+            </button>
+          ))}
+        </span>
+      ) : (
+        <HudItem icon="site" label={t('base.site')}>
+          {t(`world.site.${base.site}`)}
+        </HudItem>
+      )}
       <HudItem icon="clock" label={t('base.clock.label')}>
         <time dateTime={gameTime.toISOString()}>{formatter.format(gameTime)}</time>
       </HudItem>

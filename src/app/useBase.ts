@@ -111,7 +111,14 @@ export type UpgradeInfo = { upgrade: UpgradeName; level: number; maxLevel: numbe
 /** The battle of the base: the enemy aircraft shot down against the target, and how it stands. */
 export type Battle = { kills: number; target: number; status: 'ongoing' | 'won' | 'lost' }
 
+/** A base the player holds, with the site it stands on. */
+export type HeldBase = { id: number; site: string }
+
 export type Base = {
+  /** The id of this base, among the bases the player holds (the one they took first at the head), and how many bases a player can hold. */
+  baseId: number
+  bases: HeldBase[]
+  baseLimit: number
   /** The site the base stands on. */
   site: string
   terrainPlan: string
@@ -313,9 +320,13 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/upgrades/buy`, { upgrade }))
   }
 
-  /** Takes a free site for the player, who holds no base yet. */
+  /** Takes a free site for the player: a base with a squadron if they hold none yet, else an empty one, which they look at from then on. */
   async function claimBase(site: string): Promise<string | null> {
     return receive(await request(CLAIM_URL, { site }))
+  }
+
+  async function selectBase(baseId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/select`, { baseId }))
   }
 
   async function resetGame(): Promise<string | null> {
@@ -349,5 +360,6 @@ export function useBase(player: Player | null) {
     resetGame,
     restartBattle,
     claimBase,
+    selectBase,
   }
 }

@@ -16,7 +16,8 @@ use Ww2\World\Bases;
 use Ww2\World\Site;
 
 /**
- * Shows the player which sites they can choose a base on, and gives them the one they choose; shows who holds the sites of their own world.
+ * Shows the player which sites they can choose a base on, and gives them the one they choose, the first with a squadron and the next ones empty;
+ * shows who holds the sites of their own world.
  */
 final class WorldController
 {
@@ -45,16 +46,16 @@ final class WorldController
      */
     public function map(): array
     {
-        $baseId = $this->bases->idOf($this->signedInPlayerId()) ?? throw new ConflictException(BaseError::NoBase->value);
+        $baseId = $this->bases->currentOf($this->signedInPlayerId(), $this->session->selectedBaseId()) ?? throw new ConflictException(BaseError::NoBase->value);
 
         return ['sites' => $this->bases->sitesAround($baseId)];
     }
 
     /**
-     * @return array<string, mixed> the overview of the new base
+     * @return array<string, mixed> the overview of the new base, which the player now looks at
      * @throws UnauthorizedException when nobody is signed in
      * @throws BadRequestException when the order is not understood
-     * @throws ConflictException when the player holds a base already, or the site is taken
+     * @throws ConflictException when the player holds as many bases as they can, or the site is taken
      */
     public function claim(ServerRequestInterface $request): array
     {
@@ -65,6 +66,7 @@ final class WorldController
         } catch (BaseException $exception) {
             throw new ConflictException($exception->error->value);
         }
+        $this->session->selectBase($baseId);
 
         return $this->overview->of($baseId);
     }

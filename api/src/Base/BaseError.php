@@ -45,6 +45,7 @@ enum BaseError: string
     case BattleOver = 'battleOver';
     case BattleOngoing = 'battleOngoing';
     case NoBase = 'noBase';
-    case AlreadyHasBase = 'alreadyHasBase';
+    case TooManyBases = 'tooManyBases';
+    case UnknownBase = 'unknownBase';
     case SiteTaken = 'siteTaken';
 }

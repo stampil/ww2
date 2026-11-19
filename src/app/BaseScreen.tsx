@@ -83,6 +83,7 @@ function BaseScreen({ player }: { player: Player }) {
     resetGame,
     restartBattle,
     claimBase,
+    selectBase,
   } = useBase(player)
   const aircraftSprite = useAircraftSprite()
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
@@ -108,6 +109,15 @@ function BaseScreen({ player }: { player: Player }) {
       setEmergingIds((current) => [...current, ...emergedIds])
     }
   }, [emergedIds, canAnimate])
+  // What is going on in one base means nothing in another: the windows and the animations start again when the player looks at a different base.
+  const baseId = base?.baseId
+  useEffect(() => {
+    setOpenBuilding(null)
+    setDepartures([])
+    setLandingIds([])
+    setEmergingIds([])
+    setDuelAlertId(null)
+  }, [baseId])
 
   if (hasNoBase) {
     return <BaseChoice onClaim={claimBase} />
@@ -223,7 +233,7 @@ function BaseScreen({ player }: { player: Player }) {
     <section className="base game" aria-label={t('base.title')}>
       <h2 className="visually-hidden">{t('base.title')}</h2>
       <div className="stage">
-        <Hud gameTime={gameTime} base={base} />
+        <Hud gameTime={gameTime} base={base} onSelectBase={(selectedBaseId) => void order(selectBase(selectedBaseId))} />
         <BaseMap
           plan={plan}
           servicedAircraftIds={servicedAircraftIds}
@@ -253,7 +263,7 @@ function BaseScreen({ player }: { player: Player }) {
         <GameWindow title={t(`base.building.${openBuilding}.name`)} hint={t(`base.building.${openBuilding}.text`)} onDismiss={() => setOpenBuilding(null)}>
           {guideStep !== null && speaksInWindowOf(guideStep, openBuilding) && guide}
           {errorMessage}
-          {openBuilding === 'headquarters' && <HeadquartersPanel site={base.site} />}
+          {openBuilding === 'headquarters' && <HeadquartersPanel bases={base.bases} baseLimit={base.baseLimit} onClaim={claimBase} />}
           {openBuilding === 'controlTower' && (
             <ControlTowerPanel
               squadron={base.squadron}

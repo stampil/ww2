@@ -7,9 +7,10 @@ namespace Ww2\Base;
 use Ww2\Database\Database;
 use Ww2\Squadron\SquadronFounder;
 use Ww2\Squadron\SquadronStore;
+use Ww2\World\Bases;
 
 /**
- * The battle of a base: won when enough enemy aircraft are shot down, lost when the squadron has no pilot or no aircraft left.
+ * The battle of a player, over all the bases they hold: won when enough enemy aircraft are shot down, lost when they have no pilot or no aircraft left.
  * Once it is over the orders stop, until a new battle begins on a new base. The figures are mine.
  */
 final class Battle
@@ -22,15 +23,17 @@ final class Battle
         private readonly SquadronStore $squadrons,
         private readonly SquadronFounder $squadronFounder,
         private readonly BaseFounder $baseFounder,
+        private readonly Bases $bases,
     ) {
     }
 
     public function statusOf(int $baseId): BattleStatus
     {
-        if ($this->battles->killsOf($baseId) >= self::KILL_TARGET) {
+        $heldIds = $this->heldIdsWith($baseId);
+        if ($this->killsOf($heldIds) >= self::KILL_TARGET) {
             return BattleStatus::Won;
         }
-        if ($this->squadrons->pilotsOf($baseId) === [] || $this->squadrons->aircraftOf($baseId) === []) {
+        if ($this->hasNoPilotOrNoAircraft($heldIds)) {
             return BattleStatus::Lost;
         }
 
@@ -42,7 +45,7 @@ final class Battle
      */
     public function describe(int $baseId): array
     {
-        return ['kills' => $this->battles->killsOf($baseId), 'target' => self::KILL_TARGET, 'status' => $this->statusOf($baseId)->value];
+        return ['kills' => $this->killsOf($this->heldIdsWith($baseId)), 'target' => self::KILL_TARGET, 'status' => $this->statusOf($baseId)->value];
     }
 
     /**
@@ -56,7 +59,7 @@ final class Battle
     }
 
     /**
-     * Starts a new battle on the same base: the squadron and the stocks are founded again, as when the base was claimed.
+     * Starts a new battle on the base, the first of the player: the squadron and the stocks are founded again, as when the base was claimed.
      *
      * @throws BaseException when the battle is not over
      */
@@ -69,14 +72,60 @@ final class Battle
     }
 
     /**
-     * Founds the base again, as when it was claimed, whatever state the battle is in: the player starts from scratch.
+     * Founds the base again, as when it was claimed, whatever state the battle is in: the player starts from scratch, and the other bases they hold are given back.
      */
     public function startOver(int $baseId): void
     {
         $this->database->transaction(function () use ($baseId): void {
-            $this->battles->eraseGameOf($baseId);
+            foreach ($this->heldIdsWith($baseId) as $heldId) {
+                $this->battles->eraseGameOf($heldId);
+                if ($heldId !== $baseId) {
+                    $this->bases->release($heldId);
+                }
+            }
             $this->squadronFounder->found($baseId);
             $this->baseFounder->found($baseId);
         });
+    }
+
+    /**
+     * @return list<int> the bases held by the player who holds this one
+     */
+    private function heldIdsWith(int $baseId): array
+    {
+        $ids = [];
+        foreach ($this->bases->heldWith($baseId) as $held) {
+            $ids[] = $held['id'];
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param list<int> $heldIds
+     */
+    private function killsOf(array $heldIds): int
+    {
+        $kills = 0;
+        foreach ($heldIds as $heldId) {
+            $kills += $this->battles->killsOf($heldId);
+        }
+
+        return $kills;
+    }
+
+    /**
+     * @param list<int> $heldIds
+     */
+    private function hasNoPilotOrNoAircraft(array $heldIds): bool
+    {
+        $hasPilot = false;
+        $hasAircraft = false;
+        foreach ($heldIds as $heldId) {
+            $hasPilot = $hasPilot || $this->squadrons->pilotsOf($heldId) !== [];
+            $hasAircraft = $hasAircraft || $this->squadrons->aircraftOf($heldId) !== [];
+        }
+
+        return !$hasPilot || !$hasAircraft;
     }
 }

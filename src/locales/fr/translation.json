@@ -256,7 +256,7 @@
     },
     "sites": "Sites",
     "map": "Carte de la France",
-    "legend": "Ton camp est cerclé d'or, ceux de tes alliés de vert, ceux de l'ennemi sont grisés, les camps libres sont en couleur.",
+    "legend": "Tes camps sont cerclés d'or, ceux de tes alliés de vert, ceux de l'ennemi sont grisés, les camps libres sont en couleur.",
     "side": "Ton côté : {{side}}.",
     "clan": {
       "french": "les Français",
@@ -271,6 +271,9 @@
     "free": "Libre",
     "taken": "Prise",
     "claim": "Prendre cette base",
+    "claimPick": "Clique un camp libre pour le revendiquer : il sera vide, à approvisionner.",
+    "claimCamp": "Revendiquer ce camp",
+    "claimLimit": "Tu tiens déjà {{max}} bases, le maximum.",
     "site": {
       "lille": "Lille",
       "reims": "Reims",
@@ -283,6 +286,7 @@
   "base": {
     "title": "Base",
     "site": "Base",
+    "switch": "Changer de base",
     "hud": "Tableau de bord",
     "window": {
       "close": "Fermer"
@@ -473,7 +477,8 @@
       "battleOver": "La bataille est terminée : lance-en une nouvelle.",
       "battleOngoing": "La bataille n'est pas terminée.",
       "noBase": "Tu n'as pas encore de base.",
-      "alreadyHasBase": "Tu as déjà une base.",
+      "tooManyBases": "Tu tiens déjà le maximum de bases.",
+      "unknownBase": "Cette base n'est pas à toi.",
       "siteTaken": "Ce site est déjà pris : choisis-en un autre.",
       "invalidBody": "La commande n'est pas comprise.",
       "signInRequired": "Connecte-toi d'abord.",

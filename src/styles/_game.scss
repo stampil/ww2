@@ -157,12 +157,25 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
     position: absolute;
     top: 0;
     left: 50%;
-    z-index: 2;
+    z-index: 3;
     width: max-content;
     max-width: calc(100% - 1.5rem);
     margin: 0;
     padding: 0.3rem 1rem;
     transform: translateX(-50%);
+  }
+}
+
+.hud-bases {
+  @include flex($display: inline-flex, $align: center, $gap: 0.3rem);
+}
+
+.hud-base {
+  @include button;
+
+  &[aria-pressed='true'] {
+    outline: 2px solid $gold;
+    outline-offset: 1px;
   }
 }
 
@@ -1110,12 +1123,14 @@ button.base-sprite {
 
   &:hover:not(:disabled) img,
   &:focus-visible img,
-  &[aria-pressed='true'] img {
+  &[aria-pressed='true'] img,
+  &[data-own='true'] img {
     filter: drop-shadow(0 0 0.4rem $gold);
   }
 
   &:focus-visible,
-  &[aria-pressed='true'] {
+  &[aria-pressed='true'],
+  &[data-own='true'] {
     outline: 2px solid $gold;
     outline-offset: 2px;
   }

@@ -256,7 +256,7 @@
     },
     "sites": "Sites",
     "map": "Map of France",
-    "legend": "Your camp is ringed in gold, your allies' in green, the enemy's are greyed, the free camps are in colour.",
+    "legend": "Your camps are ringed in gold, your allies' in green, the enemy's are greyed, the free camps are in colour.",
     "side": "Your side: {{side}}.",
     "clan": {
       "french": "the French",
@@ -271,6 +271,9 @@
     "free": "Free",
     "taken": "Taken",
     "claim": "Take this base",
+    "claimPick": "Click a free camp to claim it: it will be empty, to supply.",
+    "claimCamp": "Claim this camp",
+    "claimLimit": "You already hold {{max}} bases, the most you can.",
     "site": {
       "lille": "Lille",
       "reims": "Reims",
@@ -283,6 +286,7 @@
   "base": {
     "title": "Base",
     "site": "Base",
+    "switch": "Switch base",
     "hud": "Dashboard",
     "window": {
       "close": "Close"
@@ -473,7 +477,8 @@
       "battleOver": "The battle is over: start a new one.",
       "battleOngoing": "The battle is not over.",
       "noBase": "You have no base yet.",
-      "alreadyHasBase": "You already have a base.",
+      "tooManyBases": "You already hold as many bases as you can.",
+      "unknownBase": "This base is not yours.",
       "siteTaken": "This site is taken: choose another.",
       "invalidBody": "The order is not understood.",
       "signInRequired": "Sign in first.",

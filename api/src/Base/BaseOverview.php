@@ -42,6 +42,9 @@ final class BaseOverview
         $headquarters = $this->headquarters->describe($baseId, $clock);
 
         return [
+            'baseId' => $baseId,
+            'bases' => $this->sites->heldWith($baseId),
+            'baseLimit' => Bases::MAX_PER_PLAYER,
             'site' => $this->sites->siteOf($baseId)->value,
             'terrainPlan' => $this->baseStore->terrainPlanOf($baseId),
             'resources' => $this->baseStore->resourcesOf($baseId)->toArray(),

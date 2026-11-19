@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ww2\Base;
 
 /**
- * Gives a new base what it starts with: some supplies and stocks, and no command points yet.
+ * Gives a new base what it starts with: some supplies and stocks, and no command points yet; a camp claimed empty has nothing.
  */
 final class BaseFounder
 {
@@ -14,6 +14,7 @@ final class BaseFounder
     private const STARTING_AMMUNITION = 400;
     private const STARTING_MATERIALS = 200;
     private const STARTING_COMMAND_POINTS = 0;
+    private const NOTHING = 0;
 
     public function __construct(private readonly BaseStore $bases)
     {
@@ -28,5 +29,10 @@ final class BaseFounder
             self::STARTING_MATERIALS,
             self::STARTING_COMMAND_POINTS,
         ));
+    }
+
+    public function foundEmpty(int $baseId): void
+    {
+        $this->bases->add($baseId, new BaseResources(self::NOTHING, self::NOTHING, self::NOTHING, self::NOTHING, self::NOTHING));
     }
 }

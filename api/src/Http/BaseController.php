@@ -29,7 +29,7 @@ use Ww2\Mission\Dogfight\Maneuver;
 use Ww2\World\Bases;
 
 /**
- * Shows the base of the player who is signed in (the first they hold), and takes their orders: buy a stock, make a spare part,
+ * Shows the base of the player who is signed in (the one they look at, the first they took until they choose another), and takes their orders: buy a stock, make a spare part,
  * send a mission out, answer its alerts and receive its squadron back, inspect and repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade.
  * Once the battle is over the orders are refused, except the one that starts a new battle and the one that starts the game over.
  */
@@ -58,6 +58,22 @@ final class BaseController
     public function show(): array
     {
         return $this->overview->of($this->ownBaseId());
+    }
+
+    /**
+     * @return array<string, mixed> the overview of the base the player now looks at
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     * @throws ConflictException when the player does not hold the base
+     */
+    public function selectBase(ServerRequestInterface $request): array
+    {
+        $playerId = $this->signedInPlayerId();
+        $baseId = JsonRequestBody::integers($request, 'baseId')['baseId'];
+        $this->carryOut(fn () => $this->bases->assertHeldBy($playerId, $baseId));
+        $this->session->selectBase($baseId);
+
+        return $this->overview->of($baseId);
     }
 
     /**
@@ -247,8 +263,9 @@ final class BaseController
      */
     public function resetBase(): array
     {
-        $baseId = $this->ownBaseId();
+        $baseId = $this->firstBaseId();
         $this->battle->startOver($baseId);
+        $this->session->forgetSelectedBase();
 
         return $this->overview->of($baseId);
     }
@@ -260,8 +277,9 @@ final class BaseController
      */
     public function restartBattle(): array
     {
-        $baseId = $this->ownBaseId();
+        $baseId = $this->firstBaseId();
         $this->carryOut(fn () => $this->battle->restart($baseId));
+        $this->session->forgetSelectedBase();
 
         return $this->overview->of($baseId);
     }
@@ -284,12 +302,31 @@ final class BaseController
      */
     private function ownBaseId(): int
     {
+        $playerId = $this->signedInPlayerId();
+
+        return $this->bases->currentOf($playerId, $this->session->selectedBaseId()) ?? throw new ConflictException(BaseError::NoBase->value);
+    }
+
+    /**
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws ConflictException when the player holds no base yet
+     */
+    private function firstBaseId(): int
+    {
+        return $this->bases->idOf($this->signedInPlayerId()) ?? throw new ConflictException(BaseError::NoBase->value);
+    }
+
+    /**
+     * @throws UnauthorizedException when nobody is signed in
+     */
+    private function signedInPlayerId(): int
+    {
         $playerId = $this->session->playerId();
         if ($playerId === null) {
             throw new UnauthorizedException('signInRequired');
         }
 
-        return $this->bases->idOf($playerId) ?? throw new ConflictException(BaseError::NoBase->value);
+        return $playerId;
     }
 
     /**

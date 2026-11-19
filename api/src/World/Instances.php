@@ -19,11 +19,11 @@ final class Instances
     }
 
     /**
-     * @return int|null the oldest instance that still has a base a new player can take, free and empty, or null when there is none
+     * @return int|null the oldest instance that still has a free base, or null when every base of every instance is held
      */
     public function joinableId(): ?int
     {
-        $rows = $this->database->fetchAll('SELECT instance_id FROM bases WHERE player_id IS NULL AND ' . Bases::EMPTY_CAMP . ' ORDER BY instance_id LIMIT 1');
+        $rows = $this->database->fetchAll('SELECT instance_id FROM bases WHERE player_id IS NULL ORDER BY instance_id LIMIT 1');
 
         return $rows === [] ? null : (int) $rows[0]['instance_id'];
     }

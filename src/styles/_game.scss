@@ -1144,9 +1144,24 @@ button.base-sprite {
   height: auto;
 }
 
+.world-stock {
+  @include flex($display: inline-flex, $align: center, $gap: 0.6rem);
+  margin-left: 0.6rem;
+  font-variant-numeric: tabular-nums;
+
+  span {
+    @include flex($display: inline-flex, $align: center, $gap: 0.2rem);
+  }
+
+  .icon {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+}
+
 .world-camp {
   position: absolute;
-  width: 4.5%;
+  width: 3.4%;
   aspect-ratio: 1;
   padding: 0;
   border: 0;
@@ -1198,6 +1213,11 @@ button.base-sprite {
 
   &[data-ally='true'] img {
     filter: drop-shadow(0 0 0.4rem $go);
+  }
+
+  // A free camp of the Axe is marked in red, so that the side a first base there would give shows on the map.
+  &[data-free='true'][data-clan='axe'] img {
+    filter: drop-shadow(0 0 0.35rem $alarm);
   }
 
   &:hover:not(:disabled) img,

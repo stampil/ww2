@@ -21,11 +21,6 @@ final class Bases
     /** The bases of a player in the order they took them: those taken before the claims were kept come first, then by the time of the claim. */
     private const CLAIM_JOIN = 'LEFT JOIN base_claims ON base_claims.base_id = bases.id';
     private const CLAIM_ORDER = 'ORDER BY base_claims.claimed_at, bases.id';
-    /** A camp with no pilot, no aircraft and nothing in its stores: what a new player can take as their first base once it is free. */
-    public const EMPTY_CAMP = 'NOT EXISTS (SELECT 1 FROM pilots WHERE pilots.base_id = bases.id)
-        AND NOT EXISTS (SELECT 1 FROM aircraft WHERE aircraft.base_id = bases.id)
-        AND NOT EXISTS (SELECT 1 FROM base_resources WHERE base_resources.base_id = bases.id
-            AND base_resources.supplies + base_resources.fuel + base_resources.ammunition + base_resources.materials + base_resources.command_points > 0)';
 
     public function __construct(
         private readonly Database $database,
@@ -254,45 +249,32 @@ final class Bases
     }
 
     /**
-     * The sites a new player can choose from: those of the oldest instance that has a base to take, else all of a new instance. A base is to take when it is free and empty.
+     * The sites a new player can choose from: those of the oldest instance that has a free base, else all of a new instance.
      *
-     * @return list<array{site: string, free: bool, clan: string, holder: string|null}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null}>
      */
     public function sitesToChoose(): array
     {
         $instanceId = $this->instances->joinableId();
-        $states = [];
         if ($instanceId === null) {
-            foreach (Site::cases() as $site) {
-                $states[] = $this->siteState($site, true, null, null);
-            }
-
-            return $states;
-        }
-        foreach ($this->sitesOfInstance($instanceId) as $camp) {
-            $states[] = $this->siteState($camp['site'], $camp['holderId'] === null && $camp['isEmpty'], $camp['holderId'], $camp['holder']);
+            return array_map(fn (Site $site): array => $this->siteState($site, null, null, null), Site::cases());
         }
 
-        return $states;
+        return $this->sitesAroundInstance($instanceId);
     }
 
     /**
-     * The sites of the instance a base stands in, each free or held by a player, with the side of its holder.
+     * The sites of the instance a base stands in, each free or held by a player, with the side of its holder and what its stores hold.
      *
-     * @return list<array{site: string, free: bool, clan: string, holder: string|null}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null}>
      */
     public function sitesAround(int $baseId): array
     {
-        $states = [];
-        foreach ($this->sitesOfInstance($this->instanceOf($baseId)) as $camp) {
-            $states[] = $this->siteState($camp['site'], $camp['holderId'] === null, $camp['holderId'], $camp['holder']);
-        }
-
-        return $states;
+        return $this->sitesAroundInstance($this->instanceOf($baseId));
     }
 
     /**
-     * Gives a new player the base on the site they choose, which is free and empty, in the oldest instance that has room or in a new one, with a squadron and stocks.
+     * Gives a new player the base on the site they choose, which is free, in the oldest instance that has room or in a new one, with a squadron and stocks; what the camp held is erased.
      * The next bases of a player are taken by landing an aircraft on them.
      *
      * @return int the id of the base
@@ -306,7 +288,7 @@ final class Bases
             }
             $instanceId = $this->instances->joinableId() ?? $this->instances->create();
             $rows = $this->database->fetchAll(
-                'SELECT id FROM bases WHERE instance_id = :instance_id AND site = :site AND player_id IS NULL AND ' . self::EMPTY_CAMP . ' FOR UPDATE',
+                'SELECT id FROM bases WHERE instance_id = :instance_id AND site = :site AND player_id IS NULL FOR UPDATE',
                 ['instance_id' => $instanceId, 'site' => $site->value],
             );
             if ($rows === []) {
@@ -330,37 +312,37 @@ final class Bases
     }
 
     /**
-     * @return list<array{site: Site, holderId: int|null, holder: string|null, isEmpty: bool}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null}>
      */
-    private function sitesOfInstance(int $instanceId): array
+    private function sitesAroundInstance(int $instanceId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT bases.site AS site, bases.player_id AS player_id, players.nickname AS holder, (' . self::EMPTY_CAMP . ') AS is_empty
-             FROM bases LEFT JOIN players ON players.id = bases.player_id WHERE bases.instance_id = :instance_id ORDER BY bases.id',
+            'SELECT bases.site AS site, bases.player_id AS player_id, players.nickname AS holder,
+                    base_resources.supplies, base_resources.fuel, base_resources.ammunition, base_resources.materials
+             FROM bases LEFT JOIN players ON players.id = bases.player_id LEFT JOIN base_resources ON base_resources.base_id = bases.id
+             WHERE bases.instance_id = :instance_id ORDER BY bases.id',
             ['instance_id' => $instanceId],
         );
-        $camps = [];
+        $states = [];
         foreach ($rows as $row) {
-            $camps[] = [
-                'site' => Site::from((string) $row['site']),
-                'holderId' => $row['player_id'] === null ? null : (int) $row['player_id'],
-                'holder' => $row['holder'] === null ? null : (string) $row['holder'],
-                'isEmpty' => (int) $row['is_empty'] === 1,
-            ];
+            $resources = $row['supplies'] === null
+                ? null
+                : ['supplies' => (int) $row['supplies'], 'fuel' => (int) $row['fuel'], 'ammunition' => (int) $row['ammunition'], 'materials' => (int) $row['materials']];
+            $states[] = $this->siteState(Site::from((string) $row['site']), $row['player_id'] === null ? null : (int) $row['player_id'], $row['holder'] === null ? null : (string) $row['holder'], $resources);
         }
 
-        return $camps;
+        return $states;
     }
 
     /**
-     * @param bool $free whether a player can take the site
-     * @param int|null $holderId the player who holds it, whose side it has; a free site shows the side its first base would give
-     * @return array{site: string, free: bool, clan: string, holder: string|null}
+     * @param int|null $holderId the player who holds the site, whose side it has; a free site shows the side its first base would give
+     * @param array<string, int>|null $resources what the stores of the camp hold, null while it has none
+     * @return array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null}
      */
-    private function siteState(Site $site, bool $free, ?int $holderId, ?string $holder): array
+    private function siteState(Site $site, ?int $holderId, ?string $holder, ?array $resources): array
     {
         $clan = $holderId === null ? $site->clan() : $this->clanOfPlayer($holderId);
 
-        return ['site' => $site->value, 'free' => $free, 'clan' => $clan->value, 'holder' => $holder];
+        return ['site' => $site->value, 'free' => $holderId === null, 'clan' => $clan->value, 'holder' => $holder, 'resources' => $resources];
     }
 }

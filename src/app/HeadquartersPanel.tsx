@@ -1,8 +1,11 @@
 import { useTranslation } from 'react-i18next'
+import Icon from './Icon'
 import Pane from './Pane'
 import type { HeldBase } from './useBase'
 import { INSTANCE_SITES_URL, useSites } from './useSites'
 import WorldMap from './WorldMap'
+
+const STOCKS = ['supplies', 'fuel', 'ammunition', 'materials'] as const
 
 type Props = {
   bases: HeldBase[]
@@ -10,7 +13,7 @@ type Props = {
   baseLimit: number
 }
 
-/** The map of France with the camps of the player's world: theirs are ringed in gold, their allies' in green, the enemy's are greyed; a free camp is taken by landing an aircraft on it, while the player holds fewer bases than the limit. */
+/** The map of France with the camps of the player's world, the French and the Germans: theirs are ringed in gold, their allies' in green, the enemy's are greyed, with what each camp holds; a free camp is taken by landing an aircraft on it, while the player holds fewer bases than the limit. */
 function HeadquartersPanel({ bases, baseLimit }: Props) {
   const { t } = useTranslation()
   const sites = useSites(INSTANCE_SITES_URL)
@@ -37,8 +40,18 @@ function HeadquartersPanel({ bases, baseLimit }: Props) {
             relation = t(camp.clan === ownClan ? 'world.relation.ally' : 'world.relation.enemy', { holder: camp.holder })
           }
           return (
-            <li key={camp.site}>
-              <strong>{t(`world.site.${camp.site}`)}</strong> : {relation}
+            <li key={camp.site} data-clan={camp.clan}>
+              <strong>{t(`world.airfield.${camp.site}`)}</strong> ({t(`world.clan.${camp.clan}`)}) : {relation}
+              {camp.resources !== null && (
+                <span className="world-stock">
+                  {STOCKS.map((stock) => (
+                    <span key={stock} title={t(`base.resources.${stock}`)}>
+                      <Icon name={stock} />
+                      {camp.resources![stock]}
+                    </span>
+                  ))}
+                </span>
+              )}
             </li>
           )
         })}

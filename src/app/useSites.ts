@@ -1,15 +1,10 @@
 import { useEffect, useState } from 'react'
 
-/** A site of the map: whether it is free, the side it belongs to, and the nickname of the player who holds it. */
-export type SiteChoice = { site: string; free: boolean; clan: string; holder: string | null }
+/** What the stores of a camp hold, which every player can see. */
+export type CampResources = { supplies: number; fuel: number; ammunition: number; materials: number }
 
-/** The text for a camp: free, taken by a player, or deserted, which nobody holds but which already has a stock, so that an aircraft has to land on it. */
-export function campStateKey(free: boolean, holder: string | null): string {
-  if (free) {
-    return 'world.free'
-  }
-  return holder === null ? 'world.deserted' : 'world.taken'
-}
+/** A site of the map: whether it is free, the side it belongs to, the nickname of the player who holds it, and what its stores hold, null while it has none. */
+export type SiteChoice = { site: string; free: boolean; clan: string; holder: string | null; resources: CampResources | null }
 
 /** The sites where a new player can settle, in the oldest world that has room. */
 export const CHOOSABLE_SITES_URL = '/api/world/sites'

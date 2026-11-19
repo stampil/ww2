@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
 import { FRANCE_MAP, sitePlace } from '../plans/franceMap'
-import { campStateKey } from './useSites'
 import type { SiteChoice } from './useSites'
 
 const MAP_URL = assetUrl('maps/carte-france.jpg')
@@ -38,7 +37,7 @@ function WorldMap({ sites, selected, onSelect, ownSites = [], ownClan }: Props) 
     <div className="world-map-viewport" ref={viewportRef}>
       <div className="world-map" role="group" aria-label={t('world.map')} style={{ aspectRatio: `${FRANCE_MAP.width} / ${FRANCE_MAP.height}` }}>
         <img className="world-map-picture" src={MAP_URL} alt="" />
-        {sites.map(({ site, free, clan, holder }) => {
+        {sites.map(({ site, free, clan }) => {
           const { left, top, labelSide } = sitePlace(site)
           return (
             <button
@@ -46,10 +45,12 @@ function WorldMap({ sites, selected, onSelect, ownSites = [], ownClan }: Props) 
               type="button"
               className="world-camp"
               data-free={free}
+              data-clan={clan}
               data-own={ownSites.includes(site)}
               data-ally={!free && !ownSites.includes(site) && clan === ownClan}
               data-label-side={labelSide}
-              aria-label={`${t(`world.site.${site}`)} : ${t(campStateKey(free, holder))}`}
+              aria-label={`${t(`world.site.${site}`)} : ${t(free ? 'world.free' : 'world.taken')}`}
+              title={t(`world.airfield.${site}`)}
               aria-pressed={selected === site}
               disabled={!free || onSelect === undefined}
               style={{ left: `${left}%`, top: `${top}%` }}

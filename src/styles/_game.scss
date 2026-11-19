@@ -270,6 +270,16 @@ button.base-sprite {
   transform: translate(-50%, -50%);
 }
 
+// While the camera is away from above the base, what lies over the map would stay where it was: it hides until the camera is back.
+.base-map[data-camera-away='true'] {
+  .map-aircraft,
+  .map-alert,
+  .crew-member,
+  button.base-sprite {
+    visibility: hidden;
+  }
+}
+
 // An aircraft parked on its stand: the 3D view over the map draws it, this is the place to click, above that view.
 .map-aircraft {
   @include centred-on-tile;

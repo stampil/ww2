@@ -19,14 +19,18 @@ type Props = {
   aircraftWidthTiles: number
   /** The stands of the aircraft that stay on the ground. */
   parkedStands: Cell[]
+  /** The picture of the aircraft seen from above, which its shadow is made of. */
+  shadowImage: string
   /** Called when an aircraft has flown off. */
   onDeparted: (aircraftId: number) => void
   /** Called when an aircraft has reached its stand. */
   onLanded: (aircraftId: number) => void
+  /** Called when the camera leaves the view from above the base, and when it is back. */
+  onCameraAway: (isAway: boolean) => void
 }
 
 /** The base in 3D over its flat map, the same size, with the aircraft parked and the squadron taking off and landing; it only shows it, the flights last as long as the server says. */
-function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTiles, parkedStands, onDeparted, onLanded }: Props) {
+function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTiles, parkedStands, shadowImage, onDeparted, onLanded, onCameraAway }: Props) {
   const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<AirfieldScene | null>(null)
@@ -39,7 +43,7 @@ function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTil
     const scene = new AirfieldScene(
       containerRef.current!,
       plan,
-      { aircraftWidthTiles },
+      { aircraftWidthTiles, shadowImage },
       (aircraftId) => {
         handedDepartureIds.current.delete(aircraftId)
         onDeparted(aircraftId)
@@ -49,6 +53,7 @@ function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTil
         handedEmergenceIds.current.delete(aircraftId)
         onLanded(aircraftId)
       },
+      onCameraAway,
     )
     sceneRef.current = scene
     handedDepartureIds.current.clear()
@@ -57,8 +62,9 @@ function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTil
     return () => {
       scene.dispose()
       sceneRef.current = null
+      onCameraAway(false)
     }
-  }, [plan, aircraftWidthTiles, onDeparted, onLanded])
+  }, [plan, aircraftWidthTiles, shadowImage, onDeparted, onLanded, onCameraAway])
 
   useEffect(() => {
     sceneRef.current!.setParkedStands(parkedStands)

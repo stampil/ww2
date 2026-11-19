@@ -5,6 +5,8 @@ import type { PlanRunway } from '../plans/runway'
 import type { Cell, TerrainPlan } from '../plans/terrainPlan'
 import { assetUrl } from '../assetUrl'
 import { TILE_SIZE_METERS } from './airfield'
+import { AIRCRAFT_SPRITE_WIDTH_METERS } from './aircraftSprite'
+import { AircraftShadows } from './AircraftShadows'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
 import { D520_GROUND_PITCH_RADIANS, D520_SPAN_METERS, d520AxisHeightOnGround, D520Model } from './D520Model'
@@ -35,7 +37,9 @@ const MILLISECONDS_PER_SECOND = 1000
 const SPRITES_PATH = 'sprites/buildings/'
 const SPRITE_LIFT_METERS = 2
 // An aircraft grows by this share of its size for each meter of altitude, so that it seems to come toward the camera as it climbs.
-const ALTITUDE_GROWTH_PER_METER = 0.0025
+const ALTITUDE_GROWTH_PER_METER = 0.006
+// Above this altitude an aircraft stops growing, so that it never hides much of the base.
+const MAX_GROWTH_ALTITUDE_METERS = 150
 const PARKED_STATE: AircraftState = { engine: 0, gearRetraction: 0, flaps: 0, wheels: 0, aileron: 0, rudder: 0, elevator: 0 }
 const NORTH_HEADING_RADIANS = Math.PI / 2
 // The aircraft in front of which the camera swings, as in the takeoff of the home page, in meters for the real aircraft.
@@ -123,6 +127,8 @@ function marginBushes(plan: TerrainPlan, runway: PlanRunway): BushPlacement[] {
 export type AirfieldSceneOptions = {
   /** How wide an aircraft is on the map, in tiles. */
   aircraftWidthTiles: number
+  /** The picture of the aircraft seen from above, which its shadow is made of. */
+  shadowImage: string
 }
 
 /**
@@ -149,6 +155,7 @@ export class AirfieldScene {
   private readonly liveries: LiveryTextures
   private readonly parkedModels: D520Model[] = []
   private readonly parkedLiveries: LiveryTextures
+  private readonly shadows: AircraftShadows
   private readonly topPosition = new THREE.Vector3()
   private readonly frontPosition = new THREE.Vector3()
   private readonly lookMatrix = new THREE.Matrix4()
@@ -158,6 +165,7 @@ export class AirfieldScene {
   private parkedStands: Cell[] = []
   private lastLandingSeconds = Number.NEGATIVE_INFINITY
   private previousSeconds = 0
+  private isCameraAway = false
 
   constructor(
     private readonly container: HTMLElement,
@@ -165,9 +173,11 @@ export class AirfieldScene {
     options: AirfieldSceneOptions,
     private readonly onDeparted: (aircraftId: number) => void,
     private readonly onLanded: (aircraftId: number) => void,
+    private readonly onCameraAway: (isAway: boolean) => void,
   ) {
     this.runway = runwayOf(plan)
     this.scale = (options.aircraftWidthTiles * TILE_SIZE_METERS) / D520_SPAN_METERS
+    this.shadows = new AircraftShadows(this.scene, options.shadowImage, AIRCRAFT_SPRITE_WIDTH_METERS * this.scale, SUN_POSITION)
     this.gapMeters = REAL_FORMATION_GAP_METERS * this.scale
     this.flight = new DepartureFlight()
     const runwayEndX = tileCenterOf(this.runway, this.runway.row, this.runway.lastColumn).x + TILE_SIZE_METERS / 2
@@ -258,6 +268,7 @@ export class AirfieldScene {
     disposeScene(this.scene, this.renderer)
     this.liveries.dispose()
     this.parkedLiveries.dispose()
+    this.shadows.dispose()
   }
 
   /** Where a landed aircraft leaves the runway: a little beyond the junction where aircraft come onto it, on the way it came. */
@@ -384,6 +395,7 @@ export class AirfieldScene {
       model.setLivery(texture)
     }
     this.scene.add(model.object)
+    this.shadows.add(model)
     this.models.push(model)
     return model
   }
@@ -427,6 +439,7 @@ export class AirfieldScene {
       }
       aircraft.model.update(deltaSeconds)
     }
+    this.shadows.showWithAircraft()
     this.placeCamera(seconds)
     this.renderer.render(this.scene, this.camera)
   }
@@ -492,10 +505,12 @@ export class AirfieldScene {
   }
 
   private place(model: D520Model, x: number, y: number, altitude: number, heading: number, pitch: number, roll: number): void {
-    const scale = this.scale * (1 + ALTITUDE_GROWTH_PER_METER * altitude)
+    const scale = this.scale * (1 + ALTITUDE_GROWTH_PER_METER * Math.min(altitude, MAX_GROWTH_ALTITUDE_METERS))
     model.object.scale.setScalar(scale)
     model.object.position.set(x, y, d520AxisHeightOnGround(pitch) * scale + altitude)
-    model.object.rotation.set(pitch, roll, heading - NOSE_ALONG_Y_ROTATION_RADIANS, 'ZXY')
+    const turnRadians = heading - NOSE_ALONG_Y_ROTATION_RADIANS
+    model.object.rotation.set(pitch, roll, turnRadians, 'ZXY')
+    this.shadows.place(model, x, y, altitude, turnRadians)
   }
 
   /** Above the base looking down; once a lead is in the air, swinging in front of it and a little above, looking back at it, then back above the base. */
@@ -512,16 +527,23 @@ export class AirfieldScene {
         }
       }
     }
+    const isAway = share > 0
+    if (isAway !== this.isCameraAway) {
+      this.isCameraAway = isAway
+      this.onCameraAway(isAway)
+    }
     if (lead === undefined) {
       this.camera.position.copy(this.topPosition)
       this.camera.quaternion.copy(this.topOrientation)
       return
     }
+    // The aircraft grows as it climbs, and the camera keeps the same distance from it, in its own sizes.
     const heading = lead.object.rotation.z + NOSE_ALONG_Y_ROTATION_RADIANS
+    const leadScale = lead.object.scale.x
     this.frontPosition.set(
-      lead.object.position.x + Math.cos(heading) * REAL_FRONT_DISTANCE_METERS * this.scale,
-      lead.object.position.y + Math.sin(heading) * REAL_FRONT_DISTANCE_METERS * this.scale,
-      lead.object.position.z + REAL_FRONT_HEIGHT_METERS * this.scale,
+      lead.object.position.x + Math.cos(heading) * REAL_FRONT_DISTANCE_METERS * leadScale,
+      lead.object.position.y + Math.sin(heading) * REAL_FRONT_DISTANCE_METERS * leadScale,
+      lead.object.position.z + REAL_FRONT_HEIGHT_METERS * leadScale,
     )
     this.lookMatrix.lookAt(this.frontPosition, lead.object.position, WORLD_UP)
     this.frontOrientation.setFromRotationMatrix(this.lookMatrix)

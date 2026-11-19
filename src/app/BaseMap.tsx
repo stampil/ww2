@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
@@ -60,6 +60,7 @@ function standPlacement(stand: Cell): CSSProperties {
 function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, arrivals, emergences, onLanded, alerts, openBuilding, onSelect }: Props) {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [isCameraAway, setIsCameraAway] = useState(false)
   const gridSize = { '--rows': plan.tiles.length, '--columns': plan.tiles[0].length } as CSSProperties
 
   useEffect(() => {
@@ -76,7 +77,7 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
 
   return (
     <div className="base-map-viewport">
-      <div className="base-map" role="group" aria-label={t('base.map')} style={gridSize} data-three={aircraftSprite !== null}>
+      <div className="base-map" role="group" aria-label={t('base.map')} style={gridSize} data-three={aircraftSprite !== null} data-camera-away={isCameraAway}>
         <canvas className="base-map-canvas" ref={canvasRef} />
         {aircraftSprite !== null && (
           <AirfieldView
@@ -86,8 +87,10 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
             emergences={emergences}
             aircraftWidthTiles={AIRCRAFT_WIDTH_TILES}
             parkedStands={parkedAircraft.map((aircraft) => aircraft.stand)}
+            shadowImage={aircraftSprite}
             onDeparted={onDeparted}
             onLanded={onLanded}
+            onCameraAway={setIsCameraAway}
           />
         )}
         {plan.sprites.map((sprite) => {

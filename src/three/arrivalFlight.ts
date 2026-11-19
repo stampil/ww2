@@ -1,16 +1,16 @@
 import type { FlightPose } from './departureFlight'
 import { D520_GROUND_PITCH_RADIANS } from './D520Model'
 import { smoothStep } from './easing'
-import { swayAt } from './sway'
+import { SWAY_AILERON_SHARE, SWAY_PITCH_RADIANS, SWAY_ROLL_RADIANS, swayAt } from './sway'
 
 const DEGREES = Math.PI / 180
 const WEST_HEADING_RADIANS = Math.PI
-const APPROACH_ALTITUDE_METERS = 60
+const APPROACH_ALTITUDE_METERS = 110
 const APPROACH_SPEED_METERS_PER_SECOND = 36
 const EXIT_SPEED_METERS_PER_SECOND = 12
+// The nose is down on the way in, then comes up in the flare.
+const APPROACH_PITCH_RADIANS = -8 * DEGREES
 const FLARE_PITCH_RADIANS = 6 * DEGREES
-const SWAY_ROLL_RADIANS = 4 * DEGREES
-const SWAY_AILERON_SHARE = 0.25
 const FLARE_SECONDS = 2
 const TAIL_DOWN_SECONDS = 1.5
 const APPROACH_ENGINE = 0.5
@@ -49,7 +49,11 @@ export class ArrivalFlight {
       y: 0,
       altitude: APPROACH_ALTITUDE_METERS * (1 - flownSeconds / this.touchdownSeconds),
       heading: WEST_HEADING_RADIANS,
-      pitch: FLARE_PITCH_RADIANS * flare + (D520_GROUND_PITCH_RADIANS - FLARE_PITCH_RADIANS) * tailDown,
+      pitch:
+        APPROACH_PITCH_RADIANS * airborneShare +
+        FLARE_PITCH_RADIANS * flare +
+        (D520_GROUND_PITCH_RADIANS - FLARE_PITCH_RADIANS) * tailDown +
+        SWAY_PITCH_RADIANS * sway.pitch * airborneShare,
       roll: SWAY_ROLL_RADIANS * sway.roll * airborneShare,
       state: {
         engine: time < this.touchdownSeconds ? APPROACH_ENGINE : ROLL_ENGINE,

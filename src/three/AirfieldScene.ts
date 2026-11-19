@@ -56,10 +56,14 @@ const TAXI_SPEED_METERS_PER_SECOND = 30
 // An aircraft that has landed taxis more slowly to its stand, and the next one lands this long after it.
 const LANDED_TAXI_SPEED_METERS_PER_SECOND = 18
 const HANGAR_TAXI_SPEED_METERS_PER_SECOND = 10
-const LANDING_SPACING_SECONDS = 7
-const APPROACH_DISTANCE_METERS = 360
-const TOUCHDOWN_BEFORE_END_METERS = 40
-const EXIT_PAST_ENTRY_METERS = 30
+const LANDING_SPACING_SECONDS = 3.5
+// An aircraft touches down just past the junction where aircraft come onto the runway, and leaves it at the last junction.
+const TOUCHDOWN_PAST_ENTRY_METERS = 30
+const EXIT_BEFORE_JUNCTION_METERS = 30
+// The camera of the high pass of a landing stands south of it, above the aircraft so that it is seen against the grass, and looks at the middle of the dive.
+const SIDE_VIEW_DISTANCE_METERS = 800
+const SIDE_VIEW_HEIGHT_METERS = 420
+const SIDE_VIEW_LOOK_HEIGHT_METERS = 150
 const HEADING_SPAN_METERS = 8
 const TAXI_ENGINE = 0.35
 const TAXI_WHEELS = 0.4
@@ -134,7 +138,7 @@ export type AirfieldSceneOptions = {
 /**
  * The squadron taking off and landing over the base, which fills the canvas as the flat map does: each group waits on the runway, one aircraft
  * behind the other, then rolls off, climbs, turns back and flies off, the camera swinging in front of the lead and back above the base; an aircraft that comes
- * back lands on the runway and taxis to its stand. Owns its WebGL canvas.
+ * back crosses the picture high up, dives, then lands on the runway as the camera returns above the base, and taxis to its stand. Owns its WebGL canvas.
  */
 export class AirfieldScene {
   private readonly renderer: THREE.WebGLRenderer
@@ -158,9 +162,13 @@ export class AirfieldScene {
   private readonly shadows: AircraftShadows
   private readonly topPosition = new THREE.Vector3()
   private readonly frontPosition = new THREE.Vector3()
+  private readonly sidePosition = new THREE.Vector3()
   private readonly lookMatrix = new THREE.Matrix4()
   private readonly topOrientation = new THREE.Quaternion()
   private readonly frontOrientation = new THREE.Quaternion()
+  private readonly sideOrientation = new THREE.Quaternion()
+  private readonly viewPosition = new THREE.Vector3()
+  private readonly viewOrientation = new THREE.Quaternion()
   private readonly startMilliseconds = performance.now()
   private parkedStands: Cell[] = []
   private lastLandingSeconds = Number.NEGATIVE_INFINITY
@@ -180,9 +188,9 @@ export class AirfieldScene {
     this.shadows = new AircraftShadows(this.scene, options.shadowImage, AIRCRAFT_SPRITE_WIDTH_METERS * this.scale, SUN_POSITION)
     this.gapMeters = REAL_FORMATION_GAP_METERS * this.scale
     this.flight = new DepartureFlight()
-    const runwayEndX = tileCenterOf(this.runway, this.runway.row, this.runway.lastColumn).x + TILE_SIZE_METERS / 2
-    const touchdownX = runwayEndX - TOUCHDOWN_BEFORE_END_METERS
-    this.landingFlight = new ArrivalFlight(touchdownX + APPROACH_DISTANCE_METERS, touchdownX, this.exitX())
+    const touchdownX = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x + TOUCHDOWN_PAST_ENTRY_METERS
+    this.landingFlight = new ArrivalFlight(touchdownX, this.exitX())
+    this.placeSideView()
     this.renderer = createRenderer(container, false)
     this.liveries = new LiveryTextures(this.renderer.capabilities.getMaxAnisotropy(), (livery, texture) => {
       if (livery === 'french') {
@@ -271,14 +279,14 @@ export class AirfieldScene {
     this.shadows.dispose()
   }
 
-  /** Where a landed aircraft leaves the runway: a little beyond the junction where aircraft come onto it, on the way it came. */
+  /** Where a landed aircraft leaves the runway: a little before the last junction, which it reaches rolling on. */
   private exitX(): number {
-    return tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x + EXIT_PAST_ENTRY_METERS
+    return tileCenterOf(this.runway, this.runway.row, this.runway.exitColumn).x - EXIT_BEFORE_JUNCTION_METERS
   }
 
-  /** From the runway, the way an aircraft that has landed takes to its stand: to the junction, then down the taxiways. */
+  /** From the runway, the way an aircraft that has landed takes to its stand: to the last junction, then down the taxiways. */
   private taxiPathToStand(stand: Cell): TaxiPath {
-    const steps = findPath(this.plan, { row: this.runway.row, column: this.runway.entryColumn }, stand)
+    const steps = findPath(this.plan, { row: this.runway.row, column: this.runway.exitColumn }, stand)
     const points = [new THREE.Vector2(this.exitX(), 0)]
     for (const step of steps) {
       points.push(tileCenterOf(this.runway, step.cell.row, step.cell.column))
@@ -513,30 +521,61 @@ export class AirfieldScene {
     this.shadows.place(model, x, y, altitude, turnRadians)
   }
 
-  /** Above the base looking down; once a lead is in the air, swinging in front of it and a little above, looking back at it, then back above the base. */
+  /** To the south of the high pass of a landing, in the middle of its dive, looking at the aircraft as it crosses the picture from left to right. */
+  private placeSideView(): void {
+    const centerX = this.landingFlight.diveMiddleX()
+    this.sidePosition.set(centerX, -SIDE_VIEW_DISTANCE_METERS, SIDE_VIEW_HEIGHT_METERS)
+    this.lookMatrix.lookAt(this.sidePosition, new THREE.Vector3(centerX, 0, SIDE_VIEW_LOOK_HEIGHT_METERS), WORLD_UP)
+    this.sideOrientation.setFromRotationMatrix(this.lookMatrix)
+  }
+
+  /** A view between the one above the base (share 0) and another one (share 1). */
+  private swingFromTop(position: THREE.Vector3, orientation: THREE.Quaternion, share: number): void {
+    this.camera.position.lerpVectors(this.topPosition, position, share)
+    this.camera.quaternion.slerpQuaternions(this.topOrientation, orientation, share)
+  }
+
+  /** Above the base looking down; swinging to the side of the high pass of an aircraft that comes back and in front of a lead in the air, or to a blend of the two, then back above the base. */
   private placeCamera(seconds: number): void {
-    let share = 0
+    let frontShare = 0
     let lead: D520Model | undefined
     for (const aircraft of this.departing) {
       const { group, slot } = aircraft.assignment
       if (slot === group.size - 1) {
         const leadShare = this.flight.frontViewShare(seconds - group.startSecondsOf(slot))
-        if (leadShare > share) {
-          share = leadShare
+        if (leadShare > frontShare) {
+          frontShare = leadShare
           lead = aircraft.model
         }
       }
     }
+    let sideShare = 0
+    for (const aircraft of this.landing) {
+      sideShare = Math.max(sideShare, this.landingFlight.sideViewShare(seconds - aircraft.startSeconds))
+    }
+    const share = Math.max(frontShare, sideShare)
     const isAway = share > 0
     if (isAway !== this.isCameraAway) {
       this.isCameraAway = isAway
       this.onCameraAway(isAway)
     }
-    if (lead === undefined) {
+    if (!isAway) {
       this.camera.position.copy(this.topPosition)
       this.camera.quaternion.copy(this.topOrientation)
       return
     }
+    if (lead !== undefined) {
+      this.placeFrontView(lead)
+    }
+    // The front view and the side view weighted by their shares, so that the camera never jumps when both are on.
+    const sideWeight = sideShare / (frontShare + sideShare)
+    this.viewPosition.lerpVectors(this.frontPosition, this.sidePosition, sideWeight)
+    this.viewOrientation.slerpQuaternions(this.frontOrientation, this.sideOrientation, sideWeight)
+    this.swingFromTop(this.viewPosition, this.viewOrientation, share)
+  }
+
+  /** In front of an aircraft that has taken off and a little above it, looking back at it. */
+  private placeFrontView(lead: D520Model): void {
     // The aircraft grows as it climbs, and the camera keeps the same distance from it, in its own sizes.
     const heading = lead.object.rotation.z + NOSE_ALONG_Y_ROTATION_RADIANS
     const leadScale = lead.object.scale.x
@@ -547,7 +586,5 @@ export class AirfieldScene {
     )
     this.lookMatrix.lookAt(this.frontPosition, lead.object.position, WORLD_UP)
     this.frontOrientation.setFromRotationMatrix(this.lookMatrix)
-    this.camera.position.lerpVectors(this.topPosition, this.frontPosition, share)
-    this.camera.quaternion.slerpQuaternions(this.topOrientation, this.frontOrientation, share)
   }
 }

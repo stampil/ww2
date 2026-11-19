@@ -24,6 +24,7 @@ use Ww2\Base\Hangar;
 use Ww2\Base\HangarStore;
 use Ww2\Base\Headquarters;
 use Ww2\Base\Holdings;
+use Ww2\Base\Merchant;
 use Ww2\Base\Mechanics;
 use Ww2\Base\Roster;
 use Ww2\Base\Stationings;
@@ -90,9 +91,10 @@ $hangar = new Hangar($database, $baseStore, $hangarStore, $missions, $squadrons,
 $roster = new Roster($database, $baseStore, $missions, $squadrons, $clocks, $pilotGenerator, $stationingStore);
 $holdings = new Holdings($database, $bases, $baseFounder, $squadrons, $stationingStore, $clocks, $events);
 $stationings = new Stationings($database, $baseStore, $baseFounder, $stationingStore, $squadrons, $missions, $hangarStore, $warehouse, $bases, $clocks, $events);
-$overview = new BaseOverview($baseStore, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $squadrons, $events, $clocks, $bases, $stationings);
+$merchant = new Merchant($database, $baseStore, $warehouse, $bases, $clocks);
+$overview = new BaseOverview($baseStore, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $squadrons, $events, $clocks, $bases, $stationings, $merchant);
 $gifts = new Gifts($database, $baseStore, $squadrons, $missions, $hangarStore, $warehouse, $bases, $events, $stationingStore, $clocks);
-$baseController = new BaseController($overview, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $alerts, $bases, $session, $gifts, $stationings, $holdings);
+$baseController = new BaseController($overview, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $alerts, $bases, $session, $gifts, $stationings, $holdings, $merchant);
 $worldController = new WorldController($bases, $overview, $session, $holdings);
 
 $router = new Router();
@@ -112,6 +114,8 @@ $router->group('/api', function (RouteGroup $routes) use ($accounts, $players, $
     $routes->post('/base/gifts/aircraft', [$baseController, 'giveAircraft']);
     $routes->post('/base/stationings/send', [$baseController, 'sendStationing']);
     $routes->post('/base/stationings/recall', [$baseController, 'recallStationing']);
+    $routes->post('/base/merchant/buy', [$baseController, 'buyFromCamp']);
+    $routes->post('/base/merchant/sell', [$baseController, 'sellToCamp']);
     $routes->post('/base/purchase', [$baseController, 'buy']);
     $routes->post('/base/production', [$baseController, 'produce']);
     $routes->post('/base/missions/launch', [$baseController, 'launchMission']);

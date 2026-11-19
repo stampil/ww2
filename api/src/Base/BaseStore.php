@@ -106,6 +106,14 @@ final class BaseStore
         );
     }
 
+    public function sell(int $baseId, Stock $stock, int $quantity, int $revenue): void
+    {
+        $this->database->execute(
+            'UPDATE base_resources SET supplies = supplies + :revenue, ' . $stock->value . ' = ' . $stock->value . ' - :quantity WHERE base_id = :base_id',
+            ['revenue' => $revenue, 'quantity' => $quantity, 'base_id' => $baseId],
+        );
+    }
+
     /**
      * Moves a quantity of a resource from one base to another. The caller holds the transaction and has checked the quantities.
      */

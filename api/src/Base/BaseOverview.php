@@ -29,6 +29,7 @@ final class BaseOverview
         private readonly GameClockStore $clocks,
         private readonly Bases $sites,
         private readonly Stationings $stationings,
+        private readonly Merchant $merchant,
     ) {
     }
 
@@ -60,6 +61,7 @@ final class BaseOverview
             'hangar' => $hangar,
             'roster' => $roster,
             'stationings' => $stationings,
+            'merchants' => $this->merchant->describe($baseId, $clock),
             'squadron' => [
                 'pilots' => array_map(static fn (Pilot $pilot): array => $pilot->toArray(), $this->squadrons->pilotsOf($baseId)),
                 'aircraft' => array_map(static fn (Aircraft $aircraft): array => $aircraft->toArray(), $this->squadrons->aircraftOf($baseId)),

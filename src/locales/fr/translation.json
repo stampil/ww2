@@ -549,7 +549,8 @@
       "signInRequired": "Connecte-toi d'abord.",
       "apiDown": "L'API ne répond pas.",
       "notStationed": "Cet avion n'est pas posé sur un camp : il n'y a rien à rappeler.",
-      "landingRequired": "Pour prendre un camp de plus, envoie-y un avion."
+      "landingRequired": "Pour prendre un camp de plus, envoie-y un avion.",
+      "campShortage": "Le camp n'en a pas autant en stock."
     }
   },
   "stationing": {
@@ -572,5 +573,13 @@
       "stationed": "Posé sur le camp",
       "returning": "Repart dans {{time}}"
     }
+  },
+  "merchant": {
+    "title": "Marchand des camps libres",
+    "text": "Les camps libres sont tenus par l'IA : elle te vend du carburant, des munitions et des matériaux contre du ravitaillement, et t'en rachète, jusqu'à {{max}} à la fois. Plus un stock est rare au camp, plus il est cher ; il revient peu à peu à son niveau.",
+    "camp": "Camp",
+    "held": "Au camp : {{quantity}}",
+    "buy": "Acheter (≈ {{price}})",
+    "sell": "Vendre (≈ {{price}})"
   }
 }

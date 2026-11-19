@@ -157,6 +157,11 @@ export type GuestAircraft = {
   remainingSeconds: number
 }
 
+/** What a free camp holds of a stock, and what one unit costs to buy from it or brings in when sold to it. */
+export type MerchantStock = { quantity: number; buyPrice: number; sellPrice: number }
+/** A free camp, which the AI runs, with what it sells and buys. */
+export type MerchantCamp = { baseId: number; site: string; stocks: Record<Stock, MerchantStock> }
+
 export type Base = {
   /** The id of this base, among the bases the player holds (the one they took first at the head), and how many bases a player can hold. */
   baseId: number
@@ -181,6 +186,7 @@ export type Base = {
   headquarters: { weather: { windSpeed: number }; offers: Offer[]; flights: Flight[] }
   roster: { rests: Rest[]; recruitment: { cost: number; maxPilots: number } }
   stationings: { flightSeconds: number; away: AwayAircraft[]; guests: GuestAircraft[] }
+  merchants: { maxTrade: number; camps: MerchantCamp[] }
   hangar: { aircraft: HangarAircraft[] }
   squadron: Squadron
   events: BaseEvent[]
@@ -396,6 +402,14 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/gifts/aircraft`, { recipientBaseId, aircraftId }))
   }
 
+  async function buyFromCamp(campBaseId: number, resource: Stock, quantity: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/merchant/buy`, { campBaseId, resource, quantity }))
+  }
+
+  async function sellToCamp(campBaseId: number, resource: Stock, quantity: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/merchant/sell`, { campBaseId, resource, quantity }))
+  }
+
   async function sendStationing(destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number): Promise<string | null> {
     return receive(await request(`${BASE_URL}/stationings/send`, { destinationBaseId, pilotId, aircraftId, fuel, ammunition }))
   }
@@ -443,5 +457,7 @@ export function useBase(player: Player | null) {
     giveAircraft,
     sendStationing,
     recallStationing,
+    buyFromCamp,
+    sellToCamp,
   }
 }

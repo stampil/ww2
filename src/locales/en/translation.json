@@ -549,7 +549,8 @@
       "signInRequired": "Sign in first.",
       "apiDown": "The API does not answer.",
       "notStationed": "This aircraft is not on the ground at a camp: there is nothing to recall.",
-      "landingRequired": "To take another camp, send an aircraft there."
+      "landingRequired": "To take another camp, send an aircraft there.",
+      "campShortage": "The camp does not hold that much."
     }
   },
   "stationing": {
@@ -572,5 +573,13 @@
       "stationed": "On the ground at the camp",
       "returning": "Leaves in {{time}}"
     }
+  },
+  "merchant": {
+    "title": "Merchant of the free camps",
+    "text": "The free camps are run by the AI: it sells you fuel, ammunition and materials for supplies, and buys them back, up to {{max}} at a time. The scarcer a stock is at the camp, the dearer it is; it comes back to its level little by little.",
+    "camp": "Camp",
+    "held": "At the camp: {{quantity}}",
+    "buy": "Buy (≈ {{price}})",
+    "sell": "Sell (≈ {{price}})"
   }
 }

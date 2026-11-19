@@ -91,6 +91,8 @@ function BaseScreen({ player }: { player: Player }) {
     giveAircraft,
     sendStationing,
     recallStationing,
+    buyFromCamp,
+    sellToCamp,
   } = useBase(player)
   const aircraftSprite = useAircraftSprite()
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
@@ -285,7 +287,15 @@ function BaseScreen({ player }: { player: Player }) {
         <GameWindow title={t(`base.building.${openBuilding}.name`)} hint={t(`base.building.${openBuilding}.text`)} onDismiss={() => setOpenBuilding(null)}>
           {guideStep !== null && speaksInWindowOf(guideStep, openBuilding) && guide}
           {errorMessage}
-          {openBuilding === 'headquarters' && <HeadquartersPanel bases={base.bases} baseLimit={base.baseLimit} />}
+          {openBuilding === 'headquarters' && (
+            <HeadquartersPanel
+              bases={base.bases}
+              baseLimit={base.baseLimit}
+              merchants={base.merchants}
+              onBuy={(campBaseId, resource, quantity) => void order(buyFromCamp(campBaseId, resource, quantity))}
+              onSell={(campBaseId, resource, quantity) => void order(sellToCamp(campBaseId, resource, quantity))}
+            />
+          )}
           {openBuilding === 'controlTower' && (
             <ControlTowerPanel
               squadron={base.squadron}

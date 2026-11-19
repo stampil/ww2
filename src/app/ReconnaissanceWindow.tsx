@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { DETECTION_LIMIT, PHOTO_REQUIRED, PHOTO_TARGET_COUNT, ReconnaissanceScene } from '../three/ReconnaissanceScene'
+import { DETECTION_LIMIT, DETECTION_PER_TOWER, PHOTO_REQUIRED, PHOTO_TARGET_COUNT, ReconnaissanceScene } from '../three/ReconnaissanceScene'
 import type { PhotoStatus } from '../three/ReconnaissanceScene'
 import GroundRunWindow from './GroundRunWindow'
 import type { GroundRunProps } from './GroundRunWindow'
 
 const PERCENT = 100
-const HINT_VALUES = { required: PHOTO_REQUIRED, total: PHOTO_TARGET_COUNT }
+const HINT_VALUES = { required: PHOTO_REQUIRED, total: PHOTO_TARGET_COUNT, percent: DETECTION_PER_TOWER }
 
-/** A reconnaissance over enemy ground: the camera of the D.520 takes a photo of the target it holds, and the more it is seen, the closer it is to being caught. */
+/** A reconnaissance over enemy ground: the camera of the D.520 takes a photo of the target it holds, and each tower it flies over sees it, so that it is caught when the detection is full. */
 function ReconnaissanceWindow(props: GroundRunProps) {
   const { t } = useTranslation()
 

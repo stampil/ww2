@@ -127,7 +127,7 @@
   },
   "photo": {
     "title": "Reconnaissance photo",
-    "hint": "Tu survoles une zone ennemie : l'appareil photo de ton avion prend seul la cible qu'il garde un instant dans son cadre. Prends {{required}} photos sur {{total}} avant que l'ennemi te repère : chaque seconde et chaque photo font monter la détection.",
+    "hint": "Tu survoles une zone ennemie : l'appareil photo de ton avion prend seul la cible qu'il garde un instant dans son cadre. Prends {{required}} photos sur {{total}} sans te faire repérer : chaque tour que tu survoles fait monter la détection de {{percent}} %, et à 100 % tu es repéré.",
     "controls": "Pilote avec les flèches gauche et droite du clavier, ou avec le manche sous la vue : la photo part seule.",
     "toast": "Une zone ennemie sous l'avion : {{pilot}} peut la photographier.",
     "toastResume": "Reconnaissance en cours : {{pilot}}.",
@@ -136,7 +136,7 @@
     "detection": "Détection",
     "starting": "Mise en route…",
     "won": "Photos prises !",
-    "escaped": "Reconnaissance manquée : pas assez de photos avant d'être repéré."
+    "escaped": "Reconnaissance manquée : tu as été repéré, ou il manque des photos."
   },
   "music": {
     "label": "Musique"

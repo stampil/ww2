@@ -100,6 +100,9 @@ export abstract class GroundRunScene<Status> {
   protected readonly screenUp = new THREE.Vector3()
   protected secondsFlown = 0
   protected isReady = false
+  /** How fast the aircraft flies along the road and across it, in meters per second; a subclass can set its own. */
+  protected readonly forwardSpeedMetersPerSecond: number = AIRCRAFT_SPEED_METERS_PER_SECOND
+  protected readonly lateralSpeedMetersPerSecond: number = LATERAL_SPEED_METERS_PER_SECOND
   private readonly renderer: THREE.WebGLRenderer
   private readonly resizeObserver: ResizeObserver
   private readonly player = new D520Model()
@@ -200,11 +203,14 @@ export abstract class GroundRunScene<Status> {
     )
   }
 
-  /** Puts the picture of the vehicle, for its state, on the ground where the vehicle is: its foot a little below the point on the ground. */
+  /** Puts the picture of the vehicle, for its state, on the ground where the vehicle is. */
   protected showSprite(sprite: THREE.Mesh, kind: VehicleKind, state: VehicleState, position: THREE.Vector2): void {
-    const texture = this.textures.get(`${kind}-${state}`)!
+    this.showPicture(sprite, this.textures.get(`${kind}-${state}`)!, VEHICLE_WIDTH_METERS[kind], position)
+  }
+
+  /** Puts a picture, this wide on the screen, on the ground where its subject stands: its foot a little below the point on the ground. */
+  protected showPicture(sprite: THREE.Mesh, texture: THREE.Texture, widthMeters: number, position: THREE.Vector2): void {
     const image = texture.image as HTMLImageElement
-    const widthMeters = VEHICLE_WIDTH_METERS[kind]
     const heightMeters = (widthMeters * image.height) / image.width
     const material = sprite.material as THREE.MeshBasicMaterial
     material.map = texture
@@ -312,8 +318,8 @@ export abstract class GroundRunScene<Status> {
   private moveAircraft(deltaSeconds: number): void {
     const smoothing = Math.min(1, deltaSeconds * CONTROL_SMOOTHING_PER_SECOND)
     this.controlX += (this.targetX - this.controlX) * smoothing
-    this.position.x = clamp(this.position.x + this.controlX * LATERAL_SPEED_METERS_PER_SECOND * deltaSeconds, -MAX_X_METERS, MAX_X_METERS)
-    this.position.y += AIRCRAFT_SPEED_METERS_PER_SECOND * deltaSeconds
+    this.position.x = clamp(this.position.x + this.controlX * this.lateralSpeedMetersPerSecond * deltaSeconds, -MAX_X_METERS, MAX_X_METERS)
+    this.position.y += this.forwardSpeedMetersPerSecond * deltaSeconds
     this.secondsFlown += deltaSeconds
     this.player.object.position.set(this.position.x, this.position.y, AIRCRAFT_ALTITUDE_METERS)
     this.player.object.rotation.set(0, this.controlX * BANK_RADIANS, 0, 'ZXY')

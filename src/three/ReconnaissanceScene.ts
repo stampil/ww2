@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { assetUrl } from '../assetUrl'
 import { GroundRunScene, PASSED_BEHIND_METERS, ROAD_LIFT_METERS, VEHICLE_KIND_NAMES } from './GroundRunScene'
 import type { RunOutcome } from './GroundRunScene'
 import { SeededRandom } from './SeededRandom'
@@ -11,11 +12,24 @@ type Target = {
   isPhotographed: boolean
 }
 
+type Tower = {
+  position: THREE.Vector2
+  ring: THREE.Mesh
+  hasSeen: boolean
+}
+
 export const PHOTO_TARGET_COUNT = 5
 export const PHOTO_REQUIRED = 3
 export const DETECTION_LIMIT = 100
-const DETECTION_PER_SECOND = 3
-const DETECTION_PER_PHOTO = 10
+// An aircraft is seen only by a tower it flies over: this much more of the detection for each, so that two towers give it away.
+export const DETECTION_PER_TOWER = 50
+// The reconnaissance flies faster than the other runs, for a photo still has to be held for a moment in the frame.
+const FORWARD_SPEED_METERS_PER_SECOND = 12
+const LATERAL_SPEED_METERS_PER_SECOND = 12
+const TOWER_PICTURE_URL = 'sprites/buildings/control-tower.png'
+const TOWER_WIDTH_METERS = 7
+const TOWER_SEEN_RADIUS_METERS = 5
+const TOWER_SPREAD_METERS = 8
 const FIRST_TARGET_METERS = 60
 const TARGET_SPACING_METERS = 32
 const TARGET_JITTER_METERS = 4
@@ -29,16 +43,21 @@ const FLASH_SECONDS = 0.25
 const FRAME_OPACITY = { idle: 0.1, locking: 0.3, flash: 0.9 }
 const FRAME_COLOR = 0xffffff
 const RING_RADIUS_METERS = { inner: 3.4, outer: 4 }
+const RING_THICKNESS_METERS = RING_RADIUS_METERS.outer - RING_RADIUS_METERS.inner
 const RING_SEGMENTS = 32
-const RING_COLORS = { waiting: 0xffd24a, photographed: 0x35aa46 }
+const RING_COLORS = { waiting: 0xffd24a, photographed: 0x35aa46, tower: 0xc94e36 }
+const RING_SEEN_OPACITY = 0.35
 
 /**
  * A reconnaissance over enemy ground, as in Until the Last Plane: five vehicles stand off the road, and the frame of the camera ahead of the aircraft takes a photo of
- * the one it holds for a moment. Each photo gives the aircraft away a little more, and the longer it flies, the more it is seen: when the detection is full, it is caught.
+ * the one it holds for a moment. Towers stand between them: the aircraft that flies over one is seen, and when the detection is full, it is caught.
  */
 export class ReconnaissanceScene extends GroundRunScene<PhotoStatus> {
   private readonly frame: THREE.Mesh
+  protected readonly forwardSpeedMetersPerSecond = FORWARD_SPEED_METERS_PER_SECOND
+  protected readonly lateralSpeedMetersPerSecond = LATERAL_SPEED_METERS_PER_SECOND
   private readonly targets: Target[] = []
+  private readonly towers: Tower[] = []
   private lockedTarget: Target | undefined
   private lockSeconds = 0
   private flashSeconds = 0
@@ -53,7 +72,7 @@ export class ReconnaissanceScene extends GroundRunScene<PhotoStatus> {
   }
 
   protected play(deltaSeconds: number): void {
-    this.detection = Math.min(DETECTION_LIMIT, this.detection + DETECTION_PER_SECOND * deltaSeconds)
+    this.seeAircraftOverTowers()
     const target = this.targetInFrame()
     if (target !== this.lockedTarget) {
       this.lockedTarget = target
@@ -110,6 +129,8 @@ export class ReconnaissanceScene extends GroundRunScene<PhotoStatus> {
 
   private async createTargets(seed: number): Promise<void> {
     await this.loadSprites()
+    const towerTexture = await new THREE.TextureLoader().loadAsync(assetUrl(TOWER_PICTURE_URL))
+    towerTexture.colorSpace = THREE.SRGBColorSpace
     const random = new SeededRandom(seed)
     const firstSide = random.happens(50) ? 1 : -1
     for (let index = 0; index < PHOTO_TARGET_COUNT; index += 1) {
@@ -120,16 +141,41 @@ export class ReconnaissanceScene extends GroundRunScene<PhotoStatus> {
         FIRST_TARGET_METERS + index * TARGET_SPACING_METERS + random.integer(-TARGET_JITTER_METERS, TARGET_JITTER_METERS),
       )
       this.showSprite(this.createSprite(), kind, 'intact', position)
-      this.targets.push({ position, ring: this.createRing(position), isPhotographed: false })
+      this.targets.push({ position, ring: this.createRing(position, RING_COLORS.waiting, RING_RADIUS_METERS.inner, RING_RADIUS_METERS.outer), isPhotographed: false })
     }
+    this.createTowers(random, towerTexture)
     this.isReady = true
   }
 
-  /** A ring on the ground around a target, yellow until its photo is taken. */
-  private createRing(position: THREE.Vector2): THREE.Mesh {
+  /** A tower in the middle of each stretch between two targets but one, which the seed leaves out, a little off the road. */
+  private createTowers(random: SeededRandom, texture: THREE.Texture): void {
+    const leftOut = random.integer(0, PHOTO_TARGET_COUNT - 2)
+    for (let gap = 0; gap < PHOTO_TARGET_COUNT - 1; gap += 1) {
+      if (gap === leftOut) {
+        continue
+      }
+      const position = new THREE.Vector2(random.integer(-TOWER_SPREAD_METERS, TOWER_SPREAD_METERS), FIRST_TARGET_METERS + (gap + 0.5) * TARGET_SPACING_METERS)
+      this.showPicture(this.createSprite(), texture, TOWER_WIDTH_METERS, position)
+      this.towers.push({ position, ring: this.createRing(position, RING_COLORS.tower, TOWER_SEEN_RADIUS_METERS - RING_THICKNESS_METERS, TOWER_SEEN_RADIUS_METERS), hasSeen: false })
+    }
+  }
+
+  /** A tower sees the aircraft that flies over it, once: the detection goes up, and the ring of the tower fades. */
+  private seeAircraftOverTowers(): void {
+    for (const tower of this.towers) {
+      if (!tower.hasSeen && tower.position.distanceTo(this.position) <= TOWER_SEEN_RADIUS_METERS) {
+        tower.hasSeen = true
+        ;(tower.ring.material as THREE.MeshBasicMaterial).opacity = RING_SEEN_OPACITY
+        this.detection = Math.min(DETECTION_LIMIT, this.detection + DETECTION_PER_TOWER)
+      }
+    }
+  }
+
+  /** A ring on the ground around a target, yellow until its photo is taken, or around a tower, red. */
+  private createRing(position: THREE.Vector2, color: number, innerRadius: number, outerRadius: number): THREE.Mesh {
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(RING_RADIUS_METERS.inner, RING_RADIUS_METERS.outer, RING_SEGMENTS),
-      new THREE.MeshBasicMaterial({ color: RING_COLORS.waiting, transparent: true, depthWrite: false }),
+      new THREE.RingGeometry(innerRadius, outerRadius, RING_SEGMENTS),
+      new THREE.MeshBasicMaterial({ color, transparent: true, depthWrite: false }),
     )
     ring.position.set(position.x, position.y, 2 * ROAD_LIFT_METERS)
     this.scene.add(ring)
@@ -152,7 +198,6 @@ export class ReconnaissanceScene extends GroundRunScene<PhotoStatus> {
     target.isPhotographed = true
     ;(target.ring.material as THREE.MeshBasicMaterial).color.set(RING_COLORS.photographed)
     this.photos += 1
-    this.detection = Math.min(DETECTION_LIMIT, this.detection + DETECTION_PER_PHOTO)
     this.flashSeconds = FLASH_SECONDS
     this.lockedTarget = undefined
     this.lockSeconds = 0

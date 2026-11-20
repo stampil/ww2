@@ -37,7 +37,6 @@ const SHADOW_SHIFT = { x: 0.35, y: -0.25 }
 const SHADOW_OPACITY = 0.45
 const SHADOW_LIFT_METERS = 0.05
 const WINDSOCK_BANDS = 8
-const ROUNDEL_RADII = { red: 0.47, white: 0.31, blue: 0.15 }
 
 type TextureName = keyof typeof TILE_METERS
 type Textures = Record<TextureName, THREE.Texture>
@@ -75,19 +74,6 @@ async function loadTextures(): Promise<Textures> {
   textures.corrugated.center.set(0.5, 0.5)
   textures.corrugated.rotation = Math.PI / 2
   return textures
-}
-
-/** The cocarde that the French aircraft wear, blue in the middle: painted on the roof of the hangar. */
-function roundelTexture(): THREE.CanvasTexture {
-  return canvasTexture((context, size) => {
-    const center = size / 2
-    for (const [radius, color] of [[ROUNDEL_RADII.red, '#c8372d'], [ROUNDEL_RADII.white, '#f1ede1'], [ROUNDEL_RADII.blue, '#1d3f8f']] as const) {
-      context.fillStyle = color
-      context.beginPath()
-      context.arc(center, center, radius * size, 0, Math.PI * 2)
-      context.fill()
-    }
-  })
 }
 
 /** Red and white bands across the length of a windsock. */
@@ -139,7 +125,6 @@ function createMaterials(textures: Textures) {
     rust: paint(0x7a4e32, { map: textures.barrel }),
     truck: paint(white, { map: textures.truck }),
     rubber: paint(white, { map: textures.rubber }),
-    roundel: new THREE.MeshStandardMaterial({ map: roundelTexture(), transparent: true, roughness: ROUGHNESS }),
     sock: paint(0xffffff, { map: windsockTexture(), side: THREE.DoubleSide }),
   }
 }
@@ -261,10 +246,7 @@ function hangar(materials: Materials): THREE.Group {
   const wall = 7
   const rise = 5
   group.add(block(span, length, wall, materials.wall))
-  const slopes = gableRoof(group, span, length, rise, wall, materials.corrugated)
-  const roundel = new THREE.Mesh(new THREE.CircleGeometry(4.2, 32), materials.roundel)
-  roundel.position.set(0, -length / 4, 0.21)
-  slopes[0].add(roundel)
+  gableRoof(group, span, length, rise, wall, materials.corrugated)
   group.add(gable(span, rise, materials.wall, -length / 2 - 0.02, wall), gable(span, rise, materials.wall, length / 2 + 0.02, wall))
   group.add(block(20, 0.3, 6, materials.dark, 0, -length / 2 - 0.05))
   for (const side of [-1, 1]) {

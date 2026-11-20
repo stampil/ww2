@@ -8,7 +8,7 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 | Il me faut | Ça débloque |
 |---|---|
-| Ton « généré » des trois états de camp refaits, un prompt par état (donnés le 19/11, image 1 = le camp libre ; la feuille de trois reçue est refusée : vert vif et contenu différent d'une icône à l'autre ; aucun état de camp n'est arrivé depuis, la seule image du 20/11 à 10 h 32 est une troisième feuille de matières) | les camps sur la carte |
+| Ton avis sur les trois états de camp reteints (`ref/camps-etats-reteintes.png`, envoyés le 20/11 : ta feuille du 19/11, seule l'herbe est ramenée au kaki du camp libre) ; rien à regénérer si ça va. Les états « libre » et « tenu par un joueur » servent tout de suite ; « tenu par l'IA » et « attaqué » attendent que le jeu les produise (l'IA qui tient des camps à M5, les raids à M6) | les camps sur la carte |
 
 ## 2. Questions à lever
 

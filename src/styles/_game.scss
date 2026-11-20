@@ -25,6 +25,7 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
 $paper: #d9c9a0;
 $ink: #2e2a20;
 $handwriting-font: 'Caveat', 'DM Sans', cursive;
+$mono-font: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
 @mixin frame {
   border: 2px solid $outline;
@@ -272,6 +273,10 @@ body:has(.page-shell[data-game='true']) {
   strong {
     font-weight: 600;
   }
+}
+
+.hud-clock {
+  font-family: $mono-font;
 }
 
 .base-map-viewport {

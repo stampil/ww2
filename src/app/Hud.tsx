@@ -45,7 +45,9 @@ function Hud({ gameTime, base, onSelectBase }: Props) {
         </HudItem>
       )}
       <HudItem icon="clock" label={t('base.clock.label')}>
-        <time dateTime={gameTime.toISOString()}>{formatter.format(gameTime)}</time>
+        <time className="hud-clock" dateTime={gameTime.toISOString()}>
+          {formatter.format(gameTime)}
+        </time>
       </HudItem>
       <HudItem icon="aircraft" label={t('squadron.aircraft')}>
         {base.squadron.aircraft.length}

@@ -13,9 +13,9 @@ function HomePage() {
   const { player, isKnown, submit, signOut } = useAccount()
 
   return (
-    <Layout tools={player === null ? undefined : <AccountPanel player={player} onSignOut={() => void signOut()} />}>
+    <Layout tools={player === null ? undefined : <AccountPanel player={player} onSignOut={() => void signOut()} />} hasFooter={isKnown && player === null} isGame={player !== null}>
       <section className="game-page" aria-labelledby="game-title">
-        <h1 id="game-title" className="game-title">
+        <h1 id="game-title" className={player === null ? 'game-title' : 'game-title visually-hidden'}>
           {t('game.title')}
         </h1>
         {isKnown && player === null && (
@@ -25,10 +25,12 @@ function HomePage() {
           </>
         )}
         {player !== null && <BaseScreen player={player} />}
-        <div className="status-line">
-          <span className="status-dot" data-status={apiStatus} aria-hidden="true" />
-          <span>{t(`status.${apiStatus}`)}</span>
-        </div>
+        {player === null && (
+          <div className="status-line">
+            <span className="status-dot" data-status={apiStatus} aria-hidden="true" />
+            <span>{t(`status.${apiStatus}`)}</span>
+          </div>
+        )}
       </section>
     </Layout>
   )

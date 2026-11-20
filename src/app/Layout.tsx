@@ -17,12 +17,21 @@ const SHOWCASE_CREDITS = [
 const BUSH_SOURCE_URL = 'https://poly.pizza/m/ooG6CkLyE8'
 const BUSH_ATTRIBUTION_URL = assetUrl('models/bush/ATTRIBUTION.txt')
 
+type Props = {
+  tools?: ReactNode
+  /** Whether the footer with the credits closes the page: the game goes without it, so that nothing is left to scroll to. */
+  hasFooter?: boolean
+  /** Whether the page is the game screen, which fits the window and never scrolls. */
+  isGame?: boolean
+  children: ReactNode
+}
+
 /** What every page shares: the top bar, with the tools of the page and the language switch, and the footer with the credits. */
-function Layout({ tools, children }: { tools?: ReactNode; children: ReactNode }) {
+function Layout({ tools, hasFooter = true, isGame = false, children }: Props) {
   const { t, i18n } = useTranslation()
 
   return (
-    <main className="page-shell">
+    <main className="page-shell" data-game={isGame}>
       <header className="topbar">
         <a className="wordmark" href={HOME_HASH} aria-label="French Touch, accueil">
           <span className="wordmark-mark">F</span>
@@ -58,25 +67,27 @@ function Layout({ tools, children }: { tools?: ReactNode; children: ReactNode })
 
       {children}
 
-      <footer className="footer">
-        <div className="footer-text">
-          <span>{t('footer')}</span>
-          <span className="credits">
-            {t('credits.model')} <a href={MODEL_SOURCE_URL}>Emmanuel Baranger</a>, FlightGear,{' '}
-            <a href={MODEL_LICENSE_URL}>GPL v2</a>, <a href={MODEL_ATTRIBUTION_URL}>{t('credits.adapted')}</a>. {t('credits.aircraft')}{' '}
-            {SHOWCASE_CREDITS.map((credit) => (
-              <span key={credit.aircraftId}>
-                <a href={`${FGADDON_AIRCRAFT_URL}${credit.directory}/`}>{t(`showcase.${credit.aircraftId}.name`)}</a>, {credit.author}, FlightGear,{' '}
-                <a href={assetUrl(`models/${credit.aircraftId}/COPYING`)}>GPL v2</a>,{' '}
-                <a href={assetUrl(`models/${credit.aircraftId}/ATTRIBUTION.txt`)}>{t('credits.adapted')}</a>.{' '}
-              </span>
-            ))}
-            {t('credits.bush')}{' '}
-            <a href={BUSH_SOURCE_URL}>Quaternius</a>, <a href={BUSH_ATTRIBUTION_URL}>{t('credits.publicDomain')}</a>.
-          </span>
-        </div>
-        <span className="footer-index">01 — 01</span>
-      </footer>
+      {hasFooter && (
+        <footer className="footer">
+          <div className="footer-text">
+            <span>{t('footer')}</span>
+            <span className="credits">
+              {t('credits.model')} <a href={MODEL_SOURCE_URL}>Emmanuel Baranger</a>, FlightGear,{' '}
+              <a href={MODEL_LICENSE_URL}>GPL v2</a>, <a href={MODEL_ATTRIBUTION_URL}>{t('credits.adapted')}</a>. {t('credits.aircraft')}{' '}
+              {SHOWCASE_CREDITS.map((credit) => (
+                <span key={credit.aircraftId}>
+                  <a href={`${FGADDON_AIRCRAFT_URL}${credit.directory}/`}>{t(`showcase.${credit.aircraftId}.name`)}</a>, {credit.author}, FlightGear,{' '}
+                  <a href={assetUrl(`models/${credit.aircraftId}/COPYING`)}>GPL v2</a>,{' '}
+                  <a href={assetUrl(`models/${credit.aircraftId}/ATTRIBUTION.txt`)}>{t('credits.adapted')}</a>.{' '}
+                </span>
+              ))}
+              {t('credits.bush')}{' '}
+              <a href={BUSH_SOURCE_URL}>Quaternius</a>, <a href={BUSH_ATTRIBUTION_URL}>{t('credits.publicDomain')}</a>.
+            </span>
+          </div>
+          <span className="footer-index">01 — 01</span>
+        </footer>
+      )}
     </main>
   )
 }

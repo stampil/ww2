@@ -1,7 +1,7 @@
 import type { Cell, PlacedSprite } from './terrainPlan'
 
 // The starting airfield: a runway on row 6, three taxiways north to the aprons with the hangar, the workshop and the depot
-// behind them, and the headquarters, the tower, the windsock and the gun south of the runway; grass goes on far south for the aircraft to turn back.
+// behind them, and the headquarters, the tower, the windsock and the gun south of the runway; grass goes on south for the length that the aircraft need to turn back.
 export const START_ROWS = [
   '... BU0 ... ... ... ... ... ... ... BU0 ... ... BU0 ...',
   '... ... ... ... ... ... ... ... BU0 ... ... ... ... ...',
@@ -14,10 +14,6 @@ export const START_ROWS = [
   '... ... ... ... ... ... ... ... ... ... ... BU0 ... ...',
   '... ... ... ... ... ... ... ... ... ... ... ... ... ...',
   '... BU0 ... ... ... ... ... ... ... ... ... ... ... ...',
-  '... ... ... ... ... ... BU0 ... ... ... ... ... ... ...',
-  '... ... ... ... ... ... ... ... ... ... ... ... BU0 ...',
-  '... ... ... ... BU0 ... ... ... ... ... ... ... ... ...',
-  '... ... ... ... ... ... ... ... ... ... BU0 ... ... ...',
 ]
 
 export const START_SPRITES: PlacedSprite[] = [

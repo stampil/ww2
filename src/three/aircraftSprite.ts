@@ -34,11 +34,16 @@ async function render(livery: Livery): Promise<string> {
   scene.add(aircraft.object)
   let liveries: LiveryTextures | undefined
   const texture = await new Promise<THREE.Texture>((resolve) => {
-    liveries = new LiveryTextures(renderer.capabilities.getMaxAnisotropy(), (loaded, loadedTexture) => {
-      if (loaded === livery) {
-        resolve(loadedTexture)
-      }
-    })
+    liveries = new LiveryTextures(
+      renderer.capabilities.getMaxAnisotropy(),
+      (loaded, loadedTexture) => {
+        if (loaded === livery) {
+          resolve(loadedTexture)
+        }
+      },
+      'full',
+      [livery],
+    )
   })
   await aircraft.ready
   aircraft.setLivery(texture)

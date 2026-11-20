@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { AircraftPreviewScene } from '../three/AircraftPreviewScene'
+import type { Livery } from '../three/liveries'
 
 type Props = {
   /** In flight the aircraft is shown from the side in a sky; on the ground it is shown from above and can be turned by dragging. */
@@ -9,16 +10,17 @@ type Props = {
   aircraftId: number
   /** The number painted on the fin of the aircraft. */
   tailNumber: number
+  livery: Livery
 }
 
 /** The aircraft of a card of the hangar, in 3D, with the damage it really has. It owns a WebGL scene, freed when the card goes. */
-function AircraftPicture({ isFlying, damageLevel, aircraftId, tailNumber }: Props) {
+function AircraftPicture({ isFlying, damageLevel, aircraftId, tailNumber, livery }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const scene = new AircraftPreviewScene(containerRef.current!, isFlying ? 'flight' : 'ground', damageLevel, aircraftId, tailNumber)
+    const scene = new AircraftPreviewScene(containerRef.current!, isFlying ? 'flight' : 'ground', damageLevel, aircraftId, tailNumber, livery)
     return () => scene.dispose()
-  }, [isFlying, damageLevel, aircraftId, tailNumber])
+  }, [isFlying, damageLevel, aircraftId, tailNumber, livery])
 
   return <div className="aircraft-picture" data-flying={isFlying} ref={containerRef} />
 }

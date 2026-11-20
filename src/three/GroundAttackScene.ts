@@ -12,6 +12,7 @@ import {
   VEHICLE_STATES,
 } from './GroundRunScene'
 import type { RunOutcome, TargetKind } from './GroundRunScene'
+import type { Livery } from './liveries'
 import { SeededRandom } from './SeededRandom'
 
 export type StrafeStatus = { destroyed: number; secondsLeft: number; isRedCrossHit: boolean }
@@ -77,8 +78,8 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
   private tracerSeconds = 0
   private isFiring = false
 
-  constructor(container: HTMLElement, seed: number, shadowImage: string, onStatus: (status: StrafeStatus) => void, onEnd: (outcome: RunOutcome) => void) {
-    super(container, seed, shadowImage, onStatus, onEnd)
+  constructor(container: HTMLElement, seed: number, shadowImage: string, livery: Livery, onStatus: (status: StrafeStatus) => void, onEnd: (outcome: RunOutcome) => void) {
+    super(container, seed, shadowImage, livery, onStatus, onEnd)
     this.zone = this.createZone()
     this.createTracers()
     void this.createConvoy(seed)

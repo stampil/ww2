@@ -47,7 +47,7 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, away, guests, 
 
             return (
               <li key={aircraft.id} className="card">
-                <AircraftPicture isFlying={isFlying} damageLevel={damageLevelOf(aircraft.durability, aircraft.model.durability)} aircraftId={aircraft.id} tailNumber={aircraft.number} />
+                <AircraftPicture isFlying={isFlying} damageLevel={damageLevelOf(aircraft.durability, aircraft.model.durability)} aircraftId={aircraft.id} tailNumber={aircraft.number} livery={aircraft.livery} />
                 <strong>
                   {aircraft.model.name} {t('squadron.aircraftNumber', { number: aircraft.number })}
                 </strong>

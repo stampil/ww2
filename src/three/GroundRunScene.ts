@@ -5,6 +5,7 @@ import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
 import { D520Model } from './D520Model'
 import { LiveryTextures } from './liveries'
+import type { Livery } from './liveries'
 import { createRenderer, disposeScene } from './rendering'
 import { SeededRandom } from './SeededRandom'
 import { loadTerrainTextures } from './terrainTextures'
@@ -131,19 +132,20 @@ export abstract class GroundRunScene<Status> {
     private readonly container: HTMLElement,
     seed: number,
     shadowImage: string,
+    livery: Livery,
     private readonly onStatus: (status: Status) => void,
     private readonly onEnd: (outcome: RunOutcome) => void,
   ) {
     this.renderer = createRenderer(container, false)
     this.liveries = new LiveryTextures(
       this.renderer.capabilities.getMaxAnisotropy(),
-      (livery, texture) => {
-        if (livery === 'french') {
+      (loaded, texture) => {
+        if (loaded === livery) {
           this.player.setLivery(texture)
         }
       },
       'low',
-      ['french'],
+      [livery],
     )
     this.scene.add(new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY))
     const sun = new THREE.DirectionalLight(LIGHT_COLOR, SUN_LIGHT_INTENSITY)

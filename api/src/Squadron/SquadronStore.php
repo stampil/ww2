@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Ww2\Squadron;
 
 use Ww2\Database\Database;
+use Ww2\World\Clan;
+use Ww2\World\Site;
 
 /**
  * Keeps the pilots and the aircraft of the squadrons in the database.
@@ -49,9 +51,9 @@ final class SquadronStore
     }
 
     /**
-     * Adds an aircraft to the base, with the next number: one more than the highest the base has used, so a number is never given twice.
+     * Adds an aircraft to the base, painted in a livery, with the next number: one more than the highest the base has used, so a number is never given twice.
      */
-    public function addAircraft(int $baseId, AircraftModel $model): void
+    public function addAircraft(int $baseId, AircraftModel $model, Livery $livery): void
     {
         $nextNumber = $this->nextNumberOf($baseId);
         $this->database->execute(
@@ -65,6 +67,23 @@ final class SquadronStore
              WHERE aircraft.base_id = :base_id AND aircraft_numbers.aircraft_id IS NULL',
             ['number' => $nextNumber, 'base_id' => $baseId],
         );
+        $this->database->execute(
+            'INSERT INTO aircraft_liveries (aircraft_id, livery)
+             SELECT aircraft.id, :livery FROM aircraft
+             LEFT JOIN aircraft_liveries ON aircraft_liveries.aircraft_id = aircraft.id
+             WHERE aircraft.base_id = :base_id AND aircraft_liveries.aircraft_id IS NULL',
+            ['livery' => $livery->value, 'base_id' => $baseId],
+        );
+    }
+
+    /**
+     * The side of a base, which is the side of its site.
+     */
+    public function clanOf(int $baseId): Clan
+    {
+        $rows = $this->database->fetchAll('SELECT site FROM bases WHERE id = :base_id', ['base_id' => $baseId]);
+
+        return Site::from((string) $rows[0]['site'])->clan();
     }
 
     /**
@@ -206,11 +225,12 @@ final class SquadronStore
     public function aircraftOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT aircraft.id, aircraft.durability AS current_durability, aircraft_numbers.number, models.id AS model_id, models.code, models.name, models.category,
+            'SELECT aircraft.id, aircraft.durability AS current_durability, aircraft_numbers.number, aircraft_liveries.livery, models.id AS model_id, models.code, models.name, models.category,
                     models.durability, models.maneuverability, models.fuel_capacity, models.ammunition_capacity
              FROM aircraft
              JOIN aircraft_models AS models ON models.id = aircraft.model_id
              JOIN aircraft_numbers ON aircraft_numbers.aircraft_id = aircraft.id
+             JOIN aircraft_liveries ON aircraft_liveries.aircraft_id = aircraft.id
              WHERE aircraft.base_id = :base_id
              ORDER BY aircraft.id',
             ['base_id' => $baseId],
@@ -220,6 +240,7 @@ final class SquadronStore
             fn (array $row): Aircraft => new Aircraft(
                 (int) $row['id'],
                 $this->modelFrom([...$row, 'id' => $row['model_id']]),
+                Livery::from((string) $row['livery']),
                 (int) $row['current_durability'],
                 (int) $row['number'],
             ),

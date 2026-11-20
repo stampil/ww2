@@ -16,7 +16,7 @@ function ReconnaissanceWindow(props: GroundRunProps) {
       {...props}
       namespace="photo"
       hintValues={HINT_VALUES}
-      createScene={(view, seed, shadowImage, onStatus, onEnd) => new ReconnaissanceScene(view, seed, shadowImage, onStatus, onEnd)}
+      createScene={(view, seed, shadowImage, livery, onStatus, onEnd) => new ReconnaissanceScene(view, seed, shadowImage, livery, onStatus, onEnd)}
       renderStatus={(status) => (
         <>
           <span>{t('photo.taken', { count: status.photos, total: PHOTO_TARGET_COUNT })}</span>

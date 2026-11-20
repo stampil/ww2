@@ -190,7 +190,7 @@ function BaseScreen({ player }: { player: Player }) {
 
   function showDepartures(departing: ParkedAircraft[]): void {
     if (aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches) {
-      const leaving = departing.map((aircraft) => ({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand: aircraft.stand }))
+      const leaving = departing.map((aircraft) => ({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand: aircraft.stand, livery: aircraft.livery }))
       setDepartures((current) => [...current, ...leaving])
     }
   }
@@ -223,12 +223,12 @@ function BaseScreen({ player }: { player: Player }) {
     }
     const stand = plan.stands[standNumber]
     if (landingIds.includes(aircraft.id)) {
-      arrivals.push({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability) })
+      arrivals.push({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability), livery: aircraft.livery })
     } else if (emergingIds.includes(aircraft.id) || (canAnimate && emergedIds.includes(aircraft.id))) {
-      emergences.push({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability) })
+      emergences.push({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand, damageLevel: damageLevelOf(aircraft.durability, aircraft.model.durability), livery: aircraft.livery })
     } else {
       const state = hangarAircraft.find((candidate) => candidate.aircraftId === aircraft.id)!
-      parkedAircraft.push({ id: aircraft.id, number: aircraft.number, stand, status: standStatusOf(state, aircraft) })
+      parkedAircraft.push({ id: aircraft.id, number: aircraft.number, stand, status: standStatusOf(state, aircraft), livery: aircraft.livery })
     }
   }
 
@@ -367,17 +367,19 @@ function BaseScreen({ player }: { player: Player }) {
         </GameWindow>
       )}
 
-      {duel !== undefined && duel.alert.kind === 'dogfight' && (
+      {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'dogfight' && (
         <DogfightWindow
           alert={duel.alert}
+          livery={duelCrew.aircraft.livery}
           onStart={(alertId) => order(startAlert(alertId))}
           onPlay={(alertId, maneuver) => order(playAlert(alertId, maneuver))}
           onClose={() => setDuelAlertId(null)}
         />
       )}
-      {MissionWindow !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
+      {MissionWindow !== undefined && duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
         <MissionWindow
           alert={duel.alert}
+          livery={duelCrew.aircraft.livery}
           onStart={(alertId) => order(startAlert(alertId))}
           onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}
           onClose={() => setDuelAlertId(null)}
@@ -386,6 +388,8 @@ function BaseScreen({ player }: { player: Player }) {
       {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && duel.flight.type === 'fighterCombat' && (
         <CockpitCombatWindow
           alert={duel.alert}
+          clan={base.clan}
+          livery={duelCrew.aircraft.livery}
           maneuverability={duelCrew.aircraft.model.maneuverability}
           accuracy={duelCrew.pilot.effectiveAccuracy}
           risk={duel.flight.risk}

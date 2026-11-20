@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { D520_GROUND_PITCH_RADIANS, D520Model } from './D520Model'
 import { LiveryTextures } from './liveries'
+import type { Livery } from './liveries'
 import { OrbitViewScene } from './OrbitViewScene'
 import type { OrbitView } from './OrbitViewScene'
 import { ParkingPad } from './ParkingPad'
@@ -31,16 +32,21 @@ const FLIGHT_VIEW: OrbitView = {
 // The flight speed given to the aircraft, nose first, so that its smoke trails behind it.
 const FLIGHT_VELOCITY = new THREE.Vector3(0, 10, 0)
 
-/** Starts loading the liveries and puts the French one on the aircraft when it arrives; `loaded` settles then. */
-function loadFrenchLivery(maxAnisotropy: number, aircraft: D520Model): { liveries: LiveryTextures; loaded: Promise<void> } {
+/** Starts loading the livery of the aircraft and puts it on the aircraft when it arrives; `loaded` settles then. */
+function loadLivery(maxAnisotropy: number, aircraft: D520Model, wornLivery: Livery): { liveries: LiveryTextures; loaded: Promise<void> } {
   let liveries!: LiveryTextures
   const loaded = new Promise<void>((resolve) => {
-    liveries = new LiveryTextures(maxAnisotropy, (livery, texture) => {
-      if (livery === 'french') {
-        aircraft.setLivery(texture)
-        resolve()
-      }
-    })
+    liveries = new LiveryTextures(
+      maxAnisotropy,
+      (loaded, texture) => {
+        if (loaded === wornLivery) {
+          aircraft.setLivery(texture)
+          resolve()
+        }
+      },
+      'full',
+      [wornLivery],
+    )
   })
   return { liveries, loaded }
 }
@@ -51,9 +57,9 @@ export class AircraftPreviewScene extends OrbitViewScene {
   private readonly liveries: LiveryTextures
   private readonly sky: Sky
 
-  constructor(container: HTMLElement, mode: PreviewMode, damageLevel: number, layoutSeed: number, tailNumber: number) {
+  constructor(container: HTMLElement, mode: PreviewMode, damageLevel: number, layoutSeed: number, tailNumber: number, livery: Livery) {
     super(container, mode === 'flight' ? FLIGHT_VIEW : GROUND_VIEW)
-    const { liveries, loaded: frenchLiveryLoaded } = loadFrenchLivery(this.renderer.capabilities.getMaxAnisotropy(), this.aircraft)
+    const { liveries, loaded: liveryLoaded } = loadLivery(this.renderer.capabilities.getMaxAnisotropy(), this.aircraft, livery)
     this.liveries = liveries
     this.aircraft.setTailNumber(tailNumber)
     this.scene.add(this.aircraft.object)
@@ -69,7 +75,7 @@ export class AircraftPreviewScene extends OrbitViewScene {
       this.aircraft.setControl('retractGear', true)
       this.aircraft.setControl('runEngine', true)
     }
-    void Promise.all([this.aircraft.ready, frenchLiveryLoaded]).then(() => this.showDamage(damageLevel))
+    void Promise.all([this.aircraft.ready, liveryLoaded]).then(() => this.showDamage(damageLevel))
   }
 
   dispose(): void {

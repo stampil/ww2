@@ -8,6 +8,7 @@ import Icon from './Icon'
 import type { IconName } from './iconPaths'
 import MaintenanceCrews from './MaintenanceCrews'
 import type { BuildingName, Cell, PlacedSprite, TerrainPlan } from '../plans/terrainPlan'
+import type { Livery } from '../three/liveries'
 import { paintTiles } from '../three/patchImage'
 import { loadTerrainTextures } from '../three/terrainTextures'
 
@@ -17,7 +18,7 @@ const AIRCRAFT_WIDTH_TILES = 1.4
 
 /** What shows on a parked aircraft: nothing when it is fit, else the trouble it is in. */
 export type StandStatus = 'ready' | 'damaged' | 'inspecting' | 'repairing' | 'burning'
-export type ParkedAircraft = { id: number; number: number; stand: Cell; status: StandStatus }
+export type ParkedAircraft = { id: number; number: number; stand: Cell; status: StandStatus; livery: Livery }
 /** Something that needs the player at a building: a marker over it, which opens it. */
 export type MapAlert = { kind: 'mission' | 'fire' | 'guide'; building: BuildingName; label: string }
 
@@ -87,7 +88,7 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
             arrivals={arrivals}
             emergences={emergences}
             aircraftWidthTiles={AIRCRAFT_WIDTH_TILES}
-            parkedStands={parkedAircraft.map((aircraft) => aircraft.stand)}
+            parked={parkedAircraft.map((aircraft) => ({ stand: aircraft.stand, livery: aircraft.livery }))}
             shadowImage={aircraftSprite}
             onDeparted={onDeparted}
             onLanded={onLanded}

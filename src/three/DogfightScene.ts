@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { D520_SPAN_METERS, D520Model } from './D520Model'
 import { LiveryTextures } from './liveries'
+import type { Livery } from './liveries'
 import { CAMERA_FIELD_OF_VIEW_DEGREES, OrbitViewScene } from './OrbitViewScene'
 import type { OrbitView } from './OrbitViewScene'
 import { createStaticEnemy } from './StaticEnemy'
@@ -77,17 +78,18 @@ export class DogfightScene extends OrbitViewScene {
     container: HTMLElement,
     private readonly arenaSize: number,
     bomber: DuelBomber,
+    livery: Livery,
   ) {
     super(container, viewFor(arenaSize))
     this.liveries = new LiveryTextures(
       this.renderer.capabilities.getMaxAnisotropy(),
-      (livery, texture) => {
-        if (livery === 'french') {
+      (loaded, texture) => {
+        if (loaded === livery) {
           this.player.setLivery(texture)
         }
       },
       'low',
-      ['french'],
+      [livery],
     )
     this.scene.add(new TileGround([[{ kind: 'grass', quarterTurns: 0 }]], () => new THREE.Vector2(0, 0), this.renderer.capabilities.getMaxAnisotropy()).object)
     this.addGrid()

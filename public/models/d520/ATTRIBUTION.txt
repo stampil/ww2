@@ -16,12 +16,14 @@ Changes made for this site (French Touch, https://github.com/stampil/ww2):
 - the animations (gear, wheels, canopy, flaps, ailerons, rudder, elevator, propeller) are redone in Three.js from the
   pivots, axes and angles of Models/d520.xml, Models/Interior/interior.xml and Models/Interior/Panel/Instruments;
 - texture-francais.png is the unchanged texture.png of the original;
+- texture-allemand.png is the livery "SV-GB (German)" of the original (Models/Liveries/2048x2048/SV-GB.png, signed Brett Harrison 2010 on the texture),
+  with the same layout, shrunk from 2048 x 2048 to 1024 x 1024 pixels, marks unchanged;
 - texture-vichy.png is that texture reworked with an image generator (1024 x 1024, same layout), after the Vichy armistice
   markings of autumn 1941 to November 1942: red and yellow bands on the cowling and the fin, a red spinner, tricolor bands under the wings;
 - the textures in cockpit/ of the collimator and the instruments are the unchanged textures of the original; those of the interior, the panel and the seat
   (interior.jpg, panel.jpg, seat.jpg) replace its flat colors: the first two were generated from the original layouts, the seat is a leather picture.
 
-These files (d520.json, d520.bin, cockpit.json, cockpit.bin, texture-francais.png, texture-vichy.png and the cockpit
+These files (d520.json, d520.bin, cockpit.json, cockpit.bin, texture-francais.png, texture-allemand.png, texture-vichy.png and the cockpit
 textures) are under the GPL v2, like the original.
 The rest of the repository is under its own license (see the LICENSE file at its root).
 The converter is in the repository, so the conversion can be redone from the original files.

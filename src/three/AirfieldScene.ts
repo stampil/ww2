@@ -17,6 +17,7 @@ import type { Assignment } from './departureQueue'
 import type { AircraftState } from './aircraftState'
 import { smoothStep } from './easing'
 import { LiveryTextures } from './liveries'
+import type { Livery } from './liveries'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
 import { SeededRandom } from './SeededRandom'
 import { TaxiPath } from './TaxiPath'
@@ -74,6 +75,9 @@ const MARGIN_BUSH_WIDTH_METERS = { min: 10, max: 18 }
 const MARGIN_SEED = 1940
 const FULL_TURN_DEGREES = 360
 const DEGREES = Math.PI / 180
+
+/** An aircraft that stays on the ground, on its stand, in its livery. */
+export type ParkedPlace = { stand: Cell; livery: Livery }
 
 type LandingAircraft = {
   aircraftId: number
@@ -190,7 +194,8 @@ export class AirfieldScene {
   private readonly viewPosition = new THREE.Vector3()
   private readonly viewOrientation = new THREE.Quaternion()
   private readonly startMilliseconds = performance.now()
-  private parkedStands: Cell[] = []
+  private readonly liveryOf = new Map<D520Model, Livery>()
+  private parked: ParkedPlace[] = []
   private lastLandingSeconds = Number.NEGATIVE_INFINITY
   private previousSeconds = 0
   private isCameraAway = false
@@ -214,21 +219,18 @@ export class AirfieldScene {
     this.landingFlight = new ArrivalFlight(touchdownX, this.exitX())
     this.placeSideView()
     this.renderer = createRenderer(container, false)
-    this.liveries = new LiveryTextures(this.renderer.capabilities.getMaxAnisotropy(), (livery, texture) => {
-      if (livery === 'french') {
-        this.models.forEach((model) => model.setLivery(texture))
-      }
-    })
+    this.liveries = new LiveryTextures(
+      this.renderer.capabilities.getMaxAnisotropy(),
+      (livery, texture) => this.dressWearers(this.models, livery, texture),
+      'full',
+      [],
+    )
     // The aircraft parked are small and share the small copy of the livery, with no tail number and no damage painted on it.
     this.parkedLiveries = new LiveryTextures(
       this.renderer.capabilities.getMaxAnisotropy(),
-      (livery, texture) => {
-        if (livery === 'french') {
-          this.parkedModels.forEach((model) => model.setLivery(texture))
-        }
-      },
+      (livery, texture) => this.dressWearers(this.parkedModels, livery, texture),
       'low',
-      ['french'],
+      [],
     )
 
     this.scene.background = new THREE.Color(GRASS_COLOR)
@@ -251,14 +253,14 @@ export class AirfieldScene {
     this.renderer.setAnimationLoop(() => this.renderFrame())
   }
 
-  /** Puts the aircraft that stand on the ground, each on its stand, as pictures laid flat on the grass. */
-  setParkedStands(stands: Cell[]): void {
-    this.parkedStands = stands
+  /** Puts the aircraft that stand on the ground, each on its stand, in its livery, as models laid on the grass. */
+  setParked(parked: ParkedPlace[]): void {
+    this.parked = parked
     this.showParked()
   }
 
   /** Sends an aircraft from its stand to the junction, onto the runway and into its place in the line, to leave with the group waiting there, or a new one. */
-  depart(aircraftId: number, stand: Cell, tailNumber: number): void {
+  depart(aircraftId: number, stand: Cell, tailNumber: number, livery: Livery): void {
     const startSeconds = this.secondsNow()
     const rearPath = this.taxiPathFrom(stand, 0)
     const naturalArrivalSeconds = startSeconds + rearPath.lengthMeters / TAXI_SPEED_METERS_PER_SECOND + PIVOT_SECONDS
@@ -266,7 +268,7 @@ export class AirfieldScene {
     const path = assignment.slot === 0 ? rearPath : this.taxiPathFrom(stand, assignment.slot)
     this.departing.push({
       aircraftId,
-      model: this.acquireModel(tailNumber),
+      model: this.acquireModel(tailNumber, livery),
       assignment,
       path,
       startSeconds,
@@ -276,8 +278,8 @@ export class AirfieldScene {
   }
 
   /** Brings an aircraft in to land on the runway, then taxi to its stand, with the damage it has; it lands after those that came in before it. */
-  land(aircraftId: number, stand: Cell, damageLevel: number, tailNumber: number): void {
-    const model = this.acquireModel(tailNumber)
+  land(aircraftId: number, stand: Cell, damageLevel: number, tailNumber: number, livery: Livery): void {
+    const model = this.acquireModel(tailNumber, livery)
     for (let level = 0; level < damageLevel; level += 1) {
       model.inflictDamage()
     }
@@ -288,8 +290,8 @@ export class AirfieldScene {
   }
 
   /** Brings an aircraft out of the hangar, from behind the building, and down the taxiways to its stand, with the damage it has. */
-  emerge(aircraftId: number, stand: Cell, damageLevel: number, tailNumber: number): void {
-    const model = this.acquireModel(tailNumber)
+  emerge(aircraftId: number, stand: Cell, damageLevel: number, tailNumber: number, livery: Livery): void {
+    const model = this.acquireModel(tailNumber, livery)
     for (let level = 0; level < damageLevel; level += 1) {
       model.inflictDamage()
     }
@@ -324,7 +326,7 @@ export class AirfieldScene {
   /** From the hangar, the way an aircraft takes to its stand: down the taxiways and around the aircraft parked, starting from the middle of the tile of the hangar, which hides it. */
   private taxiPathFromHangar(stand: Cell): TaxiPath {
     const hangar = this.plan.sprites.find((sprite) => sprite.building === 'hangar')!
-    const steps = findPath(this.plan, { row: hangar.row, column: hangar.column }, stand, this.parkedStands)
+    const steps = findPath(this.plan, { row: hangar.row, column: hangar.column }, stand, this.parked.map((place) => place.stand))
     return new TaxiPath(steps.map((step) => tileCenterOf(this.runway, step.cell.row, step.cell.column)))
   }
 
@@ -334,15 +336,16 @@ export class AirfieldScene {
 
   /** A D.520 on each stand, nose to the north and tail down, as the flat map draws it; the models are made as needed and the ones left over are hidden. */
   private showParked(): void {
-    this.parkedStands.forEach((stand, index) => {
+    this.parked.forEach((place, index) => {
       const model = this.parkedModels[index] ?? this.createParkedModel()
-      const center = tileCenterOf(this.runway, stand.row, stand.column)
+      this.dress(model, place.livery, this.parkedLiveries)
+      const center = tileCenterOf(this.runway, place.stand.row, place.stand.column)
       model.object.visible = true
       model.setState(PARKED_STATE)
       this.place(model, center.x, center.y, 0, NORTH_HEADING_RADIANS, D520_GROUND_PITCH_RADIANS, 0)
       model.update(0)
     })
-    this.parkedModels.slice(this.parkedStands.length).forEach((model) => {
+    this.parkedModels.slice(this.parked.length).forEach((model) => {
       model.object.visible = false
     })
   }
@@ -350,13 +353,31 @@ export class AirfieldScene {
   private createParkedModel(): D520Model {
     const model = new D520Model()
     model.object.scale.setScalar(this.scale)
-    const texture = this.parkedLiveries.get('french')
-    if (texture !== undefined) {
-      model.setLivery(texture)
-    }
     this.scene.add(model.object)
     this.parkedModels.push(model)
     return model
+  }
+
+  /** Puts a livery on a model: at once when its texture is there, else as soon as it arrives. */
+  private dress(model: D520Model, livery: Livery, textures: LiveryTextures): void {
+    if (this.liveryOf.get(model) === livery) {
+      return
+    }
+    this.liveryOf.set(model, livery)
+    textures.request(livery)
+    const texture = textures.get(livery)
+    if (texture !== undefined) {
+      model.setLivery(texture)
+    }
+  }
+
+  /** Puts a texture that has just arrived on the models that wear its livery. */
+  private dressWearers(models: D520Model[], livery: Livery, texture: THREE.Texture): void {
+    for (const model of models) {
+      if (this.liveryOf.get(model) === livery) {
+        model.setLivery(texture)
+      }
+    }
   }
 
   /** Places the camera south of the middle of the base, tilted toward it, far enough for the whole of it to fit the canvas as the flat map does, and tells where the flat map now lies on the screen. */
@@ -427,8 +448,9 @@ export class AirfieldScene {
     return new TaxiPath(points)
   }
 
-  private acquireModel(tailNumber: number): D520Model {
+  private acquireModel(tailNumber: number, livery: Livery): D520Model {
     const model = this.idleModels.pop() ?? this.createModel()
+    this.dress(model, livery, this.liveries)
     model.repair()
     model.setTailNumber(tailNumber)
     model.object.visible = true
@@ -438,10 +460,6 @@ export class AirfieldScene {
   private createModel(): D520Model {
     const model = new D520Model()
     model.object.scale.setScalar(this.scale)
-    const texture = this.liveries.get('french')
-    if (texture !== undefined) {
-      model.setLivery(texture)
-    }
     this.scene.add(model.object)
     this.shadows.add(model)
     this.models.push(model)

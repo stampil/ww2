@@ -6,6 +6,7 @@ import { DESTROYED_LEVEL } from './damageStages'
 import { SMOKING_LEVEL } from './DamageEffects'
 import { clamp } from './easing'
 import { LiveryTextures } from './liveries'
+import type { Livery } from './liveries'
 import { PilotHeadModel } from './PilotHeadModel'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
 import { SeededRandom } from './SeededRandom'
@@ -15,14 +16,14 @@ import type { EnemyBody } from './StaticEnemy'
 import { loadTerrainTextures } from './terrainTextures'
 
 /** The fighters the player can meet from the cockpit. */
-export type CockpitEnemy = 'bf109' | 'vichyD520'
+export type CockpitEnemy = 'bf109' | 'vichyD520' | 'frenchD520'
 export type CockpitOutcome = 'won' | 'escaped'
 /** Where the enemy is, seen from the cockpit: degrees to the right and up of the nose, how far, and whether it is in the gunsight. */
 export type CockpitSight = { azimuthDegrees: number; elevationDegrees: number; distanceMeters: number; isInSight: boolean }
 /** How far the enemy has been kept in the gunsight, from 0 to 1, how wide the gunsight is and how far down from the top of the view its middle is, as a share of the height of the view. */
 export type CockpitStatus = { lockShare: number; sightDiameterPercent: number; sightTopPercent: number; secondsLeft: number; sight: CockpitSight }
 /** `agility` and `accuracy` are the maneuverability of the aircraft and the accuracy of the pilot, from 0 to 1; `risk` is the difficulty of the mission, from 1 to 3. */
-export type CockpitOptions = { enemy: CockpitEnemy; agility: number; accuracy: number; risk: number; isTouchScreen: boolean }
+export type CockpitOptions = { enemy: CockpitEnemy; livery: Livery; agility: number; accuracy: number; risk: number; isTouchScreen: boolean }
 
 const DEGREES = Math.PI / 180
 const FIELD_OF_VIEW_DEGREES = 70
@@ -56,7 +57,10 @@ const FLYING = { engine: 1, gearRetraction: 1, flaps: 0, wheels: 0, aileron: 0, 
 const ENEMIES: Record<CockpitEnemy, { speed: number; turnRate: number }> = {
   bf109: { speed: 68, turnRate: 0.75 },
   vichyD520: { speed: 62, turnRate: 0.6 },
+  frenchD520: { speed: 62, turnRate: 0.6 },
 }
+// The livery of the enemies that are D.520.
+const D520_ENEMY_LIVERIES: Record<Exclude<CockpitEnemy, 'bf109'>, Livery> = { vichyD520: 'vichy', frenchD520: 'french' }
 const ENEMY_DECISION_SECONDS = { min: 2, max: 4 }
 const ENEMY_HUNTED_DECISION_SECONDS = { min: 0.9, max: 1.7 }
 const ENEMY_TURN_DEGREES = { calm: 60, hunted: 110 }
@@ -167,14 +171,23 @@ export class CockpitCombatScene {
     this.isInCorridor = options.risk === EASIEST_RISK
     this.enemySpeed = ENEMIES[options.enemy].speed
     this.renderer = createRenderer(container, false)
-    this.liveries = new LiveryTextures(this.renderer.capabilities.getMaxAnisotropy(), (livery, texture) => {
-      if (livery === 'french') {
-        this.player.setLivery(texture)
-      }
-      if (livery === 'vichy' && options.enemy === 'vichyD520') {
-        this.vichyBody?.setLivery(texture)
-      }
-    }, 'low')
+    const neededLiveries: Livery[] = [options.livery]
+    if (options.enemy !== 'bf109') {
+      neededLiveries.push(D520_ENEMY_LIVERIES[options.enemy])
+    }
+    this.liveries = new LiveryTextures(
+      this.renderer.capabilities.getMaxAnisotropy(),
+      (loaded, texture) => {
+        if (loaded === options.livery) {
+          this.player.setLivery(texture)
+        }
+        if (options.enemy !== 'bf109' && loaded === D520_ENEMY_LIVERIES[options.enemy]) {
+          this.enemyBody?.setLivery(texture)
+        }
+      },
+      'low',
+      neededLiveries,
+    )
     this.scene.background = new THREE.Color(HORIZON_COLOR)
     this.scene.fog = new THREE.Fog(HORIZON_COLOR, FOG_NEAR_METERS, FOG_FAR_METERS)
     this.sky.renderOrder = -1
@@ -221,7 +234,7 @@ export class CockpitCombatScene {
     this.liveries.dispose()
   }
 
-  private vichyBody: D520Model | undefined
+  private enemyBody: D520Model | undefined
 
   private async createEnemy(): Promise<void> {
     if (this.options.enemy === 'bf109') {
@@ -229,11 +242,11 @@ export class CockpitCombatScene {
     } else {
       const model = new D520Model()
       model.setState(FLYING)
-      const texture = this.liveries.get('vichy')
+      const texture = this.liveries.get(D520_ENEMY_LIVERIES[this.options.enemy])
       if (texture !== undefined) {
         model.setLivery(texture)
       }
-      this.vichyBody = model
+      this.enemyBody = model
       this.enemy = {
         object: model.object,
         update: (deltaSeconds) => model.update(deltaSeconds),

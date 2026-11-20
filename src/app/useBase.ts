@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
+import type { Livery } from '../three/liveries'
 import { parseGameTime } from './gameDate'
 import type { Player } from './useAccount'
 
 export type Stock = 'fuel' | 'ammunition' | 'materials'
+/** The two sides of the war; the Allies are still called the French, as on the server. */
+export type Clan = 'french' | 'axe'
 export type Part = 'engine' | 'wings' | 'fuselage' | 'armament'
 export type MissionType = 'reconnaissance' | 'airCombat' | 'fighterCombat' | 'groundAttack' | 'bombing'
 
@@ -64,6 +67,7 @@ export type Aircraft = {
   /** The number painted on its fin, which it keeps. */
   number: number
   durability: number
+  livery: Livery
   model: { name: string; category: string; durability: number; maneuverability: number; fuelCapacity: number; ammunitionCapacity: number }
 }
 export type Squadron = { pilots: Pilot[]; aircraft: Aircraft[] }
@@ -182,6 +186,8 @@ export type Base = {
   destinations: Destination[]
   /** The site the base stands on. */
   site: string
+  /** The side of the base, which is the side of its site. */
+  clan: Clan
   terrainPlan: string
   resources: { supplies: number; fuel: number; ammunition: number; materials: number; commandPoints: number }
   buildings: string[]

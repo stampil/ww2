@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CockpitCombatScene } from '../three/CockpitCombatScene'
 import type { CockpitEnemy, CockpitOutcome, CockpitStatus } from '../three/CockpitCombatScene'
+import type { Livery } from '../three/liveries'
 import GameWindow from './GameWindow'
-import type { FlightAlert } from './useBase'
+import type { Clan, FlightAlert } from './useBase'
 import VirtualStick from './VirtualStick'
 
-const ENEMIES: CockpitEnemy[] = ['bf109', 'vichyD520']
+// Whom each side meets in the air: the Allies meet the Germans and Vichy, the Axe meets the French.
+const ENEMIES: Record<Clan, CockpitEnemy[]> = { french: ['bf109', 'vichyD520'], axe: ['frenchD520'] }
 const PERCENT = 100
 const PERCENT_TO_SHARE = 0.01
 const TOUCH_SCREEN_QUERY = '(pointer: coarse)'
@@ -24,6 +26,9 @@ const STEERING_KEYS: Record<string, { x: number; y: number }> = {
 
 type Props = {
   alert: FlightAlert
+  /** The side of the player, which sets whom they meet, and the livery of their aircraft. */
+  clan: Clan
+  livery: Livery
   /** The maneuverability of the aircraft and the accuracy of the pilot: they set the turns and the width of the gunsight. */
   maneuverability: number
   accuracy: number
@@ -38,14 +43,15 @@ type Props = {
  * A dogfight flown in real time from the cockpit, as in Wings: the player steers with the arrow keys or the stick under the view and keeps the enemy in the gunsight, which fires by itself,
  * while the head of the pilot in the cockpit turns toward the enemy. The browser plays it and tells the server how it ended.
  */
-function CockpitCombatWindow({ alert, maneuverability, accuracy, risk, onStart, onFinish, onClose }: Props) {
+function CockpitCombatWindow({ alert, clan, livery, maneuverability, accuracy, risk, onStart, onFinish, onClose }: Props) {
   const { t } = useTranslation()
   const viewRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<CockpitCombatScene | null>(null)
   const [isReady, setIsReady] = useState(false)
   const [status, setStatus] = useState<CockpitStatus | null>(null)
   const [outcome, setOutcome] = useState<CockpitOutcome | null>(null)
-  const enemy = ENEMIES[alert.id % ENEMIES.length]
+  const enemies = ENEMIES[clan]
+  const enemy = enemies[alert.id % enemies.length]
 
   useEffect(() => {
     let isCurrent = true
@@ -67,7 +73,7 @@ function CockpitCombatWindow({ alert, maneuverability, accuracy, risk, onStart, 
     }
     const scene = new CockpitCombatScene(
       viewRef.current!,
-      { enemy, agility: maneuverability * PERCENT_TO_SHARE, accuracy: accuracy * PERCENT_TO_SHARE, risk, isTouchScreen: window.matchMedia(TOUCH_SCREEN_QUERY).matches },
+      { enemy, livery, agility: maneuverability * PERCENT_TO_SHARE, accuracy: accuracy * PERCENT_TO_SHARE, risk, isTouchScreen: window.matchMedia(TOUCH_SCREEN_QUERY).matches },
       setStatus,
       (result) => {
         setOutcome(result)

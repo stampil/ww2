@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { GroundRunScene, RunOutcome } from '../three/GroundRunScene'
+import type { Livery } from '../three/liveries'
 import GameWindow from './GameWindow'
 import { useAircraftSprite } from './useAircraftSprite'
 import type { FlightAlert } from './useBase'
@@ -11,6 +12,8 @@ const STEERING_KEYS: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRi
 
 export type GroundRunProps = {
   alert: FlightAlert
+  /** The livery of the aircraft the player flies. */
+  livery: Livery
   onStart: (alertId: number) => Promise<void>
   onFinish: (alertId: number, outcome: RunOutcome) => Promise<void>
   onClose: () => void
@@ -24,6 +27,7 @@ type Props<Status> = GroundRunProps & {
     view: HTMLElement,
     seed: number,
     shadowImage: string,
+    livery: Livery,
     onStatus: (status: Status) => void,
     onEnd: (outcome: RunOutcome) => void,
   ) => GroundRunScene<Status>
@@ -34,7 +38,7 @@ type Props<Status> = GroundRunProps & {
  * A mini-game flown from above, as in Wings: the player steers the D.520 to one side or the other, with the arrow keys or the stick under the view, and the rules of the scene do the rest.
  * The browser plays it and tells the server how it ended.
  */
-function GroundRunWindow<Status>({ alert, namespace, hintValues, createScene, renderStatus, onStart, onFinish, onClose }: Props<Status>) {
+function GroundRunWindow<Status>({ alert, livery, namespace, hintValues, createScene, renderStatus, onStart, onFinish, onClose }: Props<Status>) {
   const { t } = useTranslation()
   const viewRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<GroundRunScene<Status> | null>(null)
@@ -61,7 +65,7 @@ function GroundRunWindow<Status>({ alert, namespace, hintValues, createScene, re
     if (!isReady || aircraftSprite === null) {
       return
     }
-    const scene = createScene(viewRef.current!, alert.id, aircraftSprite, setStatus, (result) => {
+    const scene = createScene(viewRef.current!, alert.id, aircraftSprite, livery, setStatus, (result) => {
       setOutcome(result)
       void onFinish(alert.id, result)
     })

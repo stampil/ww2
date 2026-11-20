@@ -14,6 +14,7 @@ JPEG_QUALITY = 85
 TEXTURES = [
     'models/d520/texture-francais.png',
     'models/d520/texture-vichy.png',
+    'models/d520/texture-allemand.png',
     'models/bf109/bf109g.png',
     'models/he111/texture.png',
     'models/ju87/texture.png',

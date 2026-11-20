@@ -16,7 +16,7 @@ function GroundAttackWindow(props: GroundRunProps) {
       {...props}
       namespace="strafe"
       hintValues={HINT_VALUES}
-      createScene={(view, seed, shadowImage, onStatus, onEnd) => new GroundAttackScene(view, seed, shadowImage, onStatus, onEnd)}
+      createScene={(view, seed, shadowImage, livery, onStatus, onEnd) => new GroundAttackScene(view, seed, shadowImage, livery, onStatus, onEnd)}
       renderStatus={(status) => {
         const secondsLeft = Math.ceil(status.secondsLeft)
         return (

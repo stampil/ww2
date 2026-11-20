@@ -206,6 +206,11 @@ export class D520Model {
     this.cockpit.hideGunsight()
   }
 
+  /** Hides the inside of the rear canopy of the cockpit, which would cover the top of a view from the seat. */
+  hideRearCanopy(): void {
+    this.cockpit.hideRearCanopy()
+  }
+
   /** Starts or stops one animation: it eases in and out; the canopy is the cockpit's, and the gauges follow the engine. */
   setControl(control: AircraftControl, isActive: boolean): void {
     if (control === 'openCanopy') {

@@ -189,6 +189,7 @@ export class CockpitCombatScene {
 
     this.player.setState(FLYING)
     this.player.hideGunsight()
+    this.player.hideRearCanopy()
     this.scene.add(this.player.object)
     this.camera.position.copy(CAMERA_POSITION)
     this.camera.rotation.set(Math.PI / 2 - VIEW_DIVE_DEGREES * DEGREES, 0, 0)

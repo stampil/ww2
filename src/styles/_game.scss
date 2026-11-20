@@ -289,6 +289,14 @@ body:has(.page-shell[data-game='true']) {
   height: auto;
 }
 
+// What is set on the flat map by tiles: the 3D view lays the flat map on the ground it sees, by a transform, so that each stands on its tile.
+.base-map-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  transform-origin: 0 0;
+}
+
 // A sprite stands with the bottom middle of its picture on the bottom middle of its tile; --width is in tiles.
 .base-sprite {
   position: absolute;

@@ -25,6 +25,9 @@ import { TileGround, tileCenterOf } from './TileGround'
 const CAMERA_FIELD_OF_VIEW_DEGREES = 30
 const CAMERA_NEAR_METERS = 1
 const CAMERA_FAR_METERS = 6000
+// The base is seen from the south and a little above, tilted by this angle from the vertical, so that its buildings show their walls; a little farther than a view from straight above that just holds the whole map.
+const TOP_TILT_DEGREES = 20
+const TOP_DISTANCE_SHARE = 1.04
 // The average color of public/textures/herbe.png, for what lies beyond the grass plain.
 const GRASS_COLOR = 0x6d7231
 const LIGHT_COLOR = 0xffffff
@@ -138,6 +141,25 @@ export type AirfieldSceneOptions = {
  * behind the other, then rolls off, climbs, turns back and flies off, the camera swinging in front of the lead and back above the base; an aircraft that comes
  * back crosses the picture high up, dives, then lands on the runway as the camera returns above the base, and taxis to its stand. Owns its WebGL canvas.
  */
+/**
+ * The CSS matrix3d that carries a rectangle of the given size, from its top-left corner, onto the four corners given in the same order (top-left, top-right, bottom-right, bottom-left),
+ * with the perspective between them; its transform origin is the top-left corner.
+ */
+function groundTransformOf(corners: { x: number; y: number }[], width: number, height: number): string {
+  const [first, second, third, fourth] = corners
+  const firstEdge = { x: second.x - third.x, y: second.y - third.y }
+  const secondEdge = { x: fourth.x - third.x, y: fourth.y - third.y }
+  const skew = { x: first.x - second.x + third.x - fourth.x, y: first.y - second.y + third.y - fourth.y }
+  const determinant = firstEdge.x * secondEdge.y - firstEdge.y * secondEdge.x
+  const perspectiveX = (skew.x * secondEdge.y - skew.y * secondEdge.x) / determinant
+  const perspectiveY = (firstEdge.x * skew.y - firstEdge.y * skew.x) / determinant
+  const xAcross = second.x - first.x + perspectiveX * second.x
+  const yAcross = second.y - first.y + perspectiveX * second.y
+  const xDown = fourth.x - first.x + perspectiveY * fourth.x
+  const yDown = fourth.y - first.y + perspectiveY * fourth.y
+  return `matrix3d(${xAcross / width}, ${yAcross / width}, 0, ${perspectiveX / width}, ${xDown / height}, ${yDown / height}, 0, ${perspectiveY / height}, 0, 0, 1, 0, ${first.x}, ${first.y}, 0, 1)`
+}
+
 export class AirfieldScene {
   private readonly renderer: THREE.WebGLRenderer
   private readonly scene = new THREE.Scene()
@@ -181,6 +203,7 @@ export class AirfieldScene {
     private readonly onDeparted: (aircraftId: number) => void,
     private readonly onLanded: (aircraftId: number) => void,
     private readonly onCameraAway: (isAway: boolean) => void,
+    private readonly onFramed: (groundTransform: string) => void,
   ) {
     this.runway = runwayOf(plan)
     this.scale = (options.aircraftWidthTiles * TILE_SIZE_METERS) / D520_SPAN_METERS
@@ -336,7 +359,7 @@ export class AirfieldScene {
     return model
   }
 
-  /** Places the camera above the middle of the base, high enough for the whole of it to fill the canvas as the flat map does. */
+  /** Places the camera south of the middle of the base, tilted toward it, far enough for the whole of it to fit the canvas as the flat map does, and tells where the flat map now lies on the screen. */
   private fitCamera(): void {
     fitToContainer(this.renderer, this.camera, this.container)
     const halfViewHeight = Math.tan(THREE.MathUtils.degToRad(CAMERA_FIELD_OF_VIEW_DEGREES / 2))
@@ -346,7 +369,38 @@ export class AirfieldScene {
     const heightForHeight = (rowCount * TILE_SIZE_METERS) / 2 / halfViewHeight
     const centerX = ((columnCount / 2 - this.runway.firstColumn) * TILE_SIZE_METERS)
     const centerY = (this.runway.row - (rowCount - 1) / 2) * TILE_SIZE_METERS
-    this.topPosition.set(centerX, centerY, Math.max(heightForWidth, heightForHeight))
+    const distance = Math.max(heightForWidth, heightForHeight) * TOP_DISTANCE_SHARE
+    const tilt = THREE.MathUtils.degToRad(TOP_TILT_DEGREES)
+    this.topPosition.set(centerX, centerY - distance * Math.sin(tilt), distance * Math.cos(tilt))
+    this.lookMatrix.lookAt(this.topPosition, new THREE.Vector3(centerX, centerY, 0), WORLD_UP)
+    this.topOrientation.setFromRotationMatrix(this.lookMatrix)
+    this.frameGround()
+  }
+
+  /** Tells, as a CSS transform, how the flat map of the plan lies on the ground that the camera sees from above the base, so that what is set on the flat map by tiles stands on its tile. */
+  private frameGround(): void {
+    const { clientWidth: width, clientHeight: height } = this.container
+    if (width === 0 || height === 0) {
+      return
+    }
+    const framing = this.camera.clone()
+    framing.position.copy(this.topPosition)
+    framing.quaternion.copy(this.topOrientation)
+    framing.updateMatrixWorld()
+    const west = tileCenterOf(this.runway, 0, 0).x - TILE_SIZE_METERS / 2
+    const north = tileCenterOf(this.runway, 0, 0).y + TILE_SIZE_METERS / 2
+    const east = west + this.plan.tiles[0].length * TILE_SIZE_METERS
+    const south = north - this.plan.tiles.length * TILE_SIZE_METERS
+    const corners = [
+      [west, north],
+      [east, north],
+      [east, south],
+      [west, south],
+    ].map(([x, y]) => {
+      const point = new THREE.Vector3(x, y, 0).project(framing)
+      return { x: ((point.x + 1) / 2) * width, y: ((1 - point.y) / 2) * height }
+    })
+    this.onFramed(groundTransformOf(corners, width, height))
   }
 
   /** Where an aircraft of a group stands on the runway: the rear one at the start, the others each a step further. */

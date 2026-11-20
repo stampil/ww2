@@ -27,10 +27,12 @@ type Props = {
   onLanded: (aircraftId: number) => void
   /** Called when the camera leaves the view from above the base, and when it is back. */
   onCameraAway: (isAway: boolean) => void
+  /** Called with the CSS transform that lays the flat map on the ground the camera sees from above the base, and with nothing when the view is gone. */
+  onFramed: (groundTransform: string) => void
 }
 
 /** The base in 3D over its flat map, the same size, with the aircraft parked and the squadron taking off and landing; it only shows it, the flights last as long as the server says. */
-function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTiles, parkedStands, shadowImage, onDeparted, onLanded, onCameraAway }: Props) {
+function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTiles, parkedStands, shadowImage, onDeparted, onLanded, onCameraAway, onFramed }: Props) {
   const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<AirfieldScene | null>(null)
@@ -54,6 +56,7 @@ function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTil
         onLanded(aircraftId)
       },
       onCameraAway,
+      onFramed,
     )
     sceneRef.current = scene
     handedDepartureIds.current.clear()
@@ -63,8 +66,9 @@ function AirfieldView({ plan, departures, arrivals, emergences, aircraftWidthTil
       scene.dispose()
       sceneRef.current = null
       onCameraAway(false)
+      onFramed('')
     }
-  }, [plan, aircraftWidthTiles, shadowImage, onDeparted, onLanded, onCameraAway])
+  }, [plan, aircraftWidthTiles, shadowImage, onDeparted, onLanded, onCameraAway, onFramed])
 
   useEffect(() => {
     sceneRef.current!.setParkedStands(parkedStands)

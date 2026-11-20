@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { buildGeometry, buildMaterials, loadModelData } from './ac3d'
+import type { AircraftModel3D } from './aircraftModel'
 import type { AircraftState } from './aircraftState'
 import { CockpitModel } from './CockpitModel'
 import { DamageEffects } from './DamageEffects'
@@ -122,8 +123,10 @@ const GEAR_SIDES = [
  * The D.520 of the FlightGear model by Emmanuel Baranger (GPL v2), loaded from the files made by tools/convert-ac3d.py.
  * Nose along +y, right wing along +x, up along +z, origin on the thrust axis, in meters. Shown once loaded.
  */
-export class D520Model {
+export class D520Model implements AircraftModel3D {
   readonly object = new THREE.Group()
+  readonly spanMeters = D520_SPAN_METERS
+  readonly groundPitchRadians = D520_GROUND_PITCH_RADIANS
   private readonly cockpit = new CockpitModel()
   private readonly effects = new DamageEffects()
   private readonly debris = new Debris()
@@ -161,6 +164,10 @@ export class D520Model {
     this.object.add(this.cockpit.object)
     this.object.add(this.effects.object)
     this.ready = this.load()
+  }
+
+  axisHeightOnGround(pitchRadians: number): number {
+    return d520AxisHeightOnGround(pitchRadians)
   }
 
   /** Paints the number of the aircraft on its fin; undefined takes it off. */

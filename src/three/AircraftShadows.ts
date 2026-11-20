@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { D520Model } from './D520Model'
+import type { AircraftModel3D } from './aircraftModel'
 
 const LIFT_METERS = 0.3
 const GROUND_OPACITY = 0.35
@@ -46,7 +46,7 @@ type Shadow = THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>
  */
 export class AircraftShadows {
   private readonly texture: THREE.Texture
-  private readonly shadows = new Map<D520Model, Shadow>()
+  private readonly shadows = new Map<AircraftModel3D, Shadow>()
   private readonly metersPerMeterOfAltitude: THREE.Vector2
   private isLoaded = false
 
@@ -64,7 +64,7 @@ export class AircraftShadows {
   }
 
   /** Gives an aircraft a shadow, hidden until it is shown with the aircraft. */
-  add(model: D520Model): void {
+  add(model: AircraftModel3D): void {
     const material = new THREE.ShaderMaterial({
       uniforms: { silhouette: { value: this.texture }, opacity: { value: GROUND_OPACITY }, blurWidths: { value: 0 } },
       vertexShader: VERTEX_SHADER,
@@ -80,7 +80,7 @@ export class AircraftShadows {
   }
 
   /** Lays the shadow of an aircraft that flies at this place and altitude, turned as its model is; an aircraft without a shadow, as one parked, is left alone. */
-  place(model: D520Model, x: number, y: number, altitude: number, turnRadians: number): void {
+  place(model: AircraftModel3D, x: number, y: number, altitude: number, turnRadians: number): void {
     const shadow = this.shadows.get(model)
     if (shadow === undefined) {
       return

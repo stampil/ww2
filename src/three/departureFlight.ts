@@ -1,5 +1,4 @@
 import type { AircraftState } from './aircraftState'
-import { D520_GROUND_PITCH_RADIANS } from './D520Model'
 import { bump, clamp, smoothStep } from './easing'
 import { SWAY_AILERON_SHARE, SWAY_PITCH_RADIANS, SWAY_ROLL_RADIANS, swayAt } from './sway'
 
@@ -67,8 +66,8 @@ export class DepartureFlight {
     return smoothStep(swingInStart, swingInStart + FRONT_VIEW_SWING_SECONDS, time) * (1 - smoothStep(swingOutStart, swingOutStart + FRONT_VIEW_SWING_SECONDS, time))
   }
 
-  /** `startX` is where the aircraft stands on the runway at the start of the roll. */
-  pose(time: number, startX: number): FlightPose {
+  /** `startX` is where the aircraft stands on the runway at the start of the roll, `groundPitchRadians` the nose-up angle it rests at. */
+  pose(time: number, startX: number, groundPitchRadians: number): FlightPose {
     const rolledSeconds = clamp(time, 0, this.rollSeconds)
     const flightSeconds = Math.max(0, time - this.rollSeconds)
     const straightSeconds = Math.min(flightSeconds, STRAIGHT_CLIMB_SECONDS)
@@ -99,7 +98,7 @@ export class DepartureFlight {
       altitude: climbedMeters(flightSeconds),
       heading: -turnedRadians,
       pitch:
-        D520_GROUND_PITCH_RADIANS * (1 - smoothStep(TAIL_LIFT_START_SHARE, TAIL_LIFT_END_SHARE, rolledSeconds / this.rollSeconds)) +
+        groundPitchRadians * (1 - smoothStep(TAIL_LIFT_START_SHARE, TAIL_LIFT_END_SHARE, rolledSeconds / this.rollSeconds)) +
         LIFTOFF_PITCH_RADIANS * smoothStep(this.rollSeconds - ROTATION_SECONDS, this.rollSeconds + ROTATION_SECONDS, time) +
         SWAY_PITCH_RADIANS * sway.pitch * airborneShare,
       roll: BANK_RADIANS * bankProgress + SWAY_ROLL_RADIANS * sway.roll * airborneShare,

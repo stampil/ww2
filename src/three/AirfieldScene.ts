@@ -9,7 +9,8 @@ import { AircraftShadows } from './AircraftShadows'
 import { createBuildings } from './BuildingModels'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
-import { D520_GROUND_PITCH_RADIANS, D520_SPAN_METERS, d520AxisHeightOnGround, D520Model } from './D520Model'
+import { D520_SPAN_METERS, D520Model } from './D520Model'
+import type { AircraftModel3D } from './aircraftModel'
 import { ArrivalFlight } from './arrivalFlight'
 import { DepartureFlight } from './departureFlight'
 import { DepartureQueue } from './departureQueue'
@@ -81,21 +82,21 @@ export type ParkedPlace = { stand: Cell; livery: Livery }
 
 type LandingAircraft = {
   aircraftId: number
-  model: D520Model
+  model: AircraftModel3D
   startSeconds: number
   path: TaxiPath
 }
 
 type EmergingAircraft = {
   aircraftId: number
-  model: D520Model
+  model: AircraftModel3D
   startSeconds: number
   path: TaxiPath
 }
 
 type DepartingAircraft = {
   aircraftId: number
-  model: D520Model
+  model: AircraftModel3D
   assignment: Assignment
   path: TaxiPath
   startSeconds: number
@@ -175,13 +176,13 @@ export class AirfieldScene {
   private readonly flight: DepartureFlight
   private readonly landingFlight: ArrivalFlight
   private readonly queue = new DepartureQueue()
-  private readonly models: D520Model[] = []
-  private readonly idleModels: D520Model[] = []
+  private readonly models: AircraftModel3D[] = []
+  private readonly idleModels: AircraftModel3D[] = []
   private readonly departing: DepartingAircraft[] = []
   private readonly landing: LandingAircraft[] = []
   private readonly emerging: EmergingAircraft[] = []
   private readonly liveries: LiveryTextures
-  private readonly parkedModels: D520Model[] = []
+  private readonly parkedModels: AircraftModel3D[] = []
   private readonly parkedLiveries: LiveryTextures
   private readonly shadows: AircraftShadows
   private readonly topPosition = new THREE.Vector3()
@@ -194,7 +195,7 @@ export class AirfieldScene {
   private readonly viewPosition = new THREE.Vector3()
   private readonly viewOrientation = new THREE.Quaternion()
   private readonly startMilliseconds = performance.now()
-  private readonly liveryOf = new Map<D520Model, Livery>()
+  private readonly liveryOf = new Map<AircraftModel3D, Livery>()
   private parked: ParkedPlace[] = []
   private lastLandingSeconds = Number.NEGATIVE_INFINITY
   private previousSeconds = 0
@@ -342,7 +343,7 @@ export class AirfieldScene {
       const center = tileCenterOf(this.runway, place.stand.row, place.stand.column)
       model.object.visible = true
       model.setState(PARKED_STATE)
-      this.place(model, center.x, center.y, 0, NORTH_HEADING_RADIANS, D520_GROUND_PITCH_RADIANS, 0)
+      this.place(model, center.x, center.y, 0, NORTH_HEADING_RADIANS, model.groundPitchRadians, 0)
       model.update(0)
     })
     this.parkedModels.slice(this.parked.length).forEach((model) => {
@@ -350,7 +351,7 @@ export class AirfieldScene {
     })
   }
 
-  private createParkedModel(): D520Model {
+  private createParkedModel(): AircraftModel3D {
     const model = new D520Model()
     model.object.scale.setScalar(this.scale)
     this.scene.add(model.object)
@@ -359,7 +360,7 @@ export class AirfieldScene {
   }
 
   /** Puts a livery on a model: at once when its texture is there, else as soon as it arrives. */
-  private dress(model: D520Model, livery: Livery, textures: LiveryTextures): void {
+  private dress(model: AircraftModel3D, livery: Livery, textures: LiveryTextures): void {
     if (this.liveryOf.get(model) === livery) {
       return
     }
@@ -372,7 +373,7 @@ export class AirfieldScene {
   }
 
   /** Puts a texture that has just arrived on the models that wear its livery. */
-  private dressWearers(models: D520Model[], livery: Livery, texture: THREE.Texture): void {
+  private dressWearers(models: AircraftModel3D[], livery: Livery, texture: THREE.Texture): void {
     for (const model of models) {
       if (this.liveryOf.get(model) === livery) {
         model.setLivery(texture)
@@ -448,7 +449,7 @@ export class AirfieldScene {
     return new TaxiPath(points)
   }
 
-  private acquireModel(tailNumber: number, livery: Livery): D520Model {
+  private acquireModel(tailNumber: number, livery: Livery): AircraftModel3D {
     const model = this.idleModels.pop() ?? this.createModel()
     this.dress(model, livery, this.liveries)
     model.repair()
@@ -457,7 +458,7 @@ export class AirfieldScene {
     return model
   }
 
-  private createModel(): D520Model {
+  private createModel(): AircraftModel3D {
     const model = new D520Model()
     model.object.scale.setScalar(this.scale)
     this.scene.add(model.object)
@@ -519,7 +520,7 @@ export class AirfieldScene {
     const place = aircraft.path.pointAt(distance)
     aircraft.model.object.visible = true
     aircraft.model.setState({ engine: TAXI_ENGINE, gearRetraction: 0, flaps: 1, wheels: TAXI_WHEELS, aileron: 0, rudder: 0, elevator: 0 })
-    this.place(aircraft.model, place.x, place.y, 0, aircraft.path.headingAt(distance, HEADING_SPAN_METERS), D520_GROUND_PITCH_RADIANS, 0)
+    this.place(aircraft.model, place.x, place.y, 0, aircraft.path.headingAt(distance, HEADING_SPAN_METERS), aircraft.model.groundPitchRadians, 0)
     return false
   }
 
@@ -531,7 +532,7 @@ export class AirfieldScene {
     }
     aircraft.model.object.visible = true
     if (elapsedSeconds < this.landingFlight.durationSeconds) {
-      const pose = this.landingFlight.pose(elapsedSeconds)
+      const pose = this.landingFlight.pose(elapsedSeconds, aircraft.model.groundPitchRadians)
       aircraft.model.setState(pose.state)
       this.place(aircraft.model, pose.x, pose.y, pose.altitude, pose.heading, pose.pitch, pose.roll)
       return false
@@ -542,7 +543,7 @@ export class AirfieldScene {
     }
     const place = aircraft.path.pointAt(distance)
     aircraft.model.setState({ engine: TAXI_ENGINE, gearRetraction: 0, flaps: 1, wheels: TAXI_WHEELS, aileron: 0, rudder: 0, elevator: 0 })
-    this.place(aircraft.model, place.x, place.y, 0, aircraft.path.headingAt(distance, HEADING_SPAN_METERS), D520_GROUND_PITCH_RADIANS, 0)
+    this.place(aircraft.model, place.x, place.y, 0, aircraft.path.headingAt(distance, HEADING_SPAN_METERS), aircraft.model.groundPitchRadians, 0)
     return false
   }
 
@@ -555,25 +556,25 @@ export class AirfieldScene {
       if (taxiedSeconds < aircraft.taxiSeconds) {
         const distance = (path.lengthMeters * taxiedSeconds) / aircraft.taxiSeconds
         const place = path.pointAt(distance)
-        this.place(model, place.x, place.y, 0, path.headingAt(distance, HEADING_SPAN_METERS), D520_GROUND_PITCH_RADIANS, 0)
+        this.place(model, place.x, place.y, 0, path.headingAt(distance, HEADING_SPAN_METERS), model.groundPitchRadians, 0)
         return
       }
       const place = path.pointAt(path.lengthMeters)
       const turned = turnBetween(aircraft.endHeading, 0) * smoothStep(aircraft.taxiSeconds, aircraft.taxiSeconds + PIVOT_SECONDS, taxiedSeconds)
-      this.place(model, place.x, place.y, 0, aircraft.endHeading + turned, D520_GROUND_PITCH_RADIANS, 0)
+      this.place(model, place.x, place.y, 0, aircraft.endHeading + turned, model.groundPitchRadians, 0)
       return
     }
     const { group, slot } = assignment
-    const pose = this.flight.pose(seconds - group.startSecondsOf(slot), this.slotX(group.size - 1))
+    const pose = this.flight.pose(seconds - group.startSecondsOf(slot), this.slotX(group.size - 1), model.groundPitchRadians)
     const behind = this.gapMeters * (group.size - 1 - slot)
     model.setState(pose.state)
     this.place(model, pose.x - Math.cos(pose.heading) * behind, pose.y - Math.sin(pose.heading) * behind, pose.altitude, pose.heading, pose.pitch, pose.roll)
   }
 
-  private place(model: D520Model, x: number, y: number, altitude: number, heading: number, pitch: number, roll: number): void {
+  private place(model: AircraftModel3D, x: number, y: number, altitude: number, heading: number, pitch: number, roll: number): void {
     const scale = this.scale * (1 + ALTITUDE_GROWTH_PER_METER * Math.min(altitude, MAX_GROWTH_ALTITUDE_METERS))
     model.object.scale.setScalar(scale)
-    model.object.position.set(x, y, d520AxisHeightOnGround(pitch) * scale + altitude)
+    model.object.position.set(x, y, model.axisHeightOnGround(pitch) * scale + altitude)
     const turnRadians = heading - NOSE_ALONG_Y_ROTATION_RADIANS
     model.object.rotation.set(pitch, roll, turnRadians, 'ZXY')
     this.shadows.place(model, x, y, altitude, turnRadians)
@@ -596,7 +597,7 @@ export class AirfieldScene {
   /** Above the base looking down; swinging to the side of the high pass of an aircraft that comes back and in front of a lead in the air, or to a blend of the two, then back above the base. */
   private placeCamera(seconds: number): void {
     let frontShare = 0
-    let lead: D520Model | undefined
+    let lead: AircraftModel3D | undefined
     for (const aircraft of this.departing) {
       const { group, slot } = aircraft.assignment
       if (slot === group.size - 1) {
@@ -633,7 +634,7 @@ export class AirfieldScene {
   }
 
   /** In front of an aircraft that has taken off and a little above it, looking back at it. */
-  private placeFrontView(lead: D520Model): void {
+  private placeFrontView(lead: AircraftModel3D): void {
     // The aircraft grows as it climbs, and the camera keeps the same distance from it, in its own sizes.
     const heading = lead.object.rotation.z + NOSE_ALONG_Y_ROTATION_RADIANS
     const leadScale = lead.object.scale.x

@@ -1,5 +1,4 @@
 import type { FlightPose } from './departureFlight'
-import { D520_GROUND_PITCH_RADIANS } from './D520Model'
 import { bump, smoothStep } from './easing'
 import { SWAY_AILERON_SHARE, SWAY_PITCH_RADIANS, SWAY_ROLL_RADIANS, swayAt } from './sway'
 
@@ -52,7 +51,16 @@ export class ArrivalFlight {
 
   /** Where the aircraft is, along the runway, in the middle of its dive: the place the camera of the high pass looks at. */
   diveMiddleX(): number {
-    return this.pose(CRUISE_SECONDS + DIVE_SECONDS / 2).x
+    return this.xAt(CRUISE_SECONDS + DIVE_SECONDS / 2)
+  }
+
+  /** How far along the runway the aircraft is, at a time counted from the start of the high pass. */
+  private xAt(time: number): number {
+    if (time <= TOUCHDOWN_SECONDS) {
+      return this.startX + APPROACH_SPEED_METERS_PER_SECOND * time
+    }
+    const rolledSeconds = time - TOUCHDOWN_SECONDS
+    return this.touchdownX + APPROACH_SPEED_METERS_PER_SECOND * rolledSeconds - (this.deceleration * rolledSeconds * rolledSeconds) / 2
   }
 
   /** How far the camera has swung from above the base (0) to the side of the high pass (1), at a time counted from the start of the high pass. */
@@ -61,12 +69,9 @@ export class ArrivalFlight {
     return smoothStep(0, SIDE_VIEW_SWING_SECONDS, time) * (1 - smoothStep(swingOutStart, swingOutStart + SIDE_VIEW_SWING_SECONDS, time))
   }
 
-  pose(time: number): FlightPose {
+  /** `groundPitchRadians` is the nose-up angle the aircraft rests at, which the tail comes down to. */
+  pose(time: number, groundPitchRadians: number): FlightPose {
     const rolledSeconds = Math.max(0, time - TOUCHDOWN_SECONDS)
-    const x =
-      time <= TOUCHDOWN_SECONDS
-        ? this.startX + APPROACH_SPEED_METERS_PER_SECOND * time
-        : this.touchdownX + APPROACH_SPEED_METERS_PER_SECOND * rolledSeconds - (this.deceleration * rolledSeconds * rolledSeconds) / 2
     const speed = rolledSeconds === 0 ? APPROACH_SPEED_METERS_PER_SECOND : APPROACH_SPEED_METERS_PER_SECOND - this.deceleration * rolledSeconds
     const diveShare = smoothStep(CRUISE_SECONDS, DIVE_END_SECONDS, time)
     const approachShare = smoothStep(DIVE_END_SECONDS, DIVE_END_SECONDS + PULL_OUT_SECONDS, time)
@@ -77,14 +82,14 @@ export class ArrivalFlight {
     const airborneShare = 1 - flare
     const flightPitch = this.pathAngleAt(time) * (1 - approachShare) + APPROACH_PITCH_RADIANS * approachShare
     return {
-      x,
+      x: this.xAt(time),
       y: 0,
       altitude: this.altitudeAt(time),
       heading: EAST_HEADING_RADIANS,
       pitch:
         flightPitch * airborneShare +
         FLARE_PITCH_RADIANS * flare +
-        (D520_GROUND_PITCH_RADIANS - FLARE_PITCH_RADIANS) * tailDown +
+        (groundPitchRadians - FLARE_PITCH_RADIANS) * tailDown +
         SWAY_PITCH_RADIANS * sway.pitch * airborneShare,
       roll: SWAY_ROLL_RADIANS * sway.roll * airborneShare,
       state: {

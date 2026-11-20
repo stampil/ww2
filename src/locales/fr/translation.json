@@ -70,7 +70,7 @@
   },
   "combat": {
     "title": "Combat aérien",
-    "hint": "Tu es aux commandes face à un {{enemy}} : place-toi derrière lui et garde-le dans le viseur : au bout d'une seconde ton avion tire seul et il est abattu, avant la fin du temps.",
+    "hint": "Tu es aux commandes face à un {{enemy}} : place-toi derrière lui et garde-le dans le viseur : chaque instant passé dans le viseur compte, et quand le compte est plein ton avion tire seul et il est abattu, avant la fin du temps.",
     "controls": "Pilote avec les flèches du clavier ou avec le manche sous la vue. La tête du pilote, au milieu du tableau de bord, se tourne vers l'ennemi.",
     "toast": "Chasseurs ennemis en vue : {{pilot}} peut prendre les commandes.",
     "toastResume": "Combat en cours : {{pilot}}.",

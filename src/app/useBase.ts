@@ -40,6 +40,8 @@ export type FlightAlert = {
 export type Flight = {
   id: number
   type: MissionType
+  /** The difficulty of the mission, from 1 to 3. */
+  risk: number
   remainingSeconds: number
   fuelLoaded: number
   ammunitionLoaded: number

@@ -1,6 +1,9 @@
 import * as THREE from 'three'
+import { CORRIDOR_TURN_RATE_RADIANS_PER_SECOND, corridorHeading, corridorSpeed, destructionSecondsOf, drawCorridorPoint, EASIEST_RISK, forwardOf, keepAhead } from './cockpitRules'
+import type { CorridorPoint, Flier } from './cockpitRules'
 import { D520Model } from './D520Model'
 import { DESTROYED_LEVEL } from './damageStages'
+import { clamp } from './easing'
 import { LiveryTextures } from './liveries'
 import { PilotHeadModel } from './PilotHeadModel'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
@@ -17,10 +20,8 @@ export type CockpitOutcome = 'won' | 'escaped'
 export type CockpitSight = { azimuthDegrees: number; elevationDegrees: number; distanceMeters: number; isInSight: boolean }
 /** How far the enemy has been kept in the gunsight, from 0 to 1, and how wide the gunsight is, as a share of the height of the view. */
 export type CockpitStatus = { lockShare: number; sightDiameterPercent: number; secondsLeft: number; sight: CockpitSight }
-/** `agility` and `accuracy` are the maneuverability of the aircraft and the accuracy of the pilot, from 0 to 1. */
-export type CockpitOptions = { enemy: CockpitEnemy; agility: number; accuracy: number }
-
-type Flier = { position: THREE.Vector3; yaw: number; pitch: number; roll: number }
+/** `agility` and `accuracy` are the maneuverability of the aircraft and the accuracy of the pilot, from 0 to 1; `risk` is the difficulty of the mission, from 1 to 3. */
+export type CockpitOptions = { enemy: CockpitEnemy; agility: number; accuracy: number; risk: number; isTouchScreen: boolean }
 
 const DEGREES = Math.PI / 180
 const FIELD_OF_VIEW_DEGREES = 70
@@ -72,10 +73,6 @@ const ENEMY_MAX_BANK_RADIANS = 45 * DEGREES
 const FALL_PITCH_RATE_RADIANS_PER_SECOND = 0.5
 const FALL_MAX_PITCH_RADIANS = 70 * DEGREES
 
-// The guns fire by themselves once the enemy has been kept in the gunsight this long; a short slip out of it does not lose the aim.
-const LOCK_SECONDS = 1
-const LOCK_GRACE_SECONDS = 0.3
-
 const SIGHT_ANGLE_DEGREES = { min: 4, max: 6 }
 const SIGHT_DISTANCE_METERS = { min: 30, max: 260 }
 
@@ -106,18 +103,9 @@ function between(range: { min: number; max: number }): number {
   return range.min + Math.random() * (range.max - range.min)
 }
 
-function clamp(value: number, minimum: number, maximum: number): number {
-  return Math.min(Math.max(value, minimum), maximum)
-}
-
 /** The shortest way round from one angle to another. */
 function turnBetween(fromAngle: number, toAngle: number): number {
   return Math.atan2(Math.sin(toAngle - fromAngle), Math.cos(toAngle - fromAngle))
-}
-
-/** The way an aircraft points: nose along +y turned by its yaw (counterclockwise seen from above) and its pitch. */
-function forwardOf(yaw: number, pitch: number): THREE.Vector3 {
-  return new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.cos(yaw) * Math.cos(pitch), Math.sin(pitch))
 }
 
 function place(object: THREE.Object3D, flier: Flier): void {
@@ -126,9 +114,9 @@ function place(object: THREE.Object3D, flier: Flier): void {
 }
 
 /**
- * A dogfight flown in real time from the cockpit of the D.520, as in Wings: the player turns to get behind an enemy fighter and keeps it in the gunsight, and after
- * a second the guns fire by themselves and it blows up. The aircraft keeps its speed; the player steers it. The accuracy of the pilot widens the gunsight, the maneuverability
- * of the aircraft quickens its turns. Owns its WebGL canvas.
+ * A dogfight flown in real time from the cockpit of the D.520, as in Wings: the player turns to get behind an enemy fighter and keeps it in the gunsight, and once it has been
+ * there long enough, added up over the fight, the guns fire by themselves and it blows up. The aircraft keeps its speed; the player steers it. The accuracy of the pilot widens
+ * the gunsight, the maneuverability of the aircraft quickens its turns. In the easiest fights the enemy flies in a wide corridor in front of the player. Owns its WebGL canvas.
  */
 export class CockpitCombatScene {
   private readonly renderer: THREE.WebGLRenderer
@@ -151,13 +139,16 @@ export class CockpitCombatScene {
   private targetX = 0
   private targetY = 0
   private lockSeconds = 0
-  private outOfSightSeconds = 0
+  private readonly destructionSeconds: number
+  private readonly isInCorridor: boolean
   private damageLevel = 0
   private enemyLevel = 0
   private enemyDecisionSeconds = 0
   private enemyTargetYaw = 0
   private enemyTargetPitch = 0
   private enemyYawRate = 0
+  private enemySpeed: number
+  private corridorPoint: CorridorPoint = drawCorridorPoint()
   private secondsLeft = COMBAT_SECONDS
   private statusCountdown = 0
   private pauseSeconds = 0
@@ -170,6 +161,9 @@ export class CockpitCombatScene {
     private readonly onStatus: (status: CockpitStatus) => void,
     private readonly onEnd: (outcome: CockpitOutcome) => void,
   ) {
+    this.destructionSeconds = destructionSecondsOf(options.risk, options.isTouchScreen)
+    this.isInCorridor = options.risk === EASIEST_RISK
+    this.enemySpeed = ENEMIES[options.enemy].speed
     this.renderer = createRenderer(container, false)
     this.liveries = new LiveryTextures(this.renderer.capabilities.getMaxAnisotropy(), (livery, texture) => {
       if (livery === 'french') {
@@ -345,10 +339,15 @@ export class CockpitCombatScene {
     if (this.isEnemyDestroyed) {
       flight.pitch = Math.max(flight.pitch - FALL_PITCH_RATE_RADIANS_PER_SECOND * deltaSeconds, -FALL_MAX_PITCH_RADIANS)
       flight.roll += deltaSeconds * 2
+    } else if (this.isInCorridor) {
+      this.steerInCorridor(deltaSeconds)
     } else {
       this.steerEnemy(deltaSeconds, kind.turnRate)
     }
-    flight.position.addScaledVector(forwardOf(flight.yaw, flight.pitch), kind.speed * deltaSeconds)
+    flight.position.addScaledVector(forwardOf(flight.yaw, flight.pitch), this.enemySpeed * deltaSeconds)
+    if (this.isInCorridor && !this.isEnemyDestroyed) {
+      keepAhead(flight, this.playerFlight)
+    }
     flight.position.z = Math.max(flight.position.z, 0)
     place(this.enemyRoot, flight)
   }
@@ -378,6 +377,26 @@ export class CockpitCombatScene {
         this.enemyTargetYaw = Math.atan2(-toPlayer.x, toPlayer.y) + (Math.random() * 2 - 1) * ENEMY_RETURN_SCATTER_DEGREES * DEGREES
       }
     }
+    this.turnEnemyTowardTargets(deltaSeconds, turnRate)
+  }
+
+  /** In the easiest fight the enemy keeps to a point that wanders in a wide corridor in front of the player, follows his turns faster than he can make them and holds its distance: it never gets behind him and he never gets past it. */
+  private steerInCorridor(deltaSeconds: number): void {
+    this.enemyDecisionSeconds -= deltaSeconds
+    if (this.enemyDecisionSeconds <= 0) {
+      this.corridorPoint = drawCorridorPoint()
+      this.enemyDecisionSeconds = between(ENEMY_DECISION_SECONDS)
+    }
+    const heading = corridorHeading(this.corridorPoint, this.enemyFlight, this.playerFlight)
+    this.enemyTargetYaw = heading.yaw
+    this.enemyTargetPitch = heading.pitch
+    this.enemySpeed = corridorSpeed(this.corridorPoint, this.enemyFlight, this.playerFlight, PLAYER_SPEED_METERS_PER_SECOND)
+    this.turnEnemyTowardTargets(deltaSeconds, CORRIDOR_TURN_RATE_RADIANS_PER_SECOND)
+  }
+
+  /** Turns the enemy toward the yaw and the pitch it wants, as fast as its turn rate lets it, and banks it into the turn. */
+  private turnEnemyTowardTargets(deltaSeconds: number, turnRate: number): void {
+    const flight = this.enemyFlight
     const yawStep = clamp(turnBetween(flight.yaw, this.enemyTargetYaw), -turnRate * deltaSeconds, turnRate * deltaSeconds)
     const pitchStep = clamp(this.enemyTargetPitch - flight.pitch, -turnRate * ENEMY_PITCH_RATE_SHARE * deltaSeconds, turnRate * ENEMY_PITCH_RATE_SHARE * deltaSeconds)
     flight.yaw += yawStep
@@ -396,27 +415,21 @@ export class CockpitCombatScene {
     return isBehind && distance < ENEMY_HUNTED_DISTANCE_METERS && angleFromTail < ENEMY_HUNTED_CONE_DEGREES * DEGREES
   }
 
-  /** Counts the time the enemy is in the gunsight: it smokes more and more, and after a second it is shot down. */
+  /** Adds up the time the enemy is in the gunsight, never taking any back: it smokes more and more, and once the time of its destruction is full it is shot down. */
   private updateLock(deltaSeconds: number, sight: CockpitSight): void {
     if (this.enemy === undefined || this.isEnemyDestroyed) {
       return
     }
     if (sight.isInSight) {
-      this.outOfSightSeconds = 0
       this.lockSeconds += deltaSeconds
-    } else {
-      this.outOfSightSeconds += deltaSeconds
-      if (this.outOfSightSeconds > LOCK_GRACE_SECONDS) {
-        this.lockSeconds = 0
-      }
     }
-    if (this.lockSeconds >= LOCK_SECONDS) {
+    if (this.lockSeconds >= this.destructionSeconds) {
       this.isEnemyDestroyed = true
       this.pauseSeconds = KILL_PAUSE_SECONDS
       this.enemy.destroy()
       return
     }
-    const level = Math.floor((this.lockSeconds / LOCK_SECONDS) * DESTROYED_LEVEL)
+    const level = Math.floor((this.lockSeconds / this.destructionSeconds) * DESTROYED_LEVEL)
     if (level > this.damageLevel) {
       this.damageLevel = level
       this.enemy.damage(level)
@@ -464,7 +477,7 @@ export class CockpitCombatScene {
       return
     }
     this.statusCountdown = STATUS_INTERVAL_SECONDS
-    this.onStatus({ lockShare: Math.min(this.lockSeconds / LOCK_SECONDS, 1), sightDiameterPercent: (Math.tan(this.sightAngleDegrees() * DEGREES) / Math.tan((FIELD_OF_VIEW_DEGREES / 2) * DEGREES)) * PERCENT, secondsLeft: this.secondsLeft, sight })
+    this.onStatus({ lockShare: Math.min(this.lockSeconds / this.destructionSeconds, 1), sightDiameterPercent: (Math.tan(this.sightAngleDegrees() * DEGREES) / Math.tan((FIELD_OF_VIEW_DEGREES / 2) * DEGREES)) * PERCENT, secondsLeft: this.secondsLeft, sight })
   }
 
   private sight(): CockpitSight {

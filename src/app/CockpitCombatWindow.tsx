@@ -9,6 +9,7 @@ import VirtualStick from './VirtualStick'
 const ENEMIES: CockpitEnemy[] = ['bf109', 'vichyD520']
 const PERCENT = 100
 const PERCENT_TO_SHARE = 0.01
+const TOUCH_SCREEN_QUERY = '(pointer: coarse)'
 const SECONDS_PER_MINUTE = 60
 const STEERING_KEYS: Record<string, { x: number; y: number }> = {
   ArrowLeft: { x: -1, y: 0 },
@@ -26,6 +27,8 @@ type Props = {
   /** The maneuverability of the aircraft and the accuracy of the pilot: they set the turns and the width of the gunsight. */
   maneuverability: number
   accuracy: number
+  /** The difficulty of the mission, from 1 to 3: it sets how long the enemy has to be kept in the gunsight, and in the easiest fight where it flies. */
+  risk: number
   onStart: (alertId: number) => Promise<void>
   onFinish: (alertId: number, outcome: CockpitOutcome) => Promise<void>
   onClose: () => void
@@ -35,7 +38,7 @@ type Props = {
  * A dogfight flown in real time from the cockpit, as in Wings: the player steers with the arrow keys or the stick under the view and keeps the enemy in the gunsight, which fires by itself,
  * while the head of the pilot in the cockpit turns toward the enemy. The browser plays it and tells the server how it ended.
  */
-function CockpitCombatWindow({ alert, maneuverability, accuracy, onStart, onFinish, onClose }: Props) {
+function CockpitCombatWindow({ alert, maneuverability, accuracy, risk, onStart, onFinish, onClose }: Props) {
   const { t } = useTranslation()
   const viewRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<CockpitCombatScene | null>(null)
@@ -64,7 +67,7 @@ function CockpitCombatWindow({ alert, maneuverability, accuracy, onStart, onFini
     }
     const scene = new CockpitCombatScene(
       viewRef.current!,
-      { enemy, agility: maneuverability * PERCENT_TO_SHARE, accuracy: accuracy * PERCENT_TO_SHARE },
+      { enemy, agility: maneuverability * PERCENT_TO_SHARE, accuracy: accuracy * PERCENT_TO_SHARE, risk, isTouchScreen: window.matchMedia(TOUCH_SCREEN_QUERY).matches },
       setStatus,
       (result) => {
         setOutcome(result)

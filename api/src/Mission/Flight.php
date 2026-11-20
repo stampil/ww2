@@ -23,13 +23,14 @@ final readonly class Flight
     }
 
     /**
-     * @return array{id: int, type: string, remainingSeconds: int, fuelLoaded: int, ammunitionLoaded: int, crews: list<array{pilotId: int, aircraftId: int}>}
+     * @return array{id: int, type: string, risk: int, remainingSeconds: int, fuelLoaded: int, ammunitionLoaded: int, crews: list<array{pilotId: int, aircraftId: int}>}
      */
     public function toArray(): array
     {
         return [
             'id' => $this->mission->id,
             'type' => $this->mission->type->value,
+            'risk' => $this->mission->risk,
             'remainingSeconds' => $this->remainingSeconds,
             'fuelLoaded' => $this->fuelLoaded,
             'ammunitionLoaded' => $this->ammunitionLoaded,

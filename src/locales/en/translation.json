@@ -70,7 +70,7 @@
   },
   "combat": {
     "title": "Air combat",
-    "hint": "You are at the controls facing a {{enemy}}: get behind it and keep it in the gunsight: after a second your aircraft fires by itself and it is shot down, before time runs out.",
+    "hint": "You are at the controls facing a {{enemy}}: get behind it and keep it in the gunsight: every moment spent in the gunsight counts, and when the count is full your aircraft fires by itself and it is shot down, before time runs out.",
     "controls": "Steer with the arrow keys or with the stick under the view. The pilot's head, in the middle of the instrument panel, turns toward the enemy.",
     "toast": "Enemy fighters in sight: {{pilot}} can take the controls.",
     "toastResume": "Dogfight under way: {{pilot}}.",

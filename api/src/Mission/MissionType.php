@@ -47,16 +47,8 @@ enum MissionType: string
                 suppliesPerRiskPoint: new IntegerRange(85, 120),
                 commandPointsPerAircraft: 1,
             ),
-            self::AirCombat, self::FighterCombat, self::GroundAttack => new MissionProfile(
-                category: AircraftCategory::Fighter,
-                aircraftCount: new IntegerRange(1, 2),
-                durationSeconds: new IntegerRange(120, 240),
-                fuelPerAircraft: new IntegerRange(40, 60),
-                ammunitionPerAircraft: new IntegerRange(20, 40),
-                risk: new IntegerRange(2, 3),
-                suppliesPerRiskPoint: new IntegerRange(125, 170),
-                commandPointsPerAircraft: 2,
-            ),
+            self::AirCombat, self::GroundAttack => $this->fighterProfile(new IntegerRange(2, 3)),
+            self::FighterCombat => $this->fighterProfile(new IntegerRange(1, 3)),
             self::Bombing => new MissionProfile(
                 category: AircraftCategory::Bomber,
                 aircraftCount: new IntegerRange(1, 2),
@@ -68,5 +60,20 @@ enum MissionType: string
                 commandPointsPerAircraft: 3,
             ),
         };
+    }
+
+    /** The profile of a mission flown by fighters, which differs from one type to another by its risk. */
+    private function fighterProfile(IntegerRange $risk): MissionProfile
+    {
+        return new MissionProfile(
+            category: AircraftCategory::Fighter,
+            aircraftCount: new IntegerRange(1, 2),
+            durationSeconds: new IntegerRange(120, 240),
+            fuelPerAircraft: new IntegerRange(40, 60),
+            ammunitionPerAircraft: new IntegerRange(20, 40),
+            risk: $risk,
+            suppliesPerRiskPoint: new IntegerRange(125, 170),
+            commandPointsPerAircraft: 2,
+        );
     }
 }

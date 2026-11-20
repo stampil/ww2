@@ -382,6 +382,7 @@ function BaseScreen({ player }: { player: Player }) {
           alert={duel.alert}
           maneuverability={duelCrew.aircraft.model.maneuverability}
           accuracy={duelCrew.pilot.effectiveAccuracy}
+          risk={duel.flight.risk}
           onStart={(alertId) => order(startAlert(alertId))}
           onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}
           onClose={() => setDuelAlertId(null)}

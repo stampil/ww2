@@ -8,13 +8,13 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 
 | Il me faut | Ça débloque |
 |---|---|
-| Ton « généré » des trois feuilles du pilote (prompts du 20/11 : matériaux réalistes, trois vues, détails du casque et des lunettes) | un pilote et un casque réalistes, à la place des sphères |
+| Ton « généré » de la feuille des trois vues du pilote sur fond magenta (prompt du 20/11, image 1 = la feuille des trois vues reçue), et ton choix pour le pilote (question 1) | un pilote réaliste dans le cockpit, à la place des sphères |
 | Ton accord pour télécharger `SV-GB.png` (1 274 820 octets, GPL v2, FGAddon) | le D.520 à livrée allemande, avion de l'Axe |
 | Ton « généré » des trois états de camp refaits, un prompt par état (donnés le 19/11, image 1 = le camp libre ; la feuille de trois reçue est refusée : vert vif et contenu différent d'une icône à l'autre) | les camps sur la carte |
 
 ## 2. Questions à lever
 
-Aucune : tout ce qui restait ouvert est tranché, il manque tes « go ».
+1. **Le pilote du cockpit.** Les trois feuilles reçues le 20/11 donnent un pilote aux vraies proportions, mais ce sont des photographies, pas un modèle 3D. (a) Je remplace les sphères par les vues de dos et de profil, découpées et fondues selon l'angle de la tête qui tourne vers l'ennemi, comme un carton à trois faces : rapide, réaliste, l'inclinaison de la tête vers le haut ou le bas reste approchée. (b) Je modélise une vraie tête en 3D et je la texture avec ces images : plus long, et un visage réaliste n'est pas garanti. (c) Je corrige seulement les sphères (plus d'yeux de dessin animé, crâne plus juste) sans les images. Je recommande (a). D'accord ?
 
 ## 3. Le travail restant, dans l'ordre
 

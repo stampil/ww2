@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import EventList from './EventList'
 import FlightList from './FlightList'
 import { formatDuration } from './formatDuration'
 import type { BusyCrews } from './flights'
@@ -8,7 +7,7 @@ import GiveTo from './GiveTo'
 import Icon from './Icon'
 import MissionBoard from './MissionBoard'
 import Pane from './Pane'
-import type { AwayAircraft, Base, BaseEvent, Flight, Offer, Recipient, Rest, Squadron } from './useBase'
+import type { AwayAircraft, Base, Flight, Offer, Recipient, Rest, Squadron } from './useBase'
 
 const GAUGE_MAX = 100
 
@@ -21,9 +20,10 @@ type Props = {
   /** The aircraft of the base stationed at another base, with their pilots. */
   away: AwayAircraft[]
   recruitment: Base['roster']['recruitment']
-  events: BaseEvent[]
   busy: BusyCrews
   unavailable: BusyCrews
+  /** Asks to open the journal of the base. */
+  onOpenJournal: () => void
   onLaunch: (missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number) => void
   onReceive: (missionId: number) => void
   onRest: (pilotId: number) => void
@@ -35,15 +35,21 @@ type Props = {
   onGivePilot: (pilotId: number, recipientBaseId: number) => void
 }
 
-/** The flights under way, the latest events, the missions on the table, and the pilots, who can rest and be joined by new ones. */
-function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, recruitment, events, busy, unavailable, onLaunch, onReceive, onRest, onRecruit, onStartOver, recipients, onGivePilot }: Props) {
+/** The flights under way, the journal, the missions on the table, and the pilots, who can rest and be joined by new ones. */
+function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, recruitment, busy, unavailable, onOpenJournal, onLaunch, onReceive, onRest, onRecruit, onStartOver, recipients, onGivePilot }: Props) {
   const { t } = useTranslation()
   const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
 
   return (
     <>
       {flights.length > 0 && <FlightList flights={flights} squadron={squadron} onReceive={onReceive} />}
-      {events.length > 0 && <EventList events={events} />}
+      <Pane title={t('base.mission.reports')}>
+        <div className="card-actions">
+          <button type="button" onClick={onOpenJournal}>
+            {t('journal.open')}
+          </button>
+        </div>
+      </Pane>
       <MissionBoard weather={weather} offers={offers} squadron={squadron} busy={unavailable} onLaunch={onLaunch} />
       <Pane title={t('squadron.pilots')}>
         <ul className="cards">

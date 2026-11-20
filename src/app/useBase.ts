@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { parseGameTime } from './gameDate'
 import type { Player } from './useAccount'
 
 export type Stock = 'fuel' | 'ammunition' | 'materials'
@@ -90,6 +91,9 @@ export type MissionReport = {
   type: MissionType
   success: boolean
   windSpeed: number
+  /** How dangerous the mission was, from 1 to 3, and how long it lasted; absent from the reports kept before the journal told them. */
+  risk?: number
+  durationSeconds?: number
   suppliesWon: number
   commandPointsWon: number
   /** Whether the reconnaissance spotted a better paid mission; absent from the reports kept before missions could be spotted. */
@@ -97,10 +101,15 @@ export type MissionReport = {
   crews: {
     pilotName: string
     aircraftName: string
+    /** Whether this crew did what the mission asked; absent from the reports kept before the journal told it. */
+    succeeded?: boolean
     damage: number
     burning: boolean
     aircraftLost: boolean
     pilotKilled: boolean
+    /** The gauges of the pilot after the flight; absent from the reports kept before the journal told them. */
+    fatigue?: number
+    stress?: number
   }[]
 }
 export type ExplosionEvent = { kind: 'explosion'; id: number; aircraftName: string; pilotName: string | null; pilotKilled: boolean }
@@ -120,8 +129,8 @@ export type GiftEvent = {
 export type LandingEvent = { kind: 'landing'; id: number; from: string; site: string; aircraftName: string; fuel: number; ammunition: number; materials?: number; supplies?: number }
 /** The base took a camp, or let one go, when an aircraft landed on it or the last one left. */
 export type CampEvent = { kind: 'campTaken'; id: number; site: string } | { kind: 'campLost'; id: number; site: string }
-/** What happened at the base; the newest event comes first. */
-export type BaseEvent = MissionReport | ExplosionEvent | GiftEvent | LandingEvent | CampEvent
+/** What happened at the base, with the game time it happened at, which the events kept before the journal dated them do not have; the newest event comes first. */
+export type BaseEvent = (MissionReport | ExplosionEvent | GiftEvent | LandingEvent | CampEvent) & { gameTime?: string }
 
 export type UpgradeName = 'hangar' | 'workshop' | 'warehouse'
 /** What the command points buy for a building; the cost is null at the top level. */
@@ -202,8 +211,6 @@ const API_DOWN = 'apiDown'
 const NO_BASE = 'noBase'
 const CLAIM_URL = '/api/world/claim'
 const MILLISECONDS_PER_SECOND = 1000
-// The API writes the game time without a time zone; read as UTC it shows as written.
-const UTC_DESIGNATOR = 'Z'
 
 async function request(url: string, body?: object): Promise<{ base: Base } | { error: string }> {
   try {
@@ -256,7 +263,7 @@ function hasHangarCountdownEnded(received: HangarAircraft[], shown: HangarAircra
 
 /** The game time of the base, moved on by the seconds gone by since the API sent it. */
 function gameTimeAfter(base: Base, elapsedSeconds: number): Date {
-  const receivedGameTime = Date.parse(`${base.clock.gameTime}${UTC_DESIGNATOR}`)
+  const receivedGameTime = parseGameTime(base.clock.gameTime).getTime()
   return new Date(receivedGameTime + elapsedSeconds * MILLISECONDS_PER_SECOND)
 }
 

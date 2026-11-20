@@ -23,6 +23,7 @@ import GuideWelcome from './GuideWelcome'
 import HangarPanel from './HangarPanel'
 import HeadquartersPanel from './HeadquartersPanel'
 import Hud from './Hud'
+import JournalBook from './JournalBook'
 import MissionToasts from './MissionToasts'
 import ReconnaissanceWindow from './ReconnaissanceWindow'
 import type { Player } from './useAccount'
@@ -100,6 +101,7 @@ function BaseScreen({ player }: { player: Player }) {
   const [emergingIds, setEmergingIds] = useState<number[]>([])
   const [guideStatus, setGuideStatus] = useGuideStatus(player.id)
   const [isConfirmingReset, setIsConfirmingReset] = useState(false)
+  const [isJournalOpen, setIsJournalOpen] = useState(false)
   const [duelAlertId, setDuelAlertId] = useState<number | null>(null)
   const removeDeparture = useCallback((aircraftId: number) => {
     setDepartures((current) => current.filter((departure) => departure.aircraftId !== aircraftId))
@@ -314,9 +316,9 @@ function BaseScreen({ player }: { player: Player }) {
               rests={rests}
               away={away}
               recruitment={base.roster.recruitment}
-              events={base.events}
               busy={busy}
               unavailable={unavailable}
+              onOpenJournal={() => setIsJournalOpen(true)}
               onLaunch={(missionId, pilotIds, aircraftIds, fuel, ammunition) => void launch(missionId, pilotIds, aircraftIds, fuel, ammunition)}
               onReceive={(missionId) => void receive(missionId)}
               onRest={(pilotId) => void order(restPilot(pilotId))}
@@ -392,6 +394,8 @@ function BaseScreen({ player }: { player: Player }) {
           onClose={() => setDuelAlertId(null)}
         />
       )}
+
+      {isJournalOpen && <JournalBook site={base.site} onDismiss={() => setIsJournalOpen(false)} />}
 
       {isConfirmingReset && <ResetConfirm onConfirm={() => void startOver()} onCancel={() => setIsConfirmingReset(false)} />}
 

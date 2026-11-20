@@ -262,6 +262,208 @@
       "ally": "{{site}} ({{holder}}, allié)"
     }
   },
+  "journal": {
+    "title": "Journal",
+    "hint": "Les pages écrites par les pilotes au retour de chaque mission, et les notes du camp.",
+    "open": "Voir",
+    "loading": "Le carnet s'ouvre…",
+    "empty": "Les pages sont encore blanches : le premier retour de mission les remplira.",
+    "pages": "Pages du journal",
+    "previous": "Page précédente",
+    "next": "Page suivante",
+    "pageOf": "{{current}} / {{total}}",
+    "dayPart": {
+      "morning": "ce matin",
+      "afternoon": "cet après-midi",
+      "evening": "ce soir",
+      "night": "cette nuit",
+      "unknown": "aujourd'hui"
+    },
+    "reconnaissance": {
+      "opening": [
+        "Ordre de partir en reconnaissance {{dayPart}}, à bord du {{aircraft}}. Il faut regarder sans se faire voir.",
+        "Reconnaissance {{dayPart}}. Le {{aircraft}} ronronnait bien au décollage, ça rassure toujours.",
+        "J'ai décollé {{dayPart}} pour aller voir ce que l'ennemi prépare. Mission sans coups de feu, en principe.",
+        "Départ en reconnaissance {{dayPart}}. On vole bas, on ouvre l'œil, on rentre. Voilà tout le programme."
+      ],
+      "success": [
+        "J'ai bien repéré ce qu'on cherchait, et ça a l'air de servir : le commandement avait la mine contente en lisant mon compte rendu.",
+        "Tout ce que je voulais voir, je l'ai vu. Je l'ai noté sur ma carte pendant que je m'en souvenais encore.",
+        "Le terrain m'a livré ses secrets : colonnes, dépôts, fumées. Ça fera une bonne page pour l'état-major."
+      ],
+      "failure": [
+        "J'ai vu bien peu de chose : la brume et la peur de lever la tête font mauvais ménage. J'ai honte de rentrer les mains vides.",
+        "Retour à la base sans rien de précis. Ma carte est presque blanche, et je sais que ça va se payer.",
+        "Rien vu qui vaille la peine d'être rapporté. Je me demande si j'ai mal regardé ou si l'ennemi s'est bien caché."
+      ]
+    },
+    "airCombat": {
+      "opening": [
+        "Alerte {{dayPart}} : des bombardiers en approche. On a décollé en vitesse à bord du {{aircraft}}, sans prendre le temps de finir le café.",
+        "Ordre d'intercepter des bombardiers {{dayPart}}. Le {{aircraft}} a grimpé comme il a pu.",
+        "Interception {{dayPart}}. Le moteur à fond, les yeux sur l'horizon, à chercher les points noirs."
+      ],
+      "success": [
+        "On les a eus avant qu'ils atteignent leur objectif. Leur formation s'est disloquée, et j'ai vu les premières fumées.",
+        "Les bombardiers ont fait demi-tour, certains en flammes. Pour une fois, personne n'a reçu leurs bombes sur la tête.",
+        "Je les ai pris par l'arrière, comme on nous l'a appris, et je n'ai lâché ma rafale qu'à bonne distance. Ils n'ont pas tenu."
+      ],
+      "failure": [
+        "Les bombardiers sont passés. Je n'ai pas réussi à les arrêter, et je sais ce qu'ils vont laisser derrière eux.",
+        "Trop tard, trop loin, trop peu d'avions. Ils ont fait leur travail, et nous avons raté le nôtre.",
+        "Ils m'ont filé entre les doigts. Je rumine ma rafale manquée."
+      ]
+    },
+    "fighterCombat": {
+      "opening": [
+        "Combat {{dayPart}} contre des chasseurs ennemis. Le {{aircraft}} était prêt, moi un peu moins.",
+        "On a croisé des chasseurs {{dayPart}}. Un duel, rien que ça, à bord du {{aircraft}}.",
+        "Patrouille de chasse {{dayPart}}, et l'ennemi n'a pas fait semblant de nous éviter."
+      ],
+      "success": [
+        "J'ai pris l'ennemi dans mon collimateur au bon moment et ma rafale a fait le reste. Je l'ai vu tomber.",
+        "Un virage serré, un temps de visée, et c'était fini : l'avion ennemi est parti en torche, et je n'ai plus senti mes mains.",
+        "Au final, le ciel m'est resté, et l'autre a quitté la partie. Je ne m'en réjouis pas, mais je respire."
+      ],
+      "failure": [
+        "L'avion ennemi m'a échappé. Je l'ai suivi trop loin, j'ai tiré trop tôt ; j'ai gâché ma chance.",
+        "Mon adversaire était meilleur que moi aujourd'hui, voilà tout. Je n'ai pas réussi à l'avoir dans mon collimateur.",
+        "Aucun résultat. Mon adversaire a su se défendre, et mes balles ont fini dans le vide."
+      ]
+    },
+    "groundAttack": {
+      "opening": [
+        "Attaque au sol {{dayPart}}, en rase-mottes à bord du {{aircraft}}. On voit des visages là-dessous, ce n'est jamais agréable.",
+        "Mission sur les lignes ennemies {{dayPart}}. Le {{aircraft}} a rasé les champs, les arbres défilaient sous les ailes.",
+        "On m'a confié une attaque au sol {{dayPart}}. Camions, convois, tout ce qui roule et tire."
+      ],
+      "success": [
+        "Les camions ont pris feu les uns après les autres. J'ai remonté en chandelle avec le cœur dans la gorge.",
+        "Cible touchée, et bien touchée. La colonne est coupée, ça ralentira un peu leur avance.",
+        "Passe après passe, j'ai fait mon travail. Ce n'est pas glorieux, mais c'est utile."
+      ],
+      "failure": [
+        "Mes rafales sont tombées à côté, dans les champs. Ma passe n'a fait que lever de la poussière, et la colonne a continué sa route.",
+        "Trop haut, trop vite : cible manquée. La DCA m'a bien fait comprendre que je dérangeais.",
+        "Je n'ai rien touché d'important. Il faudra y retourner et faire mieux."
+      ]
+    },
+    "bombing": {
+      "opening": [
+        "Bombardement {{dayPart}}, le {{aircraft}} chargé jusqu'aux ailes. On sent le poids dans chaque virage.",
+        "Mission de bombardement {{dayPart}}. La cible était là, au fond de mon viseur, minuscule et immobile.",
+        "Départ pour un bombardement {{dayPart}}. L'avion rechigne sous la charge mais il tient."
+      ],
+      "success": [
+        "Les bombes sont tombées où il fallait. J'ai vu la poussière monter bien avant d'entendre quoi que ce soit.",
+        "En plein dans le mille, ou pas loin. Les équipes au sol seront contentes.",
+        "Largage propre, cible détruite. J'ai viré sans me retourner."
+      ],
+      "failure": [
+        "Mes bombes ont creusé des trous dans un champ. Le vent les a poussées, ou c'est moi qui ai mal visé.",
+        "Cible manquée. Il va falloir recommencer, et cette fois, bien viser.",
+        "J'ai lâché trop tôt ou trop tard, je ne sais plus. Les bombes sont tombées ailleurs."
+      ]
+    },
+    "wind": {
+      "calm": [
+        "Pas un souffle de vent, l'air était lisse comme de l'huile.",
+        "Le ciel était calme, presque indécent vu ce qu'on allait y faire."
+      ],
+      "strong": [
+        "Le vent n'a pas cessé de bousculer l'avion. J'ai dû tenir le manche à deux mains.",
+        "Avec ce vent à décorner les bœufs, l'avion dérivait sans cesse. Je n'ai pas aimé."
+      ]
+    },
+    "crew": {
+      "alone": [
+        "Personne à mes côtés dans le ciel, rien que le bruit du moteur.",
+        "Sans ailier, cette fois : il faut se surveiller soi-même."
+      ],
+      "together": [
+        "Avec moi dans la formation : {{comrades}}.",
+        "On était plusieurs, avec {{comrades}} à mes côtés. Ça aide de savoir quelqu'un sur son aile.",
+        "Dans le ciel, il y avait aussi {{comrades}}. On parle peu en vol, mais on se regarde beaucoup."
+      ]
+    },
+    "duration": {
+      "long": [
+        "{{minutes}} minutes en l'air : la jauge de carburant m'a fait de l'œil pendant tout le retour.",
+        "Longue sortie, {{minutes}} minutes au bas mot. J'ai senti la fatigue dans mes épaules au retour."
+      ]
+    },
+    "risk": {
+      "high": [
+        "On m'avait prévenu que c'était une mission dangereuse, et on ne m'avait pas menti.",
+        "Mission à haut risque : je l'ai su avant même de monter dans l'avion, à la tête du chef."
+      ]
+    },
+    "damage": {
+      "none": [
+        "Pas une égratignure sur le {{aircraft}}, c'est à noter.",
+        "L'avion est revenu sans une trace. Les mécaniciens vont s'ennuyer."
+      ],
+      "light": [
+        "Quelques éclats ont touché le {{aircraft}}, rien de grave.",
+        "On a un peu touché mon avion : quelques impacts, de quoi occuper les mécaniciens."
+      ],
+      "heavy": [
+        "Le {{aircraft}} est dans un sale état : l'aile percée, le moteur qui toussait. Je ne sais pas comment il m'a ramené.",
+        "J'ai ramené un avion déchiqueté. Les mécaniciens ont regardé le {{aircraft}}, puis ils ont levé les yeux vers moi."
+      ],
+      "burning": [
+        "Le {{aircraft}} fumait en finale, une odeur d'huile brûlée dans l'habitacle. Il faut l'éteindre avant qu'il n'explose sur la piste.",
+        "Des flammes léchaient le capot à l'atterrissage. Les pompiers ont couru, et moi aussi."
+      ],
+      "lost": [
+        "J'ai dû sauter. Le {{aircraft}} est parti en flammes dans un champ, et j'ai atterri sous la soie, les jambes en coton.",
+        "L'avion est perdu, c'est sûr. J'ai ouvert la verrière, j'ai sauté, et je n'ai rien senti avant d'être au sol."
+      ]
+    },
+    "loss": {
+      "one": [
+        "On a perdu {{lost}}. Je n'arrive pas à l'écrire sans que la plume tremble.",
+        "{{lost}} ne reviendra pas. Sa place au mess restera vide.",
+        "Pour {{lost}}, il faudra écrire à la famille. Ce n'est pas à moi de le faire, mais j'y pense déjà."
+      ],
+      "several": [
+        "On a perdu {{lost}}. Je n'arrive pas à l'écrire sans que la plume tremble.",
+        "{{lost}} ne reviendront pas. Leurs places au mess resteront vides.",
+        "Pour {{lost}}, il faudra écrire aux familles. Ce n'est pas à moi de le faire, mais j'y pense déjà."
+      ]
+    },
+    "state": {
+      "stressed": [
+        "J'ai les nerfs en pelote ; ma main tremble sur le papier.",
+        "Mes nerfs sont à vif : chaque bruit de moteur me fait sursauter."
+      ],
+      "tired": [
+        "La fatigue m'écrase : j'écris ces lignes les yeux qui se ferment.",
+        "Je n'ai plus de forces, juste assez pour tenir la plume avant de dormir."
+      ],
+      "fine": [
+        "Je me sens en forme, étonnamment, comme si le ciel m'avait rendu mes forces.",
+        "Rien à signaler de ce côté : le corps tient, la tête aussi."
+      ]
+    },
+    "closing": {
+      "success": [
+        "Demain, on recommence. Il faut bien que quelqu'un le fasse.",
+        "Je ferme ce carnet avec un peu de fierté, et je m'en veux presque d'en avoir.",
+        "Une bonne journée, comme on en a trop peu."
+      ],
+      "failure": [
+        "Demain, il faudra faire mieux. Je ne vois pas d'autre issue.",
+        "Je ferme ce carnet sur un goût de cendre.",
+        "Ce n'était pas la journée. Il y en aura d'autres, je veux le croire."
+      ]
+    },
+    "blank": [
+      "Cette page est restée blanche : personne ne l'a écrite. Manquent à l'appel : {{lost}}.",
+      "Aucune ligne ce jour-là. Personne n'a pu ouvrir ce carnet. Manquent à l'appel : {{lost}}.",
+      "Le crayon est resté à sa place. Cette mission n'a ramené personne pour le prendre. Manquent à l'appel : {{lost}}."
+    ]
+  },
   "world": {
     "choose": {
       "title": "Choisis ta base",
@@ -473,10 +675,6 @@
       "noGain": "Aucun gain",
       "spotted": "Une mission mieux payée est apparue à la tour de contrôle.",
       "windAtTakeoff": "vent au départ : {{windSpeed}} km/h",
-      "crewDamaged": "{{pilot}} ({{aircraft}}) : {{damage}} de durabilité perdue",
-      "crewLost": "{{pilot}} ({{aircraft}}) : avion perdu, pilote sauf",
-      "crewKilled": "{{pilot}} ({{aircraft}}) : avion perdu, pilote tué",
-      "burning": "avion en feu",
       "rest": "Faire reposer",
       "resting": "Au repos : {{time}}",
       "recruit": "Recruter un pilote",

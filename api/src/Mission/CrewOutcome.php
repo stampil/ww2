@@ -32,19 +32,22 @@ final readonly class CrewOutcome
     }
 
     /**
-     * The destroyed modules are left out: only an inspection of the aircraft tells them.
+     * The destroyed modules are left out: only an inspection of the aircraft tells them. The gauges of the pilot after the flight are what the journal tells of how the pilot feels.
      *
-     * @return array{pilotName: string, aircraftName: string, damage: int, burning: bool, aircraftLost: bool, pilotKilled: bool}
+     * @return array{pilotName: string, aircraftName: string, succeeded: bool, damage: int, burning: bool, aircraftLost: bool, pilotKilled: bool, fatigue: int, stress: int}
      */
     public function toArray(): array
     {
         return [
             'pilotName' => $this->pilotName,
             'aircraftName' => $this->aircraftName,
+            'succeeded' => $this->succeeded,
             'damage' => $this->damage,
             'burning' => $this->burning,
             'aircraftLost' => $this->aircraftLost,
             'pilotKilled' => $this->pilotKilled,
+            'fatigue' => $this->fatigue,
+            'stress' => $this->stress,
         ];
     }
 }

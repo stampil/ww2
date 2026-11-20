@@ -1,11 +1,10 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { GAME_TIME_ZONE } from './gameDate'
 import Icon from './Icon'
 import type { IconName } from './iconPaths'
 import type { Base } from './useBase'
 
-// The game date follows no real time zone, so it is shown as the API wrote it.
-const GAME_TIME_ZONE = 'UTC'
 const RESOURCES = ['supplies', 'fuel', 'ammunition', 'materials', 'commandPoints'] as const
 
 function HudItem({ icon, label, children }: { icon: IconName; label: string; children: ReactNode }) {

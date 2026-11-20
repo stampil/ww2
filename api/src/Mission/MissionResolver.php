@@ -75,6 +75,8 @@ final class MissionResolver
             $flight->mission->type,
             $success,
             $flight->windSpeed,
+            $flight->mission->risk,
+            $flight->mission->durationSeconds,
             $success ? $flight->mission->rewardSupplies : 0,
             $success ? $flight->mission->rewardCommandPoints : 0,
             $outcomes,

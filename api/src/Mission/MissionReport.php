@@ -16,6 +16,8 @@ final readonly class MissionReport
         public MissionType $type,
         public bool $success,
         public int $windSpeed,
+        public int $risk,
+        public int $durationSeconds,
         public int $suppliesWon,
         public int $commandPointsWon,
         public array $crews,
@@ -23,7 +25,7 @@ final readonly class MissionReport
     }
 
     /**
-     * @return array{kind: string, type: string, success: bool, windSpeed: int, suppliesWon: int, commandPointsWon: int, crews: list<array<string, int|string|bool>>}
+     * @return array{kind: string, type: string, success: bool, windSpeed: int, risk: int, durationSeconds: int, suppliesWon: int, commandPointsWon: int, crews: list<array<string, int|string|bool>>}
      */
     public function toArray(): array
     {
@@ -32,6 +34,8 @@ final readonly class MissionReport
             'type' => $this->type->value,
             'success' => $this->success,
             'windSpeed' => $this->windSpeed,
+            'risk' => $this->risk,
+            'durationSeconds' => $this->durationSeconds,
             'suppliesWon' => $this->suppliesWon,
             'commandPointsWon' => $this->commandPointsWon,
             'crews' => array_map(static fn (CrewOutcome $crew): array => $crew->toArray(), $this->crews),

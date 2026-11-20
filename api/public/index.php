@@ -76,7 +76,7 @@ $clocks = new GameClockStore($database);
 $baseFounder = new BaseFounder($baseStore);
 $missions = new MissionStore($database);
 $hangarStore = new HangarStore($database);
-$events = new EventLog($database);
+$events = new EventLog($database, $clocks);
 $upgrades = new Upgrades($database, $baseStore, $squadronFounder);
 $stationingStore = new StationingStore($database);
 $battleStore = new BattleStore($database, $stationingStore);
@@ -93,7 +93,7 @@ $holdings = new Holdings($database, $bases, $baseFounder, $squadrons, $stationin
 $stationings = new Stationings($database, $baseStore, $baseFounder, $stationingStore, $squadrons, $missions, $hangarStore, $warehouse, $bases, $clocks, $events, SitePlaces::fromFile(dirname(__DIR__) . '/data/site-places.json'));
 $overview = new BaseOverview($baseStore, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $squadrons, $events, $clocks, $bases, $stationings);
 $gifts = new Gifts($database, $baseStore, $squadrons, $missions, $hangarStore, $bases, $events, $stationingStore, $clocks);
-$baseController = new BaseController($overview, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $alerts, $bases, $session, $gifts, $stationings, $holdings);
+$baseController = new BaseController($overview, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $alerts, $bases, $session, $gifts, $stationings, $holdings, $events);
 $worldController = new WorldController($bases, $overview, $session, $holdings);
 
 $router = new Router();
@@ -107,6 +107,7 @@ $router->group('/api', function (RouteGroup $routes) use ($accounts, $players, $
     $routes->get('/world/map', [$worldController, 'map']);
     $routes->post('/world/claim', [$worldController, 'claim']);
     $routes->get('/base', [$baseController, 'show']);
+    $routes->get('/base/journal', [$baseController, 'journal']);
     $routes->post('/base/select', [$baseController, 'selectBase']);
     $routes->post('/base/gifts/pilot', [$baseController, 'givePilot']);
     $routes->post('/base/gifts/aircraft', [$baseController, 'giveAircraft']);

@@ -262,6 +262,208 @@
       "ally": "{{site}} ({{holder}}, ally)"
     }
   },
+  "journal": {
+    "title": "Diary",
+    "hint": "The pages the pilots write when they come back from each mission, and the notes of the camp.",
+    "open": "View",
+    "loading": "The diary is opening…",
+    "empty": "The pages are still blank: the first mission to come back will fill them.",
+    "pages": "Pages of the diary",
+    "previous": "Previous page",
+    "next": "Next page",
+    "pageOf": "{{current}} / {{total}}",
+    "dayPart": {
+      "morning": "this morning",
+      "afternoon": "this afternoon",
+      "evening": "this evening",
+      "night": "tonight",
+      "unknown": "today"
+    },
+    "reconnaissance": {
+      "opening": [
+        "Orders came to go on reconnaissance {{dayPart}}, in the {{aircraft}}. Look hard, stay unseen.",
+        "Reconnaissance {{dayPart}}. The {{aircraft}} purred nicely on takeoff, which is always a comfort.",
+        "I took off {{dayPart}} to see what the enemy is preparing. No shooting expected, in theory.",
+        "Off on reconnaissance {{dayPart}}. Fly low, keep your eyes open, come home. That is the whole plan."
+      ],
+      "success": [
+        "I found what we were looking for, and it looks useful: command looked pleased when it read my report.",
+        "Everything I wanted to see, I saw. I marked it on my map while it was still fresh.",
+        "The ground gave up its secrets: columns, depots, smoke. It will make a good page for headquarters."
+      ],
+      "failure": [
+        "I saw very little: haze and the fear of lifting my head do not mix. I am ashamed to come back empty-handed.",
+        "Back at base with nothing precise. My map is almost blank, and I know it will cost us.",
+        "Nothing worth reporting. I wonder whether I looked badly or the enemy hid well."
+      ]
+    },
+    "airCombat": {
+      "opening": [
+        "Alert {{dayPart}}: bombers on their way. We got off the ground in a rush in the {{aircraft}}, without time to finish the coffee.",
+        "Orders to intercept bombers {{dayPart}}. The {{aircraft}} climbed as hard as it could.",
+        "Interception {{dayPart}}. Engine flat out, eyes on the horizon, searching for black dots."
+      ],
+      "success": [
+        "We got them before they reached their target. Their formation came apart, and I saw the first plumes of smoke.",
+        "The bombers turned back, some of them burning. For once nobody had their bombs on their head.",
+        "I took them from behind, the way we were taught, and held my burst until I was close. They could not hold."
+      ],
+      "failure": [
+        "The bombers got through. I could not stop them, and I know what they will leave behind.",
+        "Too late, too far, too few aircraft. They did their job, and we failed at ours.",
+        "They slipped through my fingers. I keep chewing over the burst I missed."
+      ]
+    },
+    "fighterCombat": {
+      "opening": [
+        "Combat {{dayPart}} against enemy fighters. The {{aircraft}} was ready; I was a little less so.",
+        "We ran into fighters {{dayPart}}. A duel, no less, in the {{aircraft}}.",
+        "Fighter patrol {{dayPart}}, and the enemy made no pretence of avoiding us."
+      ],
+      "success": [
+        "I caught the enemy in my sights at the right moment and the burst did the rest. I watched it fall.",
+        "A tight turn, a moment to aim, and it was over: the enemy aircraft went down in flames, and I could no longer feel my hands.",
+        "In the end the sky stayed mine and the other one left the game. I take no joy in it, but I can breathe."
+      ],
+      "failure": [
+        "The enemy aircraft got away from me. I followed too far and fired too soon; I wasted my chance.",
+        "My opponent was better than me today, that is all. I could not get them into my sights.",
+        "No result. My opponent defended well, and my rounds went into empty air."
+      ]
+    },
+    "groundAttack": {
+      "opening": [
+        "Ground attack {{dayPart}}, skimming the treetops in the {{aircraft}}. You can see faces down there, and it is never pleasant.",
+        "A mission over the enemy lines {{dayPart}}. The {{aircraft}} brushed the fields, trees streaming under the wings.",
+        "They gave me a ground attack {{dayPart}}. Trucks, convoys, everything that rolls and shoots."
+      ],
+      "success": [
+        "The trucks caught fire one after another. I pulled up with my heart in my throat.",
+        "Target hit, and well hit. The column is cut, which will slow their advance a little.",
+        "Pass after pass, I did my work. It is not glorious, but it is useful."
+      ],
+      "failure": [
+        "My rounds fell wide, into the fields. My pass only raised dust, and the column went on its way.",
+        "Too high, too fast: target missed. The flak made it quite clear that I was in the way.",
+        "I hit nothing that matters. We will have to go back and do better."
+      ]
+    },
+    "bombing": {
+      "opening": [
+        "Bombing run {{dayPart}}, the {{aircraft}} loaded to the wingtips. You feel the weight in every turn.",
+        "Bombing mission {{dayPart}}. The target was down there in my sight, tiny and still.",
+        "Off on a bombing run {{dayPart}}. The aircraft grumbles under the load, but it holds."
+      ],
+      "success": [
+        "The bombs fell where they should. I saw the dust rise long before I heard anything.",
+        "Right on the mark, or close to it. The crews on the ground will be pleased.",
+        "A clean drop, target destroyed. I banked away without looking back."
+      ],
+      "failure": [
+        "My bombs dug holes in a field. The wind pushed them, or I aimed badly.",
+        "Target missed. We will have to go again, and this time aim properly.",
+        "I released too early or too late, I no longer know which. The bombs fell somewhere else."
+      ]
+    },
+    "wind": {
+      "calm": [
+        "Not a breath of wind; the air was smooth as oil.",
+        "The sky was calm, almost indecent given what we were about to do in it."
+      ],
+      "strong": [
+        "The wind kept tossing the aircraft about. I had to hold the stick with both hands.",
+        "With a wind like that the aircraft kept drifting. I did not like it."
+      ]
+    },
+    "crew": {
+      "alone": [
+        "Nobody on my wing, only the sound of the engine for company.",
+        "No wingman this time: you have to watch your own back."
+      ],
+      "together": [
+        "With me in the formation: {{comrades}}.",
+        "There were several of us, with {{comrades}} alongside. It helps to know someone is on your wing.",
+        "Also up there: {{comrades}}. We talk little in flight, but we watch each other a lot."
+      ]
+    },
+    "duration": {
+      "long": [
+        "{{minutes}} minutes in the air: the fuel gauge winked at me the whole way home.",
+        "A long sortie, {{minutes}} minutes at least. I felt it in my shoulders on the way back."
+      ]
+    },
+    "risk": {
+      "high": [
+        "I had been warned this was a dangerous mission, and nobody had lied to me.",
+        "A high-risk mission: I knew it before I even climbed in, from the look on the chief's face."
+      ]
+    },
+    "damage": {
+      "none": [
+        "Not a scratch on the {{aircraft}}, worth noting.",
+        "The aircraft came back without a mark. The mechanics will be bored."
+      ],
+      "light": [
+        "A few splinters hit the {{aircraft}}, nothing serious.",
+        "My aircraft took a few hits: some holes, enough to keep the mechanics busy."
+      ],
+      "heavy": [
+        "The {{aircraft}} is in a sorry state: a wing pierced, the engine coughing. I do not know how it brought me home.",
+        "I brought back a shredded aircraft. The mechanics looked at the {{aircraft}}, then looked up at me."
+      ],
+      "burning": [
+        "The {{aircraft}} was smoking on final, a smell of burning oil in the cockpit. It has to be put out before it blows up on the runway.",
+        "Flames licked the cowling on landing. The crews ran, and so did I."
+      ],
+      "lost": [
+        "I had to jump. The {{aircraft}} went down in flames in a field, and I landed under the silk, legs like jelly.",
+        "The aircraft is lost, that much is certain. I opened the canopy, jumped, and felt nothing until I was on the ground."
+      ]
+    },
+    "loss": {
+      "one": [
+        "We lost {{lost}}. I cannot write it without the pen shaking.",
+        "{{lost}} will not be coming back. A place at the mess will stay empty.",
+        "Someone will have to write to the family of {{lost}}. It is not for me to do, but I am already thinking of it."
+      ],
+      "several": [
+        "We lost {{lost}}. I cannot write it without the pen shaking.",
+        "{{lost}} will not be coming back. Their places at the mess will stay empty.",
+        "Someone will have to write to the families of {{lost}}. It is not for me to do, but I am already thinking of it."
+      ]
+    },
+    "state": {
+      "stressed": [
+        "My nerves are in knots; my hand shakes on the paper.",
+        "My nerves are raw: every engine noise makes me jump."
+      ],
+      "tired": [
+        "Tiredness weighs me down: I write these lines with my eyes closing.",
+        "I have no strength left, just enough to hold the pen before I sleep."
+      ],
+      "fine": [
+        "I feel well, surprisingly, as if the sky had given me my strength back.",
+        "Nothing to report on that side: the body holds, and so does the head."
+      ]
+    },
+    "closing": {
+      "success": [
+        "Tomorrow we do it again. Someone has to.",
+        "I close this book with a little pride, and I almost resent having any.",
+        "A good day, the kind we get too rarely."
+      ],
+      "failure": [
+        "Tomorrow we will have to do better. I see no other way out.",
+        "I close this book with a taste of ash.",
+        "It was not the day for it. There will be others, I want to believe."
+      ]
+    },
+    "blank": [
+      "This page stayed blank. None of the pilots came back to write it. Missing from the roll call: {{lost}}.",
+      "Not a line that day. Nobody could open this book. Missing from the roll call: {{lost}}.",
+      "The pencil stayed in its place. Nobody came back from this mission to pick it up. Missing from the roll call: {{lost}}."
+    ]
+  },
   "world": {
     "choose": {
       "title": "Choose your base",
@@ -473,10 +675,6 @@
       "noGain": "No reward",
       "spotted": "A better paid mission has appeared at the control tower.",
       "windAtTakeoff": "wind at takeoff: {{windSpeed}} km/h",
-      "crewDamaged": "{{pilot}} ({{aircraft}}): {{damage}} durability lost",
-      "crewLost": "{{pilot}} ({{aircraft}}): aircraft lost, pilot safe",
-      "crewKilled": "{{pilot}} ({{aircraft}}): aircraft lost, pilot killed",
-      "burning": "aircraft on fire",
       "rest": "Send to rest",
       "resting": "Resting: {{time}}",
       "recruit": "Recruit a pilot",

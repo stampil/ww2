@@ -16,6 +16,7 @@ use Ww2\Base\BaseException;
 use Ww2\Base\BaseOverview;
 use Ww2\Base\Battle;
 use Ww2\Base\Cargo;
+use Ww2\Base\EventLog;
 use Ww2\Base\Gifts;
 use Ww2\Base\Hangar;
 use Ww2\Base\Headquarters;
@@ -54,6 +55,7 @@ final class BaseController
         private readonly Gifts $gifts,
         private readonly Stationings $stationings,
         private readonly Holdings $holdings,
+        private readonly EventLog $events,
     ) {
     }
 
@@ -65,6 +67,16 @@ final class BaseController
     public function show(): array
     {
         return $this->overview->of($this->ownBaseId());
+    }
+
+    /**
+     * @return array{pages: list<array<string, mixed>>} the pages of the journal of the base the player looks at, the oldest first
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws ConflictException when the player holds no base yet
+     */
+    public function journal(): array
+    {
+        return ['pages' => $this->events->pages($this->ownBaseId())];
     }
 
     /**

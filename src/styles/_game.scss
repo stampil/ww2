@@ -21,6 +21,10 @@ $go: #35aa46;
 $go-dark: #228536;
 $alarm: #c94e36;
 $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
+// The paper and the ink of the journal, and the handwriting of its pages.
+$paper: #d9c9a0;
+$ink: #2e2a20;
+$handwriting-font: 'Caveat', 'DM Sans', cursive;
 
 @mixin frame {
   border: 2px solid $outline;
@@ -1487,4 +1491,83 @@ button.base-sprite {
     height: 3.5rem;
     color: $gold;
   }
+}
+
+@mixin paper {
+  padding: 1rem 1.25rem;
+  border: 2px solid $outline;
+  background: $paper;
+  box-shadow: inset 0 0 2rem rgba($khaki-dark, 0.5);
+  color: $ink;
+  font-family: $handwriting-font;
+  font-size: 1.35rem;
+  line-height: 1.35;
+}
+
+.journal-book {
+  @include flex($direction: column, $gap: 0.75rem);
+}
+
+.journal-empty {
+  @include paper;
+  margin: 0;
+  text-align: center;
+}
+
+// The two pages of the open book are the two columns of one sheet: the text runs from the left page to the right one.
+.journal-pages {
+  @include paper;
+  min-height: 18rem;
+
+  @include from('medium') {
+    padding: 1.5rem 2rem;
+    min-height: 22rem;
+    column-count: 2;
+    column-gap: 3rem;
+    column-rule: 2px solid rgba($ink, 0.35);
+  }
+
+  p {
+    margin: 0 0 0.75rem;
+  }
+}
+
+.journal-head {
+  @include flex($justify: space-between, $gap: 0.75rem);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba($ink, 0.4);
+  font-weight: 700;
+}
+
+.journal-signature {
+  text-align: right;
+  font-weight: 700;
+}
+
+.journal-facts {
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba($ink, 0.4);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.journal-note {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    @include flex($direction: column, $gap: 0.25rem);
+  }
+
+  strong {
+    text-decoration: underline;
+  }
+}
+
+.journal-nav {
+  @include flex($align: center, $justify: space-between, $gap: 0.75rem);
+  font-variant-numeric: tabular-nums;
 }

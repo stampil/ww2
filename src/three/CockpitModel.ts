@@ -8,6 +8,7 @@ const TEXTURES_URL = assetUrl('models/d520/cockpit/')
 const CANOPY_PARTS = ['intcanopy', 'inttourcanopy']
 const GUNSIGHT_PARTS = ['collimator/vitre', 'collimator/viseur', 'collimator/projo']
 const REAR_CANOPY_PARTS = ['inttourcanopy']
+const GLASS_PARTS = ['intvitres', 'inttourvitres']
 const CANOPY_TRAVEL_METERS = 0.6
 const CANOPY_TRAVEL_SECONDS = 2
 const DEGREES = Math.PI / 180
@@ -65,6 +66,7 @@ export class CockpitModel {
   private gaugePhase = 0
   private isGunsightHidden = false
   private isRearCanopyHidden = false
+  private isGlassHidden = false
 
   constructor() {
     void this.load()
@@ -90,6 +92,12 @@ export class CockpitModel {
   /** Hides the inside of the rear canopy, whose arch passes close behind the eye and covers the top of a view that looks ahead from the seat. */
   hideRearCanopy(): void {
     this.isRearCanopyHidden = true
+    this.applyVisibility()
+  }
+
+  /** Hides the tinted panes of the canopy, which dull what is seen through them: a small aircraft far ahead. */
+  hideGlass(): void {
+    this.isGlassHidden = true
     this.applyVisibility()
   }
 
@@ -151,6 +159,7 @@ export class CockpitModel {
   private applyVisibility(): void {
     this.showParts(GUNSIGHT_PARTS, !this.isGunsightHidden)
     this.showParts(REAR_CANOPY_PARTS, !this.isRearCanopyHidden)
+    this.showParts(GLASS_PARTS, !this.isGlassHidden)
   }
 
   private showParts(names: string[], isVisible: boolean): void {

@@ -14,6 +14,7 @@ const BLADES_PART = 'helice'
 const SPINNER_PART = 'bol'
 const BLUR_PART = 'propblur'
 const CANOPY_PARTS = ['canopy', 'tourcanopy']
+const GLASS_PARTS = ['vitres', 'tourvitres']
 const DEGREES = Math.PI / 180
 const FULL_TURN_RADIANS = 2 * Math.PI
 const MAX_PROPELLER_TURNS_PER_SECOND = 10
@@ -149,6 +150,7 @@ export class D520Model {
   private tailNumber: number | undefined
   private damageTexture: THREE.CanvasTexture | undefined
   private damageLevel = 0
+  private isGlassHidden = false
   private wheelAngle = 0
   private deflection = { aileron: 0, rudder: 0, elevator: 0 }
   private sweepPhase = 0
@@ -209,6 +211,13 @@ export class D520Model {
   /** Hides the inside of the rear canopy of the cockpit, which would cover the top of a view from the seat. */
   hideRearCanopy(): void {
     this.cockpit.hideRearCanopy()
+  }
+
+  /** Hides the tinted panes of the canopy, inside and out, for a view from the seat that has to show a small aircraft far ahead. */
+  hideGlass(): void {
+    this.isGlassHidden = true
+    this.applyGlassVisibility()
+    this.cockpit.hideGlass()
   }
 
   /** Starts or stops one animation: it eases in and out; the canopy is the cockpit's, and the gauges follow the engine. */
@@ -367,6 +376,16 @@ export class D520Model {
     }
     this.buildRig()
     this.applyTexture()
+    this.applyGlassVisibility()
+  }
+
+  private applyGlassVisibility(): void {
+    GLASS_PARTS.forEach((name) => {
+      const mesh = this.parts.get(name)
+      if (mesh !== undefined) {
+        mesh.visible = !this.isGlassHidden
+      }
+    })
   }
 
   /** Puts the moving parts in hinges, so that turning a hinge turns its parts around the axis of d520.xml. */

@@ -8,6 +8,7 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 
 | Il me faut | Ça débloque |
 |---|---|
+| Ton « généré » de la feuille des seize matières des bâtiments (prompt du 20/11, image 1 = les seize aplats des modèles 3D) | les bâtiments texturés |
 | Ton accord pour télécharger `SV-GB.png` (1 274 820 octets, GPL v2, FGAddon) | le D.520 à livrée allemande, avion de l'Axe |
 | Ton « généré » des trois états de camp refaits, un prompt par état (donnés le 19/11, image 1 = le camp libre ; la feuille de trois reçue est refusée : vert vif et contenu différent d'une icône à l'autre) | les camps sur la carte |
 

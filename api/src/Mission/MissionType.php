@@ -12,6 +12,9 @@ use Ww2\Squadron\AircraftCategory;
  */
 enum MissionType: string
 {
+    /** One air combat mission in this many is an ace mission. */
+    private const ACE_ONE_IN = 8;
+
     case Reconnaissance = 'reconnaissance';
     case AirCombat = 'airCombat';
     case FighterCombat = 'fighterCombat';
@@ -47,8 +50,9 @@ enum MissionType: string
                 suppliesPerRiskPoint: new IntegerRange(85, 120),
                 commandPointsPerAircraft: 1,
             ),
-            self::AirCombat, self::GroundAttack => $this->fighterProfile(new IntegerRange(2, 3)),
-            self::FighterCombat => $this->fighterProfile(new IntegerRange(1, 3)),
+            self::AirCombat => $this->fighterProfile(new IntegerRange(2, 2), self::ACE_ONE_IN),
+            self::GroundAttack => $this->fighterProfile(new IntegerRange(2, 3)),
+            self::FighterCombat => $this->fighterProfile(new IntegerRange(1, 2), self::ACE_ONE_IN),
             self::Bombing => new MissionProfile(
                 category: AircraftCategory::Bomber,
                 aircraftCount: new IntegerRange(1, 2),
@@ -62,8 +66,8 @@ enum MissionType: string
         };
     }
 
-    /** The profile of a mission flown by fighters, which differs from one type to another by its risk. */
-    private function fighterProfile(IntegerRange $risk): MissionProfile
+    /** The profile of a mission flown by fighters, which differs from one type to another by its risk and its ace missions. */
+    private function fighterProfile(IntegerRange $risk, ?int $aceOneIn = null): MissionProfile
     {
         return new MissionProfile(
             category: AircraftCategory::Fighter,
@@ -74,6 +78,7 @@ enum MissionType: string
             risk: $risk,
             suppliesPerRiskPoint: new IntegerRange(125, 170),
             commandPointsPerAircraft: 2,
+            aceOneIn: $aceOneIn,
         );
     }
 }

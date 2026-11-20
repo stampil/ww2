@@ -7,11 +7,14 @@ namespace Ww2\Mission;
 use Random\Randomizer;
 
 /**
- * Draws a new mission: a type at random among those given, then each figure within the range of that type.
+ * Draws a new mission: a type at random among those given, then each figure within the range of that type; a type that has them draws a rare ace mission now and then.
  */
 final class MissionGenerator
 {
     private const FULL_REWARD_PERCENT = 100;
+    private const ACE_RISK = 3;
+    /** What an ace mission pays on top of the supplies that its risk alone would pay. */
+    private const ACE_REWARD_PERCENT = 150;
 
     public function __construct(private readonly Randomizer $random = new Randomizer())
     {
@@ -29,7 +32,12 @@ final class MissionGenerator
         $duration = $profile->durationSeconds->draw($this->random);
         $fuel = $profile->fuelPerAircraft->draw($this->random);
         $ammunition = $profile->ammunitionPerAircraft->draw($this->random);
-        $risk = $profile->risk->draw($this->random);
+        $isAce = $profile->aceOneIn !== null && $this->random->getInt(1, $profile->aceOneIn) === 1;
+        $risk = $isAce ? self::ACE_RISK : $profile->risk->draw($this->random);
+        $supplies = $profile->suppliesPerRiskPoint->draw($this->random) * $risk * $aircraftCount;
+        if ($isAce) {
+            $supplies = $this->scaled($supplies, self::ACE_REWARD_PERCENT);
+        }
 
         return new Mission(
             0,
@@ -39,7 +47,7 @@ final class MissionGenerator
             $fuel,
             $ammunition,
             $risk,
-            $this->scaled($profile->suppliesPerRiskPoint->draw($this->random) * $risk * $aircraftCount, $rewardPercent),
+            $this->scaled($supplies, $rewardPercent),
             $this->scaled($profile->commandPointsPerAircraft * $aircraftCount, $rewardPercent),
         );
     }

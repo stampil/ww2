@@ -31,11 +31,6 @@ const TILE_METERS = {
 }
 // A face whose normal points this much along an axis is flat against it.
 const FLAT_NORMAL = 0.99
-const SHADOW_SIZE_SHARE = 1.3
-// The sun is to the west and north: the shadows fall a little to the east and the south, by this share of the height.
-const SHADOW_SHIFT = { x: 0.35, y: -0.25 }
-const SHADOW_OPACITY = 0.45
-const SHADOW_LIFT_METERS = 0.05
 const WINDSOCK_BANDS = 8
 
 type TextureName = keyof typeof TILE_METERS
@@ -83,17 +78,6 @@ function windsockTexture(): THREE.CanvasTexture {
       context.fillStyle = band % 2 === 0 ? '#c6402b' : '#f1ede1'
       context.fillRect(0, (band * size) / WINDSOCK_BANDS, size, size / WINDSOCK_BANDS)
     }
-  })
-}
-
-/** A dark spot, soft at its edges, that lies on the ground under a building. */
-function shadowTexture(): THREE.CanvasTexture {
-  return canvasTexture((context, size) => {
-    const gradient = context.createRadialGradient(size / 2, size / 2, size * 0.2, size / 2, size / 2, size / 2)
-    gradient.addColorStop(0, `rgba(0, 0, 0, ${SHADOW_OPACITY})`)
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-    context.fillStyle = gradient
-    context.fillRect(0, 0, size, size)
   })
 }
 
@@ -405,17 +389,13 @@ const BUILDERS: Record<string, Builder> = {
   'anti-aircraft-bunker': bunker,
 }
 
-/** A building as wide as its tile says, its south wall on the south edge of its tile, the way the pictures of the flat map stand, with its shadow on the ground. */
-function placed(model: THREE.Group, sprite: PlacedSprite, runway: PlanRunway, shadow: THREE.Texture): THREE.Group {
+/** A building as wide as its tile says, its south wall on the south edge of its tile, the way the pictures of the flat map stand. */
+function placed(model: THREE.Group, sprite: PlacedSprite, runway: PlanRunway): THREE.Group {
   const size = new THREE.Box3().setFromObject(model)
   const width = size.max.x - size.min.x
-  const depth = size.max.y - size.min.y
-  const height = size.max.z
   model.position.set(-(size.min.x + size.max.x) / 2, -size.min.y, 0)
-  const shadowSpot = new THREE.Mesh(new THREE.PlaneGeometry(width * SHADOW_SIZE_SHARE, depth * SHADOW_SIZE_SHARE), new THREE.MeshBasicMaterial({ map: shadow, transparent: true, depthWrite: false }))
-  shadowSpot.position.set(height * SHADOW_SHIFT.x, depth / 2 + height * SHADOW_SHIFT.y, SHADOW_LIFT_METERS)
   const wrapper = new THREE.Group()
-  wrapper.add(shadowSpot, model)
+  wrapper.add(model)
   wrapper.scale.setScalar((sprite.widthTiles * TILE_SIZE_METERS) / width)
   const tileCenter = tileCenterOf(runway, sprite.row, sprite.column)
   wrapper.position.set(tileCenter.x, tileCenter.y - TILE_SIZE_METERS / 2, 0)
@@ -425,10 +405,9 @@ function placed(model: THREE.Group, sprite: PlacedSprite, runway: PlanRunway, sh
 /** The buildings of a plan in 3D: simple shapes, painted with the pictures of their materials, each as wide as its picture was on the flat map. They come once the pictures have loaded. */
 export async function createBuildings(plan: TerrainPlan, runway: PlanRunway): Promise<THREE.Group> {
   const materials = createMaterials(await loadTextures())
-  const shadow = shadowTexture()
   const buildings = new THREE.Group()
   for (const sprite of plan.sprites) {
-    buildings.add(placed(BUILDERS[sprite.sprite](materials), sprite, runway, shadow))
+    buildings.add(placed(BUILDERS[sprite.sprite](materials), sprite, runway))
   }
   return buildings
 }

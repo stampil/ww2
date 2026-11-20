@@ -1,15 +1,36 @@
 import * as THREE from 'three'
+import { assetUrl } from '../assetUrl'
 import type { PlanRunway } from '../plans/runway'
 import type { PlacedSprite, TerrainPlan } from '../plans/terrainPlan'
 import { TILE_SIZE_METERS } from './airfield'
-import { SeededRandom } from './SeededRandom'
 import { tileCenterOf } from './TileGround'
 
 const DEGREES = Math.PI / 180
 const ROUGHNESS = 0.85
 const TEXTURE_PIXELS = 128
-const CAMO_BLOBS = 90
-const CAMO_SEED = 1940
+const TEXTURES_PATH = 'textures/buildings/'
+const TEXTURE_ANISOTROPY = 4
+// The side, in meters, of what each picture of a material covers before it repeats: its planks, ribs or tiles are as wide as they are on the real thing, a little larger so that they read from afar.
+const TILE_METERS = {
+  wall: 3,
+  plaster: 4,
+  concrete: 4,
+  corrugated: 6,
+  tile: 3,
+  olive: 5,
+  tan: 5,
+  camo: 8,
+  wood: 2.4,
+  steel: 5,
+  darkSteel: 2,
+  sandbag: 0.9,
+  crate: 1.2,
+  truck: 2.5,
+  barrel: 0.95,
+  rubber: 0.8,
+}
+// A face whose normal points this much along an axis is flat against it.
+const FLAT_NORMAL = 0.99
 const SHADOW_SIZE_SHARE = 1.3
 // The sun is to the west and north: the shadows fall a little to the east and the south, by this share of the height.
 const SHADOW_SHIFT = { x: 0.35, y: -0.25 }
@@ -18,6 +39,8 @@ const SHADOW_LIFT_METERS = 0.05
 const WINDSOCK_BANDS = 8
 const ROUNDEL_RADII = { red: 0.47, white: 0.31, blue: 0.15 }
 
+type TextureName = keyof typeof TILE_METERS
+type Textures = Record<TextureName, THREE.Texture>
 type Materials = ReturnType<typeof createMaterials>
 type Builder = (materials: Materials) => THREE.Group
 
@@ -33,31 +56,25 @@ function canvasTexture(draw: (context: CanvasRenderingContext2D, size: number) =
   return texture
 }
 
-/** Ribs of corrugated sheet, running down the slope of a roof. */
-function corrugatedTexture(): THREE.CanvasTexture {
-  return canvasTexture((context, size) => {
-    const ribs = 16
-    for (let rib = 0; rib < ribs; rib += 1) {
-      context.fillStyle = rib % 2 === 0 ? '#8d9290' : '#767b79'
-      context.fillRect(0, (rib * size) / ribs, size, size / ribs)
-    }
+/** The pictures of the materials, tiling seamlessly, scaled so that the coordinates of the shapes, which are in meters, repeat each of them at its own size. */
+async function loadTextures(): Promise<Textures> {
+  const loader = new THREE.TextureLoader()
+  const names = Object.keys(TILE_METERS) as TextureName[]
+  const loaded = await Promise.all(names.map((name) => loader.loadAsync(assetUrl(`${TEXTURES_PATH}${name}.jpg`))))
+  const textures = {} as Textures
+  names.forEach((name, index) => {
+    const texture = loaded[index]
+    texture.colorSpace = THREE.SRGBColorSpace
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
+    texture.anisotropy = TEXTURE_ANISOTROPY
+    texture.repeat.set(1 / TILE_METERS[name], 1 / TILE_METERS[name])
+    textures[name] = texture
   })
-}
-
-/** The blotches of green, brown and dark that a camouflage cloth has. */
-function camouflageTexture(): THREE.CanvasTexture {
-  return canvasTexture((context, size) => {
-    context.fillStyle = '#56603f'
-    context.fillRect(0, 0, size, size)
-    const random = new SeededRandom(CAMO_SEED)
-    const colors = ['#3e4a2d', '#8a7a4e', '#2f3a24', '#6c7650']
-    for (let blob = 0; blob < CAMO_BLOBS; blob += 1) {
-      context.fillStyle = colors[random.integer(0, colors.length - 1)]
-      context.beginPath()
-      context.ellipse(random.integer(0, size), random.integer(0, size), random.integer(6, 22), random.integer(4, 14), (random.integer(0, 180) * Math.PI) / 180, 0, Math.PI * 2)
-      context.fill()
-    }
-  })
+  // The ribs of the sheet run down the slope of a roof.
+  textures.corrugated.center.set(0.5, 0.5)
+  textures.corrugated.rotation = Math.PI / 2
+  return textures
 }
 
 /** The cocarde that the French aircraft wear, blue in the middle: painted on the roof of the hangar. */
@@ -98,37 +115,70 @@ function paint(color: number, options: THREE.MeshStandardMaterialParameters = {}
   return new THREE.MeshStandardMaterial({ color, roughness: ROUGHNESS, ...options })
 }
 
-/** The colors are those of the pictures of the buildings: cream plaster, grey sheet, red tile, olive and tan canvas, concrete, sandbags, wood. */
-function createMaterials() {
+/** Each material carries the picture of what it is: cream plaster, grey sheet, red tile, olive and tan canvas, concrete, sandbags, wood. The barrels take their color from the material, over the light and dark of one picture. */
+function createMaterials(textures: Textures) {
+  const white = 0xffffff
   return {
-    wall: paint(0xb9ad8e),
-    plaster: paint(0xcbbf9e),
-    concrete: paint(0x8f918b),
-    corrugated: paint(0xffffff, { map: corrugatedTexture() }),
-    tile: paint(0x9b4b36),
-    olive: paint(0x5d6742, { flatShading: true }),
-    tan: paint(0xb39a62, { flatShading: true }),
-    camo: paint(0xffffff, { map: camouflageTexture(), flatShading: true }),
-    wood: paint(0x6a5238),
-    steel: paint(0xa7adb0, { metalness: 0.4, roughness: 0.5 }),
-    darkSteel: paint(0x4c5154, { metalness: 0.5, roughness: 0.5 }),
+    wall: paint(white, { map: textures.wall }),
+    plaster: paint(white, { map: textures.plaster }),
+    concrete: paint(white, { map: textures.concrete }),
+    corrugated: paint(white, { map: textures.corrugated }),
+    tile: paint(white, { map: textures.tile }),
+    olive: paint(white, { map: textures.olive, flatShading: true }),
+    tan: paint(white, { map: textures.tan, flatShading: true }),
+    camo: paint(white, { map: textures.camo, flatShading: true }),
+    wood: paint(white, { map: textures.wood }),
+    steel: paint(white, { map: textures.steel, metalness: 0.4, roughness: 0.5 }),
+    darkSteel: paint(white, { map: textures.darkSteel, metalness: 0.5, roughness: 0.5 }),
     glass: paint(0x6f8d99, { transparent: true, opacity: 0.8, roughness: 0.2 }),
     dark: paint(0x171715),
-    sandbag: paint(0xb2a37b),
-    crate: paint(0x8a6a3c),
-    green: paint(0x5a6a4a),
-    blue: paint(0x4f6a80),
-    rust: paint(0x7a4e32),
-    truck: paint(0x58603e),
-    rubber: paint(0x1a1a1a),
+    sandbag: paint(white, { map: textures.sandbag }),
+    crate: paint(white, { map: textures.crate }),
+    green: paint(0x5a6a4a, { map: textures.barrel }),
+    blue: paint(0x4f6a80, { map: textures.barrel }),
+    rust: paint(0x7a4e32, { map: textures.barrel }),
+    truck: paint(white, { map: textures.truck }),
+    rubber: paint(white, { map: textures.rubber }),
     roundel: new THREE.MeshStandardMaterial({ map: roundelTexture(), transparent: true, roughness: ROUGHNESS }),
     sock: paint(0xffffff, { map: windsockTexture(), side: THREE.DoubleSide }),
   }
 }
 
+/** The texture coordinates of a box, in meters along its faces, so that a picture repeats at the same size on all of them. */
+function boxUvs(geometry: THREE.BoxGeometry): void {
+  const positions = geometry.getAttribute('position')
+  const normals = geometry.getAttribute('normal')
+  const uvs = geometry.getAttribute('uv')
+  for (let vertex = 0; vertex < positions.count; vertex += 1) {
+    if (Math.abs(normals.getX(vertex)) > FLAT_NORMAL) {
+      uvs.setXY(vertex, positions.getY(vertex), positions.getZ(vertex))
+    } else if (Math.abs(normals.getY(vertex)) > FLAT_NORMAL) {
+      uvs.setXY(vertex, positions.getX(vertex), positions.getZ(vertex))
+    } else {
+      uvs.setXY(vertex, positions.getX(vertex), positions.getY(vertex))
+    }
+  }
+}
+
+/** The texture coordinates, in meters, of a shape extruded along y (a cylinder, a cone, a triangular prism): around its sides, then along them; its ends are seen from above or from the front. */
+function extrusionUvs(geometry: THREE.CylinderGeometry, aroundMeters: number, alongMeters: number): void {
+  const positions = geometry.getAttribute('position')
+  const normals = geometry.getAttribute('normal')
+  const uvs = geometry.getAttribute('uv')
+  for (let vertex = 0; vertex < positions.count; vertex += 1) {
+    if (Math.abs(normals.getY(vertex)) > FLAT_NORMAL) {
+      uvs.setXY(vertex, positions.getX(vertex), positions.getZ(vertex))
+    } else {
+      uvs.setXY(vertex, uvs.getX(vertex) * aroundMeters, uvs.getY(vertex) * alongMeters)
+    }
+  }
+}
+
 /** A block standing on the ground, centered on x and y, its base at z. */
 function block(width: number, depth: number, height: number, material: THREE.Material, x = 0, y = 0, z = 0): THREE.Mesh {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, depth, height), material)
+  const geometry = new THREE.BoxGeometry(width, depth, height)
+  boxUvs(geometry)
+  const mesh = new THREE.Mesh(geometry, material)
   mesh.position.set(x, y, z + height / 2)
   return mesh
 }
@@ -136,6 +186,8 @@ function block(width: number, depth: number, height: number, material: THREE.Mat
 /** A cylinder standing up, its base at z. */
 function column(radiusTop: number, radiusBottom: number, height: number, material: THREE.Material, x = 0, y = 0, z = 0, segments = 20): THREE.Mesh {
   const geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, segments)
+  // One length around for the whole height, so that what runs straight up the wall stays straight even where the radius changes.
+  extrusionUvs(geometry, Math.PI * (radiusTop + radiusBottom), height)
   geometry.rotateX(Math.PI / 2)
   const mesh = new THREE.Mesh(geometry, material)
   mesh.position.set(x, y, z + height / 2)
@@ -146,6 +198,7 @@ function column(radiusTop: number, radiusBottom: number, height: number, materia
 function prism(width: number, length: number, height: number, material: THREE.Material, z = 0): THREE.Mesh {
   const geometry = new THREE.CylinderGeometry(1, 1, length, 3)
   geometry.scale(width / (2 * Math.sin((120 * DEGREES))), 1, height / 1.5)
+  extrusionUvs(geometry, width + 2 * Math.hypot(width / 2, height), length)
   const mesh = new THREE.Mesh(geometry, material)
   mesh.position.z = z + height / 3
   return mesh
@@ -387,9 +440,9 @@ function placed(model: THREE.Group, sprite: PlacedSprite, runway: PlanRunway, sh
   return wrapper
 }
 
-/** The buildings of a plan in 3D: simple shapes in the colors of their pictures, each as wide as its picture was on the flat map. */
-export function createBuildings(plan: TerrainPlan, runway: PlanRunway): THREE.Group {
-  const materials = createMaterials()
+/** The buildings of a plan in 3D: simple shapes, painted with the pictures of their materials, each as wide as its picture was on the flat map. They come once the pictures have loaded. */
+export async function createBuildings(plan: TerrainPlan, runway: PlanRunway): Promise<THREE.Group> {
+  const materials = createMaterials(await loadTextures())
   const shadow = shadowTexture()
   const buildings = new THREE.Group()
   for (const sprite of plan.sprites) {

@@ -172,6 +172,7 @@ export class AirfieldScene {
   private lastLandingSeconds = Number.NEGATIVE_INFINITY
   private previousSeconds = 0
   private isCameraAway = false
+  private isDisposed = false
 
   constructor(
     private readonly container: HTMLElement,
@@ -211,7 +212,11 @@ export class AirfieldScene {
     const ground = new TileGround(plan.tiles, (row, column) => tileCenterOf(this.runway, row, column), this.renderer.capabilities.getMaxAnisotropy())
     this.scene.add(ground.object)
     this.scene.add(new Bushes(marginBushes(plan, this.runway)).object)
-    this.scene.add(createBuildings(plan, this.runway))
+    void createBuildings(plan, this.runway).then((buildings) => {
+      if (!this.isDisposed) {
+        this.scene.add(buildings)
+      }
+    })
     this.scene.add(new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY))
     const sun = new THREE.DirectionalLight(LIGHT_COLOR, SUN_LIGHT_INTENSITY)
     sun.position.copy(SUN_POSITION)
@@ -269,6 +274,7 @@ export class AirfieldScene {
   }
 
   dispose(): void {
+    this.isDisposed = true
     this.renderer.setAnimationLoop(null)
     this.resizeObserver.disconnect()
     disposeScene(this.scene, this.renderer)

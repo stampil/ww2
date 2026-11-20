@@ -8,7 +8,6 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 
 | Il me faut | Ça débloque |
 |---|---|
-| Ton choix du cadrage du pilote parmi les cinq cartes A à E (C est pris en attendant) | la tête et la caméra du combat, réglées une fois pour toutes |
 | Ton accord pour télécharger `SV-GB.png` (1 274 820 octets, GPL v2, FGAddon) | le D.520 à livrée allemande, avion de l'Axe |
 | Ton « généré » des trois états de camp refaits, un prompt par état (donnés le 19/11, image 1 = le camp libre ; la feuille de trois reçue est refusée : vert vif et contenu différent d'une icône à l'autre) | les camps sur la carte |
 

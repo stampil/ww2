@@ -29,11 +29,10 @@ const FIELD_OF_VIEW_DEGREES = 70
 const CAMERA_NEAR_METERS = 0.05
 const CAMERA_FAR_METERS = 5000
 // The camera is at the top and the back of the cockpit, just behind the pilot's head, in front of the bulkhead, and looks down at the gunsight, which is where the nose points. Meters, in the frame of the aircraft.
-const CAMERA_POSITION = new THREE.Vector3(0, -0.45, 0.72)
-const VIEW_DIVE_DEGREES = 16
-// The pilot in his seat, his neck under his eyes, a little bigger than life so that the top of his skull fills the lower half of the view.
+const CAMERA_POSITION = new THREE.Vector3(0, -0.45, 0.74)
+const VIEW_DIVE_DEGREES = 18
+// The pilot in his seat at his real size, his neck under his eyes: the camera, close behind his head, makes the top of his skull fill the lower part of the view.
 const HEAD_POSITION = new THREE.Vector3(0, -0.28, 0.454)
-const HEAD_SCALE = 1.4
 const START_ALTITUDE_METERS = 350
 const ENEMY_START = new THREE.Vector3(25, 160, START_ALTITUDE_METERS)
 const PLAYER_SPEED_METERS_PER_SECOND = 78
@@ -195,7 +194,6 @@ export class CockpitCombatScene {
     this.camera.rotation.set(Math.PI / 2 - VIEW_DIVE_DEGREES * DEGREES, 0, 0)
     this.player.object.add(this.camera)
     this.head.object.position.copy(HEAD_POSITION)
-    this.head.object.scale.setScalar(HEAD_SCALE)
     this.player.object.add(this.head.object)
     this.scene.add(this.enemyRoot)
     void this.createEnemy()

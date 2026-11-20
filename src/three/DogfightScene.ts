@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { D520_SPAN_METERS, D520Model } from './D520Model'
+import type { AircraftModel3D } from './aircraftModel'
+import { createAircraftModel } from './aircraftModels'
 import { LiveryTextures } from './liveries'
 import type { Livery } from './liveries'
 import { CAMERA_FIELD_OF_VIEW_DEGREES, OrbitViewScene } from './OrbitViewScene'
@@ -62,7 +63,7 @@ function turnBetween(fromAngle: number, toAngle: number): number {
  * and the firing cone of the player shows in red. The bomber is blown up when it is shot down. Owns its WebGL canvas.
  */
 export class DogfightScene extends OrbitViewScene {
-  private readonly player = new D520Model()
+  private readonly player: AircraftModel3D
   private readonly enemyRoot = new THREE.Group()
   private enemy: EnemyBody | undefined
   private readonly liveries: LiveryTextures
@@ -81,6 +82,7 @@ export class DogfightScene extends OrbitViewScene {
     livery: Livery,
   ) {
     super(container, viewFor(arenaSize))
+    this.player = createAircraftModel(livery)
     this.liveries = new LiveryTextures(
       this.renderer.capabilities.getMaxAnisotropy(),
       (loaded, texture) => {
@@ -94,7 +96,7 @@ export class DogfightScene extends OrbitViewScene {
     this.scene.add(new TileGround([[{ kind: 'grass', quarterTurns: 0 }]], () => new THREE.Vector2(0, 0), this.renderer.capabilities.getMaxAnisotropy()).object)
     this.addGrid()
     this.addCone()
-    this.player.object.scale.setScalar(CELL_METERS / D520_SPAN_METERS)
+    this.player.object.scale.setScalar(CELL_METERS / this.player.spanMeters)
     this.scene.add(this.player.object, this.enemyRoot)
     void createStaticEnemy(bomber).then((enemy) => {
       enemy.object.scale.setScalar((CELL_METERS * BOMBER_SPAN_CELLS) / enemy.spanMeters)

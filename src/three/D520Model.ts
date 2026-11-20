@@ -8,6 +8,8 @@ import { DamagePainter } from './DamagePainter'
 import { DESTROYED_LEVEL } from './damageStages'
 import { Debris } from './Debris'
 import { directionFromFlightGear, pointFromFlightGear } from './flightGearFrame'
+import { createHinge, turnHinge } from './hinge'
+import type { Hinge } from './hinge'
 import { EasedValue } from './motion'
 
 const MODEL_NAME = 'd520'
@@ -70,7 +72,6 @@ export function d520AxisHeightOnGround(pitchRadians: number): number {
   return -(MAIN_WHEEL_CONTACT.z * Math.cos(pitchRadians) + MAIN_WHEEL_CONTACT.y * Math.sin(pitchRadians))
 }
 
-type Hinge = { group: THREE.Group; axis: THREE.Vector3 }
 type GearSideHinges = { wheel: Hinge; door: Hinge; doorMesh: THREE.Mesh; doorRest: THREE.Vector3; direction: 1 | -1 }
 type SurfaceName = 'elevator' | 'rudder' | 'aileronLeft' | 'aileronRight' | 'flapLeft' | 'flapRight'
 type SurfaceSpec = { part: string; pivot: THREE.Vector3; axis: THREE.Vector3 }
@@ -277,14 +278,14 @@ export class D520Model implements AircraftModel3D {
 
   private turnWheels(deltaSeconds: number): void {
     this.wheelAngle += this.eased.spinWheels.position * WHEEL_TURNS_PER_SECOND * FULL_TURN_RADIANS * deltaSeconds
-    this.wheelHinges.forEach((hinge) => this.turn(hinge, this.wheelAngle))
+    this.wheelHinges.forEach((hinge) => turnHinge(hinge, this.wheelAngle))
   }
 
   private moveGear(): void {
     const retraction = this.eased.retractGear.position
     for (const side of this.gearSides) {
-      this.turn(side.wheel, side.direction * GEAR_WHEEL_RADIANS * retraction)
-      this.turn(side.door, side.direction * GEAR_DOOR_RADIANS * retraction)
+      turnHinge(side.wheel, side.direction * GEAR_WHEEL_RADIANS * retraction)
+      turnHinge(side.door, side.direction * GEAR_DOOR_RADIANS * retraction)
       side.doorMesh.position.copy(side.doorRest).addScaledVector(GEAR_DOOR_SLIDE, retraction)
     }
   }
@@ -304,12 +305,8 @@ export class D520Model implements AircraftModel3D {
   private turnSurface(name: SurfaceName, radians: number): void {
     const hinge = this.surfaceHinges.get(name)
     if (hinge !== undefined) {
-      this.turn(hinge, radians)
+      turnHinge(hinge, radians)
     }
-  }
-
-  private turn(hinge: Hinge, radians: number): void {
-    hinge.group.quaternion.setFromAxisAngle(hinge.axis, radians)
   }
 
   /** The livery, with the number of the aircraft and the marks of its damage painted on it when it has any. */
@@ -399,32 +396,20 @@ export class D520Model implements AircraftModel3D {
   private buildRig(): void {
     for (const name of Object.keys(SURFACES) as SurfaceName[]) {
       const surface = SURFACES[name]
-      this.surfaceHinges.set(name, this.hinge([this.part(surface.part)], surface.pivot, surface.axis))
+      this.surfaceHinges.set(name, createHinge(this.object, [this.part(surface.part)], surface.pivot, surface.axis))
     }
     for (const side of GEAR_SIDES) {
-      const wheelSpin = this.hinge([this.part(side.wheelPart)], side.axlePivot, side.axleAxis)
+      const wheelSpin = createHinge(this.object, [this.part(side.wheelPart)], side.axlePivot, side.axleAxis)
       this.wheelHinges.push(wheelSpin)
       const doorMesh = this.part(side.doorPart)
-      const door = this.hinge([doorMesh], side.doorPivot, GEAR_AXIS)
-      const wheel = this.hinge([this.part(side.strutPart), wheelSpin.group], side.wheelPivot, GEAR_AXIS)
+      const door = createHinge(this.object, [doorMesh], side.doorPivot, GEAR_AXIS)
+      const wheel = createHinge(this.object, [this.part(side.strutPart), wheelSpin.group], side.wheelPivot, GEAR_AXIS)
       this.gearSides.push({ wheel, door, doorMesh, doorRest: doorMesh.position.clone(), direction: side.direction })
     }
-    this.wheelHinges.push(this.hinge([this.part(TAIL_WHEEL_PART)], TAIL_WHEEL_PIVOT, TAIL_WHEEL_AXIS))
+    this.wheelHinges.push(createHinge(this.object, [this.part(TAIL_WHEEL_PART)], TAIL_WHEEL_PIVOT, TAIL_WHEEL_AXIS))
   }
 
   private part(name: string): THREE.Mesh {
     return this.parts.get(name)!
-  }
-
-  private hinge(children: THREE.Object3D[], pivot: THREE.Vector3, axis: THREE.Vector3): Hinge {
-    const group = new THREE.Group()
-    group.position.copy(pivot)
-    children.forEach((child) => {
-      child.removeFromParent()
-      child.position.sub(pivot)
-      group.add(child)
-    })
-    this.object.add(group)
-    return { group, axis: axis.clone().normalize() }
   }
 }

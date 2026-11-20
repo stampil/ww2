@@ -3,7 +3,8 @@ import { assetUrl } from '../assetUrl'
 import { AIRCRAFT_SPRITE_WIDTH_METERS } from './aircraftSprite'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
-import { D520Model } from './D520Model'
+import type { AircraftModel3D } from './aircraftModel'
+import { createAircraftModel } from './aircraftModels'
 import { LiveryTextures } from './liveries'
 import type { Livery } from './liveries'
 import { createRenderer, disposeScene } from './rendering'
@@ -117,7 +118,7 @@ export abstract class GroundRunScene<Status> {
   protected readonly lateralSpeedMetersPerSecond: number = LATERAL_SPEED_METERS_PER_SECOND
   private readonly renderer: THREE.WebGLRenderer
   private readonly resizeObserver: ResizeObserver
-  private readonly player = new D520Model()
+  private readonly player: AircraftModel3D
   private readonly liveries: LiveryTextures
   private readonly shadow: THREE.Mesh
   private readonly textures = new Map<string, THREE.Texture>()
@@ -136,6 +137,7 @@ export abstract class GroundRunScene<Status> {
     private readonly onStatus: (status: Status) => void,
     private readonly onEnd: (outcome: RunOutcome) => void,
   ) {
+    this.player = createAircraftModel(livery)
     this.renderer = createRenderer(container, false)
     this.liveries = new LiveryTextures(
       this.renderer.capabilities.getMaxAnisotropy(),

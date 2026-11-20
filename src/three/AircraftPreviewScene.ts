@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-import { D520_GROUND_PITCH_RADIANS, D520Model } from './D520Model'
+import type { AircraftModel3D } from './aircraftModel'
+import { createAircraftModel } from './aircraftModels'
 import { LiveryTextures } from './liveries'
 import type { Livery } from './liveries'
 import { OrbitViewScene } from './OrbitViewScene'
@@ -33,7 +34,7 @@ const FLIGHT_VIEW: OrbitView = {
 const FLIGHT_VELOCITY = new THREE.Vector3(0, 10, 0)
 
 /** Starts loading the livery of the aircraft and puts it on the aircraft when it arrives; `loaded` settles then. */
-function loadLivery(maxAnisotropy: number, aircraft: D520Model, wornLivery: Livery): { liveries: LiveryTextures; loaded: Promise<void> } {
+function loadLivery(maxAnisotropy: number, aircraft: AircraftModel3D, wornLivery: Livery): { liveries: LiveryTextures; loaded: Promise<void> } {
   let liveries!: LiveryTextures
   const loaded = new Promise<void>((resolve) => {
     liveries = new LiveryTextures(
@@ -51,14 +52,15 @@ function loadLivery(maxAnisotropy: number, aircraft: D520Model, wornLivery: Live
   return { liveries, loaded }
 }
 
-/** One D.520 of the hangar on its own: on the ground, on terrain among a few bushes placed by `layoutSeed`, under a sky, to turn about, or in flight in a sky, with the damage it really has. */
+/** One aircraft of the hangar on its own: on the ground, on terrain among a few bushes placed by `layoutSeed`, under a sky, to turn about, or in flight in a sky, with the damage it really has. */
 export class AircraftPreviewScene extends OrbitViewScene {
-  private readonly aircraft = new D520Model()
+  private readonly aircraft: AircraftModel3D
   private readonly liveries: LiveryTextures
   private readonly sky: Sky
 
   constructor(container: HTMLElement, mode: PreviewMode, damageLevel: number, layoutSeed: number, tailNumber: number, livery: Livery) {
     super(container, mode === 'flight' ? FLIGHT_VIEW : GROUND_VIEW)
+    this.aircraft = createAircraftModel(livery)
     const { liveries, loaded: liveryLoaded } = loadLivery(this.renderer.capabilities.getMaxAnisotropy(), this.aircraft, livery)
     this.liveries = liveries
     this.aircraft.setTailNumber(tailNumber)
@@ -66,8 +68,8 @@ export class AircraftPreviewScene extends OrbitViewScene {
     this.sky = new Sky(mode === 'flight' ? FLIGHT_SKY : OVERHEAD_SKY)
     this.scene.add(this.sky.object)
     if (mode === 'ground') {
-      this.aircraft.object.rotation.x = D520_GROUND_PITCH_RADIANS
-      this.scene.add(new ParkingPad(layoutSeed).object)
+      this.aircraft.object.rotation.x = this.aircraft.groundPitchRadians
+      this.scene.add(new ParkingPad(layoutSeed, this.aircraft.axisHeightOnGround(this.aircraft.groundPitchRadians)).object)
       this.scene.fog = new THREE.Fog(HORIZON_COLOR, HAZE_NEAR_METERS, HAZE_FAR_METERS)
     }
     if (mode === 'flight') {

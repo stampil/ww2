@@ -9,8 +9,9 @@ import { AircraftShadows } from './AircraftShadows'
 import { createBuildings } from './BuildingModels'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
-import { D520_SPAN_METERS, D520Model } from './D520Model'
+import { D520_SPAN_METERS } from './D520Model'
 import type { AircraftModel3D } from './aircraftModel'
+import { createAircraftModel } from './aircraftModels'
 import { ArrivalFlight } from './arrivalFlight'
 import { DepartureFlight } from './departureFlight'
 import { DepartureQueue } from './departureQueue'
@@ -177,7 +178,7 @@ export class AirfieldScene {
   private readonly landingFlight: ArrivalFlight
   private readonly queue = new DepartureQueue()
   private readonly models: AircraftModel3D[] = []
-  private readonly idleModels: AircraftModel3D[] = []
+  private readonly idleModels = new Map<Livery, AircraftModel3D[]>()
   private readonly departing: DepartingAircraft[] = []
   private readonly landing: LandingAircraft[] = []
   private readonly emerging: EmergingAircraft[] = []
@@ -335,24 +336,27 @@ export class AirfieldScene {
     return (performance.now() - this.startMilliseconds) / MILLISECONDS_PER_SECOND
   }
 
-  /** A D.520 on each stand, nose to the north and tail down, as the flat map draws it; the models are made as needed and the ones left over are hidden. */
+  /** An aircraft on each stand, nose to the north and tail down, as the flat map draws it; the models are made as needed and the ones left over are hidden. */
   private showParked(): void {
-    this.parked.forEach((place, index) => {
-      const model = this.parkedModels[index] ?? this.createParkedModel()
-      this.dress(model, place.livery, this.parkedLiveries)
+    const available = new Map<Livery, AircraftModel3D[]>()
+    for (const model of this.parkedModels) {
+      model.object.visible = false
+      const livery = this.liveryOf.get(model)!
+      available.set(livery, [...(available.get(livery) ?? []), model])
+    }
+    for (const place of this.parked) {
+      const model = available.get(place.livery)?.pop() ?? this.createParkedModel(place.livery)
       const center = tileCenterOf(this.runway, place.stand.row, place.stand.column)
       model.object.visible = true
       model.setState(PARKED_STATE)
       this.place(model, center.x, center.y, 0, NORTH_HEADING_RADIANS, model.groundPitchRadians, 0)
       model.update(0)
-    })
-    this.parkedModels.slice(this.parked.length).forEach((model) => {
-      model.object.visible = false
-    })
+    }
   }
 
-  private createParkedModel(): AircraftModel3D {
-    const model = new D520Model()
+  private createParkedModel(livery: Livery): AircraftModel3D {
+    const model = createAircraftModel(livery)
+    this.dress(model, livery, this.parkedLiveries)
     model.object.scale.setScalar(this.scale)
     this.scene.add(model.object)
     this.parkedModels.push(model)
@@ -449,17 +453,23 @@ export class AirfieldScene {
     return new TaxiPath(points)
   }
 
+  /** Keeps a model that has flown off or landed, with the others of its livery, for the next aircraft that wears it. */
+  private release(model: AircraftModel3D): void {
+    const livery = this.liveryOf.get(model)!
+    this.idleModels.set(livery, [...(this.idleModels.get(livery) ?? []), model])
+  }
+
   private acquireModel(tailNumber: number, livery: Livery): AircraftModel3D {
-    const model = this.idleModels.pop() ?? this.createModel()
-    this.dress(model, livery, this.liveries)
+    const model = this.idleModels.get(livery)?.pop() ?? this.createModel(livery)
     model.repair()
     model.setTailNumber(tailNumber)
     model.object.visible = true
     return model
   }
 
-  private createModel(): AircraftModel3D {
-    const model = new D520Model()
+  private createModel(livery: Livery): AircraftModel3D {
+    const model = createAircraftModel(livery)
+    this.dress(model, livery, this.liveries)
     model.object.scale.setScalar(this.scale)
     this.scene.add(model.object)
     this.shadows.add(model)
@@ -476,7 +486,7 @@ export class AirfieldScene {
       const { group, slot } = aircraft.assignment
       if (seconds - group.startSecondsOf(slot) >= this.flight.durationSeconds) {
         aircraft.model.object.visible = false
-        this.idleModels.push(aircraft.model)
+        this.release(aircraft.model)
         this.departing.splice(index, 1)
         this.onDeparted(aircraft.aircraftId)
         continue
@@ -488,7 +498,7 @@ export class AirfieldScene {
       const aircraft = this.landing[index]
       if (this.moveLanding(aircraft, seconds)) {
         aircraft.model.object.visible = false
-        this.idleModels.push(aircraft.model)
+        this.release(aircraft.model)
         this.landing.splice(index, 1)
         this.onLanded(aircraft.aircraftId)
         continue
@@ -499,7 +509,7 @@ export class AirfieldScene {
       const aircraft = this.emerging[index]
       if (this.moveEmerging(aircraft, seconds)) {
         aircraft.model.object.visible = false
-        this.idleModels.push(aircraft.model)
+        this.release(aircraft.model)
         this.emerging.splice(index, 1)
         this.onLanded(aircraft.aircraftId)
         continue

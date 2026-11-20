@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { assetUrl } from '../assetUrl'
 
-export type Livery = 'french' | 'german' | 'vichy'
+/** The paint of an aircraft, each livery being the paint of one type of aircraft: the Luftwaffe one is that of the Bf 109, the others those of the D.520. */
+export type Livery = 'french' | 'german' | 'vichy' | 'luftwaffe'
 
 /** `full` for an aircraft that fills the view, `low` (a copy of 512 pixels, made by tools/make-low-textures.py) for one that is small or far. */
 export type TextureDetail = 'full' | 'low'
@@ -11,11 +12,13 @@ const TEXTURE_URLS: Record<TextureDetail, Record<Livery, string>> = {
     french: assetUrl('models/d520/texture-francais.png'),
     german: assetUrl('models/d520/texture-allemand.png'),
     vichy: assetUrl('models/d520/texture-vichy.png'),
+    luftwaffe: assetUrl('models/bf109/bf109g.png'),
   },
   low: {
     french: assetUrl('models/d520/texture-francais-low.jpg'),
     german: assetUrl('models/d520/texture-allemand-low.jpg'),
     vichy: assetUrl('models/d520/texture-vichy-low.jpg'),
+    luftwaffe: assetUrl('models/bf109/bf109g-low.jpg'),
   },
 }
 // The liveries of the home page, which has no others.

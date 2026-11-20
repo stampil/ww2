@@ -8,13 +8,13 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 
 | Il me faut | Ça débloque |
 |---|---|
-| Ton « généré » de la feuille des trois vues du pilote sur fond magenta (prompt du 20/11, image 1 = la feuille des trois vues reçue), et ton choix pour le pilote (question 1) | un pilote réaliste dans le cockpit, à la place des sphères |
+| Ton « généré » des deux textures du cockpit 3D, l'habitacle et le tableau de bord (prompts du 20/11, images 1 = les textures actuelles, aplats de couleur) | un cockpit texturé |
 | Ton accord pour télécharger `SV-GB.png` (1 274 820 octets, GPL v2, FGAddon) | le D.520 à livrée allemande, avion de l'Axe |
 | Ton « généré » des trois états de camp refaits, un prompt par état (donnés le 19/11, image 1 = le camp libre ; la feuille de trois reçue est refusée : vert vif et contenu différent d'une icône à l'autre) | les camps sur la carte |
 
 ## 2. Questions à lever
 
-1. **Le pilote du cockpit.** Les trois feuilles reçues le 20/11 donnent un pilote aux vraies proportions, mais ce sont des photographies, pas un modèle 3D. (a) Je remplace les sphères par les vues de dos et de profil, découpées et fondues selon l'angle de la tête qui tourne vers l'ennemi, comme un carton à trois faces : rapide, réaliste, l'inclinaison de la tête vers le haut ou le bas reste approchée. (b) Je modélise une vraie tête en 3D et je la texture avec ces images : plus long, et un visage réaliste n'est pas garanti. (c) Je corrige seulement les sphères (plus d'yeux de dessin animé, crâne plus juste) sans les images. Je recommande (a). D'accord ?
+Aucune : tout ce qui restait ouvert est tranché, il manque tes « go ».
 
 ## 3. Le travail restant, dans l'ordre
 
@@ -25,6 +25,8 @@ Tout ce que je peux faire seul est fait : ce qui reste attend une image, un acco
 | 0 | **Pied de page** (« tu virere la footer dans le jeu, tu le met qu'a l'accueil, je veux voir que le jeu, donc pas a scroller pour du text », 20/11) | petit | go donné, à coder |
 | 0 | **Tour de contrôle : le journal de base à la fin, en bas** (20/11) | petit | go donné, à coder |
 | 0 | **Camp : réduire l'herbe vide du bas** (« réduit l'extension du camps vide en bas, la c trop, sa geere trop de perte d'affichage pertinent », 20/11) | petit | go donné, à coder |
+| 0 | **Combat cockpit, deux retouches** (20/11) : « vu que le temps de destruction est raccourcis, au premier accrochage du viseur a l'avion, tu le fait fumé » ; « quite a changer un peu l'angle de vue de al camera pour tjrs pouvoir voir le viseur » (le buste du pilote ne doit pas cacher le viseur) | petit | go donné, à coder |
+| 0 | **Pilote réaliste : buste élargi aux épaules d'un homme** (« on dirait un enfant qui conduit respecte les proportion d'un pilote dans une cabine », 20/11) : à regarder à l'écran, puis commit | petit | en cours |
 | 1 | **Bâtiments en vraie 3D, tout ou rien** (validé le 19/11) : les sept types de bâtiments du camp (hangar, tentes camouflées, dépôt, poste de commandement, tour, manche à air, bunker de DCA) modélisés en code, formes simples et cohérentes entre elles, couleurs prises sur les images actuelles, sans téléchargement ni licence, et posés dans la scène du camp ; tu juges, et si le look ne tient pas rien ne change ; les bâtiments de la carte à plat sont alors rendus depuis les modèles, comme les avions | moyen | ton go |
 | 2 | **M5, la fin : l'Axe pilote ses avions** : un joueur dont le premier camp est de l'Axe commence avec les avions de l'Axe, le Bf 109, le D.520 à livrée allemande et le D.520 à livrée Vichy, au lieu de trois D.520 français ; le front suppose aujourd'hui un D.520 français partout (images du Hangar, avions de la carte à plat, décollage et atterrissage en 3D, mini-jeux), il faut le rendre indépendant du modèle ; la livrée allemande vient de `SV-GB.png` de FGAddon | grand | accord SV-GB, ton go |
 | 3 | **M6 : les attaques, les bâtiments détruits, les raids et la capture** : résultats, bâtiments détruits et état des bases synchronisés par le serveur, relus toutes les quelques secondes ; journal pour le joueur absent ; raids sur un camp ennemi (missions d'attaque qui usent ses défenses), camp capturable par une mission spéciale « Prise de camp » (validée le 19/11) : un avion et son pilote volent vers le camp, jouent l'attaque au sol, et si la mission réussit ils se posent sur le camp et le prennent selon la règle de la prise des camps ; on ne peut la tenter qu'une fois ses défenses à zéro ; les avions stationnés défendent le camp attaqué et sont perdus s'il tombe ; gardes validées : plafond de dégâts par heure pour un camp absent, protection d'un nouveau joueur, la dernière base d'un joueur ne se capture pas | grand | M5, ton go |

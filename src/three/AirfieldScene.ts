@@ -3,10 +3,10 @@ import { findPath } from '../plans/pathfinding'
 import { runwayOf } from '../plans/runway'
 import type { PlanRunway } from '../plans/runway'
 import type { Cell, TerrainPlan } from '../plans/terrainPlan'
-import { assetUrl } from '../assetUrl'
 import { TILE_SIZE_METERS } from './airfield'
 import { AIRCRAFT_SPRITE_WIDTH_METERS } from './aircraftSprite'
 import { AircraftShadows } from './AircraftShadows'
+import { createBuildings } from './BuildingModels'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
 import { D520_GROUND_PITCH_RADIANS, D520_SPAN_METERS, d520AxisHeightOnGround, D520Model } from './D520Model'
@@ -34,8 +34,6 @@ const SUN_POSITION = new THREE.Vector3(-30, 20, 60)
 const WORLD_UP = new THREE.Vector3(0, 0, 1)
 const NOSE_ALONG_Y_ROTATION_RADIANS = Math.PI / 2
 const MILLISECONDS_PER_SECOND = 1000
-const SPRITES_PATH = 'sprites/buildings/'
-const SPRITE_LIFT_METERS = 2
 // An aircraft grows by this share of its size for each meter of altitude, so that it seems to come toward the camera as it climbs.
 const ALTITUDE_GROWTH_PER_METER = 0.006
 // Above this altitude an aircraft stops growing, so that it never hides much of the base.
@@ -213,7 +211,7 @@ export class AirfieldScene {
     const ground = new TileGround(plan.tiles, (row, column) => tileCenterOf(this.runway, row, column), this.renderer.capabilities.getMaxAnisotropy())
     this.scene.add(ground.object)
     this.scene.add(new Bushes(marginBushes(plan, this.runway)).object)
-    this.addBuildings()
+    this.scene.add(createBuildings(plan, this.runway))
     this.scene.add(new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY))
     const sun = new THREE.DirectionalLight(LIGHT_COLOR, SUN_LIGHT_INTENSITY)
     sun.position.copy(SUN_POSITION)
@@ -303,24 +301,6 @@ export class AirfieldScene {
 
   private secondsNow(): number {
     return (performance.now() - this.startMilliseconds) / MILLISECONDS_PER_SECOND
-  }
-
-  /** The buildings stand up as pictures that face the camera, the foot of each on the foot of its tile, as on the flat map. */
-  private addBuildings(): void {
-    const loader = new THREE.TextureLoader()
-    for (const building of this.plan.sprites) {
-      loader.load(assetUrl(`${SPRITES_PATH}${building.sprite}.png`), (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace
-        const image = texture.image as HTMLImageElement
-        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }))
-        const widthMeters = building.widthTiles * TILE_SIZE_METERS
-        sprite.scale.set(widthMeters, (widthMeters * image.height) / image.width, 1)
-        sprite.center.set(0.5, 0)
-        const tileCenter = tileCenterOf(this.runway, building.row, building.column)
-        sprite.position.set(tileCenter.x, tileCenter.y - TILE_SIZE_METERS / 2, SPRITE_LIFT_METERS)
-        this.scene.add(sprite)
-      })
-    }
   }
 
   /** A D.520 on each stand, nose to the north and tail down, as the flat map draws it; the models are made as needed and the ones left over are hidden. */

@@ -274,6 +274,11 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
   }
 }
 
+// The 3D view draws every building: the pictures of the flat map that no button holds stay hidden.
+.base-map[data-three='true'] img.base-sprite {
+  opacity: 0;
+}
+
 button.base-sprite {
   padding: 0;
   border: 0;

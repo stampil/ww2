@@ -11,15 +11,16 @@ use Ww2\Mission\MissionStore;
 use Ww2\Squadron\SquadronStore;
 use Ww2\World\Bases;
 use Ww2\World\Kinship;
+use Ww2\World\SitePlaces;
 
 /**
- * Aircraft stationed at another base of the world, the player's own, an ally's or a free camp, which the aircraft takes by landing first: an aircraft and its pilot fly out with fuel and ammunition
- * in the hold, unload it when they land, and stay there until the player recalls them, which sends them back. Away, they belong to their own base but cannot fly a mission, rest or be given.
+ * Aircraft sent to another base of the world, the player's own, an ally's or a free camp, which the aircraft takes by landing first: they fly out with fuel and ammunition in the hold, unload it and stay there until recalled, which sends them back. Away, they cannot fly a mission, rest or be given.
+ * A supply flight is the same flight to a base of the player or of an ally with a hold of any resource, from which the aircraft turns round at once; each flight lasts as the distance on the map says, fifteen minutes each way at most.
  */
 final class Stationings
 {
-    /** How long the flight takes, out or back. */
-    public const FLIGHT_SECONDS = 60;
+    /** What the hold of an aircraft takes of each resource. */
+    public const LOAD_LIMIT = 100;
 
     public function __construct(
         private readonly Database $database,
@@ -33,14 +34,23 @@ final class Stationings
         private readonly Bases $bases,
         private readonly GameClockStore $clocks,
         private readonly EventLog $events,
+        private readonly SitePlaces $places,
     ) {
+    }
+
+    /**
+     * @return int the game seconds a flight takes from one base to the other, out or back
+     */
+    public function flightSecondsBetween(int $firstBaseId, int $secondBaseId): int
+    {
+        return $this->places->flightSeconds($this->bases->siteOf($firstBaseId), $this->bases->siteOf($secondBaseId));
     }
 
     /**
      * Unloads what has landed first. The aircraft of the base that are away are listed with where they went, and those of other bases that are stationed at the base with whose they are.
      *
      * @param GameClock $clock the clock of the base, read once for the whole answer
-     * @return array{flightSeconds: int, away: list<array<string, int|string>>, guests: list<array<string, int|string>>}
+     * @return array{away: list<array<string, int|string>>, guests: list<array<string, int|string>>}
      */
     public function describe(int $baseId, GameClock $clock): array
     {
@@ -50,6 +60,7 @@ final class Stationings
         foreach ($this->stationings->involving($baseId) as $stationing) {
             $phase = $stationing->phaseAt($clock->gameSeconds)->value;
             $remainingSeconds = $stationing->remainingSecondsAt($clock->gameSeconds);
+            $flightSeconds = $this->flightSecondsBetween($stationing->originBaseId, $stationing->destinationBaseId);
             if ($stationing->originBaseId === $baseId) {
                 $away[] = [
                     'aircraftId' => $stationing->aircraftId,
@@ -57,6 +68,7 @@ final class Stationings
                     'site' => $this->bases->siteOf($stationing->destinationBaseId)->value,
                     'phase' => $phase,
                     'remainingSeconds' => $remainingSeconds,
+                    'flightSeconds' => $flightSeconds,
                 ];
                 continue;
             }
@@ -71,10 +83,11 @@ final class Stationings
                 'kinship' => $this->bases->kinshipTo($baseId, $stationing->originBaseId)->value,
                 'phase' => $phase,
                 'remainingSeconds' => $remainingSeconds,
+                'flightSeconds' => $flightSeconds,
             ];
         }
 
-        return ['flightSeconds' => self::FLIGHT_SECONDS, 'away' => $away, 'guests' => $guests];
+        return ['away' => $away, 'guests' => $guests];
     }
 
     /**
@@ -101,36 +114,26 @@ final class Stationings
                 }
                 $this->baseFounder->foundEmpty($destinationBaseId);
             }
-            $locked = $this->baseStore->lockBoth($baseId, $destinationBaseId);
-            $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
-            $this->stationings->clearReturned($baseId, $gameSeconds);
-            $pilot = $this->squadrons->pilotsById($baseId)[$pilotId] ?? throw new BaseException(BaseError::UnknownPilot);
-            $aircraft = $this->squadrons->aircraftById($baseId)[$aircraftId] ?? throw new BaseException(BaseError::UnknownAircraft);
-            if (isset($this->squadrons->restsOf($baseId)[$pilot->id])) {
-                throw new BaseException(BaseError::PilotResting);
+            $this->fly($baseId, $destinationBaseId, $pilotId, $aircraftId, new Cargo($fuel, $ammunition, 0, 0), false);
+        });
+    }
+
+    /**
+     * Sends an aircraft and its pilot to a base of the player or of an ally with a hold of resources, and back as soon as they have landed.
+     *
+     * @throws BaseException when the destination is not a base of the player or of an ally, the hold is empty, the pilot or the aircraft is not the base's, rests, flies, is away or grounded,
+     *                       the load is more than the aircraft can carry, the base runs short of it or the destination's warehouse cannot hold it
+     */
+    public function supply(int $baseId, int $destinationBaseId, int $pilotId, int $aircraftId, Cargo $cargo): void
+    {
+        $this->database->transaction(function () use ($baseId, $destinationBaseId, $pilotId, $aircraftId, $cargo): void {
+            if ($this->bases->kinshipTo($baseId, $destinationBaseId) === null) {
+                throw new BaseException(BaseError::InvalidRecipient);
             }
-            if ($this->missions->isPilotOnFlight($pilot->id) || $this->missions->isOnFlight($aircraft->id)
-                || $this->stationings->isPilotAway($pilot->id, $gameSeconds) || $this->stationings->isAircraftAway($aircraft->id, $gameSeconds)) {
-                throw new BaseException(BaseError::CrewBusy);
+            if ($cargo->isEmpty()) {
+                throw new BaseException(BaseError::InvalidQuantity);
             }
-            if (in_array($aircraft->id, $this->hangarStore->groundedAircraftIds($baseId), true)) {
-                throw new BaseException(BaseError::AircraftGrounded);
-            }
-            if ($fuel < 0 || $ammunition < 0 || $fuel > $aircraft->model->fuelCapacity || $ammunition > $aircraft->model->ammunitionCapacity) {
-                throw new BaseException(BaseError::InvalidLoad);
-            }
-            if ($locked[$baseId]->fuel < $fuel) {
-                throw new BaseException(BaseError::InsufficientFuel);
-            }
-            if ($locked[$baseId]->ammunition < $ammunition) {
-                throw new BaseException(BaseError::InsufficientAmmunition);
-            }
-            $capacity = $this->warehouse->capacityOf($destinationBaseId);
-            if ($locked[$destinationBaseId]->fuel + $fuel > $capacity || $locked[$destinationBaseId]->ammunition + $ammunition > $capacity) {
-                throw new BaseException(BaseError::RecipientWarehouseFull);
-            }
-            $this->baseStore->spendFuelAndAmmunition($baseId, $fuel, $ammunition);
-            $this->stationings->add(new Stationing($aircraft->id, $pilot->id, $baseId, $destinationBaseId, $fuel, $ammunition, $gameSeconds + self::FLIGHT_SECONDS, null));
+            $this->fly($baseId, $destinationBaseId, $pilotId, $aircraftId, $cargo, true);
         });
     }
 
@@ -151,8 +154,51 @@ final class Stationings
             if ($stationing->phaseAt($gameSeconds) !== StationingPhase::Stationed) {
                 throw new BaseException(BaseError::NotStationed);
             }
-            $this->stationings->startReturn($aircraftId, $gameSeconds + self::FLIGHT_SECONDS);
+            $this->stationings->startReturn($aircraftId, $gameSeconds + $this->flightSecondsBetween($stationing->originBaseId, $stationing->destinationBaseId));
         });
+    }
+
+    /**
+     * Takes the crew and the cargo out of the base and sets the flight going, inside the transaction of the order.
+     *
+     * @param bool $comesBack whether the aircraft turns round as soon as it has landed
+     * @throws BaseException when the pilot or the aircraft is not the base's, rests, flies, is away or grounded, the load is more than the aircraft can carry, the base runs short of it or the destination's warehouse cannot hold it
+     */
+    private function fly(int $baseId, int $destinationBaseId, int $pilotId, int $aircraftId, Cargo $cargo, bool $comesBack): void
+    {
+        $locked = $this->baseStore->lockBoth($baseId, $destinationBaseId);
+        $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
+        $this->stationings->clearReturned($baseId, $gameSeconds);
+        $pilot = $this->squadrons->pilotsById($baseId)[$pilotId] ?? throw new BaseException(BaseError::UnknownPilot);
+        $aircraft = $this->squadrons->aircraftById($baseId)[$aircraftId] ?? throw new BaseException(BaseError::UnknownAircraft);
+        if (isset($this->squadrons->restsOf($baseId)[$pilot->id])) {
+            throw new BaseException(BaseError::PilotResting);
+        }
+        if ($this->missions->isPilotOnFlight($pilot->id) || $this->missions->isOnFlight($aircraft->id)
+            || $this->stationings->isPilotAway($pilot->id, $gameSeconds) || $this->stationings->isAircraftAway($aircraft->id, $gameSeconds)) {
+            throw new BaseException(BaseError::CrewBusy);
+        }
+        if (in_array($aircraft->id, $this->hangarStore->groundedAircraftIds($baseId), true)) {
+            throw new BaseException(BaseError::AircraftGrounded);
+        }
+        $capacity = $this->warehouse->capacityOf($destinationBaseId);
+        foreach (Resource::cases() as $resource) {
+            $quantity = $cargo->of($resource);
+            if ($quantity < 0 || $quantity > self::LOAD_LIMIT) {
+                throw new BaseException(BaseError::InvalidLoad);
+            }
+            if ($resource->in($locked[$baseId]) < $quantity) {
+                throw new BaseException($resource->shortage());
+            }
+            $stock = $resource->stock();
+            if ($stock !== null && $locked[$destinationBaseId]->stock($stock) + $quantity > $capacity) {
+                throw new BaseException(BaseError::RecipientWarehouseFull);
+            }
+        }
+        $flightSeconds = $this->flightSecondsBetween($baseId, $destinationBaseId);
+        $landsGameSecond = $gameSeconds + $flightSeconds;
+        $this->baseStore->spendCargo($baseId, $cargo);
+        $this->stationings->add(new Stationing($aircraft->id, $pilot->id, $baseId, $destinationBaseId, $cargo, $landsGameSecond, $comesBack ? $landsGameSecond + $flightSeconds : null));
     }
 
     private function settle(int $baseId, int $gameSeconds): void
@@ -160,7 +206,7 @@ final class Stationings
         $this->stationings->clearReturned($baseId, $gameSeconds);
         $landed = [];
         foreach ($this->stationings->involving($baseId) as $stationing) {
-            if ($stationing->landsGameSecond <= $gameSeconds && ($stationing->fuel > 0 || $stationing->ammunition > 0)) {
+            if ($stationing->landsGameSecond <= $gameSeconds && !$stationing->cargo->isEmpty()) {
                 $landed[] = $stationing->aircraftId;
             }
         }
@@ -175,7 +221,7 @@ final class Stationings
     }
 
     /**
-     * Puts what an aircraft carries into the warehouse of the base where it landed, as much as fits, and tells the base.
+     * Puts what an aircraft carries into the warehouse of the base where it landed, as much as fits, and tells the base. The supplies need no warehouse and all arrive.
      */
     private function unload(int $aircraftId): void
     {
@@ -186,23 +232,30 @@ final class Stationings
         $locked = $this->baseStore->lockBoth($stationing->originBaseId, $stationing->destinationBaseId);
         // Read again under the lock: another request may have unloaded it meanwhile.
         $stationing = $this->stationings->of($aircraftId);
-        if ($stationing === null || ($stationing->fuel === 0 && $stationing->ammunition === 0)) {
+        if ($stationing === null || $stationing->cargo->isEmpty()) {
             return;
         }
         $destination = $locked[$stationing->destinationBaseId];
         $capacity = $this->warehouse->capacityOf($stationing->destinationBaseId);
-        $fuel = min($stationing->fuel, max(0, $capacity - $destination->fuel));
-        $ammunition = min($stationing->ammunition, max(0, $capacity - $destination->ammunition));
-        $this->baseStore->addFuelAndAmmunition($stationing->destinationBaseId, $fuel, $ammunition);
+        $cargo = $stationing->cargo;
+        $unloaded = new Cargo(
+            min($cargo->fuel, max(0, $capacity - $destination->fuel)),
+            min($cargo->ammunition, max(0, $capacity - $destination->ammunition)),
+            min($cargo->materials, max(0, $capacity - $destination->materials)),
+            $cargo->supplies,
+        );
+        $this->baseStore->addCargo($stationing->destinationBaseId, $unloaded);
         $this->stationings->emptyHold($aircraftId);
-        if ($fuel > 0 || $ammunition > 0) {
+        if (!$unloaded->isEmpty()) {
             $this->events->record($stationing->destinationBaseId, [
                 'kind' => 'landing',
                 'from' => $this->bases->holderNameOf($stationing->originBaseId),
                 'site' => $this->bases->siteOf($stationing->originBaseId)->value,
                 'aircraftName' => $this->squadrons->aircraftById($stationing->originBaseId)[$aircraftId]->model->name,
-                'fuel' => $fuel,
-                'ammunition' => $ammunition,
+                'fuel' => $unloaded->fuel,
+                'ammunition' => $unloaded->ammunition,
+                'materials' => $unloaded->materials,
+                'supplies' => $unloaded->supplies,
             ]);
         }
     }

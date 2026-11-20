@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ww2\Base;
 
 /**
- * An aircraft and its pilot sent to another base of the world: the fuel and the ammunition still in its hold, when it lands there, and when it is home again once recalled.
+ * An aircraft and its pilot sent to another base of the world: what is still in its hold, when it lands there, and when it is home again, which is known from the start for a supply flight and once recalled for the others.
  */
 final readonly class Stationing
 {
@@ -14,8 +14,7 @@ final readonly class Stationing
         public int $pilotId,
         public int $originBaseId,
         public int $destinationBaseId,
-        public int $fuel,
-        public int $ammunition,
+        public Cargo $cargo,
         public int $landsGameSecond,
         public ?int $returnsGameSecond,
     ) {
@@ -23,11 +22,11 @@ final readonly class Stationing
 
     public function phaseAt(int $gameSeconds): StationingPhase
     {
-        if ($this->returnsGameSecond !== null) {
-            return StationingPhase::Returning;
+        if ($gameSeconds < $this->landsGameSecond) {
+            return StationingPhase::Outbound;
         }
 
-        return $gameSeconds < $this->landsGameSecond ? StationingPhase::Outbound : StationingPhase::Stationed;
+        return $this->returnsGameSecond === null ? StationingPhase::Stationed : StationingPhase::Returning;
     }
 
     /**
@@ -35,6 +34,8 @@ final readonly class Stationing
      */
     public function remainingSecondsAt(int $gameSeconds): int
     {
-        return max(0, ($this->returnsGameSecond ?? $this->landsGameSecond) - $gameSeconds);
+        $arrival = $this->phaseAt($gameSeconds) === StationingPhase::Returning ? $this->returnsGameSecond : $this->landsGameSecond;
+
+        return max(0, $arrival - $gameSeconds);
     }
 }

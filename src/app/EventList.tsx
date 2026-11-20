@@ -2,6 +2,9 @@ import { useTranslation } from 'react-i18next'
 import Pane from './Pane'
 import type { BaseEvent, CampEvent, ExplosionEvent, GiftEvent, LandingEvent, MissionReport } from './useBase'
 
+// The resources an aircraft can unload, in the order the journal lists them.
+const LOADS = ['supplies', 'fuel', 'ammunition', 'materials'] as const
+
 function crewOutcomeKey(crew: MissionReport['crews'][number]): string {
   if (crew.pilotKilled) {
     return 'base.mission.crewKilled'
@@ -76,12 +79,14 @@ function GiftItem({ event }: { event: GiftEvent }) {
 }
 
 function LandingItem({ event }: { event: LandingEvent }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const delivered = LOADS.filter((resource) => (event[resource] ?? 0) > 0)
+  const load = new Intl.ListFormat(i18n.language).format(delivered.map((resource) => t('base.event.loadItem', { quantity: event[resource], resource: t(`base.resources.${resource}`).toLowerCase() })))
 
   return (
     <li>
       <strong>{t('base.event.landing')}</strong>
-      <span>{t('base.event.landingLoad', { from: event.from, site: t(`world.site.${event.site}`), aircraft: event.aircraftName, fuel: event.fuel, ammunition: event.ammunition })}</span>
+      <span>{t('base.event.landingLoad', { from: event.from, site: t(`world.site.${event.site}`), aircraft: event.aircraftName, load })}</span>
     </li>
   )
 }

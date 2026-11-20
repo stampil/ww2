@@ -54,5 +54,4 @@ enum BaseError: string
     case SiteTaken = 'siteTaken';
     case NotStationed = 'notStationed';
     case LandingRequired = 'landingRequired';
-    case CampShortage = 'campShortage';
 }

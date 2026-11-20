@@ -1,39 +1,35 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Icon from './Icon'
+import { sitePlace } from '../plans/franceMap'
+import CampCard from './CampCard'
+import type { BusyCrews } from './flights'
 import Pane from './Pane'
-import MerchantPane from './MerchantPane'
-import type { Base, HeldBase, Stock } from './useBase'
+import type { Cargo, Destination, HeldBase, Squadron } from './useBase'
 import { INSTANCE_SITES_URL, useSites } from './useSites'
-import type { SiteChoice } from './useSites'
 import WorldMap from './WorldMap'
 
-const STOCKS = ['supplies', 'fuel', 'ammunition', 'materials'] as const
-
-/** What a camp holds: its own stores when a player holds it, else what the merchant has to sell. */
-function stocksOf(camp: SiteChoice, merchants: Base['merchants']): Partial<Record<(typeof STOCKS)[number], number>> | null {
-  if (camp.resources !== null) {
-    return camp.resources
-  }
-  const merchant = merchants.camps.find((candidate) => candidate.site === camp.site)
-  if (merchant === undefined) {
-    return null
-  }
-  return { fuel: merchant.stocks.fuel.quantity, ammunition: merchant.stocks.ammunition.quantity, materials: merchant.stocks.materials.quantity }
-}
+// A camp on the right half of the map has its card on the left, and the other way round.
+const MIDDLE_PERCENT = 50
 
 type Props = {
   bases: HeldBase[]
+  /** The site of the base the player looks at. */
+  currentSite: string
   /** How many bases a player can hold. */
   baseLimit: number
-  merchants: Base['merchants']
-  onBuy: (campBaseId: number, resource: Stock, quantity: number) => void
-  onSell: (campBaseId: number, resource: Stock, quantity: number) => void
+  squadron: Squadron
+  unavailable: BusyCrews
+  /** Where an aircraft can go: the player's own bases, the allies' and the free camps. */
+  destinations: Destination[]
+  onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => void
+  onSupply: (destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo) => void
 }
 
-/** The map of France with the camps of the player's world, the French and the Germans: theirs are ringed in gold, their allies' in green, the enemy's are greyed, with what each camp holds; a free camp is taken by landing an aircraft on it, while the player holds fewer bases than the limit. */
-function HeadquartersPanel({ bases, baseLimit, merchants, onBuy, onSell }: Props) {
+/** The map of France with the camps of the player's world, the French and the Germans: theirs are ringed in gold, their allies' in green, the enemy's are greyed. A camp picked on the map shows its card on the other side of the map, where aircraft are sent to it. */
+function HeadquartersPanel({ bases, currentSite, baseLimit, squadron, unavailable, destinations, onStation, onSupply }: Props) {
   const { t } = useTranslation()
   const sites = useSites(INSTANCE_SITES_URL)
+  const [selectedSite, setSelectedSite] = useState<string | null>(null)
 
   if (sites === null) {
     return null
@@ -41,43 +37,32 @@ function HeadquartersPanel({ bases, baseLimit, merchants, onBuy, onSell }: Props
 
   const ownSites = bases.map((base) => base.site)
   const ownClan = sites.find((camp) => camp.site === ownSites[0])!.clan
+  const selected = sites.find((camp) => camp.site === selectedSite)
 
   return (
-    <>
-      <Pane title={t('world.map')}>
-        <p className="world-legend">{t('world.side', { side: t(`world.clan.${ownClan}`) })}</p>
-        <p className="world-legend">{t('world.legend')}</p>
-        <p className="world-legend">{t('world.landToClaim', { max: baseLimit })}</p>
-        <WorldMap sites={sites} selected={null} ownSites={ownSites} ownClan={ownClan} />
-        <ul className="world-holders">
-          {sites.map((camp) => {
-            let relation = t('world.free')
-            if (ownSites.includes(camp.site)) {
-              relation = t('world.relation.own')
-            } else if (camp.holder !== null) {
-              relation = t(camp.clan === ownClan ? 'world.relation.ally' : 'world.relation.enemy', { holder: camp.holder })
-            }
-            const held = stocksOf(camp, merchants)
-            return (
-              <li key={camp.site} data-clan={camp.clan}>
-                <strong>{t(`world.airfield.${camp.site}`)}</strong> ({t(`world.clan.${camp.clan}`)}) : {relation}
-                {held !== null && (
-                  <span className="world-stock">
-                    {STOCKS.filter((stock) => held[stock] !== undefined).map((stock) => (
-                      <span key={stock} title={t(`base.resources.${stock}`)}>
-                        <Icon name={stock} />
-                        {held[stock]}
-                      </span>
-                    ))}
-                  </span>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      </Pane>
-      <MerchantPane merchants={merchants} onBuy={onBuy} onSell={onSell} />
-    </>
+    <Pane title={t('world.map')}>
+      <p className="world-legend">{t('world.side', { side: t(`world.clan.${ownClan}`) })}</p>
+      <p className="world-legend">{t('world.legend')}</p>
+      <div className="hq-layout" data-card-side={selected !== undefined && sitePlace(selected.site).left >= MIDDLE_PERCENT ? 'left' : 'right'}>
+        <WorldMap sites={sites} selected={selectedSite} onSelect={setSelectedSite} canSelectTaken ownSites={ownSites} ownClan={ownClan} />
+        {selected === undefined ? (
+          <p className="world-legend">{t('camp.pick')}</p>
+        ) : (
+          <CampCard
+            camp={selected}
+            ownSites={ownSites}
+            currentSite={currentSite}
+            ownClan={ownClan}
+            baseLimit={baseLimit}
+            squadron={squadron}
+            unavailable={unavailable}
+            destination={destinations.find((destination) => destination.site === selected.site)}
+            onStation={onStation}
+            onSupply={onSupply}
+          />
+        )}
+      </div>
+    </Pane>
   )
 }
 

@@ -106,30 +106,6 @@ final class BaseStore
         );
     }
 
-    public function sell(int $baseId, Stock $stock, int $quantity, int $revenue): void
-    {
-        $this->database->execute(
-            'UPDATE base_resources SET supplies = supplies + :revenue, ' . $stock->value . ' = ' . $stock->value . ' - :quantity WHERE base_id = :base_id',
-            ['revenue' => $revenue, 'quantity' => $quantity, 'base_id' => $baseId],
-        );
-    }
-
-    /**
-     * Moves a quantity of a resource from one base to another. The caller holds the transaction and has checked the quantities.
-     */
-    public function transfer(int $fromBaseId, int $toBaseId, Resource $resource, int $quantity): void
-    {
-        $column = $resource->value;
-        $this->database->execute(
-            'UPDATE base_resources SET ' . $column . ' = ' . $column . ' - :quantity WHERE base_id = :base_id',
-            ['quantity' => $quantity, 'base_id' => $fromBaseId],
-        );
-        $this->database->execute(
-            'UPDATE base_resources SET ' . $column . ' = ' . $column . ' + :quantity WHERE base_id = :base_id',
-            ['quantity' => $quantity, 'base_id' => $toBaseId],
-        );
-    }
-
     public function spendMaterials(int $baseId, int $amount): void
     {
         $this->database->execute(
@@ -175,11 +151,25 @@ final class BaseStore
         );
     }
 
-    public function addFuelAndAmmunition(int $baseId, int $fuel, int $ammunition): void
+    /**
+     * Puts a cargo into the stores of a base. The caller has checked that the warehouse holds it.
+     */
+    public function addCargo(int $baseId, Cargo $cargo): void
     {
         $this->database->execute(
-            'UPDATE base_resources SET fuel = fuel + :fuel, ammunition = ammunition + :ammunition WHERE base_id = :base_id',
-            ['fuel' => $fuel, 'ammunition' => $ammunition, 'base_id' => $baseId],
+            'UPDATE base_resources SET fuel = fuel + :fuel, ammunition = ammunition + :ammunition, materials = materials + :materials, supplies = supplies + :supplies WHERE base_id = :base_id',
+            ['fuel' => $cargo->fuel, 'ammunition' => $cargo->ammunition, 'materials' => $cargo->materials, 'supplies' => $cargo->supplies, 'base_id' => $baseId],
+        );
+    }
+
+    /**
+     * Takes a cargo out of the stores of a base. The caller has checked that it holds it.
+     */
+    public function spendCargo(int $baseId, Cargo $cargo): void
+    {
+        $this->database->execute(
+            'UPDATE base_resources SET fuel = fuel - :fuel, ammunition = ammunition - :ammunition, materials = materials - :materials, supplies = supplies - :supplies WHERE base_id = :base_id',
+            ['fuel' => $cargo->fuel, 'ammunition' => $cargo->ammunition, 'materials' => $cargo->materials, 'supplies' => $cargo->supplies, 'base_id' => $baseId],
         );
     }
 

@@ -12,16 +12,18 @@ type Props = {
   sites: SiteChoice[]
   /** The site the player has picked, if any. */
   selected: string | null
-  /** What a click on a free camp does; without it the map is only shown. */
+  /** What a click on a camp does; without it the map is only shown. */
   onSelect?: (site: string) => void
+  /** Whether a camp that is taken can be picked too, and not only a free one. */
+  canSelectTaken?: boolean
   /** The sites of the bases of the player, ringed in gold. */
   ownSites?: string[]
   /** The side of the player: the camps that other players of that side hold are marked as allies. */
   ownClan?: string
 }
 
-/** The map of France with a camp on each site: a free one can be picked, a taken one is greyed unless an ally holds it. On a phone the map is wider than the screen and slides sideways, from the camps. */
-function WorldMap({ sites, selected, onSelect, ownSites = [], ownClan }: Props) {
+/** The map of France with a camp on each site: a free one can be picked, and a taken one too where asked; a taken one is greyed unless an ally holds it. On a phone the map is wider than the screen and slides sideways, from the camps. */
+function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites = [], ownClan }: Props) {
   const { t } = useTranslation()
   const viewportRef = useRef<HTMLDivElement>(null)
 
@@ -52,7 +54,7 @@ function WorldMap({ sites, selected, onSelect, ownSites = [], ownClan }: Props) 
               aria-label={`${t(`world.site.${site}`)} : ${t(free ? 'world.free' : 'world.taken')}`}
               title={t(`world.airfield.${site}`)}
               aria-pressed={selected === site}
-              disabled={!free || onSelect === undefined}
+              disabled={(!free && !canSelectTaken) || onSelect === undefined}
               style={{ left: `${left}%`, top: `${top}%` }}
               onClick={onSelect === undefined ? undefined : () => onSelect(site)}
             >

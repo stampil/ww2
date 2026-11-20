@@ -116,8 +116,8 @@ export type GiftEvent = {
   quantity: number | null
   name: string | null
 }
-/** An aircraft of another base landed here with fuel and ammunition, as much as the warehouse could take. */
-export type LandingEvent = { kind: 'landing'; id: number; from: string; site: string; aircraftName: string; fuel: number; ammunition: number }
+/** An aircraft of another base landed here with a load of resources, as much as the warehouse could take; the journal of a landing before the supply flights has no materials or supplies. */
+export type LandingEvent = { kind: 'landing'; id: number; from: string; site: string; aircraftName: string; fuel: number; ammunition: number; materials?: number; supplies?: number }
 /** The base took a camp, or let one go, when an aircraft landed on it or the last one left. */
 export type CampEvent = { kind: 'campTaken'; id: number; site: string } | { kind: 'campLost'; id: number; site: string }
 /** What happened at the base; the newest event comes first. */
@@ -134,17 +134,18 @@ export type HeldBase = { id: number; site: string }
 /** A base a gift can go to: one of the player's own, or an ally's, with the nickname of its holder. */
 export type Recipient = { id: number; site: string; holder: string; kinship: 'own' | 'ally' }
 /** A base an aircraft can be stationed at: a recipient, or a free camp, which the aircraft takes by landing there first. */
-export type Destination = { id: number; site: string; holder: string | null; kinship: 'own' | 'ally' | 'free' }
+export type Destination = { id: number; site: string; holder: string | null; kinship: 'own' | 'ally' | 'free'; flightSeconds: number }
 
 /** Where a stationed aircraft stands: flying out to the camp, standing there until it is recalled, or flying back. */
 export type StationingPhase = 'outbound' | 'stationed' | 'returning'
-/** An aircraft of the base that is stationed away, with the camp it went to; the seconds left are those of the flight out or back. */
+/** An aircraft of the base that is stationed away, with the camp it went to; the seconds left are those of the flight out or back, which takes `flightSeconds` each way. */
 export type AwayAircraft = {
   aircraftId: number
   pilotId: number
   site: string
   phase: StationingPhase
   remainingSeconds: number
+  flightSeconds: number
 }
 /** An aircraft of another base stationed here, with its pilot and whose it is. */
 export type GuestAircraft = {
@@ -157,12 +158,11 @@ export type GuestAircraft = {
   kinship: 'own' | 'ally'
   phase: StationingPhase
   remainingSeconds: number
+  flightSeconds: number
 }
 
-/** What a free camp holds of a stock, and what one unit costs to buy from it or brings in when sold to it. */
-export type MerchantStock = { quantity: number; buyPrice: number; sellPrice: number }
-/** A free camp, which the AI runs, with what it sells and buys. */
-export type MerchantCamp = { baseId: number; site: string; stocks: Record<Stock, MerchantStock> }
+/** What a supply flight carries, a quantity of each resource. */
+export type Cargo = { fuel: number; ammunition: number; materials: number; supplies: number }
 
 export type Base = {
   /** The id of this base, among the bases the player holds (the one they took first at the head), and how many bases a player can hold. */
@@ -187,8 +187,7 @@ export type Base = {
   }
   headquarters: { weather: { windSpeed: number }; offers: Offer[]; flights: Flight[] }
   roster: { rests: Rest[]; recruitment: { cost: number; maxPilots: number } }
-  stationings: { flightSeconds: number; away: AwayAircraft[]; guests: GuestAircraft[] }
-  merchants: { maxTrade: number; camps: MerchantCamp[] }
+  stationings: { away: AwayAircraft[]; guests: GuestAircraft[] }
   hangar: { aircraft: HangarAircraft[] }
   squadron: Squadron
   events: BaseEvent[]
@@ -392,10 +391,6 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/select`, { baseId }))
   }
 
-  async function giveResource(recipientBaseId: number, resource: GiftResource, quantity: number): Promise<string | null> {
-    return receive(await request(`${BASE_URL}/gifts/resource`, { recipientBaseId, resource, quantity }))
-  }
-
   async function givePilot(recipientBaseId: number, pilotId: number): Promise<string | null> {
     return receive(await request(`${BASE_URL}/gifts/pilot`, { recipientBaseId, pilotId }))
   }
@@ -404,16 +399,12 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/gifts/aircraft`, { recipientBaseId, aircraftId }))
   }
 
-  async function buyFromCamp(campBaseId: number, resource: Stock, quantity: number): Promise<string | null> {
-    return receive(await request(`${BASE_URL}/merchant/buy`, { campBaseId, resource, quantity }))
-  }
-
-  async function sellToCamp(campBaseId: number, resource: Stock, quantity: number): Promise<string | null> {
-    return receive(await request(`${BASE_URL}/merchant/sell`, { campBaseId, resource, quantity }))
-  }
-
   async function sendStationing(destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number): Promise<string | null> {
     return receive(await request(`${BASE_URL}/stationings/send`, { destinationBaseId, pilotId, aircraftId, fuel, ammunition }))
+  }
+
+  async function sendSupply(destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/stationings/supply`, { destinationBaseId, pilotId, aircraftId, ...cargo }))
   }
 
   async function recallStationing(aircraftId: number): Promise<string | null> {
@@ -454,12 +445,10 @@ export function useBase(player: Player | null) {
     restartBattle,
     claimBase,
     selectBase,
-    giveResource,
     givePilot,
     giveAircraft,
     sendStationing,
+    sendSupply,
     recallStationing,
-    buyFromCamp,
-    sellToCamp,
   }
 }

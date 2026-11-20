@@ -29,7 +29,7 @@ import type { Player } from './useAccount'
 import { useAircraftSprite } from './useAircraftSprite'
 import ResetConfirm from './ResetConfirm'
 import { useBase } from './useBase'
-import type { Aircraft, HangarAircraft, MissionType, UpgradeName } from './useBase'
+import type { Aircraft, Cargo, HangarAircraft, MissionType, UpgradeName } from './useBase'
 import { useGuideStatus } from './useGuideStatus'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
@@ -86,13 +86,11 @@ function BaseScreen({ player }: { player: Player }) {
     restartBattle,
     claimBase,
     selectBase,
-    giveResource,
     givePilot,
     giveAircraft,
     sendStationing,
+    sendSupply,
     recallStationing,
-    buyFromCamp,
-    sellToCamp,
   } = useBase(player)
   const aircraftSprite = useAircraftSprite()
   const [openBuilding, setOpenBuilding] = useState<BuildingName | null>(null)
@@ -172,6 +170,17 @@ function BaseScreen({ player }: { player: Player }) {
     const stationErrorCode = await sendStationing(destinationBaseId, pilotId, aircraftId, fuel, ammunition)
     setErrorCode(stationErrorCode)
     if (stationErrorCode === null) {
+      setOpenBuilding(null)
+      showDepartures(departing)
+    }
+  }
+
+  // An aircraft that takes supplies to another base takes off the same way, and comes back by itself.
+  async function supply(destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo): Promise<void> {
+    const departing = parkedAircraft.filter((aircraft) => aircraft.id === aircraftId)
+    const supplyErrorCode = await sendSupply(destinationBaseId, pilotId, aircraftId, cargo)
+    setErrorCode(supplyErrorCode)
+    if (supplyErrorCode === null) {
       setOpenBuilding(null)
       showDepartures(departing)
     }
@@ -287,10 +296,13 @@ function BaseScreen({ player }: { player: Player }) {
           {openBuilding === 'headquarters' && (
             <HeadquartersPanel
               bases={base.bases}
+              currentSite={base.site}
               baseLimit={base.baseLimit}
-              merchants={base.merchants}
-              onBuy={(campBaseId, resource, quantity) => void order(buyFromCamp(campBaseId, resource, quantity))}
-              onSell={(campBaseId, resource, quantity) => void order(sellToCamp(campBaseId, resource, quantity))}
+              squadron={base.squadron}
+              unavailable={unavailable}
+              destinations={base.destinations}
+              onStation={(destinationBaseId, pilotId, aircraftId, fuel, ammunition) => void station(destinationBaseId, pilotId, aircraftId, fuel, ammunition)}
+              onSupply={(destinationBaseId, pilotId, aircraftId, cargo) => void supply(destinationBaseId, pilotId, aircraftId, cargo)}
             />
           )}
           {openBuilding === 'controlTower' && (
@@ -331,8 +343,6 @@ function BaseScreen({ player }: { player: Player }) {
               onBuy={(stock, quantity) => void order(buy(stock, quantity))}
               upgrade={upgradeOf('warehouse')}
               onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
-              recipients={base.recipients}
-              onGive={(recipientBaseId, resource, quantity) => void order(giveResource(recipientBaseId, resource, quantity))}
             />
           )}
           {openBuilding === 'hangar' && (
@@ -340,11 +350,8 @@ function BaseScreen({ player }: { player: Player }) {
               squadron={base.squadron}
               hangarAircraft={hangarAircraft}
               busyAircraftIds={busy.aircraftIds}
-              unavailable={unavailable}
               away={away}
               guests={guests}
-              flightSeconds={base.stationings.flightSeconds}
-              onStation={(destinationBaseId, pilotId, aircraftId, fuel, ammunition) => void station(destinationBaseId, pilotId, aircraftId, fuel, ammunition)}
               onRecall={(aircraftId) => void order(recallStationing(aircraftId))}
               onInspect={(aircraftId) => void order(inspectAircraft(aircraftId))}
               onRepair={(aircraftId) => void order(repairAircraft(aircraftId))}
@@ -352,7 +359,6 @@ function BaseScreen({ player }: { player: Player }) {
               commandPoints={base.resources.commandPoints}
               onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
               recipients={base.recipients}
-              destinations={base.destinations}
               onGiveAircraft={(aircraftId, recipientBaseId) => void order(giveAircraft(recipientBaseId, aircraftId))}
             />
           )}

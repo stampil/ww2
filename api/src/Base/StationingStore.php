@@ -7,11 +7,13 @@ namespace Ww2\Base;
 use Ww2\Database\Database;
 
 /**
- * Keeps the stationings in the database: one row for each aircraft that is away, from the day it takes off until it is home again.
+ * Keeps the stationings in the database: one row for each aircraft that is away, from the day it takes off until it is home again, and for a supply flight the materials and supplies it carries.
  */
 final class StationingStore
 {
-    private const COLUMNS = 'aircraft_id, pilot_id, origin_base_id, destination_base_id, fuel, ammunition, lands_game_second, returns_game_second';
+    private const SELECT = 'SELECT stationings.aircraft_id AS aircraft_id, pilot_id, origin_base_id, destination_base_id, fuel, ammunition,
+            COALESCE(stationing_goods.materials, 0) AS materials, COALESCE(stationing_goods.supplies, 0) AS supplies, lands_game_second, returns_game_second
+        FROM stationings LEFT JOIN stationing_goods ON stationing_goods.aircraft_id = stationings.aircraft_id';
 
     public function __construct(private readonly Database $database)
     {
@@ -20,22 +22,30 @@ final class StationingStore
     public function add(Stationing $stationing): void
     {
         $this->database->execute(
-            'INSERT INTO stationings (' . self::COLUMNS . ') VALUES (:aircraft_id, :pilot_id, :origin_base_id, :destination_base_id, :fuel, :ammunition, :lands_game_second, NULL)',
+            'INSERT INTO stationings (aircraft_id, pilot_id, origin_base_id, destination_base_id, fuel, ammunition, lands_game_second, returns_game_second)
+             VALUES (:aircraft_id, :pilot_id, :origin_base_id, :destination_base_id, :fuel, :ammunition, :lands_game_second, :returns_game_second)',
             [
                 'aircraft_id' => $stationing->aircraftId,
                 'pilot_id' => $stationing->pilotId,
                 'origin_base_id' => $stationing->originBaseId,
                 'destination_base_id' => $stationing->destinationBaseId,
-                'fuel' => $stationing->fuel,
-                'ammunition' => $stationing->ammunition,
+                'fuel' => $stationing->cargo->fuel,
+                'ammunition' => $stationing->cargo->ammunition,
                 'lands_game_second' => $stationing->landsGameSecond,
+                'returns_game_second' => $stationing->returnsGameSecond,
             ],
         );
+        if ($stationing->cargo->materials > 0 || $stationing->cargo->supplies > 0) {
+            $this->database->execute(
+                'INSERT INTO stationing_goods (aircraft_id, materials, supplies) VALUES (:aircraft_id, :materials, :supplies)',
+                ['aircraft_id' => $stationing->aircraftId, 'materials' => $stationing->cargo->materials, 'supplies' => $stationing->cargo->supplies],
+            );
+        }
     }
 
     public function of(int $aircraftId): ?Stationing
     {
-        $rows = $this->database->fetchAll('SELECT ' . self::COLUMNS . ' FROM stationings WHERE aircraft_id = :aircraft_id', ['aircraft_id' => $aircraftId]);
+        $rows = $this->database->fetchAll(self::SELECT . ' WHERE stationings.aircraft_id = :aircraft_id', ['aircraft_id' => $aircraftId]);
 
         return $rows === [] ? null : $this->stationingFrom($rows[0]);
     }
@@ -46,7 +56,7 @@ final class StationingStore
     public function involving(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT ' . self::COLUMNS . ' FROM stationings WHERE origin_base_id = :origin_base_id OR destination_base_id = :destination_base_id ORDER BY aircraft_id',
+            self::SELECT . ' WHERE origin_base_id = :origin_base_id OR destination_base_id = :destination_base_id ORDER BY stationings.aircraft_id',
             ['origin_base_id' => $baseId, 'destination_base_id' => $baseId],
         );
 
@@ -59,8 +69,7 @@ final class StationingStore
     public function landedAt(int $baseId, int $gameSeconds): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT ' . self::COLUMNS . ' FROM stationings
-             WHERE destination_base_id = :base_id AND returns_game_second IS NULL AND lands_game_second <= :game_seconds ORDER BY lands_game_second, aircraft_id',
+            self::SELECT . ' WHERE destination_base_id = :base_id AND returns_game_second IS NULL AND lands_game_second <= :game_seconds ORDER BY lands_game_second, stationings.aircraft_id',
             ['base_id' => $baseId, 'game_seconds' => $gameSeconds],
         );
 
@@ -89,6 +98,7 @@ final class StationingStore
     public function emptyHold(int $aircraftId): void
     {
         $this->database->execute('UPDATE stationings SET fuel = 0, ammunition = 0 WHERE aircraft_id = :aircraft_id', ['aircraft_id' => $aircraftId]);
+        $this->database->execute('UPDATE stationing_goods SET materials = 0, supplies = 0 WHERE aircraft_id = :aircraft_id', ['aircraft_id' => $aircraftId]);
     }
 
     /**
@@ -146,8 +156,7 @@ final class StationingStore
             (int) $row['pilot_id'],
             (int) $row['origin_base_id'],
             (int) $row['destination_base_id'],
-            (int) $row['fuel'],
-            (int) $row['ammunition'],
+            new Cargo((int) $row['fuel'], (int) $row['ammunition'], (int) $row['materials'], (int) $row['supplies']),
             (int) $row['lands_game_second'],
             $row['returns_game_second'] === null ? null : (int) $row['returns_game_second'],
         );

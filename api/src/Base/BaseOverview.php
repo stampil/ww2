@@ -29,7 +29,6 @@ final class BaseOverview
         private readonly GameClockStore $clocks,
         private readonly Bases $sites,
         private readonly Stationings $stationings,
-        private readonly Merchant $merchant,
     ) {
     }
 
@@ -49,7 +48,7 @@ final class BaseOverview
             'bases' => $this->sites->heldWith($baseId),
             'baseLimit' => Bases::MAX_PER_PLAYER,
             'recipients' => array_map(static fn (array $recipient): array => [...$recipient, 'kinship' => $recipient['kinship']->value], $this->sites->recipientsOf($baseId)),
-            'destinations' => array_map(static fn (array $destination): array => [...$destination, 'kinship' => $destination['kinship']->value], $this->sites->destinationsOf($baseId)),
+            'destinations' => array_map(fn (array $destination): array => [...$destination, 'kinship' => $destination['kinship']->value, 'flightSeconds' => $this->stationings->flightSecondsBetween($baseId, $destination['id'])], $this->sites->destinationsOf($baseId)),
             'site' => $this->sites->siteOf($baseId)->value,
             'terrainPlan' => $this->baseStore->terrainPlanOf($baseId),
             'resources' => $this->baseStore->resourcesOf($baseId)->toArray(),
@@ -61,7 +60,6 @@ final class BaseOverview
             'hangar' => $hangar,
             'roster' => $roster,
             'stationings' => $stationings,
-            'merchants' => $this->merchant->describe($baseId, $clock),
             'squadron' => [
                 'pilots' => array_map(static fn (Pilot $pilot): array => $pilot->toArray(), $this->squadrons->pilotsOf($baseId)),
                 'aircraft' => array_map(static fn (Aircraft $aircraft): array => $aircraft->toArray(), $this->squadrons->aircraftOf($baseId)),

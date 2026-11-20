@@ -255,15 +255,11 @@
     "label": "Manche de pilotage"
   },
   "gift": {
-    "title": "Donner",
-    "resource": "Ressource",
-    "quantity": "Quantité",
     "to": "Vers la base",
     "give": "Donner",
     "recipient": {
       "own": "{{site}} (ta base)",
-      "ally": "{{site}} ({{holder}}, allié)",
-      "free": "{{site}} (camp libre)"
+      "ally": "{{site}} ({{holder}}, allié)"
     }
   },
   "world": {
@@ -273,7 +269,7 @@
     },
     "sites": "Sites",
     "map": "Carte de la France",
-    "legend": "Tes camps sont cerclés d'or, ceux de tes alliés de vert, ceux de l'ennemi sont grisés, les camps libres sont en couleur, rouges pour l'Axe. Passe sur un camp pour voir son nom.",
+    "legend": "Tes camps sont cerclés d'or, ceux de tes alliés de vert, ceux de l'ennemi sont grisés, les camps libres sont en couleur, rouges pour l'Axe. Clique un camp : son détail s'ouvre de l'autre côté de la carte.",
     "side": "Ton côté : {{side}}.",
     "clan": {
       "french": "les Alliés",
@@ -437,7 +433,8 @@
       "giftPilot": "{{from}} ({{site}}) : le pilote {{name}}.",
       "giftAircraft": "{{from}} ({{site}}) : un {{name}}.",
       "landing": "Atterrissage",
-      "landingLoad": "{{from}} ({{site}}) : un {{aircraft}} a livré {{fuel}} de carburant et {{ammunition}} de munitions.",
+      "landingLoad": "{{from}} ({{site}}) : un {{aircraft}} a livré {{load}}.",
+      "loadItem": "{{quantity}} de {{resource}}",
       "campTaken": "Camp pris",
       "campTakenText": "Un de tes avions s'est posé à {{site}} : le camp est à toi.",
       "campLost": "Camp quitté",
@@ -591,8 +588,7 @@
       "signInRequired": "Connecte-toi d'abord.",
       "apiDown": "L'API ne répond pas.",
       "notStationed": "Cet avion n'est pas posé sur un camp : il n'y a rien à rappeler.",
-      "landingRequired": "Pour prendre un camp de plus, envoie-y un avion.",
-      "campShortage": "Le camp n'en a pas autant en stock."
+      "landingRequired": "Pour prendre un camp de plus, envoie-y un avion."
     }
   },
   "stationing": {
@@ -603,7 +599,7 @@
     "ammunition": "Munitions emportées",
     "send": "Stationner ({{time}})",
     "nobodyFree": "Il faut un avion et un pilote libres.",
-    "recall": "Rappeler",
+    "recall": "Rappeler ({{time}})",
     "guests": "Avions stationnés ici",
     "phase": {
       "outbound": "En route vers {{site}} ({{time}})",
@@ -616,12 +612,15 @@
       "returning": "Repart dans {{time}}"
     }
   },
-  "merchant": {
-    "title": "Marchand des camps libres",
-    "text": "Les camps libres sont tenus par l'IA : elle te vend du carburant, des munitions et des matériaux contre du ravitaillement, et t'en rachète, jusqu'à {{max}} à la fois. Plus un stock est rare au camp, plus il est cher ; il revient peu à peu à son niveau.",
-    "camp": "Camp",
-    "held": "Au camp : {{quantity}}",
-    "buy": "Acheter (≈ {{price}})",
-    "sell": "Vendre (≈ {{price}})"
+  "camp": {
+    "pick": "Clique un camp sur la carte : son détail s'ouvre de l'autre côté.",
+    "aircraft": "Avions stationnés",
+    "here": "C'est ta base : tes avions en partent.",
+    "enemy": "Camp ennemi : tu ne peux pas y envoyer d'avion."
+  },
+  "supply": {
+    "title": "Ravitailler le camp",
+    "text": "Un avion et son pilote livrent des ressources à ce camp, puis rentrent aussitôt : l'aller-retour dure deux fois le vol. L'avion en emporte {{max}} de chaque au plus, et ce qui ne tient pas dans l'entrepôt d'arrivée est perdu.",
+    "send": "Ravitailler (aller-retour {{time}})"
   }
 }

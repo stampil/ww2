@@ -2,13 +2,11 @@ import { useTranslation } from 'react-i18next'
 import { damageLevelOf } from '../three/damageStages'
 import AircraftPicture from './AircraftPicture'
 import { formatDuration } from './formatDuration'
-import type { BusyCrews } from './flights'
 import Gauge from './Gauge'
 import GiveTo from './GiveTo'
 import Icon from './Icon'
 import Pane from './Pane'
-import StationingForm from './StationingForm'
-import type { AwayAircraft, Destination, GuestAircraft, HangarAircraft, Part, Recipient, Squadron, UpgradeInfo, UpgradeName } from './useBase'
+import type { AwayAircraft, GuestAircraft, HangarAircraft, Part, Recipient, Squadron, UpgradeInfo, UpgradeName } from './useBase'
 import UpgradeCard from './UpgradeCard'
 
 const PARTS: Part[] = ['engine', 'wings', 'fuselage', 'armament']
@@ -17,12 +15,9 @@ type Props = {
   squadron: Squadron
   hangarAircraft: HangarAircraft[]
   busyAircraftIds: number[]
-  unavailable: BusyCrews
   /** The aircraft of the base stationed at another, and those of other bases stationed here. */
   away: AwayAircraft[]
   guests: GuestAircraft[]
-  flightSeconds: number
-  onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => void
   onRecall: (aircraftId: number) => void
   onInspect: (aircraftId: number) => void
   onRepair: (aircraftId: number) => void
@@ -32,12 +27,10 @@ type Props = {
   /** The bases a gift can go to; an aircraft goes to the player's own only. */
   recipients: Recipient[]
   onGiveAircraft: (aircraftId: number, recipientBaseId: number) => void
-  /** Where an aircraft can be stationed: the player's own bases, the allies' and the free camps. */
-  destinations: Destination[]
 }
 
-/** The aircraft of the squadron in 3D, on the ground or in flight, with their modules; one back damaged is inspected to show its damage, then repaired, if a mechanic and the spare parts are there. An aircraft can be stationed at another base, and those stationed here are listed. */
-function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, unavailable, away, guests, flightSeconds, onStation, onRecall, onInspect, onRepair, upgrade, commandPoints, onUpgrade, recipients, onGiveAircraft, destinations }: Props) {
+/** The aircraft of the squadron in 3D, on the ground or in flight, with their modules; one back damaged is inspected to show its damage, then repaired, if a mechanic and the spare parts are there. The aircraft stationed at another base can be recalled, and those stationed here are listed. */
+function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, away, guests, onRecall, onInspect, onRepair, upgrade, commandPoints, onUpgrade, recipients, onGiveAircraft }: Props) {
   const { t } = useTranslation()
   const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
 
@@ -69,7 +62,7 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, unavailable, a
                     {awayAircraft.phase === 'stationed' && (
                       <div className="card-actions">
                         <button type="button" onClick={() => onRecall(aircraft.id)}>
-                          {t('stationing.recall')}
+                          {t('stationing.recall', { time: formatDuration(awayAircraft.flightSeconds) })}
                         </button>
                       </div>
                     )}
@@ -150,7 +143,6 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, unavailable, a
           <UpgradeCard info={upgrade} commandPoints={commandPoints} onBuy={onUpgrade} />
         </ul>
       </Pane>
-      {destinations.length > 0 && <StationingForm squadron={squadron} unavailable={unavailable} destinations={destinations} flightSeconds={flightSeconds} onStation={onStation} />}
       {guests.length > 0 && (
         <Pane title={t('stationing.guests')}>
           <ul className="reports">
@@ -166,7 +158,7 @@ function HangarPanel({ squadron, hangarAircraft, busyAircraftIds, unavailable, a
                 {guest.kinship === 'own' && guest.phase === 'stationed' && (
                   <div className="card-actions">
                     <button type="button" onClick={() => onRecall(guest.aircraftId)}>
-                      {t('stationing.recall')}
+                      {t('stationing.recall', { time: formatDuration(guest.flightSeconds) })}
                     </button>
                   </div>
                 )}

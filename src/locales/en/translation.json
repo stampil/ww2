@@ -255,15 +255,11 @@
     "label": "Control stick"
   },
   "gift": {
-    "title": "Give",
-    "resource": "Resource",
-    "quantity": "Quantity",
     "to": "To the base",
     "give": "Give",
     "recipient": {
       "own": "{{site}} (your base)",
-      "ally": "{{site}} ({{holder}}, ally)",
-      "free": "{{site}} (free camp)"
+      "ally": "{{site}} ({{holder}}, ally)"
     }
   },
   "world": {
@@ -273,7 +269,7 @@
     },
     "sites": "Sites",
     "map": "Map of France",
-    "legend": "Your camps are ringed in gold, your allies' in green, the enemy's are greyed, the free camps are in colour, red for the Axe. Point at a camp to see its name.",
+    "legend": "Your camps are ringed in gold, your allies' in green, the enemy's are greyed, the free camps are in colour, red for the Axe. Click a camp: its details open on the other side of the map.",
     "side": "Your side: {{side}}.",
     "clan": {
       "french": "the Allies",
@@ -437,7 +433,8 @@
       "giftPilot": "{{from}} ({{site}}): the pilot {{name}}.",
       "giftAircraft": "{{from}} ({{site}}): a {{name}}.",
       "landing": "Landing",
-      "landingLoad": "{{from}} ({{site}}): a {{aircraft}} delivered {{fuel}} fuel and {{ammunition}} ammunition.",
+      "landingLoad": "{{from}} ({{site}}): a {{aircraft}} delivered {{load}}.",
+      "loadItem": "{{quantity}} {{resource}}",
       "campTaken": "Camp taken",
       "campTakenText": "One of your aircraft landed at {{site}}: the camp is yours.",
       "campLost": "Camp left",
@@ -591,8 +588,7 @@
       "signInRequired": "Sign in first.",
       "apiDown": "The API does not answer.",
       "notStationed": "This aircraft is not on the ground at a camp: there is nothing to recall.",
-      "landingRequired": "To take another camp, send an aircraft there.",
-      "campShortage": "The camp does not hold that much."
+      "landingRequired": "To take another camp, send an aircraft there."
     }
   },
   "stationing": {
@@ -603,7 +599,7 @@
     "ammunition": "Ammunition carried",
     "send": "Station ({{time}})",
     "nobodyFree": "A free aircraft and a free pilot are needed.",
-    "recall": "Recall",
+    "recall": "Recall ({{time}})",
     "guests": "Aircraft stationed here",
     "phase": {
       "outbound": "Flying to {{site}} ({{time}})",
@@ -616,12 +612,15 @@
       "returning": "Leaves in {{time}}"
     }
   },
-  "merchant": {
-    "title": "Merchant of the free camps",
-    "text": "The free camps are run by the AI: it sells you fuel, ammunition and materials for supplies, and buys them back, up to {{max}} at a time. The scarcer a stock is at the camp, the dearer it is; it comes back to its level little by little.",
-    "camp": "Camp",
-    "held": "At the camp: {{quantity}}",
-    "buy": "Buy (≈ {{price}})",
-    "sell": "Sell (≈ {{price}})"
+  "camp": {
+    "pick": "Click a camp on the map: its details open on the other side.",
+    "aircraft": "Aircraft stationed",
+    "here": "This is your base: your aircraft leave from it.",
+    "enemy": "Enemy camp: you cannot send an aircraft there."
+  },
+  "supply": {
+    "title": "Supply the camp",
+    "text": "An aircraft and its pilot bring resources to this camp, then turn round at once: the round trip lasts twice the flight. The aircraft takes {{max}} of each at most, and what does not fit in the warehouse where it lands is lost.",
+    "send": "Supply (round trip {{time}})"
   }
 }

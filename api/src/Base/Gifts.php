@@ -13,7 +13,7 @@ use Ww2\World\Bases;
 use Ww2\World\Kinship;
 
 /**
- * What a base gives to another, at once and for nothing: supplies and stocks to its own bases and to its allies', pilots and aircraft to its own bases only.
+ * What a base gives to another, at once and for nothing: pilots and aircraft, to its own bases only. Resources travel by supply flights.
  * What flies, is stationed away, rests or is being repaired is not given. The recipient hears of it in its journal.
  */
 final class Gifts
@@ -24,35 +24,11 @@ final class Gifts
         private readonly SquadronStore $squadrons,
         private readonly MissionStore $missions,
         private readonly HangarStore $hangarStore,
-        private readonly Warehouse $warehouse,
         private readonly Bases $bases,
         private readonly EventLog $events,
         private readonly StationingStore $stationings,
         private readonly GameClockStore $clocks,
     ) {
-    }
-
-    /**
-     * @throws BaseException when the quantity is not positive, the recipient is not an own or allied base, the giver runs short or the recipient's warehouse would overflow
-     */
-    public function giveResource(int $fromBaseId, int $toBaseId, Resource $resource, int $quantity): void
-    {
-        if ($quantity < 1) {
-            throw new BaseException(BaseError::InvalidQuantity);
-        }
-        $this->database->transaction(function () use ($fromBaseId, $toBaseId, $resource, $quantity): void {
-            $this->kinshipOrFail($fromBaseId, $toBaseId);
-            $locked = $this->baseStore->lockBoth($fromBaseId, $toBaseId);
-            if ($resource->in($locked[$fromBaseId]) < $quantity) {
-                throw new BaseException($resource->shortage());
-            }
-            $stock = $resource->stock();
-            if ($stock !== null && $locked[$toBaseId]->stock($stock) + $quantity > $this->warehouse->capacityOf($toBaseId)) {
-                throw new BaseException(BaseError::RecipientWarehouseFull);
-            }
-            $this->baseStore->transfer($fromBaseId, $toBaseId, $resource, $quantity);
-            $this->announce($fromBaseId, $toBaseId, ['item' => $resource->value, 'quantity' => $quantity, 'name' => null]);
-        });
     }
 
     /**

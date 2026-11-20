@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next'
-import type { Destination } from './useBase'
+import type { Recipient } from './useBase'
 
 type Props = {
-  recipients: Destination[]
+  recipients: Recipient[]
   /** The id of the base chosen. */
   value: number
   onChange: (recipientBaseId: number) => void
 }
 
-/** The bases a gift or an aircraft can go to, each with its site and, for an ally's, who holds it. */
+/** The bases a pilot or an aircraft can be given to, each with its site and, for an ally's, who holds it. */
 function RecipientSelect({ recipients, value, onChange }: Props) {
   const { t } = useTranslation()
 

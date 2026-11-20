@@ -1190,21 +1190,6 @@ button.base-sprite {
   height: auto;
 }
 
-.world-stock {
-  @include flex($display: inline-flex, $align: center, $gap: 0.6rem);
-  margin-left: 0.6rem;
-  font-variant-numeric: tabular-nums;
-
-  span {
-    @include flex($display: inline-flex, $align: center, $gap: 0.2rem);
-  }
-
-  .icon {
-    width: 0.9rem;
-    height: 0.9rem;
-  }
-}
-
 .world-camp {
   position: absolute;
   width: 3.4%;
@@ -1302,14 +1287,48 @@ button.base-sprite {
   color: $muted-text;
 }
 
-.world-holders {
-  margin: 0.6rem 0 0;
-  padding: 0;
-  color: $muted-text;
-  list-style: none;
+// The map of the headquarters, with the card of the camp picked beside it, on the side opposite to the camp; under it on a phone.
+.hq-layout {
+  display: grid;
+  gap: 0.8rem;
 
-  strong {
-    color: $text;
+  @include from('large') {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+
+    .world-map {
+      min-width: 0;
+    }
+
+    // The map stays in view while the card of a long list of orders is read.
+    .world-map-viewport {
+      position: sticky;
+      top: 0;
+      align-self: start;
+    }
+
+    &[data-card-side='left'] {
+      grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+
+      .camp-card {
+        order: -1;
+      }
+    }
+  }
+}
+
+.camp-card .pane {
+  margin-top: 0;
+}
+
+.camp-section {
+  margin-top: 0.9rem;
+
+  h5 {
+    margin: 0 0 0.3rem;
+    color: $gold;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 }
 

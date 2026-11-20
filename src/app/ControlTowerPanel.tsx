@@ -28,13 +28,15 @@ type Props = {
   onReceive: (missionId: number) => void
   onRest: (pilotId: number) => void
   onRecruit: () => void
+  /** Asks to start the game over from nothing. */
+  onStartOver: () => void
   /** The bases a gift can go to; a pilot goes to the player's own only. */
   recipients: Recipient[]
   onGivePilot: (pilotId: number, recipientBaseId: number) => void
 }
 
 /** The flights under way, the latest events, the missions on the table, and the pilots, who can rest and be joined by new ones. */
-function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, recruitment, events, busy, unavailable, onLaunch, onReceive, onRest, onRecruit, recipients, onGivePilot }: Props) {
+function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, recruitment, events, busy, unavailable, onLaunch, onReceive, onRest, onRecruit, onStartOver, recipients, onGivePilot }: Props) {
   const { t } = useTranslation()
   const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
 
@@ -118,6 +120,11 @@ function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, re
           </li>
         </ul>
       </Pane>
+      <div className="game-tools">
+        <button type="button" onClick={onStartOver}>
+          {t('reset.button')}
+        </button>
+      </div>
     </>
   )
 }

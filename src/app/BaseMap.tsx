@@ -76,8 +76,8 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
   }, [plan])
 
   return (
-    <div className="base-map-viewport">
-      <div className="base-map" role="group" aria-label={t('base.map')} style={gridSize} data-three={aircraftSprite !== null} data-camera-away={isCameraAway}>
+    <div className="base-map-viewport" style={gridSize}>
+      <div className="base-map" role="group" aria-label={t('base.map')} data-three={aircraftSprite !== null} data-camera-away={isCameraAway}>
         <canvas className="base-map-canvas" ref={canvasRef} />
         {aircraftSprite !== null && (
           <AirfieldView

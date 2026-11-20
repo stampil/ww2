@@ -258,29 +258,26 @@ function BaseScreen({ player }: { player: Player }) {
       <h2 className="visually-hidden">{t('base.title')}</h2>
       <div className="stage">
         <Hud gameTime={gameTime} base={base} onSelectBase={(selectedBaseId) => void order(selectBase(selectedBaseId))} />
-        <BaseMap
-          plan={plan}
-          servicedAircraftIds={servicedAircraftIds}
-          parkedAircraft={parkedAircraft}
-          aircraftSprite={aircraftSprite}
-          departures={departures}
-          onDeparted={removeDeparture}
-          arrivals={arrivals}
-          emergences={emergences}
-          onLanded={removeLanding}
-          alerts={alerts}
-          openBuilding={openBuilding}
-          onSelect={setOpenBuilding}
-        />
+        <div className="map-slot">
+          <BaseMap
+            plan={plan}
+            servicedAircraftIds={servicedAircraftIds}
+            parkedAircraft={parkedAircraft}
+            aircraftSprite={aircraftSprite}
+            departures={departures}
+            onDeparted={removeDeparture}
+            arrivals={arrivals}
+            emergences={emergences}
+            onLanded={removeLanding}
+            alerts={alerts}
+            openBuilding={openBuilding}
+            onSelect={setOpenBuilding}
+          />
+        </div>
       </div>
 
       <MissionToasts flights={flights} squadron={base.squadron} onOpen={setDuelAlertId} />
       {openBuilding === null && guide}
-      <div className="game-tools">
-        <button type="button" onClick={() => setIsConfirmingReset(true)}>
-          {t('reset.button')}
-        </button>
-      </div>
       {openBuilding === null && errorMessage}
 
       {openBuilding !== null && (
@@ -312,6 +309,7 @@ function BaseScreen({ player }: { player: Player }) {
               onReceive={(missionId) => void receive(missionId)}
               onRest={(pilotId) => void order(restPilot(pilotId))}
               onRecruit={() => void order(recruitPilot())}
+              onStartOver={() => setIsConfirmingReset(true)}
               recipients={base.recipients}
               onGivePilot={(pilotId, recipientBaseId) => void order(givePilot(recipientBaseId, pilotId))}
             />

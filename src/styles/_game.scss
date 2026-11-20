@@ -139,9 +139,49 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
   color: $text;
 }
 
+// The game screen fits the window, whatever its size or the zoom of the browser, and never scrolls: the map takes what the top bar leaves, as large as it can be, whole.
+.page-shell[data-game='true'] {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+
+  .topbar {
+    min-height: 3.2rem;
+    padding-block: 0.3rem;
+  }
+
+  .game-page {
+    @include flex($direction: column);
+    flex: 1;
+    min-height: 0;
+    padding: 0.4rem 0;
+  }
+}
+
+body:has(.page-shell[data-game='true']) {
+  overflow: hidden;
+}
+
+.base.game {
+  @include flex($direction: column);
+  flex: 1;
+  min-height: 0;
+}
+
 // The stage: the airfield, with the strip of figures laid over it.
 .stage {
+  @include flex($direction: column);
   position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.map-slot {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  place-items: center;
+  container-type: size;
 }
 
 // Above the map on a phone, over its top edge from the medium breakpoint.
@@ -231,6 +271,7 @@ $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
 }
 
 .base-map-viewport {
+  width: min(100cqw, calc(100cqh * var(--columns) / var(--rows)));
   overflow: hidden;
   border: 2px solid $outline;
   box-shadow:

@@ -9,7 +9,6 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 | Il me faut | Ça débloque |
 |---|---|
 | Ton avis sur les trois états de camp reteints (`ref/camps-etats-reteintes.png`, envoyés le 20/11 : ta feuille du 19/11, seule l'herbe est ramenée au kaki du camp libre) ; rien à regénérer si ça va. Les états « libre » et « tenu par un joueur » servent tout de suite ; « tenu par l'IA » et « attaqué » attendent que le jeu les produise (l'IA qui tient des camps à M5, les raids à M6) | les camps sur la carte |
-| Ton accord pour télécharger de FGAddon (GPL v2, `https://svn.code.sf.net/p/flightgear/fgaddon/trunk/Aircraft/bf109/Models/`) les fichiers du Bf 109 : `Bf-109g.xml` (22 460 octets : les pivots et les axes du train, des volets et des gouvernes), `cockpit.ac` (130 266), `cockpit.xml` (11 401), `cockpit.png` (1 165 459), `interiour.png` (1 162 593), et le dossier `Instruments/` (45 sous-dossiers de cadrans, taille non affichée : je la relève avant de les prendre) ; les textures seraient repeintes par IA, prompts à ton « généré » (la permission des photos de cadrans n'est donnée qu'à FlightGear) | le Bf 109 jouable et son cockpit (M5, suite) |
 
 ## 2. Questions à lever
 

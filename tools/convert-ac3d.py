@@ -42,6 +42,8 @@ INSTRUMENT_OFFSETS = {
     "mano": (-0.007, -0.318, 0.163),
 }
 EXTERIOR_FILE = "flightgear-d520/d520.ac"
+# The flat colors of FlightGear for the interior, the panel and the seat were replaced by repainted textures, in the same layout.
+REPAINTED_TEXTURES = {"interior.png": "interior.jpg", "panel.png": "panel.jpg", "seat.png": "seat.jpg"}
 INSTRUMENTS_DIRECTORY = "flightgear-d520-interior/Panel/Instruments"
 ALL_PARTS = None
 
@@ -213,6 +215,7 @@ def convert_model(name, files, ref_directory, output_directory, hub_y, source):
         textures = {by_name[part_name]["texture"] for part_name in part_names} - {None}
         assert len(textures) == 1, (relative_path, textures)
         texture = textures.pop()
+        texture = REPAINTED_TEXTURES.get(texture, texture)
         material_shift = len(materials)
         materials.extend({**material, "texture": texture} for material in file_materials)
         untextured_materials = {}

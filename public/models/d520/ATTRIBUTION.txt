@@ -18,7 +18,8 @@ Changes made for this site (French Touch, https://github.com/stampil/ww2):
 - texture-francais.png is the unchanged texture.png of the original;
 - texture-vichy.png is that texture reworked with an image generator (1024 x 1024, same layout), after the Vichy armistice
   markings of autumn 1941 to November 1942: red and yellow bands on the cowling and the fin, a red spinner, tricolor bands under the wings;
-- the textures in cockpit/ (interior, panel, seat, collimator and the instruments) are the unchanged textures of the original.
+- the textures in cockpit/ of the collimator and the instruments are the unchanged textures of the original; those of the interior, the panel and the seat
+  (interior.jpg, panel.jpg, seat.jpg) replace its flat colors: the first two were generated from the original layouts, the seat is a leather picture.
 
 These files (d520.json, d520.bin, cockpit.json, cockpit.bin, texture-francais.png, texture-vichy.png and the cockpit
 textures) are under the GPL v2, like the original.

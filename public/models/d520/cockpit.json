@@ -5,27 +5,27 @@
   {
    "name": "DefaultWhite",
    "opacity": 1.0,
-   "texture": "interior.png"
+   "texture": "interior.jpg"
   },
   {
    "name": "transparent",
    "opacity": 0.15,
-   "texture": "interior.png"
+   "texture": "interior.jpg"
   },
   {
    "name": "DefaultWhite.001",
    "opacity": 1.0,
-   "texture": "interior.png"
+   "texture": "interior.jpg"
   },
   {
    "name": "DefaultWhite",
    "opacity": 1.0,
-   "texture": "panel.png"
+   "texture": "panel.jpg"
   },
   {
    "name": "DefaultWhite",
    "opacity": 1.0,
-   "texture": "seat.png"
+   "texture": "seat.jpg"
   },
   {
    "name": "DefaultWhite",

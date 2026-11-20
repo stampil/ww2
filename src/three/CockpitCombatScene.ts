@@ -3,6 +3,7 @@ import { CORRIDOR_TURN_RATE_RADIANS_PER_SECOND, corridorHeading, corridorSpeed, 
 import type { CorridorPoint, Flier } from './cockpitRules'
 import { D520Model } from './D520Model'
 import { DESTROYED_LEVEL } from './damageStages'
+import { SMOKING_LEVEL } from './DamageEffects'
 import { clamp } from './easing'
 import { LiveryTextures } from './liveries'
 import { PilotHeadModel } from './PilotHeadModel'
@@ -18,8 +19,8 @@ export type CockpitEnemy = 'bf109' | 'vichyD520'
 export type CockpitOutcome = 'won' | 'escaped'
 /** Where the enemy is, seen from the cockpit: degrees to the right and up of the nose, how far, and whether it is in the gunsight. */
 export type CockpitSight = { azimuthDegrees: number; elevationDegrees: number; distanceMeters: number; isInSight: boolean }
-/** How far the enemy has been kept in the gunsight, from 0 to 1, and how wide the gunsight is, as a share of the height of the view. */
-export type CockpitStatus = { lockShare: number; sightDiameterPercent: number; secondsLeft: number; sight: CockpitSight }
+/** How far the enemy has been kept in the gunsight, from 0 to 1, how wide the gunsight is and how far down from the top of the view its middle is, as a share of the height of the view. */
+export type CockpitStatus = { lockShare: number; sightDiameterPercent: number; sightTopPercent: number; secondsLeft: number; sight: CockpitSight }
 /** `agility` and `accuracy` are the maneuverability of the aircraft and the accuracy of the pilot, from 0 to 1; `risk` is the difficulty of the mission, from 1 to 3. */
 export type CockpitOptions = { enemy: CockpitEnemy; agility: number; accuracy: number; risk: number; isTouchScreen: boolean }
 
@@ -27,10 +28,11 @@ const DEGREES = Math.PI / 180
 const FIELD_OF_VIEW_DEGREES = 70
 const CAMERA_NEAR_METERS = 0.05
 const CAMERA_FAR_METERS = 5000
-// The pilot's eyes, in the frame of the aircraft: behind the gunsight, under the canopy.
-const EYE = new THREE.Vector3(0, -0.2, 0.53)
-// The bust of the pilot, low in the middle of the instrument panel, in the frame of the aircraft.
-const HEAD_POSITION = new THREE.Vector3(0, 0.3, 0.1)
+// The eyes of the camera, in the frame of the aircraft: above and behind, looking down on the skull of the pilot, so that his bust never hides the gunsight, which is where the nose points.
+const EYE = new THREE.Vector3(0, -0.2, 0.72)
+const VIEW_DIVE_DEGREES = 14
+// The bust of the pilot, big and low in the middle of the instrument panel, in the frame of the aircraft: only the top of the skull shows over the panel, under the gunsight.
+const HEAD_POSITION = new THREE.Vector3(0, 0.3, -0.02)
 const HEAD_SCALE = 2.3
 const START_ALTITUDE_METERS = 350
 const ENEMY_START = new THREE.Vector3(25, 160, START_ALTITUDE_METERS)
@@ -48,6 +50,7 @@ const COMBAT_SECONDS = 75
 const ESCAPE_DISTANCE_METERS = 1500
 const KILL_PAUSE_SECONDS = 2.5
 const PERCENT = 100
+const HALF_PERCENT = 50
 const STATUS_INTERVAL_SECONDS = 0.1
 const FLYING = { engine: 1, gearRetraction: 1, flaps: 0, wheels: 0, aileron: 0, rudder: 0, elevator: 0 }
 
@@ -186,9 +189,10 @@ export class CockpitCombatScene {
     this.scene.add(sun)
 
     this.player.setState(FLYING)
+    this.player.hideGunsight()
     this.scene.add(this.player.object)
     this.camera.position.copy(EYE)
-    this.camera.rotation.set(Math.PI / 2, 0, 0)
+    this.camera.rotation.set(Math.PI / 2 - VIEW_DIVE_DEGREES * DEGREES, 0, 0)
     this.player.object.add(this.camera)
     this.head.object.position.copy(HEAD_POSITION)
     this.head.object.scale.setScalar(HEAD_SCALE)
@@ -213,6 +217,7 @@ export class CockpitCombatScene {
     this.renderer.setAnimationLoop(null)
     this.resizeObserver.disconnect()
     disposeScene(this.scene, this.renderer)
+    this.head.dispose()
     this.liveries.dispose()
   }
 
@@ -429,7 +434,8 @@ export class CockpitCombatScene {
       this.enemy.destroy()
       return
     }
-    const level = Math.floor((this.lockSeconds / this.destructionSeconds) * DESTROYED_LEVEL)
+    // The fight is short: the first moment in the gunsight already sets the enemy smoking.
+    const level = this.lockSeconds === 0 ? 0 : Math.max(SMOKING_LEVEL, Math.floor((this.lockSeconds / this.destructionSeconds) * DESTROYED_LEVEL))
     if (level > this.damageLevel) {
       this.damageLevel = level
       this.enemy.damage(level)
@@ -477,7 +483,13 @@ export class CockpitCombatScene {
       return
     }
     this.statusCountdown = STATUS_INTERVAL_SECONDS
-    this.onStatus({ lockShare: Math.min(this.lockSeconds / this.destructionSeconds, 1), sightDiameterPercent: (Math.tan(this.sightAngleDegrees() * DEGREES) / Math.tan((FIELD_OF_VIEW_DEGREES / 2) * DEGREES)) * PERCENT, secondsLeft: this.secondsLeft, sight })
+    this.onStatus({
+      lockShare: Math.min(this.lockSeconds / this.destructionSeconds, 1),
+      sightDiameterPercent: this.viewShareOf(this.sightAngleDegrees()) * PERCENT,
+      sightTopPercent: (1 - this.viewShareOf(VIEW_DIVE_DEGREES)) * HALF_PERCENT,
+      secondsLeft: this.secondsLeft,
+      sight,
+    })
   }
 
   private sight(): CockpitSight {
@@ -488,6 +500,11 @@ export class CockpitCombatScene {
     const distanceMeters = toEnemy.length()
     const isInSight = Math.hypot(azimuthDegrees, elevationDegrees) < this.sightAngleDegrees() && distanceMeters >= SIGHT_DISTANCE_METERS.min && distanceMeters <= SIGHT_DISTANCE_METERS.max
     return { azimuthDegrees, elevationDegrees, distanceMeters, isInSight }
+  }
+
+  /** How much of the half height of the view an angle from the middle of the view takes up. */
+  private viewShareOf(angleDegrees: number): number {
+    return Math.tan(angleDegrees * DEGREES) / Math.tan((FIELD_OF_VIEW_DEGREES / 2) * DEGREES)
   }
 
   /** The half angle of the gunsight: the better the pilot aims, the wider it is. */

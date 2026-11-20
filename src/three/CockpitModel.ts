@@ -6,6 +6,7 @@ import { EasedValue } from './motion'
 const MODEL_NAME = 'cockpit'
 const TEXTURES_URL = assetUrl('models/d520/cockpit/')
 const CANOPY_PARTS = ['intcanopy', 'inttourcanopy']
+const GUNSIGHT_PARTS = ['collimator/vitre', 'collimator/viseur', 'collimator/projo']
 const CANOPY_TRAVEL_METERS = 0.6
 const CANOPY_TRAVEL_SECONDS = 2
 const DEGREES = Math.PI / 180
@@ -61,6 +62,7 @@ export class CockpitModel {
   private readonly canopy = new EasedValue(CANOPY_TRAVEL_SECONDS)
   private readonly gauges = new EasedValue(GAUGE_TRAVEL_SECONDS)
   private gaugePhase = 0
+  private isGunsightHidden = false
 
   constructor() {
     void this.load()
@@ -75,6 +77,12 @@ export class CockpitModel {
         this.gauges.setTarget(isActive ? 1 : 0)
         break
     }
+  }
+
+  /** Hides the glass of the collimator sight, for a view that draws its own gunsight, which is where the nose points whatever the place of the eye. */
+  hideGunsight(): void {
+    this.isGunsightHidden = true
+    this.applyGunsightVisibility()
   }
 
   update(deltaSeconds: number): void {
@@ -129,6 +137,16 @@ export class CockpitModel {
         this.object.add(mesh)
       }
     }
+    this.applyGunsightVisibility()
+  }
+
+  private applyGunsightVisibility(): void {
+    GUNSIGHT_PARTS.forEach((name) => {
+      const mesh = this.parts.get(name)
+      if (mesh !== undefined) {
+        mesh.visible = !this.isGunsightHidden
+      }
+    })
   }
 
   /** A group at the pivot of a needle, so that turning the group turns the needle about its dial. */

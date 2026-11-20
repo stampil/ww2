@@ -125,7 +125,7 @@ function CockpitCombatWindow({ alert, maneuverability, accuracy, risk, onStart, 
               </span>
               <span>{clock}</span>
             </div>
-            <div className="cockpit-gunsight" style={{ height: `${status.sightDiameterPercent}%` }} data-in-sight={status.sight.isInSight} aria-hidden="true" />
+            <div className="cockpit-gunsight" style={{ height: `${status.sightDiameterPercent}%`, top: `${status.sightTopPercent}%` }} data-in-sight={status.sight.isInSight} aria-hidden="true" />
           </div>
         )}
         {!isReady && <p className="cockpit-message">{t('combat.starting')}</p>}

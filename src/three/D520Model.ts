@@ -201,6 +201,11 @@ export class D520Model {
     this.showTexture()
   }
 
+  /** Hides the collimator sight of the cockpit, for a view that draws its own gunsight. */
+  hideGunsight(): void {
+    this.cockpit.hideGunsight()
+  }
+
   /** Starts or stops one animation: it eases in and out; the canopy is the cockpit's, and the gauges follow the engine. */
   setControl(control: AircraftControl, isActive: boolean): void {
     if (control === 'openCanopy') {

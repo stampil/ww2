@@ -1572,3 +1572,36 @@ button.base-sprite {
   @include flex($align: center, $justify: space-between, $gap: 0.75rem);
   font-variant-numeric: tabular-nums;
 }
+
+// What a raid does to a camp: the defense it has left, and the buildings that stay destroyed until they are built again.
+.attack-form {
+  .gauge-line {
+    margin-bottom: 0.4rem;
+  }
+}
+
+.rebuild-notice {
+  @include inset-frame;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+  padding: 0.8rem;
+  border-color: $alarm;
+
+  h4 {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin: 0;
+    color: color.adjust($alarm, $lightness: 22%);
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.base-map:not([data-three='true']) .base-sprite[data-destroyed='true'] {
+  filter: grayscale(1) brightness(0.45);
+}

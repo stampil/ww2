@@ -24,7 +24,7 @@ type Props = {
   onSelectBase: (baseId: number) => void
 }
 
-/** The strip over the map: the site of the base, or one button for each base the player holds, the game time, the aircraft and the pilots, the resources, and the battle, each with its icon. */
+/** The strip over the map: the site of the base, or one button for each base the player holds, the game time, the aircraft and the pilots, the resources, and the enemy aircraft shot down, each with its icon. */
 function Hud({ gameTime, base, onSelectBase }: Props) {
   const { t, i18n } = useTranslation()
   const formatter = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'medium', timeZone: GAME_TIME_ZONE })
@@ -61,7 +61,7 @@ function Hud({ gameTime, base, onSelectBase }: Props) {
         </HudItem>
       ))}
       <HudItem icon="battle" label={t('base.battle.kills')}>
-        {t('base.battle.progress', { kills: base.battle.kills, target: base.battle.target })}
+        {t('base.battle.progress', { kills: base.battle.kills })}
       </HudItem>
     </div>
   )

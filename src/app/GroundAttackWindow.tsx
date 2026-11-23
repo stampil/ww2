@@ -17,7 +17,7 @@ function GroundAttackWindow(props: GroundRunProps) {
       {...props}
       namespace="strafe"
       hintValues={{ ...HINT_VALUES, nationality: t(`strafe.nationalities.${TARGET_NATIONALITIES[props.clan]}`) }}
-      createScene={(view, seed, shadowImage, livery, nationality, onStatus, onEnd) => new GroundAttackScene(view, seed, shadowImage, livery, nationality, onStatus, onEnd)}
+      createScene={(view, seed, shadowImage, livery, nationality, windSpeed, onStatus, onEnd) => new GroundAttackScene(view, seed, shadowImage, livery, nationality, windSpeed, onStatus, onEnd)}
       renderStatus={(status) => {
         const secondsLeft = Math.ceil(status.secondsLeft)
         return (

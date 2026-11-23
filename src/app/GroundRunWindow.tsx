@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { windDirectionOf } from '../three/GroundRunScene'
 import type { GroundRunScene, RunOutcome, TargetNationality } from '../three/GroundRunScene'
 import type { Livery } from '../three/liveries'
 import GameWindow from './GameWindow'
 import { TARGET_NATIONALITIES } from './targetNationality'
 import { useAircraftSprite } from './useAircraftSprite'
+import { useEngineSound } from './useEngineSound'
 import type { Clan, FlightAlert } from './useBase'
 import VirtualStick from './VirtualStick'
 
+// Under this wind, in km/h, the run says nothing of it.
+const CALM_WIND_KPH = 10
 const STEERING_KEYS: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 }
 
 export type GroundRunProps = {
@@ -16,6 +20,8 @@ export type GroundRunProps = {
   /** The side of the player, which sets whose vehicles are on the ground, and the livery of their aircraft. */
   clan: Clan
   livery: Livery
+  /** The wind the flight left in, in km/h, which pushes the aircraft across the road. */
+  windSpeed: number
   onStart: (alertId: number) => Promise<void>
   onFinish: (alertId: number, outcome: RunOutcome) => Promise<void>
   onClose: () => void
@@ -31,6 +37,7 @@ type Props<Status> = GroundRunProps & {
     shadowImage: string,
     livery: Livery,
     nationality: TargetNationality,
+    windSpeed: number,
     onStatus: (status: Status) => void,
     onEnd: (outcome: RunOutcome) => void,
   ) => GroundRunScene<Status>
@@ -41,7 +48,7 @@ type Props<Status> = GroundRunProps & {
  * A mini-game flown from above, as in Wings: the player steers the D.520 to one side or the other, with the arrow keys or the stick under the view, and the rules of the scene do the rest.
  * The browser plays it and tells the server how it ended.
  */
-function GroundRunWindow<Status>({ alert, clan, livery, namespace, hintValues, createScene, renderStatus, onStart, onFinish, onClose }: Props<Status>) {
+function GroundRunWindow<Status>({ alert, clan, livery, windSpeed, namespace, hintValues, createScene, renderStatus, onStart, onFinish, onClose }: Props<Status>) {
   const { t } = useTranslation()
   const viewRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<GroundRunScene<Status> | null>(null)
@@ -49,6 +56,7 @@ function GroundRunWindow<Status>({ alert, clan, livery, namespace, hintValues, c
   const [isReady, setIsReady] = useState(false)
   const [status, setStatus] = useState<Status | null>(null)
   const [outcome, setOutcome] = useState<RunOutcome | null>(null)
+  useEngineSound(isReady && aircraftSprite !== null)
 
   useEffect(() => {
     let isCurrent = true
@@ -68,7 +76,7 @@ function GroundRunWindow<Status>({ alert, clan, livery, namespace, hintValues, c
     if (!isReady || aircraftSprite === null) {
       return
     }
-    const scene = createScene(viewRef.current!, alert.id, aircraftSprite, livery, TARGET_NATIONALITIES[clan], setStatus, (result) => {
+    const scene = createScene(viewRef.current!, alert.id, aircraftSprite, livery, TARGET_NATIONALITIES[clan], windSpeed, setStatus, (result) => {
       setOutcome(result)
       void onFinish(alert.id, result)
     })
@@ -109,7 +117,10 @@ function GroundRunWindow<Status>({ alert, clan, livery, namespace, hintValues, c
       <div className="cockpit-view" ref={viewRef}>
         {status !== null && (
           <div className="cockpit-hud">
-            <div className="cockpit-hud-top">{renderStatus(status)}</div>
+            <div className="cockpit-hud-top">
+              {renderStatus(status)}
+              {windSpeed >= CALM_WIND_KPH && <span>{t('wind.pushes', { speed: windSpeed, side: t(windDirectionOf(alert.id) > 0 ? 'wind.right' : 'wind.left') })}</span>}
+            </div>
           </div>
         )}
         {!(isReady && aircraftSprite !== null) && <p className="cockpit-message">{t(`${namespace}.starting`)}</p>}

@@ -2,7 +2,10 @@ import { useTranslation } from 'react-i18next'
 import { dueAlerts, isAlertStarted } from './flights'
 import Icon from './Icon'
 import { TARGET_NATIONALITIES } from './targetNationality'
-import type { Clan, Flight, FlightAlert, Squadron } from './useBase'
+import type { Clan, Flight, FlightAlert, MissionType, Squadron } from './useBase'
+
+// The missions whose mini-game is a strafing run over enemy vehicles.
+const STRAFING_TYPES: MissionType[] = ['groundAttack', 'raid', 'campCapture']
 
 type Props = {
   clan: Clan
@@ -17,7 +20,7 @@ function namespaceOf(alert: FlightAlert, flight: Flight): 'duel' | 'strafe' | 'p
   if (alert.kind === 'dogfight') {
     return 'duel'
   }
-  if (flight.type === 'groundAttack') {
+  if (STRAFING_TYPES.includes(flight.type)) {
     return 'strafe'
   }
   return flight.type === 'reconnaissance' ? 'photo' : 'combat'

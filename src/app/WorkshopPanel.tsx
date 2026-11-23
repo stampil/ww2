@@ -9,14 +9,16 @@ type Props = {
   workshop: Base['workshop']
   jobs: Base['workshop']['jobs']
   onProduce: (part: Part, withMechanic: boolean) => void
+  onAssemble: () => void
   upgrade: UpgradeInfo
   commandPoints: number
   onUpgrade: (upgrade: UpgradeName) => void
 }
 
-/** The spare parts the workshop can make, with or without a mechanic, and the ones being made. */
-function WorkshopPanel({ workshop, jobs, onProduce, upgrade, commandPoints, onUpgrade }: Props) {
+/** The spare parts the workshop can make, with or without a mechanic, the aircraft that the four parts make up, and the ones being made. */
+function WorkshopPanel({ workshop, jobs, onProduce, onAssemble, upgrade, commandPoints, onUpgrade }: Props) {
   const { t } = useTranslation()
+  const canAssemble = workshop.parts.every((part) => workshop.readyParts[part.part] > 0)
 
   return (
     <>
@@ -60,6 +62,13 @@ function WorkshopPanel({ workshop, jobs, onProduce, upgrade, commandPoints, onUp
           ))}
           <UpgradeCard info={upgrade} commandPoints={commandPoints} onBuy={onUpgrade} />
         </ul>
+      </Pane>
+      <Pane title={t('base.assemble.title')}>
+        <p className="note">{t('base.assemble.text')}</p>
+        <button type="button" disabled={!canAssemble} onClick={onAssemble}>
+          <Icon name="aircraft" />
+          {t('base.assemble.button')}
+        </button>
       </Pane>
       {jobs.length > 0 && (
         <Pane title={t('base.running')}>

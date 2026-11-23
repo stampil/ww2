@@ -29,6 +29,9 @@ final class BaseOverview
         private readonly GameClockStore $clocks,
         private readonly Bases $sites,
         private readonly Stationings $stationings,
+        private readonly CampStore $camps,
+        private readonly Attacks $attacks,
+        private readonly SupplyIncome $income,
     ) {
     }
 
@@ -38,6 +41,7 @@ final class BaseOverview
     public function of(int $baseId): array
     {
         $clock = $this->clocks->of($baseId);
+        $this->income->settle($baseId, $clock->gameSeconds);
         $hangar = $this->hangar->describe($baseId, $clock);
         $roster = $this->roster->describe($baseId, $clock);
         $headquarters = $this->headquarters->describe($baseId, $clock);
@@ -53,7 +57,14 @@ final class BaseOverview
             'clan' => $this->sites->siteOf($baseId)->clan()->value,
             'terrainPlan' => $this->baseStore->terrainPlanOf($baseId),
             'resources' => $this->baseStore->resourcesOf($baseId)->toArray(),
+            'supplyIncome' => $this->income->perMinuteAt($baseId),
             'buildings' => array_map(static fn (Building $building): string => $building->value, Building::cases()),
+            'camp' => [
+                'defense' => $this->camps->defenseOf($baseId, $clock->gameSeconds),
+                'destroyed' => array_map(static fn (Building $building): string => $building->value, $this->camps->destroyedOf($baseId)),
+                'rebuildCost' => Rebuilding::MATERIAL_COST,
+            ],
+            'targets' => $this->attacks->targetsOf($baseId, $clock->gameSeconds),
             'warehouse' => $this->warehouse->describe($baseId),
             'clock' => $clock->toArray(),
             'workshop' => $this->workshop->describe($baseId, $clock),

@@ -7,6 +7,7 @@ import type { SiteChoice } from './useSites'
 const MAP_URL = assetUrl('maps/carte-france.jpg')
 const FREE_CAMP_URL = assetUrl('sprites/camps/camp-free.png')
 const HELD_CAMP_URL = assetUrl('sprites/camps/camp-held.png')
+const ATTACKED_CAMP_URL = assetUrl('sprites/camps/camp-attacked.png')
 const PERCENT = 100
 
 type Props = {
@@ -23,7 +24,15 @@ type Props = {
   ownClan?: string
 }
 
-/** The map of France with a camp on each site: a free one can be picked, and a taken one too where asked; a taken one has its own picture, with a green glow when an ally holds it. On a phone the map is wider than the screen and slides sideways, from the camps. */
+function campPicture(isFree: boolean, isAttacked: boolean): string {
+  if (isAttacked) {
+    return ATTACKED_CAMP_URL
+  }
+
+  return isFree ? FREE_CAMP_URL : HELD_CAMP_URL
+}
+
+/** The map of France with a camp on each site: a free one can be picked, and a taken one too where asked; a taken one has its own picture, with a green glow when an ally holds it, and a camp that a raid hurt a few minutes ago shows in ruins. On a phone the map is wider than the screen and slides sideways, from the camps. */
 function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites = [], ownClan }: Props) {
   const { t } = useTranslation()
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -40,7 +49,7 @@ function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites 
     <div className="world-map-viewport" ref={viewportRef}>
       <div className="world-map" role="group" aria-label={t('world.map')} style={{ aspectRatio: `${FRANCE_MAP.width} / ${FRANCE_MAP.height}` }}>
         <img className="world-map-picture" src={MAP_URL} alt="" />
-        {sites.map(({ site, free, clan }) => {
+        {sites.map(({ site, free, clan, attacked }) => {
           const { left, top, labelSide } = sitePlace(site)
           return (
             <button
@@ -59,7 +68,7 @@ function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites 
               style={{ left: `${left}%`, top: `${top}%` }}
               onClick={onSelect === undefined ? undefined : () => onSelect(site)}
             >
-              <img src={free ? FREE_CAMP_URL : HELD_CAMP_URL} alt="" />
+              <img src={campPicture(free, attacked)} alt="" />
               <span aria-hidden="true">{t(`world.site.${site}`)}</span>
             </button>
           )

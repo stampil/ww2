@@ -21,6 +21,10 @@ final class BattleStore
         'base_upgrades',
         'battle_progress',
         'base_resources',
+        'camp_defenses',
+        'camp_raids',
+        'destroyed_buildings',
+        'base_supply_ticks',
     ];
 
     public function __construct(private readonly Database $database, private readonly StationingStore $stationings)

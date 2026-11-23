@@ -6,7 +6,6 @@ import type { BuildingName } from '../plans/terrainPlan'
 import BaseChoice from './BaseChoice'
 import BaseMap from './BaseMap'
 import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
-import BattleOver from './BattleOver'
 import type { Arrival, Departure, Emergence } from './AirfieldView'
 import CockpitCombatWindow from './CockpitCombatWindow'
 import ControlTowerPanel from './ControlTowerPanel'
@@ -28,9 +27,10 @@ import MissionToasts from './MissionToasts'
 import ReconnaissanceWindow from './ReconnaissanceWindow'
 import type { Player } from './useAccount'
 import { useAircraftSprite } from './useAircraftSprite'
+import RebuildNotice from './RebuildNotice'
 import ResetConfirm from './ResetConfirm'
 import { useBase } from './useBase'
-import type { Aircraft, Cargo, HangarAircraft, MissionType, UpgradeName } from './useBase'
+import type { Aircraft, AttackKind, Cargo, HangarAircraft, MissionType, UpgradeName } from './useBase'
 import { useGuideStatus } from './useGuideStatus'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
@@ -39,6 +39,8 @@ const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 // The missions whose mini-game is flown from above, with the window that plays it.
 const GROUND_RUN_WINDOWS: Partial<Record<MissionType, ComponentType<GroundRunProps>>> = {
   groundAttack: GroundAttackWindow,
+  raid: GroundAttackWindow,
+  campCapture: GroundAttackWindow,
   reconnaissance: ReconnaissanceWindow,
 }
 
@@ -74,6 +76,9 @@ function BaseScreen({ player }: { player: Player }) {
     buy,
     produce,
     launchMission,
+    attackCamp,
+    rebuild,
+    assembleAircraft,
     startAlert,
     playAlert,
     finishAlert,
@@ -84,7 +89,6 @@ function BaseScreen({ player }: { player: Player }) {
     recruitPilot,
     buyUpgrade,
     resetGame,
-    restartBattle,
     claimBase,
     selectBase,
     givePilot,
@@ -166,6 +170,17 @@ function BaseScreen({ player }: { player: Player }) {
     }
   }
 
+  // A raid or a capture takes off like a squadron sent on a mission.
+  async function attack(targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]): Promise<void> {
+    const departing = parkedAircraft.filter((aircraft) => aircraftIds.includes(aircraft.id))
+    const attackErrorCode = await attackCamp(targetBaseId, kind, pilotIds, aircraftIds)
+    setErrorCode(attackErrorCode)
+    if (attackErrorCode === null) {
+      setOpenBuilding(null)
+      showDepartures(departing)
+    }
+  }
+
   // An aircraft stationed at another base takes off like a squadron sent on a mission.
   async function station(destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number): Promise<void> {
     const departing = parkedAircraft.filter((aircraft) => aircraft.id === aircraftId)
@@ -232,6 +247,9 @@ function BaseScreen({ player }: { player: Player }) {
     }
   }
 
+  const destroyedBuildings = base.camp.destroyed
+  const isOpenBuildingDestroyed = openBuilding !== null && destroyedBuildings.includes(openBuilding)
+  const rebuildNotice = (building: string) => <RebuildNotice cost={base.camp.rebuildCost} materials={base.resources.materials} onRebuild={() => void order(rebuild(building))} />
   const alerts: MapAlert[] = []
   if (flights.some((flight) => flight.remainingSeconds === 0)) {
     alerts.push({ kind: 'mission', building: 'controlTower', label: t('base.alert') })
@@ -281,6 +299,7 @@ function BaseScreen({ player }: { player: Player }) {
             emergences={emergences}
             onLanded={removeLanding}
             alerts={alerts}
+            destroyedBuildings={destroyedBuildings}
             openBuilding={openBuilding}
             onSelect={setOpenBuilding}
           />
@@ -295,7 +314,8 @@ function BaseScreen({ player }: { player: Player }) {
         <GameWindow title={t(`base.building.${openBuilding}.name`)} hint={t(`base.building.${openBuilding}.text`)} onDismiss={() => setOpenBuilding(null)}>
           {guideStep !== null && speaksInWindowOf(guideStep, openBuilding) && guide}
           {errorMessage}
-          {openBuilding === 'headquarters' && (
+          {isOpenBuildingDestroyed && rebuildNotice(openBuilding)}
+          {!isOpenBuildingDestroyed && openBuilding === 'headquarters' && (
             <HeadquartersPanel
               bases={base.bases}
               currentSite={base.site}
@@ -303,10 +323,13 @@ function BaseScreen({ player }: { player: Player }) {
               squadron={base.squadron}
               unavailable={unavailable}
               destinations={base.destinations}
+              targets={base.targets}
+              onAttack={(targetBaseId, kind, pilotIds, aircraftIds) => void attack(targetBaseId, kind, pilotIds, aircraftIds)}
               onStation={(destinationBaseId, pilotId, aircraftId, fuel, ammunition) => void station(destinationBaseId, pilotId, aircraftId, fuel, ammunition)}
               onSupply={(destinationBaseId, pilotId, aircraftId, cargo) => void supply(destinationBaseId, pilotId, aircraftId, cargo)}
             />
           )}
+          {openBuilding === 'controlTower' && destroyedBuildings.includes('headquarters') && rebuildNotice('headquarters')}
           {openBuilding === 'controlTower' && (
             <ControlTowerPanel
               squadron={base.squadron}
@@ -328,26 +351,28 @@ function BaseScreen({ player }: { player: Player }) {
               onGivePilot={(pilotId, recipientBaseId) => void order(givePilot(recipientBaseId, pilotId))}
             />
           )}
-          {openBuilding === 'workshop' && (
+          {!isOpenBuildingDestroyed && openBuilding === 'workshop' && (
             <WorkshopPanel
               workshop={base.workshop}
               jobs={jobs}
               onProduce={(part, withMechanic) => void order(produce(part, withMechanic))}
+              onAssemble={() => void order(assembleAircraft())}
               upgrade={upgradeOf('workshop')}
               commandPoints={base.resources.commandPoints}
               onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
             />
           )}
-          {openBuilding === 'warehouse' && (
+          {!isOpenBuildingDestroyed && openBuilding === 'warehouse' && (
             <WarehousePanel
               resources={base.resources}
               warehouse={base.warehouse}
+              income={base.supplyIncome}
               onBuy={(stock, quantity) => void order(buy(stock, quantity))}
               upgrade={upgradeOf('warehouse')}
               onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
             />
           )}
-          {openBuilding === 'hangar' && (
+          {!isOpenBuildingDestroyed && openBuilding === 'hangar' && (
             <HangarPanel
               squadron={base.squadron}
               hangarAircraft={hangarAircraft}
@@ -382,6 +407,7 @@ function BaseScreen({ player }: { player: Player }) {
           alert={duel.alert}
           clan={base.clan}
           livery={duelCrew.aircraft.livery}
+          windSpeed={duel.flight.windSpeed}
           onStart={(alertId) => order(startAlert(alertId))}
           onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}
           onClose={() => setDuelAlertId(null)}
@@ -407,7 +433,6 @@ function BaseScreen({ player }: { player: Player }) {
 
       {guideStep === 'welcome' && <GuideWelcome onBegin={() => setGuideStatus('running')} onSkip={() => setGuideStatus('over')} />}
 
-      {base.battle.status !== 'ongoing' && <BattleOver battle={base.battle} onRestart={() => void order(restartBattle())} />}
     </section>
   )
 }

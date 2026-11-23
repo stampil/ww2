@@ -11,17 +11,20 @@ const STOCKS: Stock[] = ['fuel', 'ammunition', 'materials']
 type Props = {
   resources: Base['resources']
   warehouse: Base['warehouse']
+  /** The supplies the camp earns each minute by itself. */
+  income: number
   onBuy: (stock: Stock, quantity: number) => void
   upgrade: UpgradeInfo
   onUpgrade: (upgrade: UpgradeName) => void
 }
 
-/** The stocks of the warehouse, each with its gauge and a button to buy more of it. */
-function WarehousePanel({ resources, warehouse, onBuy, upgrade, onUpgrade }: Props) {
+/** The stocks of the warehouse, each with its gauge and a button to buy more of it, and the supplies the front sends by itself. */
+function WarehousePanel({ resources, warehouse, income, onBuy, upgrade, onUpgrade }: Props) {
   const { t } = useTranslation()
 
   return (
     <Pane title={t('base.stocks')}>
+      <p className="note">{t('base.income', { count: income })}</p>
       <ul className="cards">
         {STOCKS.map((stock) => (
           <li key={stock} className="card">

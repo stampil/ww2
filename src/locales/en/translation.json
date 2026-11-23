@@ -116,6 +116,23 @@
     "escaped": "The bomber got away.",
     "continue": "Continue"
   },
+  "attack": {
+    "defense": "Defense of the camp: {{defense}} of 100",
+    "raidTitle": "Raid",
+    "raidText": "Fighters attack the camp: its defense goes down, a building is destroyed and sometimes an aircraft on the ground. The more aircraft you send, the more the defense goes down.",
+    "count": "Aircraft in the raid",
+    "raidSend_one": "Send {{count}} aircraft on a raid ({{time}} there and back)",
+    "raidSend_other": "Send {{count}} aircraft on a raid ({{time}} there and back)",
+    "captureTitle": "Camp capture",
+    "captureText": "An aircraft attacks the camp, then lands on it: if it succeeds, the camp is yours with what it holds. The defense of the camp must be at zero.",
+    "captureSend": "Send the aircraft to take the camp ({{time}})",
+    "nobodyFree": "No aircraft or no pilot is free."
+  },
+  "wind": {
+    "pushes": "Wind of {{speed}} km/h: it pushes you to the {{side}}",
+    "left": "left",
+    "right": "right"
+  },
   "strafe": {
     "title": "Ground attack",
     "hint": "You strafe a {{nationality}} convoy that drives toward you: get on its lane, and your aircraft fires by itself at what is ahead. Destroy {{required}} of {{total}} before it has gone by. Spare the Red Cross ambulance: destroying it fails the attack.",
@@ -222,7 +239,7 @@
     "welcome": {
       "title": "Welcome, commander",
       "hint": "10 May 1940",
-      "text": "Germany is attacking in the west. You command this air base and its squadron of D.520s. To hold the battle, shoot down 8 enemy aircraft; with no pilot or no aircraft left, it is lost. I will guide you through the first day.",
+      "text": "Germany is attacking in the west. You command this air base and its squadron of D.520s. The battle never ends: each enemy aircraft you shoot down counts in your score. I will guide you through the first day.",
       "begin": "Take the tutorial",
       "decline": "No tutorial"
     },
@@ -354,21 +371,38 @@
         "I hit nothing that matters. We will have to go back and do better."
       ]
     },
-    "bombing": {
+    "raid": {
       "opening": [
-        "Bombing run {{dayPart}}, the {{aircraft}} loaded to the wingtips. You feel the weight in every turn.",
-        "Bombing mission {{dayPart}}. The target was down there in my sight, tiny and still.",
-        "Off on a bombing run {{dayPart}}. The aircraft grumbles under the load, but it holds."
+        "Raid on an enemy camp {{dayPart}}, the {{aircraft}} skimming the rooftops. The hangars slid by under the wings.",
+        "Raid mission {{dayPart}}. The {{aircraft}} crossed the lines, with the flak grumbling somewhere below.",
+        "Off on a raid {{dayPart}}. It is time to pay them back in kind."
       ],
       "success": [
-        "The bombs fell where they should. I saw the dust rise long before I heard anything.",
-        "Right on the mark, or close to it. The crews on the ground will be pleased.",
-        "A clean drop, target destroyed. I banked away without looking back."
+        "The passes told: smoke is rising from the camp, and their flak fell silent for a moment.",
+        "Target hit, buildings on fire. They will think twice before trying again.",
+        "I made my passes without shaking, and the camp has the marks to show for it."
       ],
       "failure": [
-        "My bombs dug holes in a field. The wind pushed them, or I aimed badly.",
-        "Target missed. We will have to go again, and this time aim properly.",
-        "I released too early or too late, I no longer know which. The bombs fell somewhere else."
+        "My bursts fell wide. The camp hardly felt a thing.",
+        "Too much flak, too little time: I had to break away without destroying anything serious.",
+        "Raid missed. We will have to come back, in greater numbers."
+      ]
+    },
+    "campCapture": {
+      "opening": [
+        "Camp capture {{dayPart}}. The {{aircraft}} flies alone toward the field: there is no leaving a camp once it is taken.",
+        "Special mission {{dayPart}}: put the {{aircraft}} down on a field that is no longer defended.",
+        "Off {{dayPart}} to take a camp. At the end of the flight there is a runway, and that is all I need."
+      ],
+      "success": [
+        "The wheels touched the runway and nobody fired. The camp is ours.",
+        "Down, engine off, pennant planted: the field has changed hands.",
+        "We won a camp this morning, with its stores. Now we have to hold it."
+      ],
+      "failure": [
+        "I could not land: the camp still holds. Back to base, empty-handed.",
+        "Too much fire over the field. I had to turn back.",
+        "Camp capture failed. The field stays theirs."
       ]
     },
     "wind": {
@@ -477,7 +511,7 @@
     },
     "sites": "Sites",
     "map": "Map of France",
-    "legend": "Your camps are ringed in gold, your allies' in green, the enemy's are greyed, the free camps are in colour, red for the Axe. Click a camp: its details open on the other side of the map.",
+    "legend": "Your camps are ringed in gold and your allies' in green; free camps are in color, red for the Axe; a camp that a raid has just hit is in ruins. Click a camp: its details open on the other side of the map.",
     "side": "Your side: {{side}}.",
     "clan": {
       "french": "the Allies",
@@ -599,17 +633,19 @@
     "fireAlert": "Aircraft on fire",
     "battle": {
       "kills": "Enemy aircraft shot down",
-      "progress": "{{kills}} of {{target}}",
-      "won": {
-        "title": "Victory",
-        "text": "The battle is won: {{target}} enemy aircraft shot down."
-      },
-      "lost": {
-        "title": "Defeat",
-        "text": "There is no pilot or no aircraft left: the battle is lost."
-      },
-      "restart": "New battle"
+      "progress": "{{kills}}"
     },
+    "rebuild": {
+      "title": "Building destroyed",
+      "text": "This building is no use until it is built again.",
+      "button": "Rebuild ({{cost}} materials)"
+    },
+    "assemble": {
+      "title": "Assemble an aircraft",
+      "text": "A lost aircraft is replaced with one part of each, already made: engine, wings, fuselage and armament.",
+      "button": "Assemble an aircraft"
+    },
+    "income": "Supplies from the front: {{count}} a minute",
     "upgrade": {
       "title": "Upgrade",
       "hangar": "One more D.520",
@@ -645,6 +681,11 @@
       "loadItem": "{{quantity}} {{resource}}",
       "campTaken": "Camp taken",
       "campTakenText": "One of your aircraft landed at {{site}}: the camp is yours.",
+      "raided": "Camp attacked",
+      "raidedText": "{{by}} raided {{site}}: {{defenseLost}} points of defense lost.",
+      "raidedBuilding": "The building \"{{building}}\" is destroyed.",
+      "raidedAircraft": "An aircraft on the ground is destroyed.",
+      "campLostCaptured": "{{by}} stormed {{site}}: the camp is lost.",
       "campLost": "Camp left",
       "campLostText": "None of your aircraft stands at {{site}} any more: you no longer hold this camp."
     },
@@ -654,7 +695,8 @@
         "airCombat": "Bomber interception",
         "fighterCombat": "Air combat",
         "groundAttack": "Ground attack",
-        "bombing": "Bombing"
+        "raid": "Raid",
+        "campCapture": "Camp capture"
       },
       "title": "Missions",
       "flights": "In flight",
@@ -680,6 +722,13 @@
       "gains": "Rewards: supplies {{supplies}}, command points {{points}}",
       "noGain": "No reward",
       "spotted": "A better paid mission has appeared at the control tower.",
+      "attack": {
+        "repelled": "The attack on {{site}} was driven off.",
+        "calledOff": "On arrival at {{site}} we had to give up: the situation of the camp had changed.",
+        "raided": "{{site}} is hit: {{defenseLost}} points of defense gone.",
+        "captured": "{{site}} is ours.",
+        "noLanding": "No landing on {{site}} was possible: the camp stays with the enemy."
+      },
       "windAtTakeoff": "wind at takeoff: {{windSpeed}} km/h",
       "rest": "Send to rest",
       "resting": "Resting: {{time}}",
@@ -695,6 +744,7 @@
       "ammunitionLoad": "Ammunition per aircraft",
       "noFreeAircraft": "No free aircraft suits this mission.",
       "notEnoughPilots": "There are not enough free pilots.",
+      "against": "{{type}} on {{site}}",
       "loaded": "{{fuel}} fuel and {{ammunition}} ammunition per aircraft",
       "landed": "Finished",
       "receive": "Receive the squadron",
@@ -778,8 +828,6 @@
       "tooManyPilots": "The base cannot house more pilots.",
       "upgradeAtMaximum": "This upgrade is at its top level.",
       "insufficientCommandPoints": "Not enough command points.",
-      "battleOver": "The battle is over: start a new one.",
-      "battleOngoing": "The battle is not over.",
       "noBase": "You have no base yet.",
       "tooManyBases": "You already hold as many bases as you can.",
       "unknownBase": "This base is not yours.",
@@ -792,6 +840,13 @@
       "signInRequired": "Sign in first.",
       "apiDown": "The API does not answer.",
       "notStationed": "This aircraft is not on the ground at a camp: there is nothing to recall.",
+      "invalidTarget": "This camp cannot be attacked.",
+      "campProtected": "This player has just arrived: their camp is protected for a while.",
+      "campSpared": "This camp has already been raided three times this hour: it is spared.",
+      "defenseHolds": "The defense of the camp still holds: raid it first.",
+      "lastBase": "This is the only base of this player: it cannot be taken.",
+      "buildingDestroyed": "This building is destroyed: rebuild it first.",
+      "buildingStanding": "This building is not destroyed.",
       "landingRequired": "To take another camp, send an aircraft there."
     }
   },

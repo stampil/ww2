@@ -2,9 +2,10 @@ import { useTranslation } from 'react-i18next'
 import type { BusyCrews } from './flights'
 import Icon from './Icon'
 import Pane from './Pane'
+import AttackForm from './AttackForm'
 import StationingForm from './StationingForm'
 import SupplyForm from './SupplyForm'
-import type { Cargo, Destination, Squadron } from './useBase'
+import type { AttackKind, AttackTarget, Cargo, Destination, Squadron } from './useBase'
 import type { SiteChoice } from './useSites'
 
 const STOCKS = ['supplies', 'fuel', 'ammunition', 'materials'] as const
@@ -21,12 +22,15 @@ type Props = {
   unavailable: BusyCrews
   /** The camp as a place an aircraft can be sent to; none for the base itself and for the enemy's camps. */
   destination: Destination | undefined
+  /** The camp as something to attack; none unless an enemy player holds it. */
+  target: AttackTarget | undefined
+  onAttack: (targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]) => void
   onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => void
   onSupply: (destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo) => void
 }
 
-/** The detail of a camp picked on the map: who holds it, what it keeps and how many aircraft stand there, and the orders that send an aircraft to it, to stand there or to bring it resources. */
-function CampCard({ camp, ownSites, currentSite, ownClan, baseLimit, squadron, unavailable, destination, onStation, onSupply }: Props) {
+/** The detail of a camp picked on the map: who holds it, what it keeps and how many aircraft stand there, and the orders that send an aircraft to it, to stand there or to bring it resources, or against it, for a raid or a capture. */
+function CampCard({ camp, ownSites, currentSite, ownClan, baseLimit, squadron, unavailable, destination, target, onAttack, onStation, onSupply }: Props) {
   const { t } = useTranslation()
   const held = camp.resources
   let relation = t('world.free')
@@ -58,7 +62,8 @@ function CampCard({ camp, ownSites, currentSite, ownClan, baseLimit, squadron, u
             ))}
         </ul>
         {camp.site === currentSite && <p className="squadron-hint">{t('camp.here')}</p>}
-        {camp.site !== currentSite && destination === undefined && <p className="squadron-hint">{t('camp.enemy')}</p>}
+        {camp.site !== currentSite && destination === undefined && target === undefined && <p className="squadron-hint">{t('camp.enemy')}</p>}
+        {target !== undefined && <AttackForm squadron={squadron} unavailable={unavailable} target={target} onAttack={onAttack} />}
         {destination?.kinship === 'free' && <p className="squadron-hint">{t('world.landToClaim', { max: baseLimit })}</p>}
         {destination !== undefined && <StationingForm squadron={squadron} unavailable={unavailable} destination={destination} onStation={onStation} />}
         {destination !== undefined && destination.kinship !== 'free' && <SupplyForm squadron={squadron} unavailable={unavailable} destination={destination} onSupply={onSupply} />}

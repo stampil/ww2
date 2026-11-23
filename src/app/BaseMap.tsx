@@ -41,6 +41,8 @@ type Props = {
   emergences: Emergence[]
   onLanded: (aircraftId: number) => void
   alerts: MapAlert[]
+  /** The buildings that a raid destroyed, which show in ruins until they are built again. */
+  destroyedBuildings: string[]
   openBuilding: BuildingName | null
   onSelect: (building: BuildingName) => void
 }
@@ -58,7 +60,7 @@ function standPlacement(stand: Cell): CSSProperties {
 }
 
 /** The base seen from above, tilted a little: the tiles of its terrain plan, the sprites standing on them, the aircraft parked, taking off or landing, the mechanics at work and the alerts; a click on a building opens it. */
-function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, arrivals, emergences, onLanded, alerts, openBuilding, onSelect }: Props) {
+function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, arrivals, emergences, onLanded, alerts, destroyedBuildings, openBuilding, onSelect }: Props) {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isCameraAway, setIsCameraAway] = useState(false)
@@ -89,6 +91,7 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
             emergences={emergences}
             aircraftWidthTiles={AIRCRAFT_WIDTH_TILES}
             parked={parkedAircraft.map((aircraft) => ({ stand: aircraft.stand, livery: aircraft.livery }))}
+            ruins={plan.sprites.filter((sprite) => sprite.building !== undefined && destroyedBuildings.includes(sprite.building)).map((sprite) => sprite.sprite)}
             shadowImage={aircraftSprite}
             onDeparted={onDeparted}
             onLanded={onLanded}
@@ -108,6 +111,7 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
                 type="button"
                 className="base-sprite"
                 style={placement(sprite)}
+                data-destroyed={destroyedBuildings.includes(building)}
                 aria-pressed={openBuilding === building}
                 aria-label={t(`base.building.${building}.name`)}
                 onClick={() => onSelect(building)}

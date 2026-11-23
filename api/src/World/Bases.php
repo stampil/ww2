@@ -21,6 +21,8 @@ final class Bases
     /** The bases of a player in the order they took them: those taken before the claims were kept come first, then by the time of the claim. */
     private const CLAIM_JOIN = 'LEFT JOIN base_claims ON base_claims.base_id = bases.id';
     private const CLAIM_ORDER = 'ORDER BY base_claims.claimed_at, bases.id';
+    /** How long after a raid that hurt it a camp is shown as under attack. */
+    private const UNDER_ATTACK_SECONDS = 600;
 
     public function __construct(
         private readonly Database $database,
@@ -225,6 +227,19 @@ final class Bases
         $this->database->execute('INSERT INTO base_claims (base_id, claimed_at) VALUES (:base_id, NOW(6))', ['base_id' => $baseId]);
     }
 
+    /**
+     * @return int|null how many seconds ago the player took the first of the bases they hold, or null when it was taken before the claims were kept
+     */
+    public function secondsSinceFirstClaim(int $playerId): ?int
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT TIMESTAMPDIFF(SECOND, base_claims.claimed_at, NOW(6)) AS seconds FROM bases ' . self::CLAIM_JOIN . ' WHERE bases.player_id = :player_id ' . self::CLAIM_ORDER . ' LIMIT 1',
+            ['player_id' => $playerId],
+        );
+
+        return $rows === [] || $rows[0]['seconds'] === null ? null : (int) $rows[0]['seconds'];
+    }
+
     public function holderNameOf(int $baseId): string
     {
         $rows = $this->database->fetchAll('SELECT players.nickname AS nickname FROM bases JOIN players ON players.id = bases.player_id WHERE bases.id = :base_id', ['base_id' => $baseId]);
@@ -251,13 +266,13 @@ final class Bases
     /**
      * The sites a new player can choose from: those of the oldest instance that has a free base, else all of a new instance.
      *
-     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int, attacked: bool}>
      */
     public function sitesToChoose(): array
     {
         $instanceId = $this->instances->joinableId();
         if ($instanceId === null) {
-            return array_map(fn (Site $site): array => $this->siteState($site, null, null, null, 0), Site::cases());
+            return array_map(fn (Site $site): array => $this->siteState($site, null, null, null, 0, false), Site::cases());
         }
 
         return $this->sitesAroundInstance($instanceId);
@@ -266,7 +281,7 @@ final class Bases
     /**
      * The sites of the instance a base stands in, each free or held by a player, with the side of its holder, what its stores hold and how many aircraft stand there.
      *
-     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int, attacked: bool}>
      */
     public function sitesAround(int $baseId): array
     {
@@ -314,7 +329,7 @@ final class Bases
     /**
      * The aircraft standing at a camp are its own that are not away, and the ones of other bases landed there and not recalled.
      *
-     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int, attacked: bool}>
      */
     private function sitesAroundInstance(int $instanceId): array
     {
@@ -324,7 +339,8 @@ final class Bases
                     base_resources.supplies, base_resources.fuel, base_resources.ammunition, base_resources.materials,
                     (SELECT COUNT(*) FROM aircraft WHERE aircraft.base_id = bases.id)
                     - (SELECT COUNT(*) FROM stationings AS leaving WHERE leaving.origin_base_id = bases.id AND (leaving.returns_game_second IS NULL OR leaving.returns_game_second > ' . $gameSeconds . '))
-                    + (SELECT COUNT(*) FROM stationings AS arrived WHERE arrived.destination_base_id = bases.id AND arrived.returns_game_second IS NULL AND arrived.lands_game_second <= ' . $gameSeconds . ') AS aircraft
+                    + (SELECT COUNT(*) FROM stationings AS arrived WHERE arrived.destination_base_id = bases.id AND arrived.returns_game_second IS NULL AND arrived.lands_game_second <= ' . $gameSeconds . ') AS aircraft,
+                    (SELECT COUNT(*) FROM camp_raids WHERE camp_raids.base_id = bases.id AND camp_raids.game_second + ' . self::UNDER_ATTACK_SECONDS . ' > ' . $gameSeconds . ') AS recent_raids
              FROM bases JOIN instances ON instances.id = bases.instance_id LEFT JOIN players ON players.id = bases.player_id LEFT JOIN base_resources ON base_resources.base_id = bases.id
              WHERE bases.instance_id = :instance_id ORDER BY bases.id',
             ['instance_id' => $instanceId],
@@ -334,7 +350,7 @@ final class Bases
             $resources = $row['supplies'] === null
                 ? null
                 : ['supplies' => (int) $row['supplies'], 'fuel' => (int) $row['fuel'], 'ammunition' => (int) $row['ammunition'], 'materials' => (int) $row['materials']];
-            $states[] = $this->siteState(Site::from((string) $row['site']), $row['player_id'] === null ? null : (int) $row['player_id'], $row['holder'] === null ? null : (string) $row['holder'], $resources, (int) $row['aircraft']);
+            $states[] = $this->siteState(Site::from((string) $row['site']), $row['player_id'] === null ? null : (int) $row['player_id'], $row['holder'] === null ? null : (string) $row['holder'], $resources, (int) $row['aircraft'], (int) $row['recent_raids'] > 0);
         }
 
         return $states;
@@ -344,12 +360,13 @@ final class Bases
      * @param int|null $holderId the player who holds the site, whose side it has; a free site shows the side its first base would give
      * @param array<string, int>|null $resources what the stores of the camp hold, null while it has none
      * @param int $aircraft how many aircraft stand at the camp
-     * @return array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int}
+     * @param bool $isUnderAttack whether a raid hurt the camp a few minutes ago
+     * @return array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int, attacked: bool}
      */
-    private function siteState(Site $site, ?int $holderId, ?string $holder, ?array $resources, int $aircraft): array
+    private function siteState(Site $site, ?int $holderId, ?string $holder, ?array $resources, int $aircraft, bool $isUnderAttack): array
     {
         $clan = $holderId === null ? $site->clan() : $this->clanOfPlayer($holderId);
 
-        return ['site' => $site->value, 'free' => $holderId === null, 'clan' => $clan->value, 'holder' => $holder, 'resources' => $resources, 'aircraft' => $aircraft];
+        return ['site' => $site->value, 'free' => $holderId === null, 'clan' => $clan->value, 'holder' => $holder, 'resources' => $resources, 'aircraft' => $aircraft, 'attacked' => $isUnderAttack];
     }
 }

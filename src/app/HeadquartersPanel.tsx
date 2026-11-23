@@ -4,7 +4,7 @@ import { sitePlace } from '../plans/franceMap'
 import CampCard from './CampCard'
 import type { BusyCrews } from './flights'
 import Pane from './Pane'
-import type { Cargo, Destination, HeldBase, Squadron } from './useBase'
+import type { AttackKind, AttackTarget, Cargo, Destination, HeldBase, Squadron } from './useBase'
 import { INSTANCE_SITES_URL, useSites } from './useSites'
 import WorldMap from './WorldMap'
 
@@ -21,12 +21,15 @@ type Props = {
   unavailable: BusyCrews
   /** Where an aircraft can go: the player's own bases, the allies' and the free camps. */
   destinations: Destination[]
+  /** The enemy camps that can be attacked, and the order that sends an attack against one. */
+  targets: AttackTarget[]
+  onAttack: (targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]) => void
   onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => void
   onSupply: (destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo) => void
 }
 
 /** The map of France with the camps of the player's world, the French and the Germans: theirs are ringed in gold, their allies' in green, the enemy's are greyed. A camp picked on the map shows its card on the other side of the map, where aircraft are sent to it. */
-function HeadquartersPanel({ bases, currentSite, baseLimit, squadron, unavailable, destinations, onStation, onSupply }: Props) {
+function HeadquartersPanel({ bases, currentSite, baseLimit, squadron, unavailable, destinations, targets, onAttack, onStation, onSupply }: Props) {
   const { t } = useTranslation()
   const sites = useSites(INSTANCE_SITES_URL)
   const [selectedSite, setSelectedSite] = useState<string | null>(null)
@@ -57,6 +60,8 @@ function HeadquartersPanel({ bases, currentSite, baseLimit, squadron, unavailabl
             squadron={squadron}
             unavailable={unavailable}
             destination={destinations.find((destination) => destination.site === selected.site)}
+            target={targets.find((target) => target.site === selected.site)}
+            onAttack={onAttack}
             onStation={onStation}
             onSupply={onSupply}
           />

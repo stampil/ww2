@@ -52,6 +52,8 @@ const LOOK_AHEAD_METERS = 26
 const SPRITE_BOTTOM_LIFT_SHARE = 0.08
 
 const AIRCRAFT_SPEED_METERS_PER_SECOND = 8
+// The wind pushes the aircraft across the road, this much for each km/h; it blows to the same side for the whole run.
+const WIND_PUSH_METERS_PER_SECOND_PER_KPH = 0.04
 const LATERAL_SPEED_METERS_PER_SECOND = 9
 const MAX_X_METERS = 14
 const BANK_RADIANS = 0.45
@@ -78,6 +80,11 @@ const SUN_LIGHT_INTENSITY = 2.2
 const SUN_POSITION = new THREE.Vector3(-30, 20, 60)
 const SHADOW_OPACITY = 0.35
 const FLYING = { engine: 1, gearRetraction: 1, flaps: 0, wheels: 0, aileron: 0, rudder: 0, elevator: 0 }
+
+/** Which side of the aircraft the wind of a run pushes it to: 1 to its right, -1 to its left, the same for the same run. */
+export function windDirectionOf(seed: number): -1 | 1 {
+  return seed % 2 === 0 ? 1 : -1
+}
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(Math.max(value, minimum), maximum)
@@ -136,10 +143,11 @@ export abstract class GroundRunScene<Status> {
 
   constructor(
     private readonly container: HTMLElement,
-    seed: number,
+    private readonly seed: number,
     shadowImage: string,
     livery: Livery,
     private readonly nationality: TargetNationality,
+    private readonly windSpeed: number,
     private readonly onStatus: (status: Status) => void,
     private readonly onEnd: (outcome: RunOutcome) => void,
   ) {
@@ -163,7 +171,7 @@ export abstract class GroundRunScene<Status> {
     this.placeCamera()
     this.screenUp.set(0, 1, 0).applyQuaternion(this.camera.quaternion)
 
-    this.scene.add(this.createGround(), this.createRoad(), new Bushes(this.bushPlacements(seed)).object)
+    this.scene.add(this.createGround(), this.createRoad(), new Bushes(this.bushPlacements(this.seed)).object)
     this.shadow = this.createShadow(shadowImage)
     this.player.setState(FLYING)
     this.player.object.scale.setScalar(AIRCRAFT_SCALE)
@@ -347,7 +355,8 @@ export abstract class GroundRunScene<Status> {
   private moveAircraft(deltaSeconds: number): void {
     const smoothing = Math.min(1, deltaSeconds * CONTROL_SMOOTHING_PER_SECOND)
     this.controlX += (this.targetX - this.controlX) * smoothing
-    this.position.x = clamp(this.position.x + this.controlX * this.lateralSpeedMetersPerSecond * deltaSeconds, -MAX_X_METERS, MAX_X_METERS)
+    const windPush = windDirectionOf(this.seed) * this.windSpeed * WIND_PUSH_METERS_PER_SECOND_PER_KPH
+    this.position.x = clamp(this.position.x + (this.controlX * this.lateralSpeedMetersPerSecond + windPush) * deltaSeconds, -MAX_X_METERS, MAX_X_METERS)
     this.position.y += this.forwardSpeedMetersPerSecond * deltaSeconds
     this.secondsFlown += deltaSeconds
     this.player.object.position.set(this.position.x, this.position.y, AIRCRAFT_ALTITUDE_METERS)

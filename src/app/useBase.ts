@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Livery } from '../three/liveries'
 import { parseGameTime } from './gameDate'
 import type { Player } from './useAccount'
@@ -7,7 +7,9 @@ export type Stock = 'fuel' | 'ammunition' | 'materials'
 /** The two sides of the war; the Allies are still called the French, as on the server. */
 export type Clan = 'french' | 'axe'
 export type Part = 'engine' | 'wings' | 'fuselage' | 'armament'
-export type MissionType = 'reconnaissance' | 'airCombat' | 'fighterCombat' | 'groundAttack' | 'bombing'
+export type MissionType = 'reconnaissance' | 'airCombat' | 'fighterCombat' | 'groundAttack' | 'raid' | 'campCapture'
+/** The two missions sent against an enemy camp, which the player picks on the map. */
+export type AttackKind = 'raid' | 'campCapture'
 
 /** A mission on the table; the category is the only one that can fly it, or null when any aircraft can. */
 export type Offer = {
@@ -49,6 +51,9 @@ export type Flight = {
   remainingSeconds: number
   fuelLoaded: number
   ammunitionLoaded: number
+  /** The wind the flight left in, in km/h, and the site of the camp it is sent against, if it is an attack. */
+  windSpeed: number
+  targetSite: string | null
   crews: { pilotId: number; aircraftId: number }[]
   alerts: FlightAlert[]
 }
@@ -89,6 +94,14 @@ export type HangarAircraft = {
 export type Rest = { pilotId: number; remainingSeconds: number }
 
 /** What a mission did to each crew, and what it paid. */
+/** What an attack did to its camp: nothing when it failed or the camp could no longer be attacked (`reason` says why), the damage of a raid, or the camp taken. */
+export type AttackResult = {
+  result: 'repelled' | 'calledOff' | 'raided' | 'captured' | 'noLanding'
+  reason?: string
+  defenseLost?: number
+  building?: string | null
+  aircraftLost?: boolean
+}
 export type MissionReport = {
   kind: 'mission'
   id: number
@@ -102,6 +115,9 @@ export type MissionReport = {
   commandPointsWon: number
   /** Whether the reconnaissance spotted a better paid mission; absent from the reports kept before missions could be spotted. */
   spottedMission?: boolean
+  /** The camp an attack was sent against, and what it did; absent from the reports of the other missions. */
+  targetSite?: string | null
+  attack?: AttackResult | null
   crews: {
     pilotName: string
     aircraftName: string
@@ -132,15 +148,22 @@ export type GiftEvent = {
 /** An aircraft of another base landed here with a load of resources, as much as the warehouse could take; the journal of a landing before the supply flights has no materials or supplies. */
 export type LandingEvent = { kind: 'landing'; id: number; from: string; site: string; aircraftName: string; fuel: number; ammunition: number; materials?: number; supplies?: number }
 /** The base took a camp, or let one go, when an aircraft landed on it or the last one left. */
-export type CampEvent = { kind: 'campTaken'; id: number; site: string } | { kind: 'campLost'; id: number; site: string }
+export type CampEvent = { kind: 'campTaken'; id: number; site: string } | { kind: 'campLost'; id: number; site: string; capturedBy?: string }
+/** A raid by another player hurt the camp: who flew it, how much defense it cost, the building it destroyed and whether an aircraft was lost. */
+export type RaidedEvent = { kind: 'raided'; id: number; site: string; by: string; defenseLost: number; building: string | null; aircraftLost: boolean }
 /** What happened at the base, with the game time it happened at, which the events kept before the journal dated them do not have; the newest event comes first. */
-export type BaseEvent = (MissionReport | ExplosionEvent | GiftEvent | LandingEvent | CampEvent) & { gameTime?: string }
+export type BaseEvent = (MissionReport | ExplosionEvent | GiftEvent | LandingEvent | CampEvent | RaidedEvent) & { gameTime?: string }
 
 export type UpgradeName = 'hangar' | 'workshop' | 'warehouse'
 /** What the command points buy for a building; the cost is null at the top level. */
 export type UpgradeInfo = { upgrade: UpgradeName; level: number; maxLevel: number; cost: number | null }
-/** The battle of the base: the enemy aircraft shot down against the target, and how it stands. */
-export type Battle = { kills: number; target: number; status: 'ongoing' | 'won' | 'lost' }
+/** The battle of the base, which never ends: the enemy aircraft the player shot down, as a score. */
+export type Battle = { kills: number }
+
+/** An enemy camp that can be attacked, with its defense, the flight there and what refuses a raid or a capture now, if anything. */
+export type AttackTarget = { baseId: number; site: string; holder: string; defense: number; flightSeconds: number; raidRefusal: string | null; captureRefusal: string | null }
+/** What raids did to the camp: its defense, and the buildings that are destroyed until they are built again for `rebuildCost` materials. */
+export type CampState = { defense: number; destroyed: string[]; rebuildCost: number }
 
 /** A base the player holds, with the site it stands on. */
 export type HeldBase = { id: number; site: string }
@@ -190,7 +213,11 @@ export type Base = {
   clan: Clan
   terrainPlan: string
   resources: { supplies: number; fuel: number; ammunition: number; materials: number; commandPoints: number }
+  /** The supplies the camp earns each minute by itself, fewer near the front. */
+  supplyIncome: number
   buildings: string[]
+  camp: CampState
+  targets: AttackTarget[]
   clock: { gameTime: string }
   warehouse: { capacity: number; prices: Record<Stock, number> }
   workshop: {
@@ -217,6 +244,7 @@ const API_DOWN = 'apiDown'
 const NO_BASE = 'noBase'
 const CLAIM_URL = '/api/world/claim'
 const MILLISECONDS_PER_SECOND = 1000
+const POLL_MILLISECONDS = 5000
 
 async function request(url: string, body?: object): Promise<{ base: Base } | { error: string }> {
   try {
@@ -279,6 +307,7 @@ export function useBase(player: Player | null) {
   const [hasNoBase, setHasNoBase] = useState(false)
   const [receivedAt, setReceivedAt] = useState(0)
   const [now, setNow] = useState(0)
+  const lastReceivedAt = useRef(0)
 
   function receive(result: { base: Base } | { error: string }): string | null {
     if ('error' in result) {
@@ -286,8 +315,9 @@ export function useBase(player: Player | null) {
     }
     setBase(result.base)
     setHasNoBase(false)
-    setReceivedAt(Date.now())
-    setNow(Date.now())
+    lastReceivedAt.current = Date.now()
+    setReceivedAt(lastReceivedAt.current)
+    setNow(lastReceivedAt.current)
     return null
   }
 
@@ -309,6 +339,26 @@ export function useBase(player: Player | null) {
     const timer = setInterval(() => setNow(Date.now()), MILLISECONDS_PER_SECOND)
     return () => clearInterval(timer)
   }, [])
+
+  // The server has the last word on the camps: what other players did to them shows within a few seconds.
+  useEffect(() => {
+    if (player === null) {
+      return
+    }
+    const timer = setInterval(() => {
+      if (document.hidden) {
+        return
+      }
+      const startedAt = Date.now()
+      void request(BASE_URL).then((result) => {
+        // An order given while this was on its way has a newer answer, which this one must not undo.
+        if (lastReceivedAt.current < startedAt) {
+          receive(result)
+        }
+      })
+    }, POLL_MILLISECONDS)
+    return () => clearInterval(timer)
+  }, [player])
 
   const elapsedSeconds = Math.floor((now - receivedAt) / MILLISECONDS_PER_SECOND)
   const receivedJobs = base?.workshop.jobs ?? []
@@ -357,6 +407,18 @@ export function useBase(player: Player | null) {
 
   async function launchMission(missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number): Promise<string | null> {
     return receive(await request(`${BASE_URL}/missions/launch`, { missionId, pilotIds, aircraftIds, fuel, ammunition }))
+  }
+
+  async function attackCamp(targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/missions/attack`, { targetBaseId, kind, pilotIds, aircraftIds }))
+  }
+
+  async function rebuild(building: string): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/buildings/rebuild`, { building }))
+  }
+
+  async function assembleAircraft(): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/workshop/assemble`, {}))
   }
 
   async function startAlert(alertId: number): Promise<string | null> {
@@ -428,10 +490,6 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/reset`, {}))
   }
 
-  async function restartBattle(): Promise<string | null> {
-    return receive(await request(`${BASE_URL}/battle/restart`, {}))
-  }
-
   return {
     base,
     hasNoBase,
@@ -445,6 +503,9 @@ export function useBase(player: Player | null) {
     buy,
     produce,
     launchMission,
+    attackCamp,
+    rebuild,
+    assembleAircraft,
     startAlert,
     playAlert,
     finishAlert,
@@ -455,7 +516,6 @@ export function useBase(player: Player | null) {
     recruitPilot,
     buyUpgrade,
     resetGame,
-    restartBattle,
     claimBase,
     selectBase,
     givePilot,

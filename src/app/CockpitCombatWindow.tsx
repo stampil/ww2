@@ -4,6 +4,7 @@ import { CockpitCombatScene } from '../three/CockpitCombatScene'
 import type { CockpitEnemy, CockpitOutcome, CockpitStatus } from '../three/CockpitCombatScene'
 import type { Livery } from '../three/liveries'
 import GameWindow from './GameWindow'
+import { useEngineSound } from './useEngineSound'
 import type { Clan, FlightAlert } from './useBase'
 import VirtualStick from './VirtualStick'
 
@@ -52,6 +53,7 @@ function CockpitCombatWindow({ alert, clan, livery, maneuverability, accuracy, r
   const [outcome, setOutcome] = useState<CockpitOutcome | null>(null)
   const enemies = ENEMIES[clan]
   const enemy = enemies[alert.id % enemies.length]
+  useEngineSound(isReady)
 
   useEffect(() => {
     let isCurrent = true

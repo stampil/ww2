@@ -42,8 +42,6 @@ enum BaseError: string
     case TooManyPilots = 'tooManyPilots';
     case UpgradeAtMaximum = 'upgradeAtMaximum';
     case InsufficientCommandPoints = 'insufficientCommandPoints';
-    case BattleOver = 'battleOver';
-    case BattleOngoing = 'battleOngoing';
     case NoBase = 'noBase';
     case TooManyBases = 'tooManyBases';
     case UnknownBase = 'unknownBase';
@@ -54,4 +52,11 @@ enum BaseError: string
     case SiteTaken = 'siteTaken';
     case NotStationed = 'notStationed';
     case LandingRequired = 'landingRequired';
+    case InvalidTarget = 'invalidTarget';
+    case CampProtected = 'campProtected';
+    case CampSpared = 'campSpared';
+    case DefenseHolds = 'defenseHolds';
+    case LastBase = 'lastBase';
+    case BuildingDestroyed = 'buildingDestroyed';
+    case BuildingStanding = 'buildingStanding';
 }

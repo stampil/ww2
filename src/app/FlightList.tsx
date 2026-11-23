@@ -26,7 +26,7 @@ function FlightList({ flights, squadron, onReceive }: Props) {
         {flights.map((flight) => (
           <li key={flight.id}>
             <Icon name={flight.type} />
-            <span>{t(`base.mission.types.${flight.type}`)}</span>
+            <span>{flight.targetSite === null ? t(`base.mission.types.${flight.type}`) : t('base.mission.against', { type: t(`base.mission.types.${flight.type}`), site: t(`world.site.${flight.targetSite}`) })}</span>
             <strong>{flight.remainingSeconds === 0 ? t('base.mission.landed') : formatDuration(flight.remainingSeconds)}</strong>
             <span className="muted">{flight.crews.map(crewLabel).join(', ')}</span>
             <span className="muted">{t('base.mission.loaded', { fuel: flight.fuelLoaded, ammunition: flight.ammunitionLoaded })}</span>

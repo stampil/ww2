@@ -19,7 +19,8 @@ enum MissionType: string
     case AirCombat = 'airCombat';
     case FighterCombat = 'fighterCombat';
     case GroundAttack = 'groundAttack';
-    case Bombing = 'bombing';
+    case Raid = 'raid';
+    case CampCapture = 'campCapture';
 
     /**
      * @param list<AircraftCategory> $categories the categories of the aircraft a squadron has
@@ -29,6 +30,12 @@ enum MissionType: string
         $required = $this->profile()->category;
 
         return $required === null || in_array($required, $categories, true);
+    }
+
+    /** Whether the mission is sent against an enemy camp, which the player picks on the map, instead of being drawn on the table of the headquarters. */
+    public function isAttack(): bool
+    {
+        return $this === self::Raid || $this === self::CampCapture;
     }
 
     /** Whether the aircraft of the squadron fight enemy aircraft on this mission, which count among those the battle asks for. */
@@ -53,17 +60,24 @@ enum MissionType: string
             self::AirCombat => $this->fighterProfile(new IntegerRange(2, 2), self::ACE_ONE_IN),
             self::GroundAttack => $this->fighterProfile(new IntegerRange(2, 3)),
             self::FighterCombat => $this->fighterProfile(new IntegerRange(1, 2), self::ACE_ONE_IN),
-            self::Bombing => new MissionProfile(
-                category: AircraftCategory::Bomber,
-                aircraftCount: new IntegerRange(1, 2),
-                durationSeconds: new IntegerRange(180, 300),
-                fuelPerAircraft: new IntegerRange(50, 70),
-                ammunitionPerAircraft: new IntegerRange(30, 50),
-                risk: new IntegerRange(2, 3),
-                suppliesPerRiskPoint: new IntegerRange(160, 215),
-                commandPointsPerAircraft: 3,
-            ),
+            self::Raid => $this->attackProfile(new IntegerRange(1, 3), new IntegerRange(2, 3), new IntegerRange(60, 60), new IntegerRange(40, 40), 2),
+            self::CampCapture => $this->attackProfile(new IntegerRange(1, 1), new IntegerRange(3, 3), new IntegerRange(60, 60), new IntegerRange(30, 30), 4),
         };
+    }
+
+    /** The profile of a mission against a camp: its length is the flight there, which the camp sets, and the camp pays nothing in supplies, only in command points. */
+    private function attackProfile(IntegerRange $aircraftCount, IntegerRange $risk, IntegerRange $fuel, IntegerRange $ammunition, int $commandPoints): MissionProfile
+    {
+        return new MissionProfile(
+            category: AircraftCategory::Fighter,
+            aircraftCount: $aircraftCount,
+            durationSeconds: new IntegerRange(0, 0),
+            fuelPerAircraft: $fuel,
+            ammunitionPerAircraft: $ammunition,
+            risk: $risk,
+            suppliesPerRiskPoint: new IntegerRange(0, 0),
+            commandPointsPerAircraft: $commandPoints,
+        );
     }
 
     /** The profile of a mission flown by fighters, which differs from one type to another by its risk and its ace missions. */

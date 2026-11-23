@@ -36,6 +36,7 @@ final class Hangar
         private readonly GameClockStore $clocks,
         private readonly Mechanics $mechanics,
         private readonly EventLog $events,
+        private readonly CampStore $camps,
         private readonly Randomizer $random = new Randomizer(),
     ) {
     }
@@ -80,6 +81,7 @@ final class Hangar
     {
         $this->database->transaction(function () use ($baseId, $aircraftId): void {
             $this->bases->lockResources($baseId);
+            $this->camps->assertStanding($baseId, Building::Hangar);
             $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
             if (!array_key_exists($aircraftId, $this->squadrons->aircraftById($baseId))) {
                 throw new BaseException(BaseError::UnknownAircraft);
@@ -106,6 +108,7 @@ final class Hangar
     {
         $this->database->transaction(function () use ($baseId, $aircraftId): void {
             $this->bases->lockResources($baseId);
+            $this->camps->assertStanding($baseId, Building::Hangar);
             $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
             $aircraft = $this->squadrons->aircraftById($baseId)[$aircraftId] ?? throw new BaseException(BaseError::UnknownAircraft);
             if ($this->missions->isOnFlight($aircraftId)) {

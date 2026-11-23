@@ -71,10 +71,11 @@ export class ReconnaissanceScene extends GroundRunScene<PhotoStatus> {
     shadowImage: string,
     livery: Livery,
     nationality: TargetNationality,
+    windSpeed: number,
     onStatus: (status: PhotoStatus) => void,
     onEnd: (outcome: RunOutcome) => void,
   ) {
-    super(container, seed, shadowImage, livery, nationality, onStatus, onEnd)
+    super(container, seed, shadowImage, livery, nationality, windSpeed, onStatus, onEnd)
     this.frame = this.createFrame()
     void this.createTargets(seed)
     this.start()

@@ -13,6 +13,8 @@ final class SitePlaces
 {
     /** How long the flight takes, one way, between the two camps that stand farthest apart. */
     public const END_TO_END_SECONDS = 900;
+    /** A camp this share of the longest distance away from the other side is wholly in the rear. */
+    private const REAR_FROM_FRONT_SHARE = 0.3;
 
     private readonly float $farthestDistance;
 
@@ -49,6 +51,21 @@ final class SitePlaces
     public function flightSeconds(Site $from, Site $to): int
     {
         return (int) round(self::END_TO_END_SECONDS * $this->distance($from, $to) / $this->farthestDistance);
+    }
+
+    /**
+     * @return float how deep in the rear a camp stands, from 0 at the front to 1: how far it is from the nearest camp of the other side, against a share of the longest flight
+     */
+    public function frontDepth(Site $site): float
+    {
+        $nearest = INF;
+        foreach (Site::cases() as $other) {
+            if ($other->clan() !== $site->clan()) {
+                $nearest = min($nearest, $this->distance($site, $other));
+            }
+        }
+
+        return min(1.0, $nearest / ($this->farthestDistance * self::REAR_FROM_FRONT_SHARE));
     }
 
     private function distance(Site $first, Site $second): float

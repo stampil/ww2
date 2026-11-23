@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GAME_TIME_ZONE, parseGameTime } from './gameDate'
@@ -6,6 +7,13 @@ import { composeMissionPage } from './journalPage'
 import { JournalNote } from './JournalNotes'
 import type { BaseEvent, MissionReport } from './useBase'
 import { useJournal } from './useJournal'
+
+/** What an attack did to its camp, in a sentence: the damage of a raid, the camp taken, or why it came to nothing. */
+function attackSentence(report: MissionReport, t: TFunction): string {
+  const result = report.attack!
+
+  return t(`base.mission.attack.${result.result}`, { site: t(`world.site.${report.targetSite}`), defenseLost: result.defenseLost })
+}
 
 function MissionPage({ report, gameTime }: { report: MissionReport; gameTime: Date | null }) {
   const { t, i18n } = useTranslation()
@@ -24,6 +32,7 @@ function MissionPage({ report, gameTime }: { report: MissionReport; gameTime: Da
         {' · '}
         {t('base.mission.windAtTakeoff', { windSpeed: report.windSpeed })}
         {report.spottedMission === true && ` · ${t('base.mission.spotted')}`}
+        {report.attack != null && report.targetSite != null && ` · ${attackSentence(report, t)}`}
       </p>
     </>
   )

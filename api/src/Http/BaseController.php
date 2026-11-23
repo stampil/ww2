@@ -15,12 +15,15 @@ use Ww2\Base\BaseError;
 use Ww2\Base\BaseException;
 use Ww2\Base\BaseOverview;
 use Ww2\Base\Battle;
+use Ww2\Base\Building;
 use Ww2\Base\Cargo;
 use Ww2\Base\EventLog;
 use Ww2\Base\Gifts;
 use Ww2\Base\Hangar;
 use Ww2\Base\Headquarters;
 use Ww2\Base\Holdings;
+use Ww2\Base\PlayerActivity;
+use Ww2\Base\Rebuilding;
 use Ww2\Base\Roster;
 use Ww2\Base\SparePart;
 use Ww2\Base\Stationings;
@@ -31,12 +34,13 @@ use Ww2\Base\Warehouse;
 use Ww2\Base\Workshop;
 use Ww2\Mission\Dogfight\DogfightOutcome;
 use Ww2\Mission\Dogfight\Maneuver;
+use Ww2\Mission\MissionType;
 use Ww2\World\Bases;
 
 /**
  * Shows the base of the player who is signed in (the one they look at, the first they took until they choose another), and takes their orders: buy a stock, make a spare part,
  * send a mission out, answer its alerts and receive its squadron back, inspect and repair an aircraft, rest a pilot, recruit a pilot, buy an upgrade, give a pilot or an aircraft to another base, stationing an aircraft at another base and recalling it, send a supply flight to a base of the player or of an ally.
- * Once the battle is over the orders are refused, except the one that starts a new battle and the one that starts the game over.
+ * Every request tells the game that the player is there, which a raid on their camps takes into account.
  */
 final class BaseController
 {
@@ -56,6 +60,8 @@ final class BaseController
         private readonly Stationings $stationings,
         private readonly Holdings $holdings,
         private readonly EventLog $events,
+        private readonly Rebuilding $rebuilding,
+        private readonly PlayerActivity $activity,
     ) {
     }
 
@@ -103,7 +109,7 @@ final class BaseController
      */
     public function buy(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $stock = Stock::tryFrom(JsonRequestBody::texts($request, 'resource')['resource'])
             ?? throw new BadRequestException('invalidBody');
         $quantity = JsonRequestBody::integers($request, 'quantity')['quantity'];
@@ -119,7 +125,7 @@ final class BaseController
      */
     public function produce(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $part = SparePart::tryFrom(JsonRequestBody::texts($request, 'part')['part'])
             ?? throw new BadRequestException('invalidBody');
         $withMechanic = JsonRequestBody::booleans($request, 'withMechanic')['withMechanic'];
@@ -135,7 +141,7 @@ final class BaseController
      */
     public function givePilot(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $numbers = JsonRequestBody::integers($request, 'recipientBaseId', 'pilotId');
         $this->carryOut(fn () => $this->gifts->givePilot($baseId, $numbers['recipientBaseId'], $numbers['pilotId']));
 
@@ -149,7 +155,7 @@ final class BaseController
      */
     public function giveAircraft(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $numbers = JsonRequestBody::integers($request, 'recipientBaseId', 'aircraftId');
         $this->carryOut(fn () => $this->gifts->giveAircraft($baseId, $numbers['recipientBaseId'], $numbers['aircraftId']));
 
@@ -163,7 +169,7 @@ final class BaseController
      */
     public function sendStationing(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $numbers = JsonRequestBody::integers($request, 'destinationBaseId', 'pilotId', 'aircraftId', 'fuel', 'ammunition');
         $this->carryOut(fn () => $this->stationings->send($baseId, $numbers['destinationBaseId'], $numbers['pilotId'], $numbers['aircraftId'], $numbers['fuel'], $numbers['ammunition']));
 
@@ -177,7 +183,7 @@ final class BaseController
      */
     public function sendSupply(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $numbers = JsonRequestBody::integers($request, 'destinationBaseId', 'pilotId', 'aircraftId', 'fuel', 'ammunition', 'materials', 'supplies');
         $cargo = new Cargo($numbers['fuel'], $numbers['ammunition'], $numbers['materials'], $numbers['supplies']);
         $this->carryOut(fn () => $this->stationings->supply($baseId, $numbers['destinationBaseId'], $numbers['pilotId'], $numbers['aircraftId'], $cargo));
@@ -192,7 +198,7 @@ final class BaseController
      */
     public function recallStationing(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $aircraftId = JsonRequestBody::integers($request, 'aircraftId')['aircraftId'];
         $this->carryOut(fn () => $this->stationings->recall($baseId, $aircraftId));
 
@@ -206,7 +212,7 @@ final class BaseController
      */
     public function launchMission(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $numbers = JsonRequestBody::integers($request, 'missionId', 'fuel', 'ammunition');
         $crews = JsonRequestBody::integerLists($request, 'pilotIds', 'aircraftIds');
         $this->carryOut(fn () => $this->headquarters->launch(
@@ -224,11 +230,56 @@ final class BaseController
     /**
      * @return array<string, mixed>
      * @throws UnauthorizedException when nobody is signed in
+     */
+    public function assembleAircraft(): array
+    {
+        $baseId = $this->ownBaseId();
+        $this->carryOut(fn () => $this->workshop->assembleAircraft($baseId));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function attackCamp(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ownBaseId();
+        $targetBaseId = JsonRequestBody::integers($request, 'targetBaseId')['targetBaseId'];
+        $type = MissionType::tryFrom(JsonRequestBody::texts($request, 'kind')['kind']);
+        if ($type === null || !$type->isAttack()) {
+            throw new BadRequestException('invalidBody');
+        }
+        $crews = JsonRequestBody::integerLists($request, 'pilotIds', 'aircraftIds');
+        $this->carryOut(fn () => $this->headquarters->launchAttack($baseId, $targetBaseId, $type, $crews['pilotIds'], $crews['aircraftIds']));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
+    public function rebuild(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ownBaseId();
+        $building = Building::tryFrom(JsonRequestBody::texts($request, 'building')['building']) ?? throw new BadRequestException('invalidBody');
+        $this->carryOut(fn () => $this->rebuilding->rebuild($baseId, $building));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
      * @throws BadRequestException when the order is not understood
      */
     public function receiveMission(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $missionId = JsonRequestBody::integers($request, 'missionId')['missionId'];
         $this->carryOut(fn () => $this->headquarters->receive($baseId, $missionId));
 
@@ -242,7 +293,7 @@ final class BaseController
      */
     public function startAlert(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $alertId = JsonRequestBody::integers($request, 'alertId')['alertId'];
         $this->carryOut(fn () => $this->alerts->start($baseId, $alertId));
 
@@ -256,7 +307,7 @@ final class BaseController
      */
     public function playAlert(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $alertId = JsonRequestBody::integers($request, 'alertId')['alertId'];
         $maneuver = Maneuver::tryFrom(JsonRequestBody::texts($request, 'maneuver')['maneuver']) ?? throw new BadRequestException('invalidBody');
         $this->carryOut(fn () => $this->alerts->play($baseId, $alertId, $maneuver));
@@ -271,7 +322,7 @@ final class BaseController
      */
     public function finishAlert(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $alertId = JsonRequestBody::integers($request, 'alertId')['alertId'];
         $outcome = DogfightOutcome::tryFrom(JsonRequestBody::texts($request, 'outcome')['outcome']) ?? throw new BadRequestException('invalidBody');
         $this->carryOut(fn () => $this->alerts->finish($baseId, $alertId, $outcome));
@@ -286,7 +337,7 @@ final class BaseController
      */
     public function inspectAircraft(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $aircraftId = JsonRequestBody::integers($request, 'aircraftId')['aircraftId'];
         $this->carryOut(fn () => $this->hangar->inspect($baseId, $aircraftId));
 
@@ -300,7 +351,7 @@ final class BaseController
      */
     public function repairAircraft(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $aircraftId = JsonRequestBody::integers($request, 'aircraftId')['aircraftId'];
         $this->carryOut(fn () => $this->hangar->repair($baseId, $aircraftId));
 
@@ -314,7 +365,7 @@ final class BaseController
      */
     public function restPilot(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $pilotId = JsonRequestBody::integers($request, 'pilotId')['pilotId'];
         $this->carryOut(fn () => $this->roster->rest($baseId, $pilotId));
 
@@ -327,7 +378,7 @@ final class BaseController
      */
     public function recruitPilot(): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $this->carryOut(fn () => $this->roster->recruit($baseId));
 
         return $this->overview->of($baseId);
@@ -340,7 +391,7 @@ final class BaseController
      */
     public function buyUpgrade(ServerRequestInterface $request): array
     {
-        $baseId = $this->ongoingBattleBaseId();
+        $baseId = $this->ownBaseId();
         $upgrade = Upgrade::tryFrom(JsonRequestBody::texts($request, 'upgrade')['upgrade']) ?? throw new BadRequestException('invalidBody');
         $this->carryOut(fn () => $this->upgrades->buy($baseId, $upgrade));
 
@@ -362,20 +413,6 @@ final class BaseController
     }
 
     /**
-     * @return array<string, mixed>
-     * @throws UnauthorizedException when nobody is signed in
-     * @throws ConflictException when the player holds no base yet, or the battle is not over
-     */
-    public function restartBattle(): array
-    {
-        $baseId = $this->firstBaseId();
-        $this->carryOut(fn () => $this->battle->restart($baseId));
-        $this->session->forgetSelectedBase();
-
-        return $this->overview->of($baseId);
-    }
-
-    /**
      * The overview after an order that can let a camp go: the base is looked up again, as the one the order was given on may no longer be the player's.
      *
      * @return array<string, mixed>
@@ -383,18 +420,6 @@ final class BaseController
     private function overviewAfterOrder(): array
     {
         return $this->overview->of($this->ownBaseId());
-    }
-
-    /**
-     * @throws UnauthorizedException when nobody is signed in
-     * @throws ConflictException when the player holds no base yet, or the battle is over
-     */
-    private function ongoingBattleBaseId(): int
-    {
-        $baseId = $this->ownBaseId();
-        $this->carryOut(fn () => $this->battle->assertOngoing($baseId));
-
-        return $baseId;
     }
 
     /**
@@ -427,6 +452,7 @@ final class BaseController
         if ($playerId === null) {
             throw new UnauthorizedException('signInRequired');
         }
+        $this->activity->touch($playerId);
 
         return $playerId;
     }

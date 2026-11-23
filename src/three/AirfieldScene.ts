@@ -10,6 +10,8 @@ import { createBuildings } from './BuildingModels'
 import { Bushes } from './Bushes'
 import type { BushPlacement } from './Bushes'
 import { D520_SPAN_METERS } from './D520Model'
+import { DamageEffects } from './DamageEffects'
+import type { DamageSpots } from './DamageEffects'
 import type { AircraftModel3D } from './aircraftModel'
 import { createAircraftModel } from './aircraftModels'
 import { ArrivalFlight } from './arrivalFlight'
@@ -40,6 +42,17 @@ const SUN_POSITION = new THREE.Vector3(-30, 20, 60)
 const WORLD_UP = new THREE.Vector3(0, 0, 1)
 const NOSE_ALONG_Y_ROTATION_RADIANS = Math.PI / 2
 const MILLISECONDS_PER_SECOND = 1000
+// A building a raid destroyed is a low ruin under a column of smoke.
+const RUIN_HEIGHT_SHARE = 0.2
+const RUIN_SMOKE_HEIGHT_METERS = 1
+// The smoke of an aircraft is a few meters wide: over a building, seen from afar, it is made this many times larger.
+const RUIN_SMOKE_SCALE = 8
+const RUIN_SMOKE_LEVEL = 6
+const RUIN_SPOTS: DamageSpots = {
+  wingRoot: new THREE.Vector3(0, 0, RUIN_SMOKE_HEIGHT_METERS),
+  engine: new THREE.Vector3(0, 0, RUIN_SMOKE_HEIGHT_METERS),
+  fuselage: new THREE.Vector3(0, 0, RUIN_SMOKE_HEIGHT_METERS),
+}
 // An aircraft grows by this share of its size for each meter of altitude, so that it seems to come toward the camera as it climbs.
 const ALTITUDE_GROWTH_PER_METER = 0.006
 // Above this altitude an aircraft stops growing, so that it never hides much of the base.
@@ -198,6 +211,9 @@ export class AirfieldScene {
   private readonly startMilliseconds = performance.now()
   private readonly liveryOf = new Map<AircraftModel3D, Livery>()
   private parked: ParkedPlace[] = []
+  private buildings: THREE.Group | undefined
+  private ruins: string[] = []
+  private readonly ruinEffects: DamageEffects[] = []
   private lastLandingSeconds = Number.NEGATIVE_INFINITY
   private previousSeconds = 0
   private isCameraAway = false
@@ -242,6 +258,8 @@ export class AirfieldScene {
     void createBuildings(plan, this.runway).then((buildings) => {
       if (!this.isDisposed) {
         this.scene.add(buildings)
+        this.buildings = buildings
+        this.showRuins()
       }
     })
     this.scene.add(new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY))
@@ -253,6 +271,12 @@ export class AirfieldScene {
     this.resizeObserver.observe(container)
     this.fitCamera()
     this.renderer.setAnimationLoop(() => this.renderFrame())
+  }
+
+  /** The buildings, by the name of their sprite, that a raid destroyed: they stand as low ruins, smoking. */
+  setRuins(spriteNames: string[]): void {
+    this.ruins = spriteNames
+    this.showRuins()
   }
 
   /** Puts the aircraft that stand on the ground, each on its stand, in its livery, as models laid on the grass. */
@@ -311,6 +335,32 @@ export class AirfieldScene {
   }
 
   /** Where a landed aircraft leaves the runway: a little before the last junction, which it reaches rolling on. */
+  private showRuins(): void {
+    if (this.buildings === undefined) {
+      return
+    }
+    for (const effects of this.ruinEffects) {
+      this.scene.remove(effects.object)
+      effects.object.children.forEach((particle) => (particle as THREE.Sprite).material.dispose())
+    }
+    this.ruinEffects.length = 0
+    this.plan.sprites.forEach((sprite, index) => {
+      const building = this.buildings!.children[index]
+      const isRuin = this.ruins.includes(sprite.sprite)
+      building.scale.z = isRuin ? building.scale.x * RUIN_HEIGHT_SHARE : building.scale.x
+      if (!isRuin) {
+        return
+      }
+      const effects = new DamageEffects(RUIN_SPOTS)
+      effects.setLevel(RUIN_SMOKE_LEVEL)
+      effects.object.scale.setScalar(RUIN_SMOKE_SCALE)
+      effects.object.position.copy(building.position)
+      effects.object.position.y += TILE_SIZE_METERS / 2
+      this.scene.add(effects.object)
+      this.ruinEffects.push(effects)
+    })
+  }
+
   private exitX(): number {
     return tileCenterOf(this.runway, this.runway.row, this.runway.exitColumn).x - EXIT_BEFORE_JUNCTION_METERS
   }
@@ -481,6 +531,9 @@ export class AirfieldScene {
     const seconds = this.secondsNow()
     const deltaSeconds = seconds - this.previousSeconds
     this.previousSeconds = seconds
+    for (const effects of this.ruinEffects) {
+      effects.update(deltaSeconds)
+    }
     for (let index = this.departing.length - 1; index >= 0; index -= 1) {
       const aircraft = this.departing[index]
       const { group, slot } = aircraft.assignment

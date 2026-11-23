@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 /** What the stores of a camp hold, which every player can see. */
 export type CampResources = { supplies: number; fuel: number; ammunition: number; materials: number }
 
-/** A site of the map: whether it is free, the side it belongs to, the nickname of the player who holds it, what its stores hold, null while it has none, and how many aircraft stand there. */
-export type SiteChoice = { site: string; free: boolean; clan: string; holder: string | null; resources: CampResources | null; aircraft: number }
+/** A site of the map: whether it is free, the side it belongs to, the nickname of the player who holds it, what its stores hold, null while it has none, how many aircraft stand there, and whether a raid hurt it a few minutes ago. */
+export type SiteChoice = { site: string; free: boolean; clan: string; holder: string | null; resources: CampResources | null; aircraft: number; attacked: boolean }
 
 /** The sites where a new player can settle, in the oldest world that has room. */
 export const CHOOSABLE_SITES_URL = '/api/world/sites'

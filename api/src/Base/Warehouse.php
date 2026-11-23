@@ -18,11 +18,12 @@ final class Warehouse
         private readonly Database $database,
         private readonly BaseStore $bases,
         private readonly Upgrades $upgrades,
+        private readonly CampStore $camps,
     ) {
     }
 
     /**
-     * @throws BaseException when the quantity is not positive, the supplies run short or the stock would overflow
+     * @throws BaseException when the quantity is not positive, the warehouse is destroyed, the supplies run short or the stock would overflow
      */
     public function buy(int $baseId, Stock $stock, int $quantity): void
     {
@@ -31,6 +32,7 @@ final class Warehouse
         }
         $this->database->transaction(function () use ($baseId, $stock, $quantity): void {
             $resources = $this->bases->lockResources($baseId);
+            $this->camps->assertStanding($baseId, Building::Warehouse);
             $cost = $stock->unitPrice() * $quantity;
             if ($resources->supplies < $cost) {
                 throw new BaseException(BaseError::InsufficientSupplies);

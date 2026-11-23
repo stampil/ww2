@@ -6,6 +6,8 @@ namespace Ww2\Base;
 
 use Ww2\Clock\GameClock;
 use Ww2\Clock\GameClockStore;
+use Ww2\Squadron\SquadronFounder;
+use Ww2\Squadron\SquadronStore;
 use Ww2\Database\Database;
 
 /**
@@ -23,16 +25,43 @@ final class Workshop
         private readonly GameClockStore $clocks,
         private readonly Mechanics $mechanics,
         private readonly Upgrades $upgrades,
+        private readonly CampStore $camps,
+        private readonly SquadronStore $squadrons,
+        private readonly SquadronFounder $squadronFounder,
     ) {
     }
 
     /**
-     * @throws BaseException when the materials run short, every bench is busy, or no mechanic is free
+     * Builds a new aircraft out of the four parts the workshop has made, one of each, to replace one that was lost.
+     *
+     * @throws BaseException when the workshop is destroyed, the hangar is full, or a part is missing
+     */
+    public function assembleAircraft(int $baseId): void
+    {
+        $this->database->transaction(function () use ($baseId): void {
+            $this->bases->lockResources($baseId);
+            $this->camps->assertStanding($baseId, Building::Workshop);
+            if (count($this->squadrons->aircraftOf($baseId)) >= Hangar::PLACES) {
+                throw new BaseException(BaseError::HangarFull);
+            }
+            $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
+            foreach (SparePart::cases() as $part) {
+                if (!$this->bases->useReadyPart($baseId, $part, $gameSeconds)) {
+                    throw new BaseException(BaseError::MissingSparePart);
+                }
+            }
+            $this->squadronFounder->addStartingAircraft($baseId);
+        });
+    }
+
+    /**
+     * @throws BaseException when the workshop is destroyed, the materials run short, every bench is busy, or no mechanic is free
      */
     public function start(int $baseId, SparePart $part, bool $withMechanic): void
     {
         $this->database->transaction(function () use ($baseId, $part, $withMechanic): void {
             $resources = $this->bases->lockResources($baseId);
+            $this->camps->assertStanding($baseId, Building::Workshop);
             $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
             $running = $this->bases->runningJobs($baseId, $gameSeconds);
             if (count($running) >= $this->benchesOf($baseId)) {

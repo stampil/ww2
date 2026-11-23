@@ -84,10 +84,11 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
     shadowImage: string,
     livery: Livery,
     nationality: TargetNationality,
+    windSpeed: number,
     onStatus: (status: StrafeStatus) => void,
     onEnd: (outcome: RunOutcome) => void,
   ) {
-    super(container, seed, shadowImage, livery, nationality, onStatus, onEnd)
+    super(container, seed, shadowImage, livery, nationality, windSpeed, onStatus, onEnd)
     this.zone = this.createZone()
     this.createTracers()
     void this.createConvoy(seed)

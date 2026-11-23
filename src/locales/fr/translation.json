@@ -116,6 +116,23 @@
     "escaped": "Le bombardier s'est échappé.",
     "continue": "Continuer"
   },
+  "attack": {
+    "defense": "Défense du camp : {{defense}} sur 100",
+    "raidTitle": "Raid",
+    "raidText": "Des chasseurs attaquent le camp : sa défense baisse, un bâtiment est détruit et parfois un avion au sol. Plus tu envoies d'avions, plus la défense baisse.",
+    "count": "Avions du raid",
+    "raidSend_one": "Envoyer {{count}} avion en raid ({{time}} aller et retour)",
+    "raidSend_other": "Envoyer {{count}} avions en raid ({{time}} aller et retour)",
+    "captureTitle": "Prise de camp",
+    "captureText": "Un avion attaque le camp puis s'y pose : s'il réussit, le camp est à toi avec ce qu'il garde. La défense du camp doit être à zéro.",
+    "captureSend": "Envoyer l'avion prendre le camp ({{time}})",
+    "nobodyFree": "Aucun avion ou aucun pilote libre."
+  },
+  "wind": {
+    "pushes": "Vent de {{speed}} km/h : il te pousse à {{side}}",
+    "left": "gauche",
+    "right": "droite"
+  },
   "strafe": {
     "title": "Attaque au sol",
     "hint": "Tu mitrailles un convoi {{nationality}} qui roule vers toi : place-toi sur sa file, ton avion tire seul sur ce qui est devant lui. Détruis-en {{required}} sur {{total}} avant qu'il soit passé. Épargne l'ambulance de la Croix-Rouge : la détruire fait échouer l'attaque.",
@@ -222,7 +239,7 @@
     "welcome": {
       "title": "Bienvenue, commandant",
       "hint": "10 mai 1940",
-      "text": "L'Allemagne attaque à l'ouest. Tu commandes cette base aérienne et son escadrille de D.520. Pour tenir la bataille, abats 8 avions ennemis ; sans pilote ou sans avion, elle est perdue. Je te guide pour la première journée.",
+      "text": "L'Allemagne attaque à l'ouest. Tu commandes cette base aérienne et son escadrille de D.520. La bataille ne s'arrête jamais : chaque avion ennemi abattu compte dans ton score. Je te guide pour la première journée.",
       "begin": "Faire le tutoriel",
       "decline": "Ne pas le faire"
     },
@@ -354,21 +371,38 @@
         "Je n'ai rien touché d'important. Il faudra y retourner et faire mieux."
       ]
     },
-    "bombing": {
+    "raid": {
       "opening": [
-        "Bombardement {{dayPart}}, le {{aircraft}} chargé jusqu'aux ailes. On sent le poids dans chaque virage.",
-        "Mission de bombardement {{dayPart}}. La cible était là, au fond de mon viseur, minuscule et immobile.",
-        "Départ pour un bombardement {{dayPart}}. L'avion rechigne sous la charge mais il tient."
+        "Raid sur un camp ennemi {{dayPart}}, le {{aircraft}} au ras des toits. On voyait les hangars défiler sous les ailes.",
+        "Mission de raid {{dayPart}}. Le {{aircraft}} a franchi les lignes, la DCA grondait quelque part sous nous.",
+        "Départ pour un raid {{dayPart}}. Il s'agit de leur rendre la monnaie de leur pièce."
       ],
       "success": [
-        "Les bombes sont tombées où il fallait. J'ai vu la poussière monter bien avant d'entendre quoi que ce soit.",
-        "En plein dans le mille, ou pas loin. Les équipes au sol seront contentes.",
-        "Largage propre, cible détruite. J'ai viré sans me retourner."
+        "Les passes ont porté : de la fumée monte du camp, et leur DCA s'est tue un instant.",
+        "Cible touchée, bâtiments en flammes. Ils y réfléchiront à deux fois avant de recommencer.",
+        "J'ai fait mes passes sans trembler, et le camp en a gardé la marque."
       ],
       "failure": [
-        "Mes bombes ont creusé des trous dans un champ. Le vent les a poussées, ou c'est moi qui ai mal visé.",
-        "Cible manquée. Il va falloir recommencer, et cette fois, bien viser.",
-        "J'ai lâché trop tôt ou trop tard, je ne sais plus. Les bombes sont tombées ailleurs."
+        "Mes rafales sont tombées à côté. Le camp n'a presque rien senti.",
+        "Trop de DCA, trop peu de temps : j'ai dû dégager sans avoir rien détruit de sérieux.",
+        "Raid manqué. Il faudra revenir, et plus nombreux."
+      ]
+    },
+    "campCapture": {
+      "opening": [
+        "Prise de camp {{dayPart}}. Le {{aircraft}} file seul vers le terrain : on ne repart pas d'un camp pris.",
+        "Mission spéciale {{dayPart}} : poser le {{aircraft}} sur un terrain qui n'est plus défendu.",
+        "Départ {{dayPart}} pour prendre un camp. Au bout du vol, il y a une piste, et c'est tout ce qu'il me faut."
+      ],
+      "success": [
+        "Les roues ont touché la piste, personne n'a tiré. Le camp est à nous.",
+        "Posé, moteur coupé, le fanion planté : le terrain a changé de main.",
+        "On a gagné un camp ce matin, avec ses réserves. Il faudra le tenir."
+      ],
+      "failure": [
+        "Je n'ai pas pu me poser : le camp tient toujours. Retour à la base, bredouille.",
+        "Trop de feu au-dessus du terrain. J'ai dû rebrousser chemin.",
+        "Prise de camp ratée. Le terrain reste à eux."
       ]
     },
     "wind": {
@@ -477,7 +511,7 @@
     },
     "sites": "Sites",
     "map": "Carte de la France",
-    "legend": "Tes camps sont cerclés d'or, ceux de tes alliés de vert, ceux de l'ennemi sont grisés, les camps libres sont en couleur, rouges pour l'Axe. Clique un camp : son détail s'ouvre de l'autre côté de la carte.",
+    "legend": "Tes camps sont cerclés d'or, ceux de tes alliés de vert ; les camps libres sont en couleur, rouges pour l'Axe ; un camp qu'un raid vient de toucher est en ruines. Clique un camp : son détail s'ouvre de l'autre côté de la carte.",
     "side": "Ton côté : {{side}}.",
     "clan": {
       "french": "les Alliés",
@@ -599,17 +633,19 @@
     "fireAlert": "Avion en feu",
     "battle": {
       "kills": "Avions ennemis abattus",
-      "progress": "{{kills}} sur {{target}}",
-      "won": {
-        "title": "Victoire",
-        "text": "La bataille est gagnée : {{target}} avions ennemis abattus."
-      },
-      "lost": {
-        "title": "Défaite",
-        "text": "Il ne reste plus de pilote ou plus d'avion : la bataille est perdue."
-      },
-      "restart": "Nouvelle bataille"
+      "progress": "{{kills}}"
     },
+    "rebuild": {
+      "title": "Bâtiment détruit",
+      "text": "Ce bâtiment ne sert plus tant qu'il n'est pas reconstruit.",
+      "button": "Reconstruire ({{cost}} matériaux)"
+    },
+    "assemble": {
+      "title": "Assembler un avion",
+      "text": "Un avion perdu se remplace avec une pièce de chaque, déjà fabriquée : moteur, ailes, fuselage et armement.",
+      "button": "Assembler un avion"
+    },
+    "income": "Ravitaillement du front : {{count}} par minute",
     "upgrade": {
       "title": "Amélioration",
       "hangar": "Un D.520 de plus",
@@ -645,6 +681,11 @@
       "loadItem": "{{quantity}} de {{resource}}",
       "campTaken": "Camp pris",
       "campTakenText": "Un de tes avions s'est posé à {{site}} : le camp est à toi.",
+      "raided": "Camp attaqué",
+      "raidedText": "{{by}} a attaqué {{site}} en raid : {{defenseLost}} points de défense perdus.",
+      "raidedBuilding": "Le bâtiment « {{building}} » est détruit.",
+      "raidedAircraft": "Un avion au sol est détruit.",
+      "campLostCaptured": "{{by}} a pris {{site}} d'assaut : le camp est perdu.",
       "campLost": "Camp quitté",
       "campLostText": "Plus aucun de tes avions n'est posé à {{site}} : tu ne tiens plus ce camp."
     },
@@ -654,7 +695,8 @@
         "airCombat": "Interception de bombardiers",
         "fighterCombat": "Combat aérien",
         "groundAttack": "Attaque au sol",
-        "bombing": "Bombardement"
+        "raid": "Raid",
+        "campCapture": "Prise de camp"
       },
       "title": "Missions",
       "flights": "En vol",
@@ -680,6 +722,13 @@
       "gains": "Gains : ravitaillement {{supplies}}, points de commandement {{points}}",
       "noGain": "Aucun gain",
       "spotted": "Une mission mieux payée est apparue à la tour de contrôle.",
+      "attack": {
+        "repelled": "L'attaque sur {{site}} a été repoussée.",
+        "calledOff": "Arrivés sur {{site}}, il a fallu renoncer : la situation du camp avait changé.",
+        "raided": "{{site}} est touché : {{defenseLost}} points de défense en moins.",
+        "captured": "{{site}} est à nous.",
+        "noLanding": "Impossible de se poser sur {{site}} : le camp reste à l'ennemi."
+      },
       "windAtTakeoff": "vent au départ : {{windSpeed}} km/h",
       "rest": "Faire reposer",
       "resting": "Au repos : {{time}}",
@@ -695,6 +744,7 @@
       "ammunitionLoad": "Munitions par avion",
       "noFreeAircraft": "Aucun avion libre ne convient à cette mission.",
       "notEnoughPilots": "Il n'y a pas assez de pilotes libres.",
+      "against": "{{type}} sur {{site}}",
       "loaded": "{{fuel}} de carburant et {{ammunition}} de munitions par avion",
       "landed": "Terminée",
       "receive": "Accueillir l'escadrille",
@@ -778,8 +828,6 @@
       "tooManyPilots": "La base ne peut pas loger plus de pilotes.",
       "upgradeAtMaximum": "Cette amélioration est au niveau maximal.",
       "insufficientCommandPoints": "Pas assez de points de commandement.",
-      "battleOver": "La bataille est terminée : lance-en une nouvelle.",
-      "battleOngoing": "La bataille n'est pas terminée.",
       "noBase": "Tu n'as pas encore de base.",
       "tooManyBases": "Tu tiens déjà le maximum de bases.",
       "unknownBase": "Cette base n'est pas à toi.",
@@ -792,6 +840,13 @@
       "signInRequired": "Connecte-toi d'abord.",
       "apiDown": "L'API ne répond pas.",
       "notStationed": "Cet avion n'est pas posé sur un camp : il n'y a rien à rappeler.",
+      "invalidTarget": "Ce camp ne peut pas être attaqué.",
+      "campProtected": "Ce joueur vient d'arriver : son camp est protégé quelque temps.",
+      "campSpared": "Ce camp a déjà subi trois raids cette heure : il est épargné.",
+      "defenseHolds": "La défense du camp tient encore : fais d'abord des raids.",
+      "lastBase": "C'est la seule base de ce joueur : elle ne se prend pas.",
+      "buildingDestroyed": "Ce bâtiment est détruit : reconstruis-le d'abord.",
+      "buildingStanding": "Ce bâtiment n'est pas détruit.",
       "landingRequired": "Pour prendre un camp de plus, envoie-y un avion."
     }
   },

@@ -26,7 +26,6 @@ final class MissionResolver
     private const CONDITION_WEIGHT = 0.5;
     private const STRESS_LIMIT = 50;
     private const STRESS_PENALTY_PER_POINT = 0.5;
-    private const BOMBING_WIND_PENALTY_PER_KPH = 0.5;
     private const MAX_DAMAGE_PER_RISK_ON_SUCCESS = 8;
     private const MAX_DAMAGE_PER_RISK_ON_FAILURE = 25;
     private const FATIGUE_PER_MINUTE = 4;
@@ -112,15 +111,12 @@ final class MissionResolver
     }
 
     /**
-     * @return int the chance of success in percent: the strength against the difficulty, less a strong wind for a bombing, cut by a load under the need
+     * @return int the chance of success in percent: the strength against the difficulty, cut by a load under the need
      */
     private function successChance(Flight $flight, float $averageStrength): int
     {
         $mission = $flight->mission;
         $chance = self::BASE_CHANCE + $averageStrength - (self::BASE_DIFFICULTY + self::DIFFICULTY_PER_RISK * $mission->risk);
-        if ($mission->type === MissionType::Bombing) {
-            $chance -= $flight->windSpeed * self::BOMBING_WIND_PENALTY_PER_KPH;
-        }
         $chance *= $this->loadRatio($flight);
 
         return (int) round(max(self::MIN_CHANCE, min(self::MAX_CHANCE, $chance)));

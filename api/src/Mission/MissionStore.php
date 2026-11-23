@@ -37,6 +37,20 @@ final class MissionStore
     }
 
     /**
+     * Puts an attack on the books against an enemy camp, not launched yet.
+     *
+     * @return int the id of the mission
+     */
+    public function addAttack(int $baseId, Mission $mission, int $targetBaseId): int
+    {
+        $this->addOffer($baseId, $mission);
+        $missionId = (int) $this->database->fetchAll('SELECT LAST_INSERT_ID() AS id')[0]['id'];
+        $this->database->execute('INSERT INTO mission_targets (mission_id, target_base_id) VALUES (:mission_id, :target_base_id)', ['mission_id' => $missionId, 'target_base_id' => $targetBaseId]);
+
+        return $missionId;
+    }
+
+    /**
      * @return list<Mission> the missions not launched yet, the oldest first
      */
     public function offersOf(int $baseId): array
@@ -89,8 +103,10 @@ final class MissionStore
     public function flightsOf(int $baseId, int $gameSeconds): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT ' . self::MISSION_COLUMNS . ', fuel_loaded, ammunition_loaded, wind_speed, return_game_second
-             FROM missions WHERE base_id = :base_id AND return_game_second IS NOT NULL ORDER BY return_game_second, id',
+            'SELECT missions.id, type, aircraft_count, duration_seconds, fuel_per_aircraft, ammunition_per_aircraft, risk, reward_supplies, reward_command_points,
+                    fuel_loaded, ammunition_loaded, wind_speed, return_game_second, mission_targets.target_base_id AS target_base_id, target_bases.site AS target_site
+             FROM missions LEFT JOIN mission_targets ON mission_targets.mission_id = missions.id LEFT JOIN bases AS target_bases ON target_bases.id = mission_targets.target_base_id
+             WHERE missions.base_id = :base_id AND return_game_second IS NOT NULL ORDER BY return_game_second, missions.id',
             ['base_id' => $baseId],
         );
         $crewRows = $this->database->fetchAll(
@@ -114,6 +130,8 @@ final class MissionStore
                 (int) $row['wind_speed'],
                 max(0, (int) $row['return_game_second'] - $gameSeconds),
                 $crewsByMission[$mission->id] ?? [],
+                $row['target_base_id'] === null ? null : (int) $row['target_base_id'],
+                $row['target_site'] === null ? null : (string) $row['target_site'],
             );
         }
 
@@ -151,6 +169,14 @@ final class MissionStore
     public function remove(int $missionId): void
     {
         $this->database->execute('DELETE FROM missions WHERE id = :id', ['id' => $missionId]);
+    }
+
+    /**
+     * Takes every mission of a base off the books, those on the table and those under way, with their crews.
+     */
+    public function removeAllOf(int $baseId): void
+    {
+        $this->database->execute('DELETE FROM missions WHERE base_id = :base_id', ['base_id' => $baseId]);
     }
 
     /**

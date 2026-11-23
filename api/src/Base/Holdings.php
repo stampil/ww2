@@ -6,6 +6,7 @@ namespace Ww2\Base;
 
 use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
+use Ww2\Mission\MissionStore;
 use Ww2\Squadron\SquadronStore;
 use Ww2\World\Bases;
 
@@ -23,7 +24,30 @@ final class Holdings
         private readonly StationingStore $stationings,
         private readonly GameClockStore $clocks,
         private readonly EventLog $events,
+        private readonly Garrison $garrison,
+        private readonly MissionStore $missions,
     ) {
+    }
+
+    /**
+     * Takes a camp from its holder by force, for the player whose aircraft has landed on it: the aircraft on the camp are lost and its missions with them, those of the holder that are away go home,
+     * and the camp keeps its stores, its pilots and its buildings, which are the new holder's. The caller holds the transaction.
+     */
+    public function seize(int $campId, int $captorId, Stationing $landing, int $gameSeconds): void
+    {
+        $holderId = $this->bases->lockedHolderIdOf($campId);
+        foreach ($this->garrison->atCamp($campId, $gameSeconds) as $aircraftId) {
+            $this->squadrons->removeAircraft($aircraftId);
+        }
+        $this->missions->removeAllOf($campId);
+        $this->stationings->sendGuestsHome($campId);
+        if ($holderId !== null) {
+            $this->giveUp($campId, $holderId, ['capturedBy' => $this->bases->holderNameOf($landing->originBaseId)]);
+        }
+        $this->bases->assign($campId, $captorId);
+        $this->baseFounder->foundEmpty($campId);
+        $this->stationings->add($landing);
+        $this->events->record($landing->originBaseId, ['kind' => 'campTaken', 'site' => $this->bases->siteOf($campId)->value]);
     }
 
     /**
@@ -128,8 +152,10 @@ final class Holdings
 
     /**
      * Lets a camp go: its aircraft that are away, and their pilots, belong to the first base of the player from now, and the camp is free. Its pilots at home, stores and buildings stay with it.
+     *
+     * @param array<string, mixed> $details what the journal says besides that the camp is lost
      */
-    private function giveUp(int $campId, int $holderId): void
+    private function giveUp(int $campId, int $holderId, array $details = []): void
     {
         $homeId = $this->bases->idOf($holderId);
         foreach ($this->stationings->involving($campId) as $stationing) {
@@ -140,6 +166,6 @@ final class Holdings
             }
         }
         $this->bases->release($campId);
-        $this->events->record($homeId, ['kind' => 'campLost', 'site' => $this->bases->siteOf($campId)->value]);
+        $this->events->record($homeId, ['kind' => 'campLost', 'site' => $this->bases->siteOf($campId)->value] + $details);
     }
 }

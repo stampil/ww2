@@ -4,6 +4,7 @@ import { assetUrl } from '../assetUrl'
 import { findPath } from '../plans/pathfinding'
 import type { PathStep } from '../plans/pathfinding'
 import type { BuildingName, Cell, TerrainPlan } from '../plans/terrainPlan'
+import Firefighters from './Firefighters'
 
 const MILLISECONDS_PER_COST = 220
 const PERCENT = 100
@@ -53,6 +54,8 @@ type Props = {
   /** How long it stays at the aircraft, when that is a fixed time; otherwise it stays while `isStaying` is true. */
   stayMilliseconds?: number
   isStaying: boolean
+  /** Whether firefighters get off it and fight the fire while `isStaying`; the vehicle leaves once they are back on. */
+  hasFirefighters?: boolean
   onGone: () => void
 }
 
@@ -60,7 +63,7 @@ type Props = {
  * A vehicle of the base that drives from its depot to an aircraft along the cheapest path of the terrain, stays there, then drives back: the fire engine to an aircraft
  * that burns, the fuel truck to one that has landed. It only shows the work; the times are the server's.
  */
-function ServiceVehicle({ plan, kind, depot, stand, lengthTiles, delayMilliseconds, stayMilliseconds, isStaying, onGone }: Props) {
+function ServiceVehicle({ plan, kind, depot, stand, lengthTiles, delayMilliseconds, stayMilliseconds, isStaying, hasFirefighters = false, onGone }: Props) {
   const ref = useRef<HTMLSpanElement>(null)
   const isReduced = useMemo(() => window.matchMedia(REDUCED_MOTION_QUERY).matches, [])
   const [phase, setPhase] = useState<Phase>('out')
@@ -78,7 +81,7 @@ function ServiceVehicle({ plan, kind, depot, stand, lengthTiles, delayMillisecon
   }, [isReduced])
 
   useEffect(() => {
-    if (phase !== 'staying') {
+    if (phase !== 'staying' || hasFirefighters) {
       return
     }
     if (stayMilliseconds === undefined) {
@@ -89,7 +92,7 @@ function ServiceVehicle({ plan, kind, depot, stand, lengthTiles, delayMillisecon
     }
     const timer = setTimeout(() => setPhase('back'), stayMilliseconds)
     return () => clearTimeout(timer)
-  }, [phase, isStaying, stayMilliseconds])
+  }, [phase, isStaying, stayMilliseconds, hasFirefighters])
 
   useEffect(() => {
     if (phase === 'staying' || isReduced) {
@@ -131,18 +134,23 @@ function ServiceVehicle({ plan, kind, depot, stand, lengthTiles, delayMillisecon
   const shown = phase === 'out' ? way[0] : stop
 
   return (
-    <span
-      ref={ref}
-      className="service-vehicle"
-      data-kind={kind}
-      aria-hidden="true"
-      style={{
-        '--length': lengthTiles,
-        backgroundImage: `url(${assetUrl(`sprites/vehicles/${kind}.png`)})`,
-        left: `${(shown.x / columns) * PERCENT}%`,
-        top: `${(shown.y / rows) * PERCENT}%`,
-      } as CSSProperties}
-    />
+    <>
+      <span
+        ref={ref}
+        className="service-vehicle"
+        data-kind={kind}
+        aria-hidden="true"
+        style={
+          {
+            '--length': lengthTiles,
+            backgroundImage: `url(${assetUrl(`sprites/vehicles/${kind}.png`)})`,
+            left: `${(shown.x / columns) * PERCENT}%`,
+            top: `${(shown.y / rows) * PERCENT}%`,
+          } as CSSProperties
+        }
+      />
+      {phase === 'staying' && hasFirefighters && <Firefighters plan={plan} stand={stand} engine={stop} isFighting={isStaying} onBack={() => setPhase('back')} />}
+    </>
   )
 }
 

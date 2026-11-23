@@ -65,6 +65,7 @@ function ServiceVehicles({ plan, parkedAircraft, burningAircraftIds, refuelingAi
       delayMilliseconds={visit.delayMilliseconds}
       stayMilliseconds={visit.kind === 'fuel-truck' ? FUEL_STAY_MILLISECONDS : undefined}
       isStaying={visit.kind === 'fire-engine' && burningAircraftIds.includes(visit.aircraftId)}
+      hasFirefighters={visit.kind === 'fire-engine'}
       onGone={() => removeVisit(visit)}
     />
   ))

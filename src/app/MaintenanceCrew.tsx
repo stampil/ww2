@@ -3,35 +3,22 @@ import { assetUrl } from '../assetUrl'
 import { findPath } from '../plans/pathfinding'
 import type { PathStep } from '../plans/pathfinding'
 import type { BuildingName, Cell, TerrainPlan } from '../plans/terrainPlan'
+import { ROW_SHARE, WORK_ROW, walkingPose } from './crewPose'
+import type { CrewPose } from './crewPose'
 
 const MILLISECONDS_PER_COST = 350
 const PERCENT = 100
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 const SHEET_URL = assetUrl('sprites/crew/mechanic.png')
-// The sheet has four rows of four frames: the walk toward the viewer, to the right, away from the viewer, and the repair on one knee.
-const FRAME_ROWS = 4
-const ROW_SHARE = PERCENT / (FRAME_ROWS - 1)
-const WALK_ROWS = { down: 0, right: 1, up: 2 }
 // The mechanic kneels left of the aircraft, a little below the middle of the stand, facing it as he looks to the right; his feet are the point that moves.
 const WORK_OFFSET = { column: -0.45, row: 0.2 }
 const FEET_OFFSET_ROWS = 0.35
 
-type Pose = { row: number; isFlipped: boolean }
 type Phase = 'out' | 'working' | 'back'
 
 function buildingCell(plan: TerrainPlan, building: BuildingName): Cell {
   const sprite = plan.sprites.find((candidate) => candidate.building === building)!
   return { row: sprite.row, column: sprite.column }
-}
-
-/** The pose for walking from one point to the next: which row of the sheet, and whether it is the right-hand walk turned round. */
-function walkingPose(from: { x: number; y: number }, to: { x: number; y: number }): Pose {
-  const deltaX = to.x - from.x
-  const deltaY = to.y - from.y
-  if (Math.abs(deltaY) >= Math.abs(deltaX)) {
-    return { row: deltaY >= 0 ? WALK_ROWS.down : WALK_ROWS.up, isFlipped: false }
-  }
-  return { row: WALK_ROWS.right, isFlipped: deltaX < 0 }
 }
 
 /** The points of the way from the workshop to the stand, in tiles from the north-west corner of the map, ending where the mechanic works. */
@@ -91,7 +78,7 @@ function MaintenanceCrew({ plan, stand, delayMilliseconds, isWorking, onGone }: 
     const totalCost = points[points.length - 1].cost
     const offsets = points.map((point) => point.cost / totalCost)
     const timing = { duration: totalCost * MILLISECONDS_PER_COST, delay: phase === 'out' ? delayMilliseconds : 0, fill: 'both' as const }
-    const poses: Pose[] = []
+    const poses: CrewPose[] = []
     for (let index = 0; index < points.length; index += 1) {
       const isLast = index === points.length - 1
       poses.push(walkingPose(isLast ? points[index - 1] : points[index], isLast ? points[index] : points[index + 1]))
@@ -129,7 +116,7 @@ function MaintenanceCrew({ plan, stand, delayMilliseconds, isWorking, onGone }: 
         backgroundImage: `url(${SHEET_URL})`,
         left: `${((phase === 'working' ? work : start).x / columns) * PERCENT}%`,
         top: `${((phase === 'working' ? work : start).y / rows) * PERCENT}%`,
-        backgroundPositionY: phase === 'working' ? `${3 * ROW_SHARE}%` : undefined,
+        backgroundPositionY: phase === 'working' ? `${WORK_ROW * ROW_SHARE}%` : undefined,
         scale: '1 1',
       }}
     />

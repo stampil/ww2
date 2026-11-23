@@ -878,6 +878,11 @@ button.base-sprite {
   translate: -50% -100%;
   pointer-events: none;
 
+  // The sheet of the firefighters has wider frames, for the hose.
+  &[data-sheet='firefighter'] {
+    aspect-ratio: 165 / 140;
+  }
+
   &[data-pose='walk'] {
     animation: crew-frames 0.45s steps(4) infinite;
   }

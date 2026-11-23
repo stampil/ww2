@@ -4,6 +4,7 @@ import { formatDuration } from './formatDuration'
 import type { BusyCrews } from './flights'
 import Icon from './Icon'
 import MissionBriefing from './MissionBriefing'
+import MissionPicture from './MissionPicture'
 import Pane from './Pane'
 import type { Base, Offer, Squadron } from './useBase'
 
@@ -34,9 +35,7 @@ function MissionBoard({ weather, offers, squadron, busy, onLaunch }: Props) {
           {offers.map((offer) => (
             <li key={offer.id} className="card">
               <div className="card-head">
-                <span className="portrait" aria-hidden="true">
-                  <Icon name={offer.type} />
-                </span>
+                <MissionPicture type={offer.type} />
                 <div>
                   <strong>{t(`base.mission.types.${offer.type}`)}</strong>
                   <span>{t('base.mission.aircraftCount', { count: offer.aircraftCount })}</span>

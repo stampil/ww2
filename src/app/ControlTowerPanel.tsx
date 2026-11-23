@@ -7,6 +7,7 @@ import GiveTo from './GiveTo'
 import Icon from './Icon'
 import MissionBoard from './MissionBoard'
 import Pane from './Pane'
+import PilotPortrait from './PilotPortrait'
 import type { AwayAircraft, Base, Flight, Offer, Recipient, Rest, Squadron } from './useBase'
 
 const GAUGE_MAX = 100
@@ -61,9 +62,7 @@ function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, re
             return (
               <li key={pilot.id} className="card">
                 <div className="card-head">
-                  <span className="portrait" aria-hidden="true">
-                    <Icon name="pilot" />
-                  </span>
+                  <PilotPortrait pilotId={pilot.id} />
                   <div>
                     <strong>{pilot.name}</strong>
                     <span>

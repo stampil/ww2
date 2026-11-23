@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import Gauge from './Gauge'
 import Icon from './Icon'
+import GoodsPicture from './GoodsPicture'
 import Pane from './Pane'
 import type { Base, Stock, UpgradeInfo, UpgradeName } from './useBase'
 import UpgradeCard from './UpgradeCard'
@@ -29,9 +30,7 @@ function WarehousePanel({ resources, warehouse, income, onBuy, upgrade, onUpgrad
         {STOCKS.map((stock) => (
           <li key={stock} className="card">
             <div className="card-head">
-              <span className="portrait" aria-hidden="true">
-                <Icon name={stock} />
-              </span>
+              <GoodsPicture name={stock} />
               <div>
                 <strong>{t(`base.resources.${stock}`)}</strong>
                 <span>{t('base.stored', { stored: resources[stock], capacity: warehouse.capacity })}</span>

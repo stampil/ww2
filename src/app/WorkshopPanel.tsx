@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from './formatDuration'
 import Icon from './Icon'
+import GoodsPicture from './GoodsPicture'
 import Pane from './Pane'
 import type { Base, Part, UpgradeInfo, UpgradeName } from './useBase'
 import UpgradeCard from './UpgradeCard'
@@ -31,9 +32,7 @@ function WorkshopPanel({ workshop, jobs, onProduce, onAssemble, upgrade, command
           {workshop.parts.map((part) => (
             <li key={part.part} className="card">
               <div className="card-head">
-                <span className="portrait" aria-hidden="true">
-                  <Icon name={part.part} />
-                </span>
+                <GoodsPicture name={part.part} />
                 <div>
                   <strong>{t(`base.parts.${part.part}`)}</strong>
                   <span>{t('base.ready', { count: workshop.readyParts[part.part] })}</span>

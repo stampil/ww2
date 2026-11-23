@@ -7,6 +7,7 @@ import type { Arrival, Departure, Emergence } from './AirfieldView'
 import Icon from './Icon'
 import type { IconName } from './iconPaths'
 import MaintenanceCrews from './MaintenanceCrews'
+import ServiceVehicles from './ServiceVehicles'
 import type { BuildingName, Cell, PlacedSprite, TerrainPlan } from '../plans/terrainPlan'
 import type { Livery } from '../three/liveries'
 import { paintTiles } from '../three/patchImage'
@@ -29,6 +30,10 @@ type Props = {
   plan: TerrainPlan
   /** The aircraft being inspected or repaired: a mechanic walks to the hangar for each. */
   servicedAircraftIds: number[]
+  /** The aircraft that burn, and those that have just landed: a fire engine or a fuel truck drives to each from the depot; the fuel truck says when it is done. */
+  burningAircraftIds: number[]
+  refuelingAircraftIds: number[]
+  onRefueled: (aircraftId: number) => void
   /** The aircraft on the ground, each at its stand, and their picture seen from above, once it is drawn. */
   parkedAircraft: ParkedAircraft[]
   aircraftSprite: string | null
@@ -60,7 +65,7 @@ function standPlacement(stand: Cell): CSSProperties {
 }
 
 /** The base seen from above, tilted a little: the tiles of its terrain plan, the sprites standing on them, the aircraft parked, taking off or landing, the mechanics at work and the alerts; a click on a building opens it. */
-function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, departures, onDeparted, arrivals, emergences, onLanded, alerts, destroyedBuildings, openBuilding, onSelect }: Props) {
+function BaseMap({ plan, servicedAircraftIds, burningAircraftIds, refuelingAircraftIds, onRefueled, parkedAircraft, aircraftSprite, departures, onDeparted, arrivals, emergences, onLanded, alerts, destroyedBuildings, openBuilding, onSelect }: Props) {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isCameraAway, setIsCameraAway] = useState(false)
@@ -155,6 +160,7 @@ function BaseMap({ plan, servicedAircraftIds, parkedAircraft, aircraftSprite, de
             )
           })}
           <MaintenanceCrews plan={plan} servicedAircraftIds={servicedAircraftIds} parkedAircraft={parkedAircraft} />
+          <ServiceVehicles plan={plan} parkedAircraft={parkedAircraft} burningAircraftIds={burningAircraftIds} refuelingAircraftIds={refuelingAircraftIds} onRefueled={onRefueled} />
         </div>
       </div>
     </div>

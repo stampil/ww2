@@ -387,6 +387,7 @@ button.base-sprite {
   .map-aircraft,
   .map-alert,
   .crew-member,
+  .service-vehicle,
   button.base-sprite {
     visibility: hidden;
   }
@@ -847,6 +848,26 @@ button.base-sprite {
 
 // A mechanic: one frame of his sheet (four columns of frames, four rows), the point where he stands being his feet; the walk and the repair
 // play the four frames of a row one after the other. The row, and the flip of the right-hand walk to walk to the left, are set by his animation.
+// A vehicle of the base, drawn from above with its cab at the top: the map turns it to the way it drives.
+.service-vehicle {
+  position: absolute;
+  z-index: 3;
+  height: calc(var(--length) / var(--rows) * 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  translate: -50% -50%;
+  pointer-events: none;
+
+  &[data-kind='fuel-truck'] {
+    aspect-ratio: 200 / 479;
+  }
+
+  &[data-kind='fire-engine'] {
+    aspect-ratio: 200 / 539;
+  }
+}
+
 .crew-member {
   position: absolute;
   z-index: 3;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TERRAIN_PLANS } from '../plans/terrainPlan'
@@ -103,6 +103,8 @@ function BaseScreen({ player }: { player: Player }) {
   const [departures, setDepartures] = useState<Departure[]>([])
   const [landingIds, setLandingIds] = useState<number[]>([])
   const [emergingIds, setEmergingIds] = useState<number[]>([])
+  const [refuelingIds, setRefuelingIds] = useState<number[]>([])
+  const landingIdsRef = useRef<number[]>([])
   const [guideStatus, setGuideStatus] = useGuideStatus(player.id)
   const [isConfirmingReset, setIsConfirmingReset] = useState(false)
   const [isJournalOpen, setIsJournalOpen] = useState(false)
@@ -110,7 +112,14 @@ function BaseScreen({ player }: { player: Player }) {
   const removeDeparture = useCallback((aircraftId: number) => {
     setDepartures((current) => current.filter((departure) => departure.aircraftId !== aircraftId))
   }, [])
+  landingIdsRef.current = landingIds
+  const removeRefueling = useCallback((aircraftId: number) => {
+    setRefuelingIds((current) => current.filter((refuelingId) => refuelingId !== aircraftId))
+  }, [])
   const removeLanding = useCallback((aircraftId: number) => {
+    if (landingIdsRef.current.includes(aircraftId)) {
+      setRefuelingIds((current) => [...current, aircraftId])
+    }
     setLandingIds((current) => current.filter((landingId) => landingId !== aircraftId))
     setEmergingIds((current) => current.filter((emergingId) => emergingId !== aircraftId))
   }, [])
@@ -227,6 +236,7 @@ function BaseScreen({ player }: { player: Player }) {
   const unavailable = unavailableCrews(busy, rests, hangarAircraft)
   const upgradeOf = (building: UpgradeName) => base.upgrades.find((candidate) => candidate.upgrade === building)!
   const servicedAircraftIds = hangarAircraft.filter((state) => state.inspectionSeconds !== null || state.repairSeconds !== null).map((state) => state.aircraftId)
+  const burningAircraftIds = hangarAircraft.filter((state) => state.fireSeconds !== null).map((state) => state.aircraftId)
 
   const parkedAircraft: ParkedAircraft[] = []
   const arrivals: Arrival[] = []
@@ -299,6 +309,9 @@ function BaseScreen({ player }: { player: Player }) {
             emergences={emergences}
             onLanded={removeLanding}
             alerts={alerts}
+            burningAircraftIds={burningAircraftIds}
+            refuelingAircraftIds={refuelingIds}
+            onRefueled={removeRefueling}
             destroyedBuildings={destroyedBuildings}
             openBuilding={openBuilding}
             onSelect={setOpenBuilding}

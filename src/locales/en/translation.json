@@ -253,7 +253,7 @@
     },
     "receive": {
       "title": "Step 3: the return",
-      "text": "The squadron is back: open the control tower and receive it, to read the report and collect the rewards."
+      "text": "The squadron is back: open the control tower and authorize it to land, to read the report and collect the rewards."
     },
     "maintenance": {
       "title": "Step 4: the aircraft is damaged",
@@ -747,7 +747,7 @@
       "against": "{{type}} on {{site}}",
       "loaded": "{{fuel}} fuel and {{ammunition}} ammunition per aircraft",
       "landed": "Finished",
-      "receive": "Receive the squadron",
+      "receive": "Authorize landing",
       "inFlight": "In flight"
     },
     "resources": {

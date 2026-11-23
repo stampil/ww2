@@ -253,7 +253,7 @@
     },
     "receive": {
       "title": "Étape 3 : le retour",
-      "text": "L'escadrille est rentrée : ouvre la tour de contrôle et reçois-la, pour lire le rapport et toucher les gains."
+      "text": "L'escadrille est rentrée : ouvre la tour de contrôle et autorise-la à atterrir, pour lire le rapport et toucher les gains."
     },
     "maintenance": {
       "title": "Étape 4 : l'avion est abîmé",
@@ -747,7 +747,7 @@
       "against": "{{type}} sur {{site}}",
       "loaded": "{{fuel}} de carburant et {{ammunition}} de munitions par avion",
       "landed": "Terminée",
-      "receive": "Accueillir l'escadrille",
+      "receive": "Autoriser à atterrir",
       "inFlight": "En vol"
     },
     "resources": {

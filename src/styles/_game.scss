@@ -1269,10 +1269,6 @@ button.base-sprite {
 
   &[data-free='false'] {
     cursor: default;
-
-    img {
-      filter: grayscale(1) opacity(0.55);
-    }
   }
 
   &[data-ally='true'] img {

@@ -11,7 +11,7 @@ import {
   VEHICLE_KIND_NAMES,
   VEHICLE_STATES,
 } from './GroundRunScene'
-import type { RunOutcome, TargetKind } from './GroundRunScene'
+import type { RunOutcome, TargetKind, TargetNationality } from './GroundRunScene'
 import type { Livery } from './liveries'
 import { SeededRandom } from './SeededRandom'
 
@@ -65,7 +65,7 @@ const ZONE_COLOR = 0xffd24a
 const ZONE_OPACITY = { idle: 0.14, firing: 0.38 }
 
 /**
- * A strafing run over a German convoy, as in Wings: it comes the other way along the road, each vehicle a sprite that goes from intact to damaged to destroyed as the guns,
+ * A strafing run over an enemy convoy, German or French, as in Wings: it comes the other way along the road, each vehicle a sprite that goes from intact to damaged to destroyed as the guns,
  * which fire by themselves at what is in front of the aircraft, hit it. The player only steers to one side or the other.
  */
 export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
@@ -78,8 +78,16 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
   private tracerSeconds = 0
   private isFiring = false
 
-  constructor(container: HTMLElement, seed: number, shadowImage: string, livery: Livery, onStatus: (status: StrafeStatus) => void, onEnd: (outcome: RunOutcome) => void) {
-    super(container, seed, shadowImage, livery, onStatus, onEnd)
+  constructor(
+    container: HTMLElement,
+    seed: number,
+    shadowImage: string,
+    livery: Livery,
+    nationality: TargetNationality,
+    onStatus: (status: StrafeStatus) => void,
+    onEnd: (outcome: RunOutcome) => void,
+  ) {
+    super(container, seed, shadowImage, livery, nationality, onStatus, onEnd)
     this.zone = this.createZone()
     this.createTracers()
     void this.createConvoy(seed)

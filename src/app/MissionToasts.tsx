@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { dueAlerts, isAlertStarted } from './flights'
 import Icon from './Icon'
-import type { Flight, FlightAlert, Squadron } from './useBase'
+import { TARGET_NATIONALITIES } from './targetNationality'
+import type { Clan, Flight, FlightAlert, Squadron } from './useBase'
 
 type Props = {
+  clan: Clan
   flights: Flight[]
   squadron: Squadron
   /** Opens the mini-game of an alert. */
@@ -22,9 +24,10 @@ function namespaceOf(alert: FlightAlert, flight: Flight): 'duel' | 'strafe' | 'p
 }
 
 /** The calls of the flights in the air, as toasts over the game: one for each mini-game that waits for the player, which a click opens. */
-function MissionToasts({ flights, squadron, onOpen }: Props) {
+function MissionToasts({ clan, flights, squadron, onOpen }: Props) {
   const { t } = useTranslation()
   const due = dueAlerts(flights)
+  const nationality = t(`strafe.nationalities.${TARGET_NATIONALITIES[clan]}`)
 
   if (due.length === 0) {
     return null
@@ -40,7 +43,7 @@ function MissionToasts({ flights, squadron, onOpen }: Props) {
         return (
           <button key={alert.id} type="button" className="mission-toast" onClick={() => onOpen(alert.id)}>
             <Icon name="warning" />
-            <span>{t(isStarted ? `${namespace}.toastResume` : `${namespace}.toast`, { pilot: pilot.name })}</span>
+            <span>{t(isStarted ? `${namespace}.toastResume` : `${namespace}.toast`, { pilot: pilot.name, nationality })}</span>
             <strong>{t(isStarted ? 'duel.resume' : `${namespace}.take`)}</strong>
           </button>
         )

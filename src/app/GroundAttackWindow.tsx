@@ -3,11 +3,12 @@ import { GroundAttackScene, STRAFE_REQUIRED_DESTROYED, STRAFE_VEHICLE_COUNT } fr
 import type { StrafeStatus } from '../three/GroundAttackScene'
 import GroundRunWindow from './GroundRunWindow'
 import type { GroundRunProps } from './GroundRunWindow'
+import { TARGET_NATIONALITIES } from './targetNationality'
 
 const SECONDS_PER_MINUTE = 60
 const HINT_VALUES = { required: STRAFE_REQUIRED_DESTROYED, total: STRAFE_VEHICLE_COUNT }
 
-/** A strafing run over a German convoy: the guns of the D.520 fire by themselves at what is ahead, and the player steers. */
+/** A strafing run over an enemy convoy, German or French: the guns of the D.520 fire by themselves at what is ahead, and the player steers. */
 function GroundAttackWindow(props: GroundRunProps) {
   const { t } = useTranslation()
 
@@ -15,8 +16,8 @@ function GroundAttackWindow(props: GroundRunProps) {
     <GroundRunWindow<StrafeStatus>
       {...props}
       namespace="strafe"
-      hintValues={HINT_VALUES}
-      createScene={(view, seed, shadowImage, livery, onStatus, onEnd) => new GroundAttackScene(view, seed, shadowImage, livery, onStatus, onEnd)}
+      hintValues={{ ...HINT_VALUES, nationality: t(`strafe.nationalities.${TARGET_NATIONALITIES[props.clan]}`) }}
+      createScene={(view, seed, shadowImage, livery, nationality, onStatus, onEnd) => new GroundAttackScene(view, seed, shadowImage, livery, nationality, onStatus, onEnd)}
       renderStatus={(status) => {
         const secondsLeft = Math.ceil(status.secondsLeft)
         return (

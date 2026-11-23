@@ -5,8 +5,8 @@ import { LiveryTextures } from './liveries'
 import type { Livery } from './liveries'
 import { CAMERA_FIELD_OF_VIEW_DEGREES, OrbitViewScene } from './OrbitViewScene'
 import type { OrbitView } from './OrbitViewScene'
-import { createStaticEnemy } from './StaticEnemy'
-import type { EnemyBody } from './StaticEnemy'
+import { createPictureEnemy, createStaticEnemy } from './StaticEnemy'
+import type { EnemyBody, StaticEnemy } from './StaticEnemy'
 import { TileGround } from './TileGround'
 
 /** Where an aircraft stands on the grid of a dogfight, and which way it points: 0 north, 1 east, 2 south, 3 west. */
@@ -44,7 +44,21 @@ const BOMBER_SPAN_CELLS = 1.4
 const FLYING = { engine: 1, gearRetraction: 1, flaps: 0, wheels: 0, aileron: 0, rudder: 0, elevator: 0 }
 
 /** The enemy bombers the player can meet on the grid. */
-export type DuelBomber = 'he111' | 'ju87'
+export type DuelBomber = 'he111' | 'ju87' | 'amiot143' | 'leo451'
+
+/** The bombers that are a picture seen from above instead of a 3D model, with their wingspan in meters. */
+const PICTURE_BOMBERS: Partial<Record<DuelBomber, { picture: string; spanMeters: number }>> = {
+  amiot143: { picture: 'sprites/bombers/amiot-143.png', spanMeters: 24.53 },
+  leo451: { picture: 'sprites/bombers/leo-451.png', spanMeters: 22.52 },
+}
+
+function createBomber(bomber: DuelBomber): Promise<StaticEnemy> {
+  const pictureBomber = PICTURE_BOMBERS[bomber]
+  if (pictureBomber === undefined) {
+    return createStaticEnemy(bomber)
+  }
+  return createPictureEnemy(pictureBomber.picture, pictureBomber.spanMeters)
+}
 
 /** The view from straight above, far enough for the whole grid to fill it. */
 function viewFor(arenaSize: number): OrbitView {
@@ -98,7 +112,7 @@ export class DogfightScene extends OrbitViewScene {
     this.addCone()
     this.player.object.scale.setScalar(CELL_METERS / this.player.spanMeters)
     this.scene.add(this.player.object, this.enemyRoot)
-    void createStaticEnemy(bomber).then((enemy) => {
+    void createBomber(bomber).then((enemy) => {
       enemy.object.scale.setScalar((CELL_METERS * BOMBER_SPAN_CELLS) / enemy.spanMeters)
       this.enemyRoot.add(enemy.object)
       this.enemy = enemy

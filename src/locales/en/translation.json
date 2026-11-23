@@ -93,7 +93,9 @@
     "hint": "You attack a {{enemy}} from behind. Play your {{moves}} moves: after the last one, the bomber is shot down if it is in your red firing cone, else it gets away.",
     "enemies": {
       "he111": "Heinkel He 111",
-      "ju87": "Junkers Ju 87"
+      "ju87": "Junkers Ju 87",
+      "amiot143": "Amiot 143",
+      "leo451": "LeO 451"
     },
     "turn": "Move {{turn}} of {{moves}}",
     "maneuvers": {
@@ -116,9 +118,13 @@
   },
   "strafe": {
     "title": "Ground attack",
-    "hint": "You strafe a German convoy that drives toward you: get on its lane, and your aircraft fires by itself at what is ahead. Destroy {{required}} of {{total}} before it has gone by. Spare the Red Cross ambulance: destroying it fails the attack.",
+    "hint": "You strafe a {{nationality}} convoy that drives toward you: get on its lane, and your aircraft fires by itself at what is ahead. Destroy {{required}} of {{total}} before it has gone by. Spare the Red Cross ambulance: destroying it fails the attack.",
     "controls": "Steer with the left and right arrow keys, or with the stick under the view.",
-    "toast": "A German convoy on the road: {{pilot}} can strafe it.",
+    "toast": "A {{nationality}} convoy on the road: {{pilot}} can strafe it.",
+    "nationalities": {
+      "german": "German",
+      "french": "French"
+    },
     "toastResume": "Attack under way: {{pilot}}.",
     "take": "Attack",
     "destroyed": "Destroyed: {{count}} of {{total}} ({{required}} to succeed)",

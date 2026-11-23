@@ -287,7 +287,7 @@ function BaseScreen({ player }: { player: Player }) {
         </div>
       </div>
 
-      <MissionToasts flights={flights} squadron={base.squadron} onOpen={setDuelAlertId} />
+      <MissionToasts clan={base.clan} flights={flights} squadron={base.squadron} onOpen={setDuelAlertId} />
       {openBuilding === null && guide}
       {openBuilding === null && errorMessage}
 
@@ -370,6 +370,7 @@ function BaseScreen({ player }: { player: Player }) {
       {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'dogfight' && (
         <DogfightWindow
           alert={duel.alert}
+          clan={base.clan}
           livery={duelCrew.aircraft.livery}
           onStart={(alertId) => order(startAlert(alertId))}
           onPlay={(alertId, maneuver) => order(playAlert(alertId, maneuver))}
@@ -379,6 +380,7 @@ function BaseScreen({ player }: { player: Player }) {
       {MissionWindow !== undefined && duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
         <MissionWindow
           alert={duel.alert}
+          clan={base.clan}
           livery={duelCrew.aircraft.livery}
           onStart={(alertId) => order(startAlert(alertId))}
           onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}

@@ -5,7 +5,8 @@ import { FRANCE_MAP, sitePlace } from '../plans/franceMap'
 import type { SiteChoice } from './useSites'
 
 const MAP_URL = assetUrl('maps/carte-france.jpg')
-const CAMP_URL = assetUrl('sprites/camps/camp-free.png')
+const FREE_CAMP_URL = assetUrl('sprites/camps/camp-free.png')
+const HELD_CAMP_URL = assetUrl('sprites/camps/camp-held.png')
 const PERCENT = 100
 
 type Props = {
@@ -22,7 +23,7 @@ type Props = {
   ownClan?: string
 }
 
-/** The map of France with a camp on each site: a free one can be picked, and a taken one too where asked; a taken one is greyed unless an ally holds it. On a phone the map is wider than the screen and slides sideways, from the camps. */
+/** The map of France with a camp on each site: a free one can be picked, and a taken one too where asked; a taken one has its own picture, with a green glow when an ally holds it. On a phone the map is wider than the screen and slides sideways, from the camps. */
 function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites = [], ownClan }: Props) {
   const { t } = useTranslation()
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -58,7 +59,7 @@ function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites 
               style={{ left: `${left}%`, top: `${top}%` }}
               onClick={onSelect === undefined ? undefined : () => onSelect(site)}
             >
-              <img src={CAMP_URL} alt="" />
+              <img src={free ? FREE_CAMP_URL : HELD_CAMP_URL} alt="" />
               <span aria-hidden="true">{t(`world.site.${site}`)}</span>
             </button>
           )

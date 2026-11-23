@@ -15,6 +15,8 @@ export type RunOutcome = 'won' | 'escaped'
 export type VehicleKind = 'truck' | 'tanker' | 'armored-car' | 'light-tank' | 'motorcycle'
 /** What a run can show on the ground: the vehicles of a convoy, an ambulance of the Red Cross, and a fuel dump and a tent beside the road. */
 export type TargetKind = VehicleKind | 'ambulance' | 'barrels' | 'tent'
+/** Whose vehicles stand on the ground: the Allies attack German convoys, the Axe French ones. */
+export type TargetNationality = 'german' | 'french'
 
 export const VEHICLE_STATES = ['intact', 'damaged', 'destroyed'] as const
 export type VehicleState = (typeof VEHICLE_STATES)[number]
@@ -36,7 +38,10 @@ export const ROAD_LIFT_METERS = 0.02
 export const PASSED_BEHIND_METERS = 10
 
 const DEGREES = Math.PI / 180
-const SPRITES_PATH = 'sprites/convoy/'
+const GERMAN_SPRITES_PATH = 'sprites/convoy/'
+const SPRITES_PATHS: Record<TargetNationality, string> = { german: GERMAN_SPRITES_PATH, french: 'sprites/convoy-french/' }
+// The fuel dump and the tent belong to no army: their pictures are in the folder of the German ones, the first drawn.
+const NEUTRAL_KINDS: TargetKind[] = ['barrels', 'tent']
 // The sprites are drawn for a camera 35 degrees above the ground, turned a half of a right angle, which the camera of the scene has too.
 const CAMERA_ELEVATION = 35 * DEGREES
 const VIEW_DIRECTION = new THREE.Vector3(-Math.SQRT1_2 * Math.cos(CAMERA_ELEVATION), Math.SQRT1_2 * Math.cos(CAMERA_ELEVATION), -Math.sin(CAMERA_ELEVATION))
@@ -134,6 +139,7 @@ export abstract class GroundRunScene<Status> {
     seed: number,
     shadowImage: string,
     livery: Livery,
+    private readonly nationality: TargetNationality,
     private readonly onStatus: (status: Status) => void,
     private readonly onEnd: (outcome: RunOutcome) => void,
   ) {
@@ -209,14 +215,21 @@ export abstract class GroundRunScene<Status> {
   protected async loadSprites(): Promise<void> {
     const loader = new THREE.TextureLoader()
     const kinds = Object.keys(TARGET_WIDTH_METERS) as TargetKind[]
-    const names = kinds.flatMap((kind) => VEHICLE_STATES.map((state) => `${kind}-${state}`))
+    const sprites = kinds.flatMap((kind) => VEHICLE_STATES.map((state) => ({ name: `${kind}-${state}`, path: this.spritesPathOf(kind) })))
     await Promise.all(
-      names.map(async (name) => {
-        const texture = await loader.loadAsync(assetUrl(`${SPRITES_PATH}${name}.png`))
+      sprites.map(async ({ name, path }) => {
+        const texture = await loader.loadAsync(assetUrl(`${path}${name}.png`))
         texture.colorSpace = THREE.SRGBColorSpace
         this.textures.set(name, texture)
       }),
     )
+  }
+
+  private spritesPathOf(kind: TargetKind): string {
+    if (NEUTRAL_KINDS.includes(kind)) {
+      return GERMAN_SPRITES_PATH
+    }
+    return SPRITES_PATHS[this.nationality]
   }
 
   /** Puts the picture of the target, for its state, on the ground where it stands. */

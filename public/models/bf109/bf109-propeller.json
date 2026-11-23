@@ -1,0 +1,86 @@
+{
+ "license": "GPL-2.0",
+ "source": "FlightGear FGAddon, Aircraft/bf109 (propeller vdm.ac), Detlef Faber and Marco Sch\u00fcle, converted by tools/convert-ac3d.py",
+ "materials": [
+  {
+   "name": "DefaultWhite",
+   "opacity": 1.0,
+   "texture": "VDM.png"
+  },
+  {
+   "name": "DefaultWhite.005",
+   "opacity": 1.0,
+   "texture": "VDM.png"
+  },
+  {
+   "name": "prop",
+   "opacity": 1.0,
+   "texture": "VDM.png"
+  }
+ ],
+ "parts": [
+  {
+   "name": "Prop1",
+   "origin": [
+    -0.0,
+    -0.0,
+    0.0
+   ],
+   "vertexCount": 608,
+   "indexCount": 912,
+   "groups": [
+    {
+     "material": 2,
+     "start": 0,
+     "count": 912
+    }
+   ],
+   "positionsOffset": 0,
+   "normalsOffset": 7296,
+   "uvsOffset": 14592,
+   "indicesOffset": 19456
+  },
+  {
+   "name": "Prop2",
+   "origin": [
+    -0.0,
+    -0.0,
+    0.0
+   ],
+   "vertexCount": 608,
+   "indexCount": 912,
+   "groups": [
+    {
+     "material": 2,
+     "start": 0,
+     "count": 912
+    }
+   ],
+   "positionsOffset": 23104,
+   "normalsOffset": 30400,
+   "uvsOffset": 37696,
+   "indicesOffset": 42560
+  },
+  {
+   "name": "Prop3",
+   "origin": [
+    -0.0,
+    -0.0,
+    0.0
+   ],
+   "vertexCount": 608,
+   "indexCount": 912,
+   "groups": [
+    {
+     "material": 2,
+     "start": 0,
+     "count": 912
+    }
+   ],
+   "positionsOffset": 46208,
+   "normalsOffset": 53504,
+   "uvsOffset": 60800,
+   "indicesOffset": 65664
+  }
+ ]
+}

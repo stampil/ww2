@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { assetUrl } from '../assetUrl'
 import { buildGeometry, buildMaterials, loadModelData } from './ac3d'
 import type { AircraftModel3D } from './aircraftModel'
 import type { AircraftState } from './aircraftState'
@@ -14,6 +15,8 @@ import { EasedValue } from './motion'
 
 const MODEL_FOLDER = 'bf109'
 const MODEL_NAME = 'bf109'
+const PROPELLER_MODEL_NAME = 'bf109-propeller'
+const PROPELLER_TEXTURE_URL = assetUrl('models/bf109/vdm.png')
 // How far tools/convert-ac3d.py lowered the model, which the manifest gives as the origin of each of its parts.
 const LOWERING_METERS = 0.5136
 const DEGREES = Math.PI / 180
@@ -34,9 +37,12 @@ const RUDDER_PART = 'rudder_w'
 const RUDDER_PIVOT = pointFromFlightGear(3.66, 0, 0, LOWERING_METERS)
 const RUDDER_AXIS = directionFromFlightGear(0, 0, 1)
 const RUDDER_RADIANS = 30 * DEGREES
-// The propeller has no blades in the model: a faint disc stands for it when the engine runs.
+// The blades are a model of their own, whose origin is the middle of the propeller, placed as the vdmprop.xml of the model places it; a faint disc blurs them when the engine runs.
+const PROPELLER_ORIGIN = pointFromFlightGear(-4.2, 0, 0.04185, LOWERING_METERS)
+const MAX_PROPELLER_TURNS_PER_SECOND = 10
+const FULL_TURN_RADIANS = 2 * Math.PI
+const BLADES_FADED_OPACITY = 0.25
 const PROPELLER_DISC_RADIUS_METERS = 1.5
-const PROPELLER_DISC_CENTER = new THREE.Vector3(0, 4.35, -0.4736)
 const PROPELLER_DISC_OPACITY = 0.25
 const PROPELLER_DISC_COLOR = 0x2a2a2a
 const PROPELLER_DISC_SEGMENTS = 48
@@ -105,6 +111,8 @@ export class Bf109Model implements AircraftModel3D {
     runEngine: new EasedValue(ENGINE_SPOOL_SECONDS),
   }
   private readonly propellerDisc = this.createPropellerDisc()
+  private readonly blades = new THREE.Group()
+  private bladesMaterial: THREE.MeshStandardMaterial | undefined
   private texturedMaterials: THREE.MeshStandardMaterial[] = []
   private liveryTexture: THREE.Texture | undefined
   private deflection = { aileron: 0, rudder: 0, elevator: 0 }
@@ -114,7 +122,8 @@ export class Bf109Model implements AircraftModel3D {
   readonly ready: Promise<void>
 
   constructor() {
-    this.object.add(this.effects.object, this.propellerDisc)
+    this.blades.position.copy(PROPELLER_ORIGIN)
+    this.object.add(this.effects.object, this.propellerDisc, this.blades)
     this.ready = this.load()
   }
 
@@ -187,7 +196,7 @@ export class Bf109Model implements AircraftModel3D {
       return
     }
     Object.values(this.eased).forEach((value) => value.update(deltaSeconds))
-    this.propellerDisc.material.opacity = PROPELLER_DISC_OPACITY * this.eased.runEngine.position
+    this.turnPropeller(deltaSeconds)
     const gearDown = 1 - this.eased.retractGear.position
     for (const turning of this.gear) {
       turnHinge(turning.hinge, turning.degrees * DEGREES * gearDown)
@@ -205,7 +214,16 @@ export class Bf109Model implements AircraftModel3D {
     }
   }
 
-  /** The explosion: the control surfaces, the gear and the propeller hub are torn off. */
+  private turnPropeller(deltaSeconds: number): void {
+    const share = this.eased.runEngine.position
+    this.blades.rotation.y += share * MAX_PROPELLER_TURNS_PER_SECOND * FULL_TURN_RADIANS * deltaSeconds
+    if (this.bladesMaterial !== undefined) {
+      this.bladesMaterial.opacity = 1 - share * (1 - BLADES_FADED_OPACITY)
+    }
+    this.propellerDisc.material.opacity = PROPELLER_DISC_OPACITY * share
+  }
+
+  /** The explosion: the control surfaces, the gear, the blades and the propeller hub are torn off. */
   private destroy(): void {
     this.effects.explode()
     const pieces: THREE.Object3D[] = []
@@ -216,6 +234,7 @@ export class Bf109Model implements AircraftModel3D {
     if (this.rudder !== undefined) {
       pieces.push(this.rudder.group)
     }
+    pieces.push(this.blades)
     const hub = this.parts.get(HUB_PART)
     if (hub !== undefined) {
       pieces.push(hub)
@@ -229,7 +248,7 @@ export class Bf109Model implements AircraftModel3D {
     geometry.rotateX(-Math.PI / 2)
     const material = new THREE.MeshBasicMaterial({ color: PROPELLER_DISC_COLOR, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false })
     const disc = new THREE.Mesh(geometry, material)
-    disc.position.copy(PROPELLER_DISC_CENTER)
+    disc.position.copy(PROPELLER_ORIGIN)
     return disc
   }
 
@@ -262,6 +281,23 @@ export class Bf109Model implements AircraftModel3D {
     this.buildRig()
     this.applyTexture()
     this.applyGlassVisibility()
+    await this.loadPropeller()
+  }
+
+  /** The three blades, in one material that fades as the engine speeds up. */
+  private async loadPropeller(): Promise<void> {
+    const { manifest, buffer } = await loadModelData(MODEL_FOLDER, PROPELLER_MODEL_NAME)
+    const material = buildMaterials(manifest)[manifest.parts[0].groups[0].material]
+    material.transparent = true
+    new THREE.TextureLoader().load(PROPELLER_TEXTURE_URL, (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace
+      material.map = texture
+      material.needsUpdate = true
+    })
+    for (const entry of manifest.parts) {
+      this.blades.add(new THREE.Mesh(buildGeometry(entry, buffer, false), material))
+    }
+    this.bladesMaterial = material
   }
 
   /** Puts the moving parts in hinges, so that turning a hinge turns its parts around the axis of Bf-109g.xml. */

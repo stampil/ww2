@@ -7,6 +7,7 @@ and writes d520.json and cockpit.json (parts, groups, materials, buffer offsets,
 cockpit.bin (positions, normals, uvs, indices). The cockpit files carry the offsets that FlightGear applies to the panel,
 the seat and the instruments; an instrument part is named after its folder, like airspeed/needle.
 The other aircraft (AIRCRAFT) keep every part that has surfaces, except the discs and the high-detail glass copies, centred vertically.
+The propeller of the Bf 109 (PROPELLERS) is written as bf109-propeller.json and .bin, beside the model of the aircraft, with its origin on the axis of the propeller.
 """
 import json
 import sys
@@ -73,6 +74,10 @@ AIRCRAFT = {
     "bf109": ("flightgear-bf109/bf109g14.ac", "FlightGear FGAddon, Aircraft/bf109 (Bf 109 G-14), Detlef Faber and Marco Schüle"),
     "ju87": ("flightgear-ju87/ju87.ac", "FlightGear FGAddon, Aircraft/Ju-87, Emmanuel Baranger"),
     "he111": ("flightgear-he111/he111.ac", "FlightGear FGAddon, Aircraft/Heinkel-He-111, Emmanuel Baranger"),
+}
+# The propellers of the aircraft that have their blades in a file of their own, whose origin is the middle of the propeller: the AC3D file, the blades kept (the discs and the bent blades are left out), where it comes from.
+PROPELLERS = {
+    "bf109": ("flightgear-bf109-propeller/vdm.ac", ["Prop1", "Prop2", "Prop3"], "FlightGear FGAddon, Aircraft/bf109 (propeller vdm.ac), Detlef Faber and Marco Schüle"),
 }
 # Parts left out: the discs that stand for a turning propeller, and the high-detail glass copies.
 DROPPED_PREFIXES = ("HDR", "propblur", "propdisc", "propdisk", "pdisk")
@@ -283,6 +288,8 @@ def main():
         aircraft_directory = output_directory.parent / name
         aircraft_directory.mkdir(parents=True, exist_ok=True)
         convert_model(name, [(relative_path, NO_OFFSET, ALL_PARTS, "")], ref_directory, aircraft_directory, aircraft_hub_y, source)
+    for name, (relative_path, blades, source) in PROPELLERS.items():
+        convert_model(f"{name}-propeller", [(relative_path, NO_OFFSET, blades, "")], ref_directory, output_directory.parent / name, 0.0, source)
 
 
 main()

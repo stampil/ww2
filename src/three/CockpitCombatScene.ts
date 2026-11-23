@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { CORRIDOR_TURN_RATE_RADIANS_PER_SECOND, corridorHeading, corridorSpeed, destructionSecondsOf, drawCorridorPoint, EASIEST_RISK, forwardOf, keepAhead } from './cockpitRules'
 import type { CorridorPoint, Flier } from './cockpitRules'
+import type { AircraftModel3D } from './aircraftModel'
+import { createAircraftModel } from './aircraftModels'
 import { D520Model } from './D520Model'
 import { DESTROYED_LEVEL } from './damageStages'
 import { SMOKING_LEVEL } from './DamageEffects'
@@ -11,7 +13,6 @@ import { PilotHeadModel } from './PilotHeadModel'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
 import { SeededRandom } from './SeededRandom'
 import { createSkyDome, HORIZON_COLOR } from './Sky'
-import { createStaticEnemy } from './StaticEnemy'
 import type { EnemyBody } from './StaticEnemy'
 import { loadTerrainTextures } from './terrainTextures'
 
@@ -59,8 +60,8 @@ const ENEMIES: Record<CockpitEnemy, { speed: number; turnRate: number }> = {
   vichyD520: { speed: 62, turnRate: 0.6 },
   frenchD520: { speed: 62, turnRate: 0.6 },
 }
-// The livery of the enemies that are D.520.
-const D520_ENEMY_LIVERIES: Record<Exclude<CockpitEnemy, 'bf109'>, Livery> = { vichyD520: 'vichy', frenchD520: 'french' }
+// The livery each enemy wears, which tells its model: the Bf 109 its Luftwaffe paint, the D.520 the Vichy or the French one.
+const ENEMY_LIVERIES: Record<CockpitEnemy, Livery> = { bf109: 'luftwaffe', vichyD520: 'vichy', frenchD520: 'french' }
 const ENEMY_DECISION_SECONDS = { min: 2, max: 4 }
 const ENEMY_HUNTED_DECISION_SECONDS = { min: 0.9, max: 1.7 }
 const ENEMY_TURN_DEGREES = { calm: 60, hunted: 110 }
@@ -171,17 +172,14 @@ export class CockpitCombatScene {
     this.isInCorridor = options.risk === EASIEST_RISK
     this.enemySpeed = ENEMIES[options.enemy].speed
     this.renderer = createRenderer(container, false)
-    const neededLiveries: Livery[] = [options.livery]
-    if (options.enemy !== 'bf109') {
-      neededLiveries.push(D520_ENEMY_LIVERIES[options.enemy])
-    }
+    const neededLiveries: Livery[] = [options.livery, ENEMY_LIVERIES[options.enemy]]
     this.liveries = new LiveryTextures(
       this.renderer.capabilities.getMaxAnisotropy(),
       (loaded, texture) => {
         if (loaded === options.livery) {
           this.player.setLivery(texture)
         }
-        if (options.enemy !== 'bf109' && loaded === D520_ENEMY_LIVERIES[options.enemy]) {
+        if (loaded === ENEMY_LIVERIES[options.enemy]) {
           this.enemyBody?.setLivery(texture)
         }
       },
@@ -234,36 +232,32 @@ export class CockpitCombatScene {
     this.liveries.dispose()
   }
 
-  private enemyBody: D520Model | undefined
+  private enemyBody: AircraftModel3D | undefined
 
   private async createEnemy(): Promise<void> {
-    if (this.options.enemy === 'bf109') {
-      this.enemy = await createStaticEnemy('bf109')
-    } else {
-      const model = new D520Model()
-      model.setState(FLYING)
-      const texture = this.liveries.get(D520_ENEMY_LIVERIES[this.options.enemy])
-      if (texture !== undefined) {
-        model.setLivery(texture)
-      }
-      this.enemyBody = model
-      this.enemy = {
-        object: model.object,
-        update: (deltaSeconds) => model.update(deltaSeconds),
-        damage: (level) => {
-          while (this.enemyLevel < level) {
-            this.enemyLevel += 1
-            model.inflictDamage()
-          }
-        },
-        destroy: () => {
-          while (this.enemyLevel < DESTROYED_LEVEL) {
-            this.enemyLevel += 1
-            model.inflictDamage()
-          }
-        },
-        setVelocity: (velocity) => model.setVelocity(velocity),
-      }
+    const model = createAircraftModel(ENEMY_LIVERIES[this.options.enemy])
+    model.setState(FLYING)
+    const texture = this.liveries.get(ENEMY_LIVERIES[this.options.enemy])
+    if (texture !== undefined) {
+      model.setLivery(texture)
+    }
+    this.enemyBody = model
+    this.enemy = {
+      object: model.object,
+      update: (deltaSeconds) => model.update(deltaSeconds),
+      damage: (level) => {
+        while (this.enemyLevel < level) {
+          this.enemyLevel += 1
+          model.inflictDamage()
+        }
+      },
+      destroy: () => {
+        while (this.enemyLevel < DESTROYED_LEVEL) {
+          this.enemyLevel += 1
+          model.inflictDamage()
+        }
+      },
+      setVelocity: (velocity) => model.setVelocity(velocity),
     }
     this.enemy.setVelocity(new THREE.Vector3(0, ENEMIES[this.options.enemy].speed, 0))
     this.enemyRoot.add(this.enemy.object)

@@ -22,7 +22,7 @@ Aucune. Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 | # | Chantier | Taille | Attend |
 |---|---|---|---|
-| 6 | **E10 : les images IA restantes** (finition : le jeu marche sans elles, avec ses silhouettes et ses pastilles) : camion de carburant et pompiers, illustrations des cartes, états abîmé et en réparation des avions, aires de stationnement ; le MS.406 n'est plus jouable (20/11), il ne reste que son modèle de l'accueil | grand | tes images, une à la fois, avec mes prompts |
+| 6 | **E10 : les images IA restantes** (finition : le jeu marche sans elles, avec ses silhouettes et ses pastilles) : pompiers à pied, illustrations des cartes, états abîmé et en réparation des avions, aires de stationnement ; le MS.406 n'est plus jouable (20/11), il ne reste que son modèle de l'accueil | grand | tes images, une à la fois, avec mes prompts |
 
 ## Mis de côté
 

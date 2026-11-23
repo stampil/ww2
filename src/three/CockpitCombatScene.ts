@@ -171,16 +171,14 @@ export class CockpitCombatScene {
     this.isInCorridor = options.risk === EASIEST_RISK
     this.enemySpeed = ENEMIES[options.enemy].speed
     this.renderer = createRenderer(container, false)
-    // The Bf 109 has no cockpit of its own yet: its pilot sits in the one of the D.520, painted German.
-    const playerLivery: Livery = options.livery === 'luftwaffe' ? 'german' : options.livery
-    const neededLiveries: Livery[] = [playerLivery]
+    const neededLiveries: Livery[] = [options.livery]
     if (options.enemy !== 'bf109') {
       neededLiveries.push(D520_ENEMY_LIVERIES[options.enemy])
     }
     this.liveries = new LiveryTextures(
       this.renderer.capabilities.getMaxAnisotropy(),
       (loaded, texture) => {
-        if (loaded === playerLivery) {
+        if (loaded === options.livery) {
           this.player.setLivery(texture)
         }
         if (options.enemy !== 'bf109' && loaded === D520_ENEMY_LIVERIES[options.enemy]) {

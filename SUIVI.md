@@ -22,7 +22,7 @@ Aucune. Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 | # | Chantier | Taille | Attend |
 |---|---|---|---|
-| 6 | **E10 : les images IA restantes** (finition : le jeu marche sans elles, avec ses silhouettes et ses pastilles) : illustrations des cartes (pièces et stocks, puis les trois améliorations) ; le MS.406 n'est plus jouable (20/11), il ne reste que son modèle de l'accueil | grand | tes images, une à la fois, avec mes prompts |
+| 6 | **E10 : les images IA restantes** (finition : le jeu marche sans elles, avec ses silhouettes et ses pastilles) : illustrations des trois cartes d'amélioration (hangar, atelier, entrepôt) ; le MS.406 n'est plus jouable (20/11), il ne reste que son modèle de l'accueil | grand | tes images, une à la fois, avec mes prompts |
 
 ## Mis de côté
 

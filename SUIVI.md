@@ -20,9 +20,8 @@ Aucune. Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-| # | Chantier | Taille | Attend |
-|---|---|---|---|
-| 6 | **E10 : les images IA restantes** (finition : le jeu marche sans elles, avec ses silhouettes et ses pastilles) : illustrations des trois cartes d'amélioration (hangar, atelier, entrepôt) ; le MS.406 n'est plus jouable (20/11), il ne reste que son modèle de l'accueil | grand | tes images, une à la fois, avec mes prompts |
+Rien : tout le suivi est fait, images comprises (23/11).
+
 
 ## Mis de côté
 

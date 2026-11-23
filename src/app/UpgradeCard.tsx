@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { assetUrl } from '../assetUrl'
 import Icon from './Icon'
 import type { UpgradeInfo, UpgradeName } from './useBase'
 
@@ -8,7 +9,7 @@ type Props = {
   onBuy: (upgrade: UpgradeName) => void
 }
 
-/** The upgrade of a building: what the next level brings, the level reached, what it costs in command points, and the button to buy it. */
+/** The upgrade of a building, with the picture of the building: what the next level brings, the level reached, what it costs in command points, and the button to buy it. */
 function UpgradeCard({ info, commandPoints, onBuy }: Props) {
   const { t } = useTranslation()
 
@@ -16,7 +17,7 @@ function UpgradeCard({ info, commandPoints, onBuy }: Props) {
     <li className="card">
       <div className="card-head">
         <span className="portrait" aria-hidden="true">
-          <Icon name="upgrade" />
+          <img src={assetUrl(`sprites/upgrades/${info.upgrade}.png`)} alt="" draggable={false} />
         </span>
         <div>
           <strong>{t('base.upgrade.title')}</strong>

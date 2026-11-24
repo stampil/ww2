@@ -512,7 +512,7 @@
     },
     "sites": "Sites",
     "map": "Map of France",
-    "legend": "Your camps are ringed in gold, your allies' (players or the AI) in green and the enemy's in red; a free camp has no glow; a camp that a raid has just hit is in ruins. Click a camp: its details open on the other side of the map.",
+    "legend": "Your camps are ringed in gold, your allies' (players or the AI) in green and the enemy's in red; a free camp has no glow; a camp that is held carries the badge of its side, the roundel of the Allies or the cross of the Axe; a camp that a raid has just hit is in ruins. Click a camp: its details open on the other side of the map.",
     "side": "Your side: {{side}}.",
     "clan": {
       "french": "the Allies",

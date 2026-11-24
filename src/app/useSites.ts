@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
+import type { Clan } from './useBase'
 
 /** What the stores of a camp hold, which every player can see. */
 export type CampResources = { supplies: number; fuel: number; ammunition: number; materials: number }
 
 /** A site of the map: whether it is free, the side that holds it, the nickname of the player who holds it, null for a free site and for the AI, whether the AI holds it, what its stores hold, null while it has none, how many aircraft stand there, and whether a raid hurt it a few minutes ago. */
-export type SiteChoice = { site: string; free: boolean; clan: string; holder: string | null; ai: boolean; resources: CampResources | null; aircraft: number; attacked: boolean }
+export type SiteChoice = { site: string; free: boolean; clan: Clan; holder: string | null; ai: boolean; resources: CampResources | null; aircraft: number; attacked: boolean }
 
 /** The sites where a new player can settle, in the oldest world that has room. */
 export const CHOOSABLE_SITES_URL = '/api/world/sites'

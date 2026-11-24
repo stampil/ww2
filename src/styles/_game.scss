@@ -1265,11 +1265,22 @@ button.base-sprite {
     inset: -0.75rem;
   }
 
-  img {
+  .world-camp-picture {
     display: block;
     width: 100%;
     height: auto;
     filter: drop-shadow(0 1px 2px rgba($outline, 0.5));
+  }
+
+  // The badge of the side that holds the camp, in the top right corner and outside the glow, which belongs to the picture.
+  .world-camp-badge {
+    position: absolute;
+    top: -12%;
+    right: -12%;
+    width: 56%;
+    height: auto;
+    filter: drop-shadow(0 1px 1px rgba($outline, 0.6));
+    pointer-events: none;
   }
 
   // Names would cover each other on a full map: one shows for the player's camps and for the camp under the pointer or selected.
@@ -1312,23 +1323,23 @@ button.base-sprite {
     cursor: default;
   }
 
-  &[data-ally='true'] img {
+  &[data-ally='true'] .world-camp-picture {
     filter: drop-shadow(0 0 0.4rem $go);
   }
 
-  &[data-enemy='true'] img {
+  &[data-enemy='true'] .world-camp-picture {
     filter: drop-shadow(0 0 0.4rem $alarm);
   }
 
   // Where a first base is chosen, a free camp of the Axe is marked in red, so that the side the base would give shows on the map.
-  &[data-free='true'][data-clan='axe'][data-side-hint='true'] img {
+  &[data-free='true'][data-clan='axe'][data-side-hint='true'] .world-camp-picture {
     filter: drop-shadow(0 0 0.35rem $alarm);
   }
 
-  &:hover:not(:disabled) img,
-  &:focus-visible img,
-  &[aria-pressed='true'] img,
-  &[data-own='true'] img {
+  &:hover:not(:disabled) .world-camp-picture,
+  &:focus-visible .world-camp-picture,
+  &[aria-pressed='true'] .world-camp-picture,
+  &[data-own='true'] .world-camp-picture {
     filter: drop-shadow(0 0 0.4rem $gold);
   }
 

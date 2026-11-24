@@ -25,7 +25,6 @@ Aucune. Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 | N° | Instruction (tes mots) | Ce que j'en comprends | Go |
 |---|---|---|---|
-| 1 | « fait le prompt pour les icones de camps » puis « on evite la hakenkruz, pour l'allemagne prend la croix de l'armée celle qui ressemble a un diese » (24/11) | Prompt donné le 24/11 : deux insignes ronds sur fond magenta, la cocarde française (bleu au centre, blanc, rouge) et la croix de l'armée allemande, d'après l'icône de camp libre. À ton « généré » : contrôle, détourage, rangement dans `public/sprites/camps/`, et pose de l'insigne sur chaque camp occupé (joueur ou IA) de la carte. Les camps IA sont faits (24/11) ; en attendant la carte les distingue par le halo : or pour les tiens, vert pour les alliés, rouge pour l'ennemi, aucun pour un camp libre. | attend ton « généré » |
 
 
 ## Mis de côté

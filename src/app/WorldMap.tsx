@@ -2,12 +2,17 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
 import { FRANCE_MAP, sitePlace } from '../plans/franceMap'
+import type { Clan } from './useBase'
 import type { SiteChoice } from './useSites'
 
 const MAP_URL = assetUrl('maps/carte-france.jpg')
 const FREE_CAMP_URL = assetUrl('sprites/camps/camp-free.png')
 const HELD_CAMP_URL = assetUrl('sprites/camps/camp-held.png')
 const ATTACKED_CAMP_URL = assetUrl('sprites/camps/camp-attacked.png')
+const BADGE_URLS: Record<Clan, string> = {
+  french: assetUrl('sprites/camps/badge-french.png'),
+  axe: assetUrl('sprites/camps/badge-axe.png'),
+}
 const PERCENT = 100
 
 type Props = {
@@ -32,7 +37,7 @@ function campPicture(isFree: boolean, isAttacked: boolean): string {
   return isFree ? FREE_CAMP_URL : HELD_CAMP_URL
 }
 
-/** The map of France with a camp on each site: a free one can be picked, and a taken one too where asked; a taken one, held by a player or by the AI, has its own picture, with a green glow when an ally holds it and a red one when an enemy does, and a camp that a raid hurt a few minutes ago shows in ruins. On a phone the map is wider than the screen and slides sideways, from the camps. */
+/** The map of France with a camp on each site: a free one can be picked, and a taken one too where asked; a taken one, held by a player or by the AI, has its own picture and the badge of its side in a corner, with a green glow when an ally holds it and a red one when an enemy does, and a camp that a raid hurt a few minutes ago shows in ruins. On a phone the map is wider than the screen and slides sideways, from the camps. */
 function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites = [], ownClan }: Props) {
   const { t } = useTranslation()
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -70,7 +75,8 @@ function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites 
               style={{ left: `${left}%`, top: `${top}%` }}
               onClick={onSelect === undefined ? undefined : () => onSelect(site)}
             >
-              <img src={campPicture(free, attacked)} alt="" />
+              <img className="world-camp-picture" src={campPicture(free, attacked)} alt="" />
+              {!free && <img className="world-camp-badge" src={BADGE_URLS[clan]} alt="" />}
               <span aria-hidden="true">{t(`world.site.${site}`)}</span>
             </button>
           )

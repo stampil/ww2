@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
 import Icon from './Icon'
+import OrderButton from './OrderButton'
+import { upgradeShortage } from './shortages'
 import type { UpgradeInfo, UpgradeName } from './useBase'
 
 type Props = {
   info: UpgradeInfo
   commandPoints: number
-  onBuy: (upgrade: UpgradeName) => void
+  onBuy: (upgrade: UpgradeName) => Promise<string | null>
 }
 
 /** The upgrade of a building, with the picture of the building: what the next level brings, the level reached, what it costs in command points, and the button to buy it. */
@@ -26,7 +28,7 @@ function UpgradeCard({ info, commandPoints, onBuy }: Props) {
       </div>
       <span>{t('base.upgrade.level', { level: info.level, max: info.maxLevel })}</span>
       <div className="card-actions">
-        <button type="button" disabled={info.cost === null || commandPoints < info.cost} onClick={() => onBuy(info.upgrade)}>
+        <OrderButton disabled={info.cost === null} reasonKey={upgradeShortage(info, commandPoints)} onOrder={() => onBuy(info.upgrade)}>
           {info.cost === null ? (
             t('base.upgrade.maxed')
           ) : (
@@ -39,7 +41,7 @@ function UpgradeCard({ info, commandPoints, onBuy }: Props) {
               </span>
             </>
           )}
-        </button>
+        </OrderButton>
       </div>
     </li>
   )

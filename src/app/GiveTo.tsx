@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import OrderButton from './OrderButton'
 import RecipientSelect from './RecipientSelect'
 import type { Recipient } from './useBase'
 
@@ -7,7 +8,7 @@ type Props = {
   recipients: Recipient[]
   /** Whether what is to be given cannot go now: it flies, rests or is being repaired. */
   isDisabled: boolean
-  onGive: (recipientBaseId: number) => void
+  onGive: (recipientBaseId: number) => Promise<string | null>
 }
 
 /** A choice of base and a button to send a pilot or an aircraft there; nothing when there is no base to send it to. */
@@ -24,9 +25,9 @@ function GiveTo({ recipients, isDisabled, onGive }: Props) {
   return (
     <div className="gift-to">
       <RecipientSelect recipients={recipients} value={chosen.id} onChange={setChosenId} />
-      <button type="button" disabled={isDisabled} onClick={() => onGive(chosen.id)}>
+      <OrderButton disabled={isDisabled} onOrder={() => onGive(chosen.id)}>
         {t('gift.give')}
-      </button>
+      </OrderButton>
     </div>
   )
 }

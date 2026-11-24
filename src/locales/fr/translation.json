@@ -81,7 +81,8 @@
     "escaped": "L'ennemi s'est échappé.",
     "enemies": {
       "bf109": "Messerschmitt Bf 109",
-      "vichyD520": "Dewoitine D.520 de Vichy"
+      "vichyD520": "Dewoitine D.520 de Vichy",
+      "frenchD520": "Dewoitine D.520 français"
     }
   },
   "duel": {
@@ -744,6 +745,7 @@
       "ammunitionLoad": "Munitions par avion",
       "noFreeAircraft": "Aucun avion libre ne convient à cette mission.",
       "notEnoughPilots": "Il n'y a pas assez de pilotes libres.",
+      "chooseCrew": "Choisis un pilote et un avion pour chaque place.",
       "against": "{{type}} sur {{site}}",
       "loaded": "{{fuel}} de carburant et {{ammunition}} de munitions par avion",
       "landed": "Terminée",

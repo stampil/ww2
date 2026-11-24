@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import GameWindow from './GameWindow'
 import Icon from './Icon'
+import OrderButton from './OrderButton'
 import Pane from './Pane'
 import { CHOOSABLE_SITES_URL, useSites } from './useSites'
 import WorldMap from './WorldMap'
@@ -17,15 +18,13 @@ function BaseChoice({ onClaim }: Props) {
   const [sitesVersion, setSitesVersion] = useState(0)
   const sites = useSites(CHOOSABLE_SITES_URL, sitesVersion)
   const [selected, setSelected] = useState<string | null>(null)
-  const [errorCode, setErrorCode] = useState<string | null>(null)
 
-  const claim = (site: string) => {
-    void onClaim(site).then((code) => {
-      setErrorCode(code)
-      if (code !== null) {
-        setSitesVersion(sitesVersion + 1)
-      }
-    })
+  async function claim(site: string): Promise<string | null> {
+    const code = await onClaim(site)
+    if (code !== null) {
+      setSitesVersion(sitesVersion + 1)
+    }
+    return code
   }
 
   if (sites === null) {
@@ -37,11 +36,6 @@ function BaseChoice({ onClaim }: Props) {
   return (
     <GameWindow title={t('world.choose.title')} hint={t('world.choose.hint')}>
       <Pane title={t('world.sites')}>
-        {errorCode !== null && (
-          <p className="game-message" role="alert">
-            {t(`base.errors.${errorCode}`)}
-          </p>
-        )}
         <div className="world-choice">
           {chosen === undefined ? (
             <p>{t('world.pick')}</p>
@@ -49,10 +43,10 @@ function BaseChoice({ onClaim }: Props) {
             <>
               <strong>{t(`world.site.${chosen.site}`)}</strong>
               <span>{t(chosen.free ? 'world.free' : 'world.taken')}</span>
-              <button type="button" className="go" disabled={!chosen.free} onClick={() => claim(chosen.site)}>
+              <OrderButton className="go" disabled={!chosen.free} onOrder={() => claim(chosen.site)}>
                 <Icon name="site" />
                 {t('world.claim')}
-              </button>
+              </OrderButton>
             </>
           )}
         </div>

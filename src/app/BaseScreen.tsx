@@ -153,63 +153,64 @@ function BaseScreen({ player }: { player: Player }) {
     setErrorCode(await sending)
   }
 
-  // The base is wiped and founded again; the guide of the first day comes back with it.
-  async function startOver(): Promise<void> {
-    setIsConfirmingReset(false)
+  // The base is wiped and founded again; the guide of the first day comes back with it. The window of the question stays until the API has answered.
+  async function startOver(): Promise<string | null> {
     setOpenBuilding(null)
     setDuelAlertId(null)
     setDepartures([])
     setLandingIds([])
     setEmergingIds([])
     const resetErrorCode = await resetGame()
-    setErrorCode(resetErrorCode)
     if (resetErrorCode === null) {
+      setIsConfirmingReset(false)
       setGuideStatus('new')
     }
+    return resetErrorCode
   }
 
+  // The orders below return their error code to the button that gave them, which shows it.
   // Once the orders are given the window closes, to show the squadron taking off, in groups of three.
-  async function launch(missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number): Promise<void> {
+  async function launch(missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number): Promise<string | null> {
     const departing = parkedAircraft.filter((aircraft) => aircraftIds.includes(aircraft.id))
     const launchErrorCode = await launchMission(missionId, pilotIds, aircraftIds, fuel, ammunition)
-    setErrorCode(launchErrorCode)
     if (launchErrorCode === null) {
       setOpenBuilding(null)
       showDepartures(departing)
     }
+    return launchErrorCode
   }
 
   // A raid or a capture takes off like a squadron sent on a mission.
-  async function attack(targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]): Promise<void> {
+  async function attack(targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]): Promise<string | null> {
     const departing = parkedAircraft.filter((aircraft) => aircraftIds.includes(aircraft.id))
     const attackErrorCode = await attackCamp(targetBaseId, kind, pilotIds, aircraftIds)
-    setErrorCode(attackErrorCode)
     if (attackErrorCode === null) {
       setOpenBuilding(null)
       showDepartures(departing)
     }
+    return attackErrorCode
   }
 
   // An aircraft stationed at another base takes off like a squadron sent on a mission.
-  async function station(destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number): Promise<void> {
+  async function station(destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number): Promise<string | null> {
     const departing = parkedAircraft.filter((aircraft) => aircraft.id === aircraftId)
     const stationErrorCode = await sendStationing(destinationBaseId, pilotId, aircraftId, fuel, ammunition)
-    setErrorCode(stationErrorCode)
     if (stationErrorCode === null) {
       setOpenBuilding(null)
       showDepartures(departing)
     }
+    return stationErrorCode
   }
 
   // An aircraft that takes supplies to another base takes off the same way, and comes back by itself.
-  async function supply(destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo): Promise<void> {
+  async function supply(destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo): Promise<string | null> {
     const departing = parkedAircraft.filter((aircraft) => aircraft.id === aircraftId)
     const supplyErrorCode = await sendSupply(destinationBaseId, pilotId, aircraftId, cargo)
-    setErrorCode(supplyErrorCode)
     if (supplyErrorCode === null) {
       setOpenBuilding(null)
       showDepartures(departing)
     }
+    return supplyErrorCode
   }
 
   function showDepartures(departing: ParkedAircraft[]): void {
@@ -220,16 +221,16 @@ function BaseScreen({ player }: { player: Player }) {
   }
 
   // The squadron is received: the window closes to show the aircraft that are left landing and taxiing to their stands.
-  async function receive(missionId: number): Promise<void> {
+  async function receive(missionId: number): Promise<string | null> {
     const crewAircraftIds = flights.find((flight) => flight.id === missionId)!.crews.map((crew) => crew.aircraftId)
     const receiveErrorCode = await receiveSquadron(missionId)
-    setErrorCode(receiveErrorCode)
     if (receiveErrorCode === null) {
       setOpenBuilding(null)
       if (aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches) {
         setLandingIds((current) => [...current, ...crewAircraftIds])
       }
     }
+    return receiveErrorCode
   }
 
   const plan = TERRAIN_PLANS[base.terrainPlan]
@@ -259,7 +260,7 @@ function BaseScreen({ player }: { player: Player }) {
 
   const destroyedBuildings = base.camp.destroyed
   const isOpenBuildingDestroyed = openBuilding !== null && destroyedBuildings.includes(openBuilding)
-  const rebuildNotice = (building: string) => <RebuildNotice cost={base.camp.rebuildCost} materials={base.resources.materials} onRebuild={() => void order(rebuild(building))} />
+  const rebuildNotice = (building: string) => <RebuildNotice cost={base.camp.rebuildCost} materials={base.resources.materials} onRebuild={() => rebuild(building)} />
   const alerts: MapAlert[] = []
   if (flights.some((flight) => flight.remainingSeconds === 0)) {
     alerts.push({ kind: 'mission', building: 'controlTower', label: t('base.alert') })
@@ -337,15 +338,16 @@ function BaseScreen({ player }: { player: Player }) {
               unavailable={unavailable}
               destinations={base.destinations}
               targets={base.targets}
-              onAttack={(targetBaseId, kind, pilotIds, aircraftIds) => void attack(targetBaseId, kind, pilotIds, aircraftIds)}
-              onStation={(destinationBaseId, pilotId, aircraftId, fuel, ammunition) => void station(destinationBaseId, pilotId, aircraftId, fuel, ammunition)}
-              onSupply={(destinationBaseId, pilotId, aircraftId, cargo) => void supply(destinationBaseId, pilotId, aircraftId, cargo)}
+              onAttack={attack}
+              onStation={station}
+              onSupply={supply}
             />
           )}
           {openBuilding === 'controlTower' && destroyedBuildings.includes('headquarters') && rebuildNotice('headquarters')}
           {openBuilding === 'controlTower' && (
             <ControlTowerPanel
               squadron={base.squadron}
+              resources={base.resources}
               weather={base.headquarters.weather}
               offers={base.headquarters.offers}
               flights={flights}
@@ -355,24 +357,25 @@ function BaseScreen({ player }: { player: Player }) {
               busy={busy}
               unavailable={unavailable}
               onOpenJournal={() => setIsJournalOpen(true)}
-              onLaunch={(missionId, pilotIds, aircraftIds, fuel, ammunition) => void launch(missionId, pilotIds, aircraftIds, fuel, ammunition)}
-              onReceive={(missionId) => void receive(missionId)}
-              onRest={(pilotId) => void order(restPilot(pilotId))}
-              onRecruit={() => void order(recruitPilot())}
+              onLaunch={launch}
+              onReceive={receive}
+              onRest={restPilot}
+              onRecruit={recruitPilot}
               onStartOver={() => setIsConfirmingReset(true)}
               recipients={base.recipients}
-              onGivePilot={(pilotId, recipientBaseId) => void order(givePilot(recipientBaseId, pilotId))}
+              onGivePilot={(pilotId, recipientBaseId) => givePilot(recipientBaseId, pilotId)}
             />
           )}
           {!isOpenBuildingDestroyed && openBuilding === 'workshop' && (
             <WorkshopPanel
               workshop={base.workshop}
               jobs={jobs}
-              onProduce={(part, withMechanic) => void order(produce(part, withMechanic))}
-              onAssemble={() => void order(assembleAircraft())}
+              materials={base.resources.materials}
+              onProduce={produce}
+              onAssemble={assembleAircraft}
               upgrade={upgradeOf('workshop')}
               commandPoints={base.resources.commandPoints}
-              onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
+              onUpgrade={buyUpgrade}
             />
           )}
           {!isOpenBuildingDestroyed && openBuilding === 'warehouse' && (
@@ -380,9 +383,9 @@ function BaseScreen({ player }: { player: Player }) {
               resources={base.resources}
               warehouse={base.warehouse}
               income={base.supplyIncome}
-              onBuy={(stock, quantity) => void order(buy(stock, quantity))}
+              onBuy={buy}
               upgrade={upgradeOf('warehouse')}
-              onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
+              onUpgrade={buyUpgrade}
             />
           )}
           {!isOpenBuildingDestroyed && openBuilding === 'hangar' && (
@@ -392,14 +395,15 @@ function BaseScreen({ player }: { player: Player }) {
               busyAircraftIds={busy.aircraftIds}
               away={away}
               guests={guests}
-              onRecall={(aircraftId) => void order(recallStationing(aircraftId))}
-              onInspect={(aircraftId) => void order(inspectAircraft(aircraftId))}
-              onRepair={(aircraftId) => void order(repairAircraft(aircraftId))}
+              workshop={base.workshop}
+              onRecall={recallStationing}
+              onInspect={inspectAircraft}
+              onRepair={repairAircraft}
               upgrade={upgradeOf('hangar')}
               commandPoints={base.resources.commandPoints}
-              onUpgrade={(upgrade) => void order(buyUpgrade(upgrade))}
+              onUpgrade={buyUpgrade}
               recipients={base.recipients}
-              onGiveAircraft={(aircraftId, recipientBaseId) => void order(giveAircraft(recipientBaseId, aircraftId))}
+              onGiveAircraft={(aircraftId, recipientBaseId) => giveAircraft(recipientBaseId, aircraftId)}
             />
           )}
         </GameWindow>
@@ -442,7 +446,7 @@ function BaseScreen({ player }: { player: Player }) {
 
       {isJournalOpen && <JournalBook site={base.site} onDismiss={() => setIsJournalOpen(false)} />}
 
-      {isConfirmingReset && <ResetConfirm onConfirm={() => void startOver()} onCancel={() => setIsConfirmingReset(false)} />}
+      {isConfirmingReset && <ResetConfirm onConfirm={startOver} onCancel={() => setIsConfirmingReset(false)} />}
 
       {guideStep === 'welcome' && <GuideWelcome onBegin={() => setGuideStatus('running')} onSkip={() => setGuideStatus('over')} />}
 

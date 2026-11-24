@@ -6,14 +6,18 @@ import Gauge from './Gauge'
 import GiveTo from './GiveTo'
 import Icon from './Icon'
 import MissionBoard from './MissionBoard'
+import OrderButton from './OrderButton'
 import Pane from './Pane'
 import PilotPortrait from './PilotPortrait'
+import { recruitShortage } from './shortages'
 import type { AwayAircraft, Base, Flight, Offer, Recipient, Rest, Squadron } from './useBase'
 
 const GAUGE_MAX = 100
 
 type Props = {
   squadron: Squadron
+  /** The stocks and the supplies of the camp, which the missions and the recruits are paid from. */
+  resources: Base['resources']
   weather: Base['headquarters']['weather']
   offers: Offer[]
   flights: Flight[]
@@ -25,19 +29,19 @@ type Props = {
   unavailable: BusyCrews
   /** Asks to open the journal of the base. */
   onOpenJournal: () => void
-  onLaunch: (missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number) => void
-  onReceive: (missionId: number) => void
-  onRest: (pilotId: number) => void
-  onRecruit: () => void
+  onLaunch: (missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number) => Promise<string | null>
+  onReceive: (missionId: number) => Promise<string | null>
+  onRest: (pilotId: number) => Promise<string | null>
+  onRecruit: () => Promise<string | null>
   /** Asks to start the game over from nothing. */
   onStartOver: () => void
   /** The bases a gift can go to; a pilot goes to the player's own only. */
   recipients: Recipient[]
-  onGivePilot: (pilotId: number, recipientBaseId: number) => void
+  onGivePilot: (pilotId: number, recipientBaseId: number) => Promise<string | null>
 }
 
 /** The flights under way, the journal, the missions on the table, and the pilots, who can rest and be joined by new ones. */
-function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, recruitment, busy, unavailable, onOpenJournal, onLaunch, onReceive, onRest, onRecruit, onStartOver, recipients, onGivePilot }: Props) {
+function ControlTowerPanel({ squadron, resources, weather, offers, flights, rests, away, recruitment, busy, unavailable, onOpenJournal, onLaunch, onReceive, onRest, onRecruit, onStartOver, recipients, onGivePilot }: Props) {
   const { t } = useTranslation()
   const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
 
@@ -51,7 +55,7 @@ function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, re
           </button>
         </div>
       </Pane>
-      <MissionBoard weather={weather} offers={offers} squadron={squadron} busy={unavailable} onLaunch={onLaunch} />
+      <MissionBoard weather={weather} offers={offers} squadron={squadron} resources={resources} busy={unavailable} onLaunch={onLaunch} />
       <Pane title={t('squadron.pilots')}>
         <ul className="cards">
           {squadron.pilots.map((pilot) => {
@@ -97,10 +101,10 @@ function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, re
                   </li>
                 </ul>
                 <div className="card-actions">
-                  <button type="button" disabled={isFlying || rest !== undefined || (pilot.fatigue === 0 && pilot.stress === 0)} onClick={() => onRest(pilot.id)}>
+                  <OrderButton disabled={isFlying || rest !== undefined || (pilot.fatigue === 0 && pilot.stress === 0)} onOrder={() => onRest(pilot.id)}>
                     <Icon name="rest" />
                     {t('base.mission.rest')}
-                  </button>
+                  </OrderButton>
                   <GiveTo recipients={ownRecipients} isDisabled={isFlying || rest !== undefined} onGive={(recipientBaseId) => onGivePilot(pilot.id, recipientBaseId)} />
                 </div>
               </li>
@@ -117,10 +121,10 @@ function ControlTowerPanel({ squadron, weather, offers, flights, rests, away, re
               </div>
             </div>
             <div className="card-actions">
-              <button type="button" disabled={squadron.pilots.length >= recruitment.maxPilots} onClick={onRecruit}>
+              <OrderButton onOrder={onRecruit} reasonKey={recruitShortage(squadron.pilots.length, recruitment, resources.supplies)}>
                 <Icon name="recruit" />
                 {t('base.mission.recruitButton')}
-              </button>
+              </OrderButton>
             </div>
           </li>
         </ul>

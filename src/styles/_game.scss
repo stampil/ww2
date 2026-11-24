@@ -97,6 +97,13 @@ $mono-font: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
     opacity: 0.5;
   }
 
+  // An order on its way: the ring that turns on the button has to be seen.
+  &[aria-busy='true'] {
+    cursor: progress;
+    filter: none;
+    opacity: 0.85;
+  }
+
   &[aria-pressed='true'] {
     background: $gold;
   }
@@ -1402,6 +1409,44 @@ button.base-sprite {
   @include flex($gap: 0.4rem);
   flex-wrap: wrap;
   margin-top: auto;
+}
+
+// A button that gives an order: its label hides behind a ring that turns while the order is on its way, and what stops the order shows on a line under it.
+.order-label {
+  @include flex($display: inline-flex, $align: center, $justify: center, $gap: 0.4rem);
+}
+
+button[aria-busy='true'] > .order-label {
+  visibility: hidden;
+}
+
+.order-spinner {
+  position: absolute;
+  inset: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: order-spin 0.8s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes order-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.order-reason {
+  display: block;
+  flex: 1 1 100%;
+  color: color.adjust($alarm, $lightness: 22%);
+  font-size: 0.78rem;
 }
 
 .jobs {

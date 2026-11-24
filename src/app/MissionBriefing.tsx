@@ -2,14 +2,18 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { BusyCrews } from './flights'
 import Icon from './Icon'
+import OrderButton from './OrderButton'
 import Pane from './Pane'
-import type { Offer, Squadron } from './useBase'
+import { crewShortage, freeCrewOf, loadShortage } from './shortages'
+import type { Base, Offer, Squadron } from './useBase'
 
 type Props = {
   offer: Offer
   squadron: Squadron
+  /** The stocks that the fuel and the ammunition are taken from. */
+  resources: Base['resources']
   busy: BusyCrews
-  onLaunch: (pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number) => void
+  onLaunch: (pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number) => Promise<string | null>
 }
 
 /** The first free ids, one for each place, and null for a place left without any. */
@@ -40,10 +44,9 @@ function chosenIds(choices: (number | null)[]): number[] {
 }
 
 /** Where a mission is prepared: a pilot and an aircraft for each place, the load of each aircraft, and the launch. */
-function MissionBriefing({ offer, squadron, busy, onLaunch }: Props) {
+function MissionBriefing({ offer, squadron, resources, busy, onLaunch }: Props) {
   const { t } = useTranslation()
-  const freePilots = squadron.pilots.filter((pilot) => !busy.pilotIds.includes(pilot.id))
-  const freeAircraft = squadron.aircraft.filter((aircraft) => !busy.aircraftIds.includes(aircraft.id) && (offer.category === null || aircraft.model.category === offer.category))
+  const { freePilots, freeAircraft } = freeCrewOf(offer, squadron, busy)
   const places = placesUpTo(offer.aircraftCount)
   const [pilotChoices, setPilotChoices] = useState(() =>
     firstChoices(
@@ -62,6 +65,7 @@ function MissionBriefing({ offer, squadron, busy, onLaunch }: Props) {
   const pilotIds = chosenIds(pilotChoices)
   const aircraftIds = chosenIds(aircraftChoices)
   const canLaunch = pilotIds.length === offer.aircraftCount && aircraftIds.length === offer.aircraftCount
+  const launchReason = crewShortage(offer, squadron, busy) ?? (canLaunch ? loadShortage(offer, resources, fuel, ammunition) : 'base.mission.chooseCrew')
 
   function choose(choices: (number | null)[], place: number, value: string): (number | null)[] {
     const next = [...choices]
@@ -72,8 +76,6 @@ function MissionBriefing({ offer, squadron, busy, onLaunch }: Props) {
   return (
     <Pane title={t('base.mission.briefing', { type: t(`base.mission.types.${offer.type}`) })}>
       <div className="briefing">
-        {freeAircraft.length < offer.aircraftCount && <p className="squadron-hint">{t('base.mission.noFreeAircraft')}</p>}
-        {freePilots.length < offer.aircraftCount && <p className="squadron-hint">{t('base.mission.notEnoughPilots')}</p>}
         {places.map((place) => (
           <fieldset key={place}>
             <legend>{t('base.mission.slot', { number: place + 1 })}</legend>
@@ -111,10 +113,10 @@ function MissionBriefing({ offer, squadron, busy, onLaunch }: Props) {
             <input type="number" min={0} value={ammunition} onChange={(event) => setAmmunition(Number(event.target.value))} />
           </label>
         </div>
-        <button type="button" className="go" disabled={!canLaunch} onClick={() => onLaunch(pilotIds, aircraftIds, fuel, ammunition)}>
+        <OrderButton className="go" reasonKey={launchReason} onOrder={() => onLaunch(pilotIds, aircraftIds, fuel, ammunition)}>
           <Icon name={offer.type} />
           {t('base.mission.launch')}
-        </button>
+        </OrderButton>
       </div>
     </Pane>
   )

@@ -5,6 +5,7 @@ import type { BusyCrews } from './flights'
 import { formatDuration } from './formatDuration'
 import { HOLD_LIMIT } from './holdLimit'
 import Icon from './Icon'
+import OrderButton from './OrderButton'
 import type { Cargo, Destination, Squadron } from './useBase'
 import { useCrewChoice } from './useCrewChoice'
 
@@ -16,7 +17,7 @@ type Props = {
   unavailable: BusyCrews
   /** The base of the player or of an ally that the aircraft supplies. */
   destination: Destination
-  onSupply: (destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo) => void
+  onSupply: (destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo) => Promise<string | null>
 }
 
 /** An aircraft and a pilot that carry resources to a camp of the player's side and come back at once. */
@@ -27,11 +28,11 @@ function SupplyForm({ squadron, unavailable, destination, onSupply }: Props) {
   const isEmpty = RESOURCES.every((resource) => cargo[resource] === 0)
   const canSupply = crew.aircraft !== undefined && crew.pilot !== undefined && !isEmpty
 
-  function supply(): void {
+  async function supply(): Promise<string | null> {
     if (crew.aircraft === undefined || crew.pilot === undefined) {
-      return
+      return null
     }
-    onSupply(destination.id, crew.pilot.id, crew.aircraft.id, cargo)
+    return onSupply(destination.id, crew.pilot.id, crew.aircraft.id, cargo)
   }
 
   return (
@@ -52,10 +53,10 @@ function SupplyForm({ squadron, unavailable, destination, onSupply }: Props) {
             />
           </label>
         ))}
-        <button type="button" disabled={!canSupply} onClick={supply}>
+        <OrderButton disabled={!canSupply} onOrder={supply}>
           <Icon name="supplies" />
           {t('supply.send', { time: formatDuration(2 * destination.flightSeconds) })}
-        </button>
+        </OrderButton>
       </div>
       {(crew.aircraft === undefined || crew.pilot === undefined) && <p className="squadron-hint">{t('stationing.nobodyFree')}</p>}
     </section>

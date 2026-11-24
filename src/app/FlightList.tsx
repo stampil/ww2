@@ -1,13 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { formatDuration } from './formatDuration'
 import Icon from './Icon'
+import OrderButton from './OrderButton'
 import Pane from './Pane'
 import type { Flight, Squadron } from './useBase'
 
 type Props = {
   flights: Flight[]
   squadron: Squadron
-  onReceive: (missionId: number) => void
+  onReceive: (missionId: number) => Promise<string | null>
 }
 
 /** The missions under way, each with its crews and the time left; one that is over can be received. */
@@ -31,9 +32,7 @@ function FlightList({ flights, squadron, onReceive }: Props) {
             <span className="muted">{flight.crews.map(crewLabel).join(', ')}</span>
             <span className="muted">{t('base.mission.loaded', { fuel: flight.fuelLoaded, ammunition: flight.ammunitionLoaded })}</span>
             {flight.remainingSeconds === 0 && (
-              <button type="button" onClick={() => onReceive(flight.id)}>
-                {t('base.mission.receive')}
-              </button>
+              <OrderButton onOrder={() => onReceive(flight.id)}>{t('base.mission.receive')}</OrderButton>
             )}
           </li>
         ))}

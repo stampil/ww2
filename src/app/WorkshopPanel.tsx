@@ -2,24 +2,27 @@ import { useTranslation } from 'react-i18next'
 import { formatDuration } from './formatDuration'
 import Icon from './Icon'
 import GoodsPicture from './GoodsPicture'
+import OrderButton from './OrderButton'
 import Pane from './Pane'
+import { assembleShortage, productionShortage } from './shortages'
 import type { Base, Part, UpgradeInfo, UpgradeName } from './useBase'
 import UpgradeCard from './UpgradeCard'
 
 type Props = {
   workshop: Base['workshop']
   jobs: Base['workshop']['jobs']
-  onProduce: (part: Part, withMechanic: boolean) => void
-  onAssemble: () => void
+  /** The materials the camp has, which the parts are made of. */
+  materials: number
+  onProduce: (part: Part, withMechanic: boolean) => Promise<string | null>
+  onAssemble: () => Promise<string | null>
   upgrade: UpgradeInfo
   commandPoints: number
-  onUpgrade: (upgrade: UpgradeName) => void
+  onUpgrade: (upgrade: UpgradeName) => Promise<string | null>
 }
 
 /** The spare parts the workshop can make, with or without a mechanic, the aircraft that the four parts make up, and the ones being made. */
-function WorkshopPanel({ workshop, jobs, onProduce, onAssemble, upgrade, commandPoints, onUpgrade }: Props) {
+function WorkshopPanel({ workshop, jobs, materials, onProduce, onAssemble, upgrade, commandPoints, onUpgrade }: Props) {
   const { t } = useTranslation()
-  const canAssemble = workshop.parts.every((part) => workshop.readyParts[part.part] > 0)
 
   return (
     <>
@@ -49,13 +52,13 @@ function WorkshopPanel({ workshop, jobs, onProduce, onAssemble, upgrade, command
                 </li>
               </ul>
               <div className="card-actions">
-                <button type="button" onClick={() => onProduce(part.part, false)}>
+                <OrderButton onOrder={() => onProduce(part.part, false)} reasonKey={productionShortage(workshop, part.materialCost, false, materials)}>
                   {t('base.make')}
-                </button>
-                <button type="button" onClick={() => onProduce(part.part, true)}>
+                </OrderButton>
+                <OrderButton onOrder={() => onProduce(part.part, true)} reasonKey={productionShortage(workshop, part.materialCost, true, materials)}>
                   <Icon name="mechanic" />
                   {t('base.makeWithMechanic')}
-                </button>
+                </OrderButton>
               </div>
             </li>
           ))}
@@ -64,10 +67,10 @@ function WorkshopPanel({ workshop, jobs, onProduce, onAssemble, upgrade, command
       </Pane>
       <Pane title={t('base.assemble.title')}>
         <p className="note">{t('base.assemble.text')}</p>
-        <button type="button" disabled={!canAssemble} onClick={onAssemble}>
+        <OrderButton onOrder={onAssemble} reasonKey={assembleShortage(workshop)}>
           <Icon name="aircraft" />
           {t('base.assemble.button')}
-        </button>
+        </OrderButton>
       </Pane>
       {jobs.length > 0 && (
         <Pane title={t('base.running')}>

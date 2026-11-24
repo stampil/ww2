@@ -245,6 +245,8 @@ const NO_BASE = 'noBase'
 const CLAIM_URL = '/api/world/claim'
 const MILLISECONDS_PER_SECOND = 1000
 const POLL_MILLISECONDS = 5000
+// An order that the API has not answered by then is given up on: the next poll shows whether it went through.
+const REQUEST_TIMEOUT_MILLISECONDS = 10000
 
 async function request(url: string, body?: object): Promise<{ base: Base } | { error: string }> {
   try {
@@ -252,6 +254,7 @@ async function request(url: string, body?: object): Promise<{ base: Base } | { e
       method: body === undefined ? 'GET' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MILLISECONDS),
     })
     if (response.ok) {
       return { base: (await response.json()) as Base }

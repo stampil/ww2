@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import GameWindow from './GameWindow'
+import OrderButton from './OrderButton'
 
 type Props = {
-  onConfirm: () => void
+  onConfirm: () => Promise<string | null>
   onCancel: () => void
 }
 
@@ -18,9 +19,7 @@ function ResetConfirm({ onConfirm, onCancel }: Props) {
           <button type="button" className="go" onClick={onCancel}>
             {t('reset.cancel')}
           </button>
-          <button type="button" onClick={onConfirm}>
-            {t('reset.confirm')}
-          </button>
+          <OrderButton onOrder={onConfirm}>{t('reset.confirm')}</OrderButton>
         </div>
       </div>
     </GameWindow>

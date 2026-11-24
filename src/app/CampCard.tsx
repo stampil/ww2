@@ -24,9 +24,9 @@ type Props = {
   destination: Destination | undefined
   /** The camp as something to attack; none unless an enemy player holds it. */
   target: AttackTarget | undefined
-  onAttack: (targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]) => void
-  onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => void
-  onSupply: (destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo) => void
+  onAttack: (targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]) => Promise<string | null>
+  onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => Promise<string | null>
+  onSupply: (destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo) => Promise<string | null>
 }
 
 /** The detail of a camp picked on the map: who holds it, what it keeps and how many aircraft stand there, and the orders that send an aircraft to it, to stand there or to bring it resources, or against it, for a raid or a capture. */

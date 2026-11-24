@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import { CORRIDOR_TURN_RATE_RADIANS_PER_SECOND, corridorHeading, corridorSpeed, destructionSecondsOf, drawCorridorPoint, EASIEST_RISK, forwardOf, keepAhead } from './cockpitRules'
-import type { CorridorPoint, Flier } from './cockpitRules'
+import { destructionSecondsOf, forwardOf } from './cockpitRules'
+import type { Flier } from './cockpitRules'
 import type { AircraftModel3D } from './aircraftModel'
 import { createAircraftModel } from './aircraftModels'
 import { D520Model } from './D520Model'
@@ -123,7 +123,7 @@ function place(object: THREE.Object3D, flier: Flier): void {
 /**
  * A dogfight flown in real time from the cockpit of the D.520, as in Wings: the player turns to get behind an enemy fighter and keeps it in the gunsight, and once it has been
  * there long enough, added up over the fight, the guns fire by themselves and it blows up. The aircraft keeps its speed; the player steers it. The accuracy of the pilot widens
- * the gunsight, the maneuverability of the aircraft quickens its turns. In the easiest fights the enemy flies in a wide corridor in front of the player. Owns its WebGL canvas.
+ * the gunsight, the maneuverability of the aircraft quickens its turns. Owns its WebGL canvas.
  */
 export class CockpitCombatScene {
   private readonly renderer: THREE.WebGLRenderer
@@ -147,15 +147,13 @@ export class CockpitCombatScene {
   private targetY = 0
   private lockSeconds = 0
   private readonly destructionSeconds: number
-  private readonly isInCorridor: boolean
   private damageLevel = 0
   private enemyLevel = 0
   private enemyDecisionSeconds = 0
   private enemyTargetYaw = 0
   private enemyTargetPitch = 0
   private enemyYawRate = 0
-  private enemySpeed: number
-  private corridorPoint: CorridorPoint = drawCorridorPoint()
+  private readonly enemySpeed: number
   private secondsLeft = COMBAT_SECONDS
   private statusCountdown = 0
   private pauseSeconds = 0
@@ -169,7 +167,6 @@ export class CockpitCombatScene {
     private readonly onEnd: (outcome: CockpitOutcome) => void,
   ) {
     this.destructionSeconds = destructionSecondsOf(options.risk, options.isTouchScreen)
-    this.isInCorridor = options.risk === EASIEST_RISK
     this.enemySpeed = ENEMIES[options.enemy].speed
     this.renderer = createRenderer(container, false)
     const neededLiveries: Livery[] = [options.livery, ENEMY_LIVERIES[options.enemy]]
@@ -351,15 +348,10 @@ export class CockpitCombatScene {
     if (this.isEnemyDestroyed) {
       flight.pitch = Math.max(flight.pitch - FALL_PITCH_RATE_RADIANS_PER_SECOND * deltaSeconds, -FALL_MAX_PITCH_RADIANS)
       flight.roll += deltaSeconds * 2
-    } else if (this.isInCorridor) {
-      this.steerInCorridor(deltaSeconds)
     } else {
       this.steerEnemy(deltaSeconds, kind.turnRate)
     }
     flight.position.addScaledVector(forwardOf(flight.yaw, flight.pitch), this.enemySpeed * deltaSeconds)
-    if (this.isInCorridor && !this.isEnemyDestroyed) {
-      keepAhead(flight, this.playerFlight)
-    }
     flight.position.z = Math.max(flight.position.z, 0)
     place(this.enemyRoot, flight)
   }
@@ -390,20 +382,6 @@ export class CockpitCombatScene {
       }
     }
     this.turnEnemyTowardTargets(deltaSeconds, turnRate)
-  }
-
-  /** In the easiest fight the enemy keeps to a point that wanders in a wide corridor in front of the player, follows his turns faster than he can make them and holds its distance: it never gets behind him and he never gets past it. */
-  private steerInCorridor(deltaSeconds: number): void {
-    this.enemyDecisionSeconds -= deltaSeconds
-    if (this.enemyDecisionSeconds <= 0) {
-      this.corridorPoint = drawCorridorPoint()
-      this.enemyDecisionSeconds = between(ENEMY_DECISION_SECONDS)
-    }
-    const heading = corridorHeading(this.corridorPoint, this.enemyFlight, this.playerFlight)
-    this.enemyTargetYaw = heading.yaw
-    this.enemyTargetPitch = heading.pitch
-    this.enemySpeed = corridorSpeed(this.corridorPoint, this.enemyFlight, this.playerFlight, PLAYER_SPEED_METERS_PER_SECOND)
-    this.turnEnemyTowardTargets(deltaSeconds, CORRIDOR_TURN_RATE_RADIANS_PER_SECOND)
   }
 
   /** Turns the enemy toward the yaw and the pitch it wants, as fast as its turn rate lets it, and banks it into the turn. */

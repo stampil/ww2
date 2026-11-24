@@ -5,6 +5,7 @@ import type { BusyCrews } from './flights'
 import { formatDuration } from './formatDuration'
 import Gauge from './Gauge'
 import Icon from './Icon'
+import OrderButton from './OrderButton'
 import type { AttackKind, AttackTarget, Squadron } from './useBase'
 import { useCrewChoice } from './useCrewChoice'
 
@@ -19,7 +20,7 @@ type Props = {
   unavailable: BusyCrews
   /** The enemy camp, with its defense and what refuses an attack on it now. */
   target: AttackTarget
-  onAttack: (targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]) => void
+  onAttack: (targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]) => Promise<string | null>
 }
 
 /** The two ways to attack an enemy camp: a raid by a few aircraft, which wears its defense down, and a capture by one aircraft, which takes the camp once its defense is down. */
@@ -31,8 +32,8 @@ function AttackForm({ squadron, unavailable, target, onAttack }: Props) {
   const raidAircraft = Math.min(aircraftCount, raidAircraftMax)
   const canCapture = crew.aircraft !== undefined && crew.pilot !== undefined
 
-  function raid(): void {
-    onAttack(
+  function raid(): Promise<string | null> {
+    return onAttack(
       target.baseId,
       'raid',
       crew.freePilots.slice(0, raidAircraft).map((pilot) => pilot.id),
@@ -40,11 +41,11 @@ function AttackForm({ squadron, unavailable, target, onAttack }: Props) {
     )
   }
 
-  function capture(): void {
+  async function capture(): Promise<string | null> {
     if (crew.aircraft === undefined || crew.pilot === undefined) {
-      return
+      return null
     }
-    onAttack(target.baseId, 'campCapture', [crew.pilot.id], [crew.aircraft.id])
+    return onAttack(target.baseId, 'campCapture', [crew.pilot.id], [crew.aircraft.id])
   }
 
   return (
@@ -57,20 +58,20 @@ function AttackForm({ squadron, unavailable, target, onAttack }: Props) {
           <span>{t('attack.count')}</span>
           <input type="number" min={1} max={Math.max(1, raidAircraftMax)} value={raidAircraft} onChange={(event) => setAircraftCount(Number(event.target.value))} />
         </label>
-        <button type="button" disabled={target.raidRefusal !== null || raidAircraftMax < 1} onClick={raid}>
+        <OrderButton disabled={target.raidRefusal !== null || raidAircraftMax < 1} onOrder={raid}>
           <Icon name="raid" />
           {t('attack.raidSend', { count: raidAircraft, time: formatDuration(BACK_AND_FORTH * target.flightSeconds) })}
-        </button>
+        </OrderButton>
       </div>
       {target.raidRefusal !== null && <p className="squadron-hint">{t(`base.errors.${target.raidRefusal}`)}</p>}
       <h5>{t('attack.captureTitle')}</h5>
       <p className="squadron-hint">{t('attack.captureText')}</p>
       <div className="gift-form">
         <CrewFields crew={crew} />
-        <button type="button" disabled={target.captureRefusal !== null || !canCapture} onClick={capture}>
+        <OrderButton disabled={target.captureRefusal !== null || !canCapture} onOrder={capture}>
           <Icon name="campCapture" />
           {t('attack.captureSend', { time: formatDuration(target.flightSeconds) })}
-        </button>
+        </OrderButton>
       </div>
       {target.captureRefusal !== null && <p className="squadron-hint">{t(`base.errors.${target.captureRefusal}`)}</p>}
       {!canCapture && <p className="squadron-hint">{t('attack.nobodyFree')}</p>}

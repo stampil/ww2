@@ -23,9 +23,9 @@ type Props = {
   destinations: Destination[]
   /** The enemy camps that can be attacked, and the order that sends an attack against one. */
   targets: AttackTarget[]
-  onAttack: (targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]) => void
-  onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => void
-  onSupply: (destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo) => void
+  onAttack: (targetBaseId: number, kind: AttackKind, pilotIds: number[], aircraftIds: number[]) => Promise<string | null>
+  onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => Promise<string | null>
+  onSupply: (destinationBaseId: number, pilotId: number, aircraftId: number, cargo: Cargo) => Promise<string | null>
 }
 
 /** The map of France with the camps of the player's world, the French and the Germans: theirs are ringed in gold, their allies' in green, the enemy's are greyed. A camp picked on the map shows its card on the other side of the map, where aircraft are sent to it. */

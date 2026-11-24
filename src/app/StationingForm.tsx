@@ -5,6 +5,7 @@ import type { BusyCrews } from './flights'
 import { formatDuration } from './formatDuration'
 import { HOLD_LIMIT } from './holdLimit'
 import Icon from './Icon'
+import OrderButton from './OrderButton'
 import type { Destination, Squadron } from './useBase'
 import { useCrewChoice } from './useCrewChoice'
 
@@ -14,7 +15,7 @@ type Props = {
   unavailable: BusyCrews
   /** The camp the aircraft is sent to. */
   destination: Destination
-  onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => void
+  onStation: (destinationBaseId: number, pilotId: number, aircraftId: number, fuel: number, ammunition: number) => Promise<string | null>
 }
 
 /** An aircraft and a pilot sent to stand at a camp, with fuel and ammunition for it, until they are recalled. */
@@ -24,11 +25,11 @@ function StationingForm({ squadron, unavailable, destination, onStation }: Props
   const [fuel, setFuel] = useState(0)
   const [ammunition, setAmmunition] = useState(0)
 
-  function station(): void {
+  async function station(): Promise<string | null> {
     if (crew.aircraft === undefined || crew.pilot === undefined) {
-      return
+      return null
     }
-    onStation(destination.id, crew.pilot.id, crew.aircraft.id, fuel, ammunition)
+    return onStation(destination.id, crew.pilot.id, crew.aircraft.id, fuel, ammunition)
   }
 
   return (
@@ -45,10 +46,10 @@ function StationingForm({ squadron, unavailable, destination, onStation }: Props
           <span>{t('stationing.ammunition')}</span>
           <input type="number" min={0} max={HOLD_LIMIT} value={ammunition} onChange={(event) => setAmmunition(Number(event.target.value))} />
         </label>
-        <button type="button" disabled={crew.aircraft === undefined || crew.pilot === undefined} onClick={station}>
+        <OrderButton disabled={crew.aircraft === undefined || crew.pilot === undefined} onOrder={station}>
           <Icon name="site" />
           {t('stationing.send', { time: formatDuration(destination.flightSeconds) })}
-        </button>
+        </OrderButton>
       </div>
       {(crew.aircraft === undefined || crew.pilot === undefined) && <p className="squadron-hint">{t('stationing.nobodyFree')}</p>}
     </section>

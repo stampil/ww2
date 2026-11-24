@@ -54,7 +54,7 @@ final class BaseOverview
             'recipients' => array_map(static fn (array $recipient): array => [...$recipient, 'kinship' => $recipient['kinship']->value], $this->sites->recipientsOf($baseId)),
             'destinations' => array_map(fn (array $destination): array => [...$destination, 'kinship' => $destination['kinship']->value, 'flightSeconds' => $this->stationings->flightSecondsBetween($baseId, $destination['id'])], $this->sites->destinationsOf($baseId)),
             'site' => $this->sites->siteOf($baseId)->value,
-            'clan' => $this->sites->siteOf($baseId)->clan()->value,
+            'clan' => $this->sites->clanOfBase($baseId)->value,
             'terrainPlan' => $this->baseStore->terrainPlanOf($baseId),
             'resources' => $this->baseStore->resourcesOf($baseId)->toArray(),
             'supplyIncome' => $this->income->perMinuteAt($baseId),

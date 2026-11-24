@@ -512,7 +512,7 @@
     },
     "sites": "Sites",
     "map": "Map of France",
-    "legend": "Your camps are ringed in gold and your allies' in green; free camps are in color, red for the Axe; a camp that a raid has just hit is in ruins. Click a camp: its details open on the other side of the map.",
+    "legend": "Your camps are ringed in gold, your allies' (players or the AI) in green and the enemy's in red; a free camp has no glow; a camp that a raid has just hit is in ruins. Click a camp: its details open on the other side of the map.",
     "side": "Your side: {{side}}.",
     "clan": {
       "french": "the Allies",
@@ -521,7 +521,9 @@
     "relation": {
       "own": "your camp",
       "ally": "{{holder}}, ally",
-      "enemy": "{{holder}}, enemy"
+      "enemy": "{{holder}}, enemy",
+      "aiAlly": "Allied AI",
+      "aiEnemy": "Enemy AI"
     },
     "pick": "Click a free camp on the map to put your base there.",
     "free": "Free",

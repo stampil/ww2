@@ -32,7 +32,7 @@ function campPicture(isFree: boolean, isAttacked: boolean): string {
   return isFree ? FREE_CAMP_URL : HELD_CAMP_URL
 }
 
-/** The map of France with a camp on each site: a free one can be picked, and a taken one too where asked; a taken one has its own picture, with a green glow when an ally holds it, and a camp that a raid hurt a few minutes ago shows in ruins. On a phone the map is wider than the screen and slides sideways, from the camps. */
+/** The map of France with a camp on each site: a free one can be picked, and a taken one too where asked; a taken one, held by a player or by the AI, has its own picture, with a green glow when an ally holds it and a red one when an enemy does, and a camp that a raid hurt a few minutes ago shows in ruins. On a phone the map is wider than the screen and slides sideways, from the camps. */
 function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites = [], ownClan }: Props) {
   const { t } = useTranslation()
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -60,6 +60,8 @@ function WorldMap({ sites, selected, onSelect, canSelectTaken = false, ownSites 
               data-clan={clan}
               data-own={ownSites.includes(site)}
               data-ally={!free && !ownSites.includes(site) && clan === ownClan}
+              data-enemy={!free && ownClan !== undefined && clan !== ownClan}
+              data-side-hint={ownClan === undefined}
               data-label-side={labelSide}
               aria-label={`${t(`world.site.${site}`)} : ${t(free ? 'world.free' : 'world.taken')}`}
               title={t(`world.airfield.${site}`)}

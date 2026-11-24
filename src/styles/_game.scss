@@ -1316,8 +1316,12 @@ button.base-sprite {
     filter: drop-shadow(0 0 0.4rem $go);
   }
 
-  // A free camp of the Axe is marked in red, so that the side a first base there would give shows on the map.
-  &[data-free='true'][data-clan='axe'] img {
+  &[data-enemy='true'] img {
+    filter: drop-shadow(0 0 0.4rem $alarm);
+  }
+
+  // Where a first base is chosen, a free camp of the Axe is marked in red, so that the side the base would give shows on the map.
+  &[data-free='true'][data-clan='axe'][data-side-hint='true'] img {
     filter: drop-shadow(0 0 0.35rem $alarm);
   }
 

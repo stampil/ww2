@@ -27,6 +27,7 @@ final class Bases
     public function __construct(
         private readonly Database $database,
         private readonly Instances $instances,
+        private readonly AiCamps $aiCamps,
         private readonly SquadronFounder $squadronFounder,
         private readonly BaseFounder $baseFounder,
         private readonly BattleStore $battles,
@@ -102,9 +103,9 @@ final class Bases
     }
 
     /**
-     * The other bases of the world of a base that its player can give to: their own, and those held by allies of the same side.
+     * The other bases of the world of a base that its player can give to: their own, and those held by allies of the same side, players or the AI of that side, which have no nickname.
      *
-     * @return list<array{id: int, site: string, holder: string, kinship: Kinship}>
+     * @return list<array{id: int, site: string, holder: string|null, ai: bool, kinship: Kinship}>
      */
     public function recipientsOf(int $baseId): array
     {
@@ -136,7 +137,8 @@ final class Bases
             } else {
                 continue;
             }
-            $recipients[] = ['id' => (int) $row['id'], 'site' => $site->value, 'holder' => (string) $row['holder'], 'kinship' => $kinship];
+            $isAi = $this->aiCamps->clanOf((int) $row['player_id']) !== null;
+            $recipients[] = ['id' => (int) $row['id'], 'site' => $site->value, 'holder' => $isAi ? null : (string) $row['holder'], 'ai' => $isAi, 'kinship' => $kinship];
         }
 
         return $recipients;
@@ -145,7 +147,7 @@ final class Bases
     /**
      * Where an aircraft of a base can be stationed: the bases a gift can go to, and the free camps of the world, which an aircraft takes by landing on one first.
      *
-     * @return list<array{id: int, site: string, holder: string|null, kinship: Kinship}>
+     * @return list<array{id: int, site: string, holder: string|null, ai: bool, kinship: Kinship}>
      */
     public function destinationsOf(int $baseId): array
     {
@@ -155,7 +157,7 @@ final class Bases
             ['base_id' => $baseId],
         );
         foreach ($rows as $row) {
-            $destinations[] = ['id' => (int) $row['id'], 'site' => (string) $row['site'], 'holder' => null, 'kinship' => Kinship::Free];
+            $destinations[] = ['id' => (int) $row['id'], 'site' => (string) $row['site'], 'holder' => null, 'ai' => false, 'kinship' => Kinship::Free];
         }
         usort($destinations, static fn (array $first, array $second): int => $first['id'] <=> $second['id']);
 
@@ -211,11 +213,21 @@ final class Bases
     }
 
     /**
-     * The side of a player: the side of the site of the first base they took.
+     * The side of a player: the side of the site of the first base they took, or the side of the AI for the AI of a side.
      */
     public function clanOfPlayer(int $playerId): Clan
     {
-        return $this->siteOf($this->idOf($playerId))->clan();
+        return $this->aiCamps->clanOf($playerId) ?? $this->siteOf($this->idOf($playerId))->clan();
+    }
+
+    /**
+     * The side of a base: that of its holder, or that of its site while it is free.
+     */
+    public function clanOfBase(int $baseId): Clan
+    {
+        $holderId = $this->holderIdOf($baseId);
+
+        return $holderId === null ? $this->siteOf($baseId)->clan() : $this->clanOfPlayer($holderId);
     }
 
     /**
@@ -264,24 +276,21 @@ final class Bases
     }
 
     /**
-     * The sites a new player can choose from: those of the oldest instance that has a free base, else all of a new instance.
+     * The sites a new player can choose from: those of the oldest instance that has a free base, which is a new one, with the camps of the AI, when every base of every instance is held.
      *
-     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int, attacked: bool}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null, ai: bool, resources: array<string, int>|null, aircraft: int, attacked: bool}>
      */
     public function sitesToChoose(): array
     {
-        $instanceId = $this->instances->joinableId();
-        if ($instanceId === null) {
-            return array_map(fn (Site $site): array => $this->siteState($site, null, null, null, 0, false), Site::cases());
-        }
+        $instanceId = $this->instances->joinableId() ?? $this->database->transaction(fn (): int => $this->createInstance());
 
         return $this->sitesAroundInstance($instanceId);
     }
 
     /**
-     * The sites of the instance a base stands in, each free or held by a player, with the side of its holder, what its stores hold and how many aircraft stand there.
+     * The sites of the instance a base stands in, each free or held by a player or by the AI, with the side of its holder, what its stores hold and how many aircraft stand there.
      *
-     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int, attacked: bool}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null, ai: bool, resources: array<string, int>|null, aircraft: int, attacked: bool}>
      */
     public function sitesAround(int $baseId): array
     {
@@ -301,7 +310,7 @@ final class Bases
             if ($this->idsOf($playerId) !== []) {
                 throw new BaseException(BaseError::LandingRequired);
             }
-            $instanceId = $this->instances->joinableId() ?? $this->instances->create();
+            $instanceId = $this->instances->joinableId() ?? $this->createInstance();
             $rows = $this->database->fetchAll(
                 'SELECT id FROM bases WHERE instance_id = :instance_id AND site = :site AND player_id IS NULL FOR UPDATE',
                 ['instance_id' => $instanceId, 'site' => $site->value],
@@ -327,9 +336,29 @@ final class Bases
     }
 
     /**
+     * Starts a new instance with its sites laid out, and the camps that the AI holds given to the AI, each with stocks and a squadron. The caller holds the transaction.
+     *
+     * @return int the id of the new instance
+     */
+    private function createInstance(): int
+    {
+        $instanceId = $this->instances->create();
+        $holderIds = $this->aiCamps->createHolders($instanceId);
+        foreach ($this->aiCamps->draw() as $hold) {
+            $rows = $this->database->fetchAll('SELECT id FROM bases WHERE instance_id = :instance_id AND site = :site', ['instance_id' => $instanceId, 'site' => $hold['site']->value]);
+            $baseId = (int) $rows[0]['id'];
+            $this->assign($baseId, $holderIds[$hold['clan']->value]);
+            $this->squadronFounder->found($baseId);
+            $this->baseFounder->found($baseId);
+        }
+
+        return $instanceId;
+    }
+
+    /**
      * The aircraft standing at a camp are its own that are not away, and the ones of other bases landed there and not recalled.
      *
-     * @return list<array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int, attacked: bool}>
+     * @return list<array{site: string, free: bool, clan: string, holder: string|null, ai: bool, resources: array<string, int>|null, aircraft: int, attacked: bool}>
      */
     private function sitesAroundInstance(int $instanceId): array
     {
@@ -357,16 +386,31 @@ final class Bases
     }
 
     /**
-     * @param int|null $holderId the player who holds the site, whose side it has; a free site shows the side its first base would give
+     * @param int|null $holderId the player or the AI who holds the site, whose side it has; a free site shows the side its first base would give
      * @param array<string, int>|null $resources what the stores of the camp hold, null while it has none
      * @param int $aircraft how many aircraft stand at the camp
      * @param bool $isUnderAttack whether a raid hurt the camp a few minutes ago
-     * @return array{site: string, free: bool, clan: string, holder: string|null, resources: array<string, int>|null, aircraft: int, attacked: bool}
+     * @return array{site: string, free: bool, clan: string, holder: string|null, ai: bool, resources: array<string, int>|null, aircraft: int, attacked: bool}
      */
     private function siteState(Site $site, ?int $holderId, ?string $holder, ?array $resources, int $aircraft, bool $isUnderAttack): array
     {
-        $clan = $holderId === null ? $site->clan() : $this->clanOfPlayer($holderId);
+        $aiClan = $holderId === null ? null : $this->aiCamps->clanOf($holderId);
+        $clan = $site->clan();
+        if ($aiClan !== null) {
+            $clan = $aiClan;
+        } elseif ($holderId !== null) {
+            $clan = $this->clanOfPlayer($holderId);
+        }
 
-        return ['site' => $site->value, 'free' => $holderId === null, 'clan' => $clan->value, 'holder' => $holder, 'resources' => $resources, 'aircraft' => $aircraft, 'attacked' => $isUnderAttack];
+        return [
+            'site' => $site->value,
+            'free' => $holderId === null,
+            'clan' => $clan->value,
+            'holder' => $aiClan === null ? $holder : null,
+            'ai' => $aiClan !== null,
+            'resources' => $resources,
+            'aircraft' => $aircraft,
+            'attacked' => $isUnderAttack,
+        ];
     }
 }

@@ -36,6 +36,8 @@ function CampCard({ camp, ownSites, currentSite, ownClan, baseLimit, squadron, u
   let relation = t('world.free')
   if (ownSites.includes(camp.site)) {
     relation = t('world.relation.own')
+  } else if (camp.ai) {
+    relation = t(camp.clan === ownClan ? 'world.relation.aiAlly' : 'world.relation.aiEnemy')
   } else if (camp.holder !== null) {
     relation = t(camp.clan === ownClan ? 'world.relation.ally' : 'world.relation.enemy', { holder: camp.holder })
   }

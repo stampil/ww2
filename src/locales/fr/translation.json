@@ -512,7 +512,7 @@
     },
     "sites": "Sites",
     "map": "Carte de la France",
-    "legend": "Tes camps sont cerclés d'or, ceux de tes alliés de vert ; les camps libres sont en couleur, rouges pour l'Axe ; un camp qu'un raid vient de toucher est en ruines. Clique un camp : son détail s'ouvre de l'autre côté de la carte.",
+    "legend": "Tes camps sont cerclés d'or, ceux de tes alliés (joueurs ou IA) de vert, ceux de l'ennemi de rouge ; un camp libre n'a pas de halo ; un camp qu'un raid vient de toucher est en ruines. Clique un camp : son détail s'ouvre de l'autre côté de la carte.",
     "side": "Ton côté : {{side}}.",
     "clan": {
       "french": "les Alliés",
@@ -521,7 +521,9 @@
     "relation": {
       "own": "ton camp",
       "ally": "{{holder}}, allié",
-      "enemy": "{{holder}}, ennemi"
+      "enemy": "{{holder}}, ennemi",
+      "aiAlly": "IA alliée",
+      "aiEnemy": "IA ennemie"
     },
     "pick": "Clique un camp libre sur la carte pour y poser ta base.",
     "free": "Libre",

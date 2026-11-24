@@ -167,10 +167,10 @@ export type CampState = { defense: number; destroyed: string[]; rebuildCost: num
 
 /** A base the player holds, with the site it stands on. */
 export type HeldBase = { id: number; site: string }
-/** A base a gift can go to: one of the player's own, or an ally's, with the nickname of its holder. */
-export type Recipient = { id: number; site: string; holder: string; kinship: 'own' | 'ally' }
+/** A base a gift can go to: one of the player's own, or an ally's, with the nickname of its holder, which the AI of the side does not have. */
+export type Recipient = { id: number; site: string; holder: string | null; ai: boolean; kinship: 'own' | 'ally' }
 /** A base an aircraft can be stationed at: a recipient, or a free camp, which the aircraft takes by landing there first. */
-export type Destination = { id: number; site: string; holder: string | null; kinship: 'own' | 'ally' | 'free'; flightSeconds: number }
+export type Destination = { id: number; site: string; holder: string | null; ai: boolean; kinship: 'own' | 'ally' | 'free'; flightSeconds: number }
 
 /** Where a stationed aircraft stands: flying out to the camp, standing there until it is recalled, or flying back. */
 export type StationingPhase = 'outbound' | 'stationed' | 'returning'

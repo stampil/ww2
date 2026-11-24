@@ -853,6 +853,36 @@ button.base-sprite {
   flex-wrap: wrap;
 }
 
+// The officer who commands the base speaks in a box, with their portrait on the left; the portrait is a silhouette until the officers are drawn.
+.officer-speech {
+  @include flex($gap: 0.75rem);
+  align-items: flex-start;
+}
+
+.portrait.officer-portrait {
+  width: 4rem;
+  height: 4rem;
+
+  .icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+.officer-speech-body {
+  @include flex($direction: column, $gap: 0.4rem);
+  flex: 1;
+  min-width: 0;
+}
+
+.officer-title {
+  color: $gold;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 // A mechanic: one frame of his sheet (four columns of frames, four rows), the point where he stands being his feet; the walk and the repair
 // play the four frames of a row one after the other. The row, and the flip of the right-hand walk to walk to the left, are set by his animation.
 // A vehicle of the base, drawn from above with its cab at the top: the map turns it to the way it drives.
@@ -993,7 +1023,7 @@ button.base-sprite {
   text-align: center;
 }
 
-.game-window button:not(.world-camp),
+.game-window button:not(.world-camp):not(.roster-pick),
 .battle-over button,
 .guide button,
 .game-tools button {
@@ -1609,21 +1639,77 @@ button[aria-busy='true'] > .order-label {
   text-align: center;
 }
 
-// The two pages of the open book are the two columns of one sheet: the text runs from the left page to the right one.
-.journal-pages {
+// The journal is a pad with a spiral at the top: one sheet at a time, which turns up and over the spiral.
+.journal-notebook {
+  position: relative;
+  width: 100%;
+  max-width: 44rem;
+  margin: 0.7rem auto 0;
+}
+
+.journal-rings {
+  position: absolute;
+  top: -0.7rem;
+  right: 1rem;
+  left: 1rem;
+  z-index: 3;
+  height: 1.4rem;
+  background: radial-gradient(ellipse 0.3rem 0.65rem at 50% 50%, $outline 0 45%, $khaki 50% 65%, transparent 70%) 0 0 / 1.6rem 100% repeat-x;
+  pointer-events: none;
+}
+
+.journal-stack {
+  position: relative;
+  perspective: 1400px;
+}
+
+.journal-leaf {
   @include paper;
   min-height: 18rem;
-
-  @include from('medium') {
-    padding: 1.5rem 2rem;
-    min-height: 22rem;
-    column-count: 2;
-    column-gap: 3rem;
-    column-rule: 2px solid rgba($ink, 0.35);
-  }
+  padding-top: 1.6rem;
+  backface-visibility: hidden;
+  transform-origin: top center;
 
   p {
     margin: 0 0 0.75rem;
+  }
+
+  // The sheet that moves lies over the one underneath and swings about its top edge, which the spiral holds.
+  &[data-turning] {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-in-out;
+    box-shadow: 0 0.6rem 1rem rgba($outline, 0.45);
+  }
+
+  &[data-turning='forward'] {
+    animation-name: journal-turn-forward;
+  }
+
+  &[data-turning='backward'] {
+    animation-name: journal-turn-backward;
+  }
+}
+
+@keyframes journal-turn-forward {
+  from {
+    transform: rotateX(0deg);
+  }
+
+  to {
+    transform: rotateX(100deg);
+  }
+}
+
+@keyframes journal-turn-backward {
+  from {
+    transform: rotateX(100deg);
+  }
+
+  to {
+    transform: rotateX(0deg);
   }
 }
 
@@ -1665,6 +1751,154 @@ button[aria-busy='true'] > .order-label {
 .journal-nav {
   @include flex($align: center, $justify: space-between, $gap: 0.75rem);
   font-variant-numeric: tabular-nums;
+}
+
+// The roster of the squadron: the pilots from the highest rank down, the sheet of the one picked beside them, and the memorial of those who died.
+.roster-tabs {
+  @include flex($gap: 0.5rem);
+  margin-bottom: 0.75rem;
+}
+
+.roster-layout {
+  display: grid;
+  gap: 0.9rem;
+
+  @include from('large') {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    padding: 0.1rem 0.4rem;
+    border-bottom: 1px solid rgba($frame, 0.4);
+    font-weight: 400;
+    text-align: right;
+  }
+
+  thead th {
+    color: $gold;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  th:first-child {
+    text-align: left;
+  }
+
+  tr[data-selected='true'] {
+    background: $panel-raised;
+  }
+}
+
+.roster-pick {
+  @include flex($display: inline-flex, $align: center, $gap: 0.4rem);
+  min-height: $touch-target;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $text;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+
+  &:hover,
+  &:focus-visible,
+  &[aria-pressed='true'] {
+    color: $gold;
+  }
+}
+
+.ace-tag {
+  padding: 0 0.4rem;
+  border: 1px solid $gold;
+  color: $gold;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pilot-sheet {
+  @include flex($direction: column, $gap: 0.5rem);
+
+  h5 {
+    margin: 0.4rem 0 0;
+    color: $gold;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+}
+
+.pilot-sheet-head {
+  @include flex($align: center, $gap: 0.75rem);
+
+  strong,
+  span:not(.portrait):not(.ace-tag) {
+    display: block;
+  }
+}
+
+.pilot-sheet-figures {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.15rem 0.75rem;
+  margin: 0;
+
+  dt {
+    color: $muted-text;
+    font-size: 0.8rem;
+  }
+
+  dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    text-align: right;
+  }
+}
+
+.victory-marks {
+  @include flex($align: center, $gap: 0.15rem);
+  flex-wrap: wrap;
+  margin: 0;
+  color: $gold;
+
+  .icon {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.medal-list {
+  @include flex($direction: column, $gap: 0.25rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    @include flex($align: center, $gap: 0.4rem);
+  }
+
+  .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: $gold;
+  }
+}
+
+.medal-none {
+  margin: 0;
+  color: $muted-text;
 }
 
 // What a raid does to a camp: the defense it has left, and the buildings that stay destroyed until they are built again.

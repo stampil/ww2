@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next'
+import { useRankName } from './ClanContext'
 import FlightList from './FlightList'
 import { formatDuration } from './formatDuration'
 import type { BusyCrews } from './flights'
 import Gauge from './Gauge'
+import { GAUGE_MAX } from './gaugeMax'
 import GiveTo from './GiveTo'
 import Icon from './Icon'
 import MissionBoard from './MissionBoard'
@@ -12,7 +14,6 @@ import PilotPortrait from './PilotPortrait'
 import { recruitShortage } from './shortages'
 import type { AwayAircraft, Base, Flight, Offer, Recipient, Rest, Squadron } from './useBase'
 
-const GAUGE_MAX = 100
 
 type Props = {
   squadron: Squadron
@@ -29,6 +30,8 @@ type Props = {
   unavailable: BusyCrews
   /** Asks to open the journal of the base. */
   onOpenJournal: () => void
+  /** Asks to open the roster of the squadron. */
+  onOpenRoster: () => void
   onLaunch: (missionId: number, pilotIds: number[], aircraftIds: number[], fuel: number, ammunition: number) => Promise<string | null>
   onReceive: (missionId: number) => Promise<string | null>
   onRest: (pilotId: number) => Promise<string | null>
@@ -41,8 +44,9 @@ type Props = {
 }
 
 /** The flights under way, the journal, the missions on the table, and the pilots, who can rest and be joined by new ones. */
-function ControlTowerPanel({ squadron, resources, weather, offers, flights, rests, away, recruitment, busy, unavailable, onOpenJournal, onLaunch, onReceive, onRest, onRecruit, onStartOver, recipients, onGivePilot }: Props) {
+function ControlTowerPanel({ squadron, resources, weather, offers, flights, rests, away, recruitment, busy, unavailable, onOpenJournal, onOpenRoster, onLaunch, onReceive, onRest, onRecruit, onStartOver, recipients, onGivePilot }: Props) {
   const { t } = useTranslation()
+  const rankName = useRankName()
   const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
 
   return (
@@ -52,6 +56,9 @@ function ControlTowerPanel({ squadron, resources, weather, offers, flights, rest
         <div className="card-actions">
           <button type="button" onClick={onOpenJournal}>
             {t('journal.open')}
+          </button>
+          <button type="button" onClick={onOpenRoster}>
+            {t('squadron.roster.open')}
           </button>
         </div>
       </Pane>
@@ -71,7 +78,7 @@ function ControlTowerPanel({ squadron, resources, weather, offers, flights, rest
                     <strong>{pilot.name}</strong>
                     <span>
                       <Icon name="commandPoints" />
-                      {t(`squadron.ranks.${pilot.rank}`)}
+                      {rankName(pilot.rank)}
                     </span>
                   </div>
                 </div>
@@ -98,6 +105,10 @@ function ControlTowerPanel({ squadron, resources, weather, offers, flights, rest
                   <li title={t('squadron.resilience')}>
                     <Icon name="resilience" />
                     {pilot.effectiveResilience}
+                  </li>
+                  <li title={t('squadron.roster.victories')}>
+                    <Icon name="airCombat" />
+                    {pilot.record.victories}
                   </li>
                 </ul>
                 <div className="card-actions">

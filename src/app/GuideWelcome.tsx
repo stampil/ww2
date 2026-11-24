@@ -1,21 +1,21 @@
 import { useTranslation } from 'react-i18next'
 import GameWindow from './GameWindow'
 import Icon from './Icon'
+import OfficerSpeech from './OfficerSpeech'
 
 type Props = {
   onBegin: () => void
   onSkip: () => void
 }
 
-/** The first window of a new player: where they are, what they must achieve, and an offer of the guide for the first day. */
+/** The first window of a new player: the officer who commands the base says where they are, what they must achieve and what the journal is, and offers the guide for the first day. */
 function GuideWelcome({ onBegin, onSkip }: Props) {
   const { t } = useTranslation()
 
   return (
     <GameWindow title={t('guide.welcome.title')} hint={t('guide.welcome.hint')} onDismiss={onBegin}>
       <div className="guide-welcome">
-        <p>{t('guide.welcome.text')}</p>
-        <div className="guide-actions">
+        <OfficerSpeech text={t('guide.welcome.text')}>
           <button type="button" className="go" onClick={onBegin}>
             <Icon name="battle" />
             {t('guide.welcome.begin')}
@@ -23,7 +23,7 @@ function GuideWelcome({ onBegin, onSkip }: Props) {
           <button type="button" onClick={onSkip}>
             {t('guide.welcome.decline')}
           </button>
-        </div>
+        </OfficerSpeech>
       </div>
     </GameWindow>
   )

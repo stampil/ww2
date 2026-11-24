@@ -204,7 +204,7 @@ final class Hangar
         ]);
         $this->squadrons->removeAircraft($aircraft->id);
         if ($pilotKilled) {
-            $this->squadrons->removePilot($pilot->id);
+            $this->squadrons->bury($pilot->id);
         }
     }
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useRankName } from './ClanContext'
 import type { BusyCrews } from './flights'
 import Icon from './Icon'
 import OrderButton from './OrderButton'
@@ -46,6 +47,7 @@ function chosenIds(choices: (number | null)[]): number[] {
 /** Where a mission is prepared: a pilot and an aircraft for each place, the load of each aircraft, and the launch. */
 function MissionBriefing({ offer, squadron, resources, busy, onLaunch }: Props) {
   const { t } = useTranslation()
+  const rankName = useRankName()
   const { freePilots, freeAircraft } = freeCrewOf(offer, squadron, busy)
   const places = placesUpTo(offer.aircraftCount)
   const [pilotChoices, setPilotChoices] = useState(() =>
@@ -85,7 +87,7 @@ function MissionBriefing({ offer, squadron, resources, busy, onLaunch }: Props) 
                 <option value="">—</option>
                 {freePilots.map((pilot) => (
                   <option key={pilot.id} value={pilot.id} disabled={pilotChoices.includes(pilot.id) && pilotChoices[place] !== pilot.id}>
-                    {pilot.name}, {t(`squadron.ranks.${pilot.rank}`)}
+                    {pilot.name}, {rankName(pilot.rank)}
                   </option>
                 ))}
               </select>

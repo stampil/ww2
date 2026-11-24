@@ -14,6 +14,7 @@ final class BattleStore
     /** @var list<string> every table that holds something of a base's game, each with a base_id column */
     private const GAME_TABLES = [
         'pilots',
+        'fallen_pilots',
         'aircraft',
         'missions',
         'base_events',

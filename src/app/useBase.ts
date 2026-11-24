@@ -58,6 +58,17 @@ export type Flight = {
   alerts: FlightAlert[]
 }
 
+/** What a pilot has done, and what the victories and the missions that succeeded have earned them: the medals, and the title of ace. */
+export type PilotRecord = {
+  missionsFlown: number
+  missionsSucceeded: number
+  airCombats: number
+  victories: number
+  groundSuccesses: number
+  aircraftLost: number
+  medals: number
+  isAce: boolean
+}
 export type Pilot = {
   id: number
   name: string
@@ -66,7 +77,10 @@ export type Pilot = {
   stress: number
   effectiveAccuracy: number
   effectiveResilience: number
+  record: PilotRecord
 }
+/** A pilot of the base who died, as the memorial keeps them. */
+export type FallenPilot = { name: string; rank: number; record: PilotRecord }
 export type Aircraft = {
   id: number
   /** The number painted on its fin, which it keeps. */
@@ -228,7 +242,7 @@ export type Base = {
     readyParts: Record<Part, number>
   }
   headquarters: { weather: { windSpeed: number }; offers: Offer[]; flights: Flight[] }
-  roster: { rests: Rest[]; recruitment: { cost: number; maxPilots: number } }
+  roster: { rests: Rest[]; recruitment: { cost: number; maxPilots: number }; fallen: FallenPilot[] }
   stationings: { away: AwayAircraft[]; guests: GuestAircraft[] }
   hangar: { aircraft: HangarAircraft[] }
   squadron: Squadron

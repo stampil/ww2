@@ -5,10 +5,10 @@ import type { PathStep } from '../plans/pathfinding'
 import type { BuildingName, Cell, TerrainPlan } from '../plans/terrainPlan'
 import { ROW_SHARE, WORK_ROW, walkingPose } from './crewPose'
 import type { CrewPose } from './crewPose'
+import { prefersReducedMotion } from './reducedMotion'
 
 const MILLISECONDS_PER_COST = 350
 const PERCENT = 100
-const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 const SHEET_URL = assetUrl('sprites/crew/mechanic.png')
 // The mechanic kneels left of the aircraft, a little below the middle of the stand, facing it as he looks to the right; his feet are the point that moves.
 const WORK_OFFSET = { column: -0.45, row: 0.2 }
@@ -48,7 +48,7 @@ type Props = {
  */
 function MaintenanceCrew({ plan, stand, delayMilliseconds, isWorking, onGone }: Props) {
   const ref = useRef<HTMLSpanElement>(null)
-  const isReduced = useMemo(() => window.matchMedia(REDUCED_MOTION_QUERY).matches, [])
+  const isReduced = useMemo(() => prefersReducedMotion(), [])
   const [phase, setPhase] = useState<Phase>(isReduced ? 'working' : 'out')
   const isWorkingRef = useRef(isWorking)
   isWorkingRef.current = isWorking

@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS pilot_records (
+    pilot_id INT UNSIGNED NOT NULL PRIMARY KEY,
+    missions_flown INT UNSIGNED NOT NULL DEFAULT 0,
+    missions_succeeded INT UNSIGNED NOT NULL DEFAULT 0,
+    air_combats INT UNSIGNED NOT NULL DEFAULT 0,
+    victories INT UNSIGNED NOT NULL DEFAULT 0,
+    ground_successes INT UNSIGNED NOT NULL DEFAULT 0,
+    aircraft_lost INT UNSIGNED NOT NULL DEFAULT 0,
+    FOREIGN KEY (pilot_id) REFERENCES pilots (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci

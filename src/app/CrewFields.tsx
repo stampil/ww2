@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next'
+import { useRankName } from './ClanContext'
 import type { CrewChoice } from './useCrewChoice'
 
 /** The two choices of a flight, an aircraft and its pilot, among those that are free. */
 function CrewFields({ crew }: { crew: CrewChoice }) {
   const { t } = useTranslation()
+  const rankName = useRankName()
 
   return (
     <>
@@ -22,7 +24,7 @@ function CrewFields({ crew }: { crew: CrewChoice }) {
         <select value={crew.pilot?.id ?? ''} onChange={(event) => crew.setPilotId(Number(event.target.value))}>
           {crew.freePilots.map((candidate) => (
             <option key={candidate.id} value={candidate.id}>
-              {candidate.name}, {t(`squadron.ranks.${candidate.rank}`)}
+              {candidate.name}, {rankName(candidate.rank)}
             </option>
           ))}
         </select>

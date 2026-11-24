@@ -38,6 +38,12 @@ enum MissionType: string
         return $this === self::Raid || $this === self::CampCapture;
     }
 
+    /** Whether the aircraft of the squadron strike the ground on this mission: a ground attack, a raid on a camp or its capture. */
+    public function isGroundStrike(): bool
+    {
+        return $this === self::GroundAttack || $this === self::Raid || $this === self::CampCapture;
+    }
+
     /** Whether the aircraft of the squadron fight enemy aircraft on this mission, which count among those the battle asks for. */
     public function isAirCombat(): bool
     {

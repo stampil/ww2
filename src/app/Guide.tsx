@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { GuideStep } from './guideSteps'
+import OfficerSpeech from './OfficerSpeech'
 
 type Props = {
   step: Exclude<GuideStep, 'welcome'>
@@ -7,15 +8,14 @@ type Props = {
   onEnd: () => void
 }
 
-/** What to do next on the first day: the step, in a few lines, with a way to skip the whole guide. */
+/** What to do next on the first day: the step, said by the officer who commands the base, with a way to end the whole guide. */
 function Guide({ step, onEnd }: Props) {
   const { t } = useTranslation()
 
   return (
     <aside className="guide" aria-live="polite">
       <strong>{t(`guide.${step}.title`)}</strong>
-      <p>{t(`guide.${step}.text`)}</p>
-      <div className="guide-actions">
+      <OfficerSpeech text={t(`guide.${step}.text`)}>
         {step === 'free' ? (
           <button type="button" className="go" onClick={onEnd}>
             {t('guide.understood')}
@@ -25,7 +25,7 @@ function Guide({ step, onEnd }: Props) {
             {t('guide.stop')}
           </button>
         )}
-      </div>
+      </OfficerSpeech>
     </aside>
   )
 }

@@ -224,12 +224,60 @@
     "fuel": "Fuel",
     "ammunition": "Ammunition",
     "ranks": {
-      "1": "Sergeant",
-      "2": "Staff sergeant",
-      "3": "Warrant officer",
-      "4": "Second lieutenant",
-      "5": "Lieutenant",
-      "6": "Captain"
+      "french": {
+        "1": "Sergeant",
+        "2": "Staff sergeant",
+        "3": "Warrant officer",
+        "4": "Second lieutenant",
+        "5": "Lieutenant",
+        "6": "Captain"
+      },
+      "axe": {
+        "1": "Unteroffizier",
+        "2": "Feldwebel",
+        "3": "Oberfeldwebel",
+        "4": "Leutnant",
+        "5": "Oberleutnant",
+        "6": "Hauptmann"
+      }
+    },
+    "medals": {
+      "french": {
+        "1": "Croix de guerre",
+        "2": "Médaille militaire",
+        "3": "Légion d'honneur"
+      },
+      "axe": {
+        "1": "Iron Cross, 2nd class",
+        "2": "Iron Cross, 1st class",
+        "3": "German Cross in Gold"
+      }
+    },
+    "roster": {
+      "open": "Kill board",
+      "title": "Kill board",
+      "hint": "The pilots from the highest rank down, with their missions and their victories. Click one to open the pilot's sheet.",
+      "squadron": "Squadron",
+      "memorial": "Memorial",
+      "memorialEmpty": "No one has fallen yet.",
+      "pilot": "Pilot",
+      "missions": "Missions",
+      "victoriesShort": "Victories",
+      "ratio": "Ratio",
+      "ace": "Ace",
+      "missionsFlown": "Missions",
+      "missionsSucceeded": "Missions succeeded",
+      "airCombats": "Air combats",
+      "victories": "Air victories",
+      "groundSuccesses": "Ground attacks succeeded",
+      "aircraftLost": "Aircraft lost",
+      "marks": "Aircraft shot down",
+      "victoriesCount_one": "{{count}} victory",
+      "victoriesCount_other": "{{count}} victories",
+      "noVictory": "No victory",
+      "medals": "Medals",
+      "noMedal": "No medal.",
+      "skills": "Skills"
     },
     "categories": {
       "fighter": "Fighter",
@@ -240,7 +288,7 @@
     "welcome": {
       "title": "Welcome, commander",
       "hint": "10 May 1940",
-      "text": "Germany is attacking in the west. You command this air base and its squadron of D.520s. The battle never ends: each enemy aircraft you shoot down counts in your score. I will guide you through the first day.",
+      "text": "Germany is attacking in the west. You command this air base and its squadron of D.520s. The battle never ends: each enemy aircraft you shoot down counts in your score. You keep the squadron's journal: each return from a mission writes a page in it. I will guide you through the first day.",
       "begin": "Take the tutorial",
       "decline": "No tutorial"
     },
@@ -263,6 +311,10 @@
     "free": {
       "title": "Step 5: over to you",
       "text": "You have been through it all: missions, inspection, repair. To win you need 8 enemy aircraft shot down, which air combats bring. Rest your pilots, recruit, and improve the base with command points."
+    },
+    "officer": {
+      "french": "The colonel",
+      "axe": "Oberst"
     },
     "here": "The guide points at this building",
     "understood": "Understood",
@@ -294,7 +346,7 @@
     "empty": "The pages are still blank: the first mission to come back will fill them.",
     "pages": "Pages of the diary",
     "previous": "Previous page",
-    "next": "Next page",
+    "next": "Turn the page",
     "pageOf": "{{current}} / {{total}}",
     "dayPart": {
       "morning": "this morning",

@@ -17,6 +17,7 @@ use Ww2\Mission\MissionType;
 use Ww2\Mission\WeatherForecast;
 use Ww2\Squadron\Aircraft;
 use Ww2\Squadron\AircraftCategory;
+use Ww2\Squadron\PilotRecord;
 use Ww2\Squadron\SquadronStore;
 
 /**
@@ -256,8 +257,9 @@ final class Headquarters
     private function applyReport(int $baseId, MissionReport $report, int $gameSeconds): void
     {
         foreach ($report->crews as $crew) {
+            $this->squadrons->recordFlight($crew->pilotId, PilotRecord::ofFlight($report->type->isAirCombat(), $report->type->isGroundStrike(), $crew->succeeded, $crew->aircraftLost));
             if ($crew->pilotKilled) {
-                $this->squadrons->removePilot($crew->pilotId);
+                $this->squadrons->bury($crew->pilotId);
             } else {
                 $this->squadrons->updatePilotGauges($crew->pilotId, $crew->fatigue, $crew->stress);
             }

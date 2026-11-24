@@ -5,6 +5,7 @@ import { TERRAIN_PLANS } from '../plans/terrainPlan'
 import type { BuildingName } from '../plans/terrainPlan'
 import BaseChoice from './BaseChoice'
 import BaseMap from './BaseMap'
+import { ClanContext } from './ClanContext'
 import type { MapAlert, ParkedAircraft, StandStatus } from './BaseMap'
 import type { Arrival, Departure, Emergence } from './AirfieldView'
 import CockpitCombatWindow from './CockpitCombatWindow'
@@ -25,17 +26,18 @@ import Hud from './Hud'
 import JournalBook from './JournalBook'
 import MissionToasts from './MissionToasts'
 import ReconnaissanceWindow from './ReconnaissanceWindow'
+import { prefersReducedMotion } from './reducedMotion'
 import type { Player } from './useAccount'
 import { useAircraftSprite } from './useAircraftSprite'
 import RebuildNotice from './RebuildNotice'
 import ResetConfirm from './ResetConfirm'
+import SquadronRoster from './SquadronRoster'
 import { useBase } from './useBase'
 import type { Aircraft, AttackKind, Cargo, HangarAircraft, MissionType, UpgradeName } from './useBase'
 import { useGuideStatus } from './useGuideStatus'
 import WarehousePanel from './WarehousePanel'
 import WorkshopPanel from './WorkshopPanel'
 
-const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 // The missions whose mini-game is flown from above, with the window that plays it.
 const GROUND_RUN_WINDOWS: Partial<Record<MissionType, ComponentType<GroundRunProps>>> = {
   groundAttack: GroundAttackWindow,
@@ -108,6 +110,7 @@ function BaseScreen({ player }: { player: Player }) {
   const [guideStatus, setGuideStatus] = useGuideStatus(player.id)
   const [isConfirmingReset, setIsConfirmingReset] = useState(false)
   const [isJournalOpen, setIsJournalOpen] = useState(false)
+  const [isRosterOpen, setIsRosterOpen] = useState(false)
   const [duelAlertId, setDuelAlertId] = useState<number | null>(null)
   const removeDeparture = useCallback((aircraftId: number) => {
     setDepartures((current) => current.filter((departure) => departure.aircraftId !== aircraftId))
@@ -125,7 +128,7 @@ function BaseScreen({ player }: { player: Player }) {
   }, [])
   const busy = busyCrews(flights, away)
   const { stands, emergedIds } = useStands(base?.squadron.aircraft.map((aircraft) => aircraft.id) ?? [], busy.aircraftIds, base === null ? 0 : TERRAIN_PLANS[base.terrainPlan].stands.length)
-  const canAnimate = aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches
+  const canAnimate = aircraftSprite !== null && !prefersReducedMotion()
   useEffect(() => {
     if (emergedIds.length > 0 && canAnimate) {
       setEmergingIds((current) => [...current, ...emergedIds])
@@ -214,7 +217,7 @@ function BaseScreen({ player }: { player: Player }) {
   }
 
   function showDepartures(departing: ParkedAircraft[]): void {
-    if (aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches) {
+    if (aircraftSprite !== null && !prefersReducedMotion()) {
       const leaving = departing.map((aircraft) => ({ aircraftId: aircraft.id, tailNumber: aircraft.number, stand: aircraft.stand, livery: aircraft.livery }))
       setDepartures((current) => [...current, ...leaving])
     }
@@ -226,7 +229,7 @@ function BaseScreen({ player }: { player: Player }) {
     const receiveErrorCode = await receiveSquadron(missionId)
     if (receiveErrorCode === null) {
       setOpenBuilding(null)
-      if (aircraftSprite !== null && !window.matchMedia(REDUCED_MOTION_QUERY).matches) {
+      if (aircraftSprite !== null && !prefersReducedMotion()) {
         setLandingIds((current) => [...current, ...crewAircraftIds])
       }
     }
@@ -294,163 +297,168 @@ function BaseScreen({ player }: { player: Player }) {
   )
 
   return (
-    <section className="base game" aria-label={t('base.title')}>
-      <h2 className="visually-hidden">{t('base.title')}</h2>
-      <div className="stage">
-        <Hud gameTime={gameTime} base={base} onSelectBase={(selectedBaseId) => void order(selectBase(selectedBaseId))} />
-        <div className="map-slot">
-          <BaseMap
-            plan={plan}
-            servicedAircraftIds={servicedAircraftIds}
-            parkedAircraft={parkedAircraft}
-            aircraftSprite={aircraftSprite}
-            departures={departures}
-            onDeparted={removeDeparture}
-            arrivals={arrivals}
-            emergences={emergences}
-            onLanded={removeLanding}
-            alerts={alerts}
-            burningAircraftIds={burningAircraftIds}
-            refuelingAircraftIds={refuelingIds}
-            onRefueled={removeRefueling}
-            destroyedBuildings={destroyedBuildings}
-            openBuilding={openBuilding}
-            onSelect={setOpenBuilding}
-          />
+    <ClanContext.Provider value={base.clan}>
+      <section className="base game" aria-label={t('base.title')}>
+        <h2 className="visually-hidden">{t('base.title')}</h2>
+        <div className="stage">
+          <Hud gameTime={gameTime} base={base} onSelectBase={(selectedBaseId) => void order(selectBase(selectedBaseId))} />
+          <div className="map-slot">
+            <BaseMap
+              plan={plan}
+              servicedAircraftIds={servicedAircraftIds}
+              parkedAircraft={parkedAircraft}
+              aircraftSprite={aircraftSprite}
+              departures={departures}
+              onDeparted={removeDeparture}
+              arrivals={arrivals}
+              emergences={emergences}
+              onLanded={removeLanding}
+              alerts={alerts}
+              burningAircraftIds={burningAircraftIds}
+              refuelingAircraftIds={refuelingIds}
+              onRefueled={removeRefueling}
+              destroyedBuildings={destroyedBuildings}
+              openBuilding={openBuilding}
+              onSelect={setOpenBuilding}
+            />
+          </div>
         </div>
-      </div>
 
-      <MissionToasts clan={base.clan} flights={flights} squadron={base.squadron} onOpen={setDuelAlertId} />
-      {openBuilding === null && guide}
-      {openBuilding === null && errorMessage}
+        <MissionToasts clan={base.clan} flights={flights} squadron={base.squadron} onOpen={setDuelAlertId} />
+        {openBuilding === null && guide}
+        {openBuilding === null && errorMessage}
 
-      {openBuilding !== null && (
-        <GameWindow title={t(`base.building.${openBuilding}.name`)} hint={t(`base.building.${openBuilding}.text`)} onDismiss={() => setOpenBuilding(null)}>
-          {guideStep !== null && speaksInWindowOf(guideStep, openBuilding) && guide}
-          {errorMessage}
-          {isOpenBuildingDestroyed && rebuildNotice(openBuilding)}
-          {!isOpenBuildingDestroyed && openBuilding === 'headquarters' && (
-            <HeadquartersPanel
-              bases={base.bases}
-              currentSite={base.site}
-              baseLimit={base.baseLimit}
-              squadron={base.squadron}
-              unavailable={unavailable}
-              destinations={base.destinations}
-              targets={base.targets}
-              onAttack={attack}
-              onStation={station}
-              onSupply={supply}
-            />
-          )}
-          {openBuilding === 'controlTower' && destroyedBuildings.includes('headquarters') && rebuildNotice('headquarters')}
-          {openBuilding === 'controlTower' && (
-            <ControlTowerPanel
-              squadron={base.squadron}
-              resources={base.resources}
-              weather={base.headquarters.weather}
-              offers={base.headquarters.offers}
-              flights={flights}
-              rests={rests}
-              away={away}
-              recruitment={base.roster.recruitment}
-              busy={busy}
-              unavailable={unavailable}
-              onOpenJournal={() => setIsJournalOpen(true)}
-              onLaunch={launch}
-              onReceive={receive}
-              onRest={restPilot}
-              onRecruit={recruitPilot}
-              onStartOver={() => setIsConfirmingReset(true)}
-              recipients={base.recipients}
-              onGivePilot={(pilotId, recipientBaseId) => givePilot(recipientBaseId, pilotId)}
-            />
-          )}
-          {!isOpenBuildingDestroyed && openBuilding === 'workshop' && (
-            <WorkshopPanel
-              workshop={base.workshop}
-              jobs={jobs}
-              materials={base.resources.materials}
-              onProduce={produce}
-              onAssemble={assembleAircraft}
-              upgrade={upgradeOf('workshop')}
-              commandPoints={base.resources.commandPoints}
-              onUpgrade={buyUpgrade}
-            />
-          )}
-          {!isOpenBuildingDestroyed && openBuilding === 'warehouse' && (
-            <WarehousePanel
-              resources={base.resources}
-              warehouse={base.warehouse}
-              income={base.supplyIncome}
-              onBuy={buy}
-              upgrade={upgradeOf('warehouse')}
-              onUpgrade={buyUpgrade}
-            />
-          )}
-          {!isOpenBuildingDestroyed && openBuilding === 'hangar' && (
-            <HangarPanel
-              squadron={base.squadron}
-              hangarAircraft={hangarAircraft}
-              busyAircraftIds={busy.aircraftIds}
-              away={away}
-              guests={guests}
-              workshop={base.workshop}
-              onRecall={recallStationing}
-              onInspect={inspectAircraft}
-              onRepair={repairAircraft}
-              upgrade={upgradeOf('hangar')}
-              commandPoints={base.resources.commandPoints}
-              onUpgrade={buyUpgrade}
-              recipients={base.recipients}
-              onGiveAircraft={(aircraftId, recipientBaseId) => giveAircraft(recipientBaseId, aircraftId)}
-            />
-          )}
-        </GameWindow>
-      )}
+        {openBuilding !== null && (
+          <GameWindow title={t(`base.building.${openBuilding}.name`)} hint={t(`base.building.${openBuilding}.text`)} onDismiss={() => setOpenBuilding(null)}>
+            {guideStep !== null && speaksInWindowOf(guideStep, openBuilding) && guide}
+            {errorMessage}
+            {isOpenBuildingDestroyed && rebuildNotice(openBuilding)}
+            {!isOpenBuildingDestroyed && openBuilding === 'headquarters' && (
+              <HeadquartersPanel
+                bases={base.bases}
+                currentSite={base.site}
+                baseLimit={base.baseLimit}
+                squadron={base.squadron}
+                unavailable={unavailable}
+                destinations={base.destinations}
+                targets={base.targets}
+                onAttack={attack}
+                onStation={station}
+                onSupply={supply}
+              />
+            )}
+            {openBuilding === 'controlTower' && destroyedBuildings.includes('headquarters') && rebuildNotice('headquarters')}
+            {openBuilding === 'controlTower' && (
+              <ControlTowerPanel
+                squadron={base.squadron}
+                resources={base.resources}
+                weather={base.headquarters.weather}
+                offers={base.headquarters.offers}
+                flights={flights}
+                rests={rests}
+                away={away}
+                recruitment={base.roster.recruitment}
+                busy={busy}
+                unavailable={unavailable}
+                onOpenJournal={() => setIsJournalOpen(true)}
+                onOpenRoster={() => setIsRosterOpen(true)}
+                onLaunch={launch}
+                onReceive={receive}
+                onRest={restPilot}
+                onRecruit={recruitPilot}
+                onStartOver={() => setIsConfirmingReset(true)}
+                recipients={base.recipients}
+                onGivePilot={(pilotId, recipientBaseId) => givePilot(recipientBaseId, pilotId)}
+              />
+            )}
+            {!isOpenBuildingDestroyed && openBuilding === 'workshop' && (
+              <WorkshopPanel
+                workshop={base.workshop}
+                jobs={jobs}
+                materials={base.resources.materials}
+                onProduce={produce}
+                onAssemble={assembleAircraft}
+                upgrade={upgradeOf('workshop')}
+                commandPoints={base.resources.commandPoints}
+                onUpgrade={buyUpgrade}
+              />
+            )}
+            {!isOpenBuildingDestroyed && openBuilding === 'warehouse' && (
+              <WarehousePanel
+                resources={base.resources}
+                warehouse={base.warehouse}
+                income={base.supplyIncome}
+                onBuy={buy}
+                upgrade={upgradeOf('warehouse')}
+                onUpgrade={buyUpgrade}
+              />
+            )}
+            {!isOpenBuildingDestroyed && openBuilding === 'hangar' && (
+              <HangarPanel
+                squadron={base.squadron}
+                hangarAircraft={hangarAircraft}
+                busyAircraftIds={busy.aircraftIds}
+                away={away}
+                guests={guests}
+                workshop={base.workshop}
+                onRecall={recallStationing}
+                onInspect={inspectAircraft}
+                onRepair={repairAircraft}
+                upgrade={upgradeOf('hangar')}
+                commandPoints={base.resources.commandPoints}
+                onUpgrade={buyUpgrade}
+                recipients={base.recipients}
+                onGiveAircraft={(aircraftId, recipientBaseId) => giveAircraft(recipientBaseId, aircraftId)}
+              />
+            )}
+          </GameWindow>
+        )}
 
-      {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'dogfight' && (
-        <DogfightWindow
-          alert={duel.alert}
-          clan={base.clan}
-          livery={duelCrew.aircraft.livery}
-          onStart={(alertId) => order(startAlert(alertId))}
-          onPlay={(alertId, maneuver) => order(playAlert(alertId, maneuver))}
-          onClose={() => setDuelAlertId(null)}
-        />
-      )}
-      {MissionWindow !== undefined && duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
-        <MissionWindow
-          alert={duel.alert}
-          clan={base.clan}
-          livery={duelCrew.aircraft.livery}
-          windSpeed={duel.flight.windSpeed}
-          onStart={(alertId) => order(startAlert(alertId))}
-          onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}
-          onClose={() => setDuelAlertId(null)}
-        />
-      )}
-      {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && duel.flight.type === 'fighterCombat' && (
-        <CockpitCombatWindow
-          alert={duel.alert}
-          clan={base.clan}
-          livery={duelCrew.aircraft.livery}
-          maneuverability={duelCrew.aircraft.model.maneuverability}
-          accuracy={duelCrew.pilot.effectiveAccuracy}
-          risk={duel.flight.risk}
-          onStart={(alertId) => order(startAlert(alertId))}
-          onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}
-          onClose={() => setDuelAlertId(null)}
-        />
-      )}
+        {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'dogfight' && (
+          <DogfightWindow
+            alert={duel.alert}
+            clan={base.clan}
+            livery={duelCrew.aircraft.livery}
+            onStart={(alertId) => order(startAlert(alertId))}
+            onPlay={(alertId, maneuver) => order(playAlert(alertId, maneuver))}
+            onClose={() => setDuelAlertId(null)}
+          />
+        )}
+        {MissionWindow !== undefined && duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
+          <MissionWindow
+            alert={duel.alert}
+            clan={base.clan}
+            livery={duelCrew.aircraft.livery}
+            windSpeed={duel.flight.windSpeed}
+            onStart={(alertId) => order(startAlert(alertId))}
+            onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}
+            onClose={() => setDuelAlertId(null)}
+          />
+        )}
+        {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && duel.flight.type === 'fighterCombat' && (
+          <CockpitCombatWindow
+            alert={duel.alert}
+            clan={base.clan}
+            livery={duelCrew.aircraft.livery}
+            maneuverability={duelCrew.aircraft.model.maneuverability}
+            accuracy={duelCrew.pilot.effectiveAccuracy}
+            risk={duel.flight.risk}
+            onStart={(alertId) => order(startAlert(alertId))}
+            onFinish={(alertId, outcome) => order(finishAlert(alertId, outcome))}
+            onClose={() => setDuelAlertId(null)}
+          />
+        )}
 
-      {isJournalOpen && <JournalBook site={base.site} onDismiss={() => setIsJournalOpen(false)} />}
+        {isJournalOpen && <JournalBook site={base.site} onDismiss={() => setIsJournalOpen(false)} />}
 
-      {isConfirmingReset && <ResetConfirm onConfirm={startOver} onCancel={() => setIsConfirmingReset(false)} />}
+        {isRosterOpen && <SquadronRoster pilots={base.squadron.pilots} fallen={base.roster.fallen} onDismiss={() => setIsRosterOpen(false)} />}
 
-      {guideStep === 'welcome' && <GuideWelcome onBegin={() => setGuideStatus('running')} onSkip={() => setGuideStatus('over')} />}
+        {isConfirmingReset && <ResetConfirm onConfirm={startOver} onCancel={() => setIsConfirmingReset(false)} />}
 
-    </section>
+        {guideStep === 'welcome' && <GuideWelcome onBegin={() => setGuideStatus('running')} onSkip={() => setGuideStatus('over')} />}
+
+      </section>
+    </ClanContext.Provider>
   )
 }
 

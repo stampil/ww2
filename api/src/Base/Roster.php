@@ -37,7 +37,7 @@ final class Roster
      * Ends the rests that are over first, so the gauges are right.
      *
      * @param GameClock $clock the clock of the base, read once for the whole answer
-     * @return array{rests: list<array{pilotId: int, remainingSeconds: int}>, recruitment: array{cost: int, maxPilots: int}}
+     * @return array{rests: list<array{pilotId: int, remainingSeconds: int}>, recruitment: array{cost: int, maxPilots: int}, fallen: list<array<string, mixed>>}
      */
     public function describe(int $baseId, GameClock $clock): array
     {
@@ -47,7 +47,12 @@ final class Roster
             $rests[] = ['pilotId' => $pilotId, 'remainingSeconds' => max(0, $finishGameSecond - $clock->gameSeconds)];
         }
 
-        return ['rests' => $rests, 'recruitment' => ['cost' => self::RECRUIT_COST, 'maxPilots' => self::MAX_PILOTS]];
+        $fallen = [];
+        foreach ($this->squadrons->fallenOf($baseId) as $pilot) {
+            $fallen[] = $pilot->toArray();
+        }
+
+        return ['rests' => $rests, 'recruitment' => ['cost' => self::RECRUIT_COST, 'maxPilots' => self::MAX_PILOTS], 'fallen' => $fallen];
     }
 
     /**

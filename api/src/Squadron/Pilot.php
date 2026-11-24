@@ -20,6 +20,7 @@ final readonly class Pilot
         public int $stress,
         public int $accuracy,
         public int $resilience,
+        public PilotRecord $record = new PilotRecord(),
     ) {
     }
 
@@ -34,7 +35,7 @@ final readonly class Pilot
     }
 
     /**
-     * @return array{id: int, name: string, rank: int, fatigue: int, stress: int, accuracy: int, resilience: int, effectiveAccuracy: int, effectiveResilience: int}
+     * @return array{id: int, name: string, rank: int, fatigue: int, stress: int, accuracy: int, resilience: int, effectiveAccuracy: int, effectiveResilience: int, record: array<string, int|bool>}
      */
     public function toArray(): array
     {
@@ -48,6 +49,7 @@ final readonly class Pilot
             'resilience' => $this->resilience,
             'effectiveAccuracy' => $this->effectiveAccuracy(),
             'effectiveResilience' => $this->effectiveResilience(),
+            'record' => $this->record->toArray(),
         ];
     }
 

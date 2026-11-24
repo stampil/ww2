@@ -154,9 +154,70 @@ final class SquadronStore
         return $rests;
     }
 
-    public function removePilot(int $pilotId): void
+    /**
+     * Adds what a flight did to the record of a pilot, and gives the pilot the rank their missions have earned if it is higher than theirs.
+     */
+    public function recordFlight(int $pilotId, PilotRecord $flight): void
     {
+        $this->database->execute(
+            'INSERT INTO pilot_records (pilot_id, missions_flown, missions_succeeded, air_combats, victories, ground_successes, aircraft_lost)
+             VALUES (:pilot_id, :missions_flown, :missions_succeeded, :air_combats, :victories, :ground_successes, :aircraft_lost)
+             ON DUPLICATE KEY UPDATE missions_flown = missions_flown + :added_missions_flown, missions_succeeded = missions_succeeded + :added_missions_succeeded,
+                 air_combats = air_combats + :added_air_combats, victories = victories + :added_victories,
+                 ground_successes = ground_successes + :added_ground_successes, aircraft_lost = aircraft_lost + :added_aircraft_lost',
+            [
+                'pilot_id' => $pilotId,
+                'missions_flown' => $flight->missionsFlown,
+                'missions_succeeded' => $flight->missionsSucceeded,
+                'air_combats' => $flight->airCombats,
+                'victories' => $flight->victories,
+                'ground_successes' => $flight->groundSuccesses,
+                'aircraft_lost' => $flight->aircraftLost,
+                'added_missions_flown' => $flight->missionsFlown,
+                'added_missions_succeeded' => $flight->missionsSucceeded,
+                'added_air_combats' => $flight->airCombats,
+                'added_victories' => $flight->victories,
+                'added_ground_successes' => $flight->groundSuccesses,
+                'added_aircraft_lost' => $flight->aircraftLost,
+            ],
+        );
+        $rows = $this->database->fetchAll('SELECT missions_succeeded FROM pilot_records WHERE pilot_id = :pilot_id', ['pilot_id' => $pilotId]);
+        $meritRank = (new PilotRecord(missionsSucceeded: (int) $rows[0]['missions_succeeded']))->meritRank();
+        $this->database->execute(
+            'UPDATE pilots SET pilot_rank = :merit_rank WHERE id = :id AND pilot_rank < :higher_than',
+            ['merit_rank' => $meritRank, 'id' => $pilotId, 'higher_than' => $meritRank],
+        );
+    }
+
+    /**
+     * Takes a pilot who died out of the squadron and writes them in the memorial of their base.
+     */
+    public function bury(int $pilotId): void
+    {
+        $this->database->execute(
+            'INSERT INTO fallen_pilots (base_id, name, pilot_rank, missions_flown, missions_succeeded, air_combats, victories, ground_successes, aircraft_lost)
+             SELECT pilots.base_id, pilots.name, pilots.pilot_rank, COALESCE(records.missions_flown, 0), COALESCE(records.missions_succeeded, 0), COALESCE(records.air_combats, 0),
+                    COALESCE(records.victories, 0), COALESCE(records.ground_successes, 0), COALESCE(records.aircraft_lost, 0)
+             FROM pilots LEFT JOIN pilot_records AS records ON records.pilot_id = pilots.id WHERE pilots.id = :id',
+            ['id' => $pilotId],
+        );
         $this->database->execute('DELETE FROM pilots WHERE id = :id', ['id' => $pilotId]);
+    }
+
+    /**
+     * @return list<FallenPilot> the pilots of the base who died, the first to fall first
+     */
+    public function fallenOf(int $baseId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT name, pilot_rank, missions_flown, missions_succeeded, air_combats, victories, ground_successes, aircraft_lost FROM fallen_pilots WHERE base_id = :base_id ORDER BY id',
+            ['base_id' => $baseId],
+        );
+
+        return array_map(
+            static fn (array $row): FallenPilot => new FallenPilot((string) $row['name'], (int) $row['pilot_rank'], self::recordFrom($row)),
+            $rows,
+        );
     }
 
     public function setAircraftDurability(int $aircraftId, int $durability): void
@@ -175,7 +236,10 @@ final class SquadronStore
     public function pilotsOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT id, name, pilot_rank, fatigue, stress, accuracy, resilience FROM pilots WHERE base_id = :base_id ORDER BY id',
+            'SELECT pilots.id, pilots.name, pilots.pilot_rank, pilots.fatigue, pilots.stress, pilots.accuracy, pilots.resilience,
+                    COALESCE(records.missions_flown, 0) AS missions_flown, COALESCE(records.missions_succeeded, 0) AS missions_succeeded, COALESCE(records.air_combats, 0) AS air_combats,
+                    COALESCE(records.victories, 0) AS victories, COALESCE(records.ground_successes, 0) AS ground_successes, COALESCE(records.aircraft_lost, 0) AS aircraft_lost
+             FROM pilots LEFT JOIN pilot_records AS records ON records.pilot_id = pilots.id WHERE pilots.base_id = :base_id ORDER BY pilots.id',
             ['base_id' => $baseId],
         );
 
@@ -188,8 +252,24 @@ final class SquadronStore
                 (int) $row['stress'],
                 (int) $row['accuracy'],
                 (int) $row['resilience'],
+                self::recordFrom($row),
             ),
             $rows,
+        );
+    }
+
+    /**
+     * @param array<string, scalar|null> $row
+     */
+    private static function recordFrom(array $row): PilotRecord
+    {
+        return new PilotRecord(
+            (int) $row['missions_flown'],
+            (int) $row['missions_succeeded'],
+            (int) $row['air_combats'],
+            (int) $row['victories'],
+            (int) $row['ground_successes'],
+            (int) $row['aircraft_lost'],
         );
     }
 

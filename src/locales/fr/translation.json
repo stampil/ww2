@@ -224,12 +224,60 @@
     "fuel": "Carburant",
     "ammunition": "Munitions",
     "ranks": {
-      "1": "Sergent",
-      "2": "Sergent-chef",
-      "3": "Adjudant",
-      "4": "Sous-lieutenant",
-      "5": "Lieutenant",
-      "6": "Capitaine"
+      "french": {
+        "1": "Sergent",
+        "2": "Sergent-chef",
+        "3": "Adjudant",
+        "4": "Sous-lieutenant",
+        "5": "Lieutenant",
+        "6": "Capitaine"
+      },
+      "axe": {
+        "1": "Unteroffizier",
+        "2": "Feldwebel",
+        "3": "Oberfeldwebel",
+        "4": "Leutnant",
+        "5": "Oberleutnant",
+        "6": "Hauptmann"
+      }
+    },
+    "medals": {
+      "french": {
+        "1": "Croix de guerre",
+        "2": "Médaille militaire",
+        "3": "Légion d'honneur"
+      },
+      "axe": {
+        "1": "Croix de fer de 2e classe",
+        "2": "Croix de fer de 1re classe",
+        "3": "Croix allemande en or"
+      }
+    },
+    "roster": {
+      "open": "Tableau de chasse",
+      "title": "Tableau de chasse",
+      "hint": "Les pilotes du plus haut grade au plus bas, avec leurs missions et leurs victoires. Un clic ouvre la fiche d'un pilote.",
+      "squadron": "Escadrille",
+      "memorial": "Mémorial",
+      "memorialEmpty": "Personne n'est tombé pour l'instant.",
+      "pilot": "Pilote",
+      "missions": "Missions",
+      "victoriesShort": "Victoires",
+      "ratio": "Ratio",
+      "ace": "As",
+      "missionsFlown": "Missions",
+      "missionsSucceeded": "Missions réussies",
+      "airCombats": "Combats aériens",
+      "victories": "Victoires aériennes",
+      "groundSuccesses": "Attaques au sol réussies",
+      "aircraftLost": "Avions perdus",
+      "marks": "Avions abattus",
+      "victoriesCount_one": "{{count}} victoire",
+      "victoriesCount_other": "{{count}} victoires",
+      "noVictory": "Aucune victoire",
+      "medals": "Médailles",
+      "noMedal": "Aucune médaille.",
+      "skills": "Aptitudes"
     },
     "categories": {
       "fighter": "Chasseur",
@@ -240,7 +288,7 @@
     "welcome": {
       "title": "Bienvenue, commandant",
       "hint": "10 mai 1940",
-      "text": "L'Allemagne attaque à l'ouest. Tu commandes cette base aérienne et son escadrille de D.520. La bataille ne s'arrête jamais : chaque avion ennemi abattu compte dans ton score. Je te guide pour la première journée.",
+      "text": "L'Allemagne attaque à l'ouest. Tu commandes cette base aérienne et son escadrille de D.520. La bataille ne s'arrête jamais : chaque avion ennemi abattu compte dans ton score. Tu tiens le journal de l'escadrille : chaque retour de mission y écrit une page. Je te guide pour la première journée.",
       "begin": "Faire le tutoriel",
       "decline": "Ne pas le faire"
     },
@@ -263,6 +311,10 @@
     "free": {
       "title": "Étape 5 : à toi de jouer",
       "text": "Tu as fait le tour : missions, inspection, réparation. Pour gagner il faut 8 avions ennemis abattus, ce que rapportent les combats aériens. Fais reposer les pilotes, recrute, et améliore la base avec les points de commandement."
+    },
+    "officer": {
+      "french": "Le colonel",
+      "axe": "Oberst"
     },
     "here": "Le guide te montre ce bâtiment",
     "understood": "Compris",
@@ -294,7 +346,7 @@
     "empty": "Les pages sont encore blanches : le premier retour de mission les remplira.",
     "pages": "Pages du journal",
     "previous": "Page précédente",
-    "next": "Page suivante",
+    "next": "Tourner la page",
     "pageOf": "{{current}} / {{total}}",
     "dayPart": {
       "morning": "ce matin",

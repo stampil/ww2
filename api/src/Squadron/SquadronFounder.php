@@ -22,8 +22,9 @@ final class SquadronFounder
 
     public function found(int $baseId): void
     {
+        $clan = $this->squadrons->clanOf($baseId);
         foreach (self::PILOT_RANKS as $rank) {
-            $this->squadrons->addPilot($baseId, $this->pilots->generate($rank));
+            $this->squadrons->addPilot($baseId, $this->pilots->generate($rank, $clan));
         }
         for ($count = 0; $count < self::AIRCRAFT_COUNT; $count += 1) {
             $this->addStartingAircraft($baseId);

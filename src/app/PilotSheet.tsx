@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
-import { useMedal, useRankName } from './ClanContext'
+import { useClan, useMedal, useRankName } from './ClanContext'
 import Gauge from './Gauge'
 import { GAUGE_MAX } from './gaugeMax'
 import Icon from './Icon'
@@ -22,6 +22,7 @@ const DOSSIER_FOOT = `url(${assetUrl('sprites/dossier/dossier-foot.png')})`
 /** The dossier of a pilot: their photo and rank, what they have done, a mark for each victory, their medals and their gauges. */
 function PilotSheet({ pilot }: { pilot: Pilot }) {
   const { t } = useTranslation()
+  const clan = useClan()
   const rankName = useRankName()
   const medalOf = useMedal()
   const { record } = pilot
@@ -41,7 +42,7 @@ function PilotSheet({ pilot }: { pilot: Pilot }) {
   return (
     <article className="pilot-sheet" aria-label={pilot.name}>
       <header className="pilot-sheet-head" style={{ backgroundImage: DOSSIER_TOP }}>
-        <img className="pilot-sheet-photo" src={pilotFaceUrl(pilot.id)} alt="" draggable={false} />
+        <img className="pilot-sheet-photo" src={pilotFaceUrl(pilot.id, clan)} alt="" draggable={false} />
         <div className="pilot-sheet-identity">
           <strong>{pilot.name}</strong>
           <span>{rankName(pilot.rank)}</span>

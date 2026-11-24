@@ -102,7 +102,7 @@ final class Roster
                 throw new BaseException(BaseError::InsufficientSupplies);
             }
             $this->bases->spendSupplies($baseId, self::RECRUIT_COST);
-            $this->squadrons->addPilot($baseId, $this->pilotGenerator->generate(self::RECRUIT_RANK));
+            $this->squadrons->addPilot($baseId, $this->pilotGenerator->generate(self::RECRUIT_RANK, $this->squadrons->clanOf($baseId)));
         });
     }
 

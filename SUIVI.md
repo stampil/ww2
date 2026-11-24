@@ -8,15 +8,13 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 | Il me faut | Ça débloque |
 |---|---|
-| Ton « généré » de la planche des huit avatars de pilotes allemands (prompt donné le 24/11, carte de référence envoyée) | Les visages des pilotes de l'Axe, à la place des visages français qu'ils portent aujourd'hui sur leur fiche et à la tour de contrôle. |
 
 ## 2. Questions à lever
 
-1. **Horodatage** (« l'horodatage doit suivre la même heure que le serveur, pas de décalage », 24/11). Mesuré en local à la même seconde : l'heure du terminal 16:51:11, l'horloge de la base de données `NOW()` 16:51:11, l'horloge de jeu de l'API 16:51:11 : aucun écart ici. L'heure du jeu est celle de la base de données (PHP, lui, est en UTC mais ne sert qu'à formater). Donc le décalage que tu vois n'est pas en local : sans doute sur le site publié (InfinityFree), dont la base peut ne pas être à l'heure de Paris, et je ne peux pas le lire d'ici. Où le vois-tu (le bandeau en haut de la carte, les dates du carnet, ailleurs) et par rapport à quelle heure (ta montre, en France) ? Reco : que l'heure du jeu suive l'heure de Paris (`Europe/Paris`, été et hiver compris), calculée côté serveur quel que soit le réglage de la base, au lieu de l'heure de la base de données.
-2. **Noms des pilotes de l'Axe.** Les pilotes de l'Axe portent des noms français (le générateur n'a qu'une liste, de noms français : « Louis Garnier », « Feldwebel Louis Garnier » à l'écran). Reco : des noms allemands pour l'Axe, deux listes de prénoms et de noms de ma main, sans toucher aux pilotes déjà en place.
+Aucune. Lectures prises seul, sans question, à corriger si elles sont fausses :
 
-Lectures prises seul, à corriger si elles sont fausses :
-
+- **Heure de Paris** (« l'horodatage doit suivre la même heure que le serveur, pas de décalage » puis « Oui, heure de Paris », 24/11) : l'heure du jeu est l'heure de Paris, été et hiver compris, quel que soit le réglage de la base de données du serveur ; la date (10 mai 1940 et suivants) avance d'un jour à chaque minuit de Paris. Les instances déjà créées passent à l'heure de Paris d'un coup.
+- **Pilotes de l'Axe** (« les avatar de pilote allemand ils y sont pas il me semble » puis « nom des pilote de l'Axe, ben tu prend des nom allemand, question stupide », 24/11) : les nouveaux pilotes de l'Axe, ceux d'un camp qu'on fonde et les recrues, ont des noms allemands ; ceux déjà en place gardent le nom qu'ils ont, mais tous prennent un visage allemand à l'écran (le visage suit le côté et le numéro du pilote).
 - **Victoires, AS, ratio, grades, médailles, mémorial, fiche pilote, tutoriel** (« Go, recommandations », 24/11, sur tes consignes tirées de Wings) : une victoire = l'avion ennemi d'un combat aérien réussi par l'équipage du pilote (même règle que le compteur de la bataille, rangé au nom du pilote) ; AS à 5 victoires ; ratio = victoires ÷ combats aériens livrés ; trois médailles par camp aux paliers de 1, 5 et 10 victoires (France : Croix de guerre, Médaille militaire, Légion d'honneur ; Axe : Croix de fer de 2e et de 1re classe, Croix allemande en or) ; un grade de plus à 3, 6, 10, 15 et 21 missions réussies, sans jamais descendre (un pilote déjà gradé garde son grade, ses compteurs partent de zéro) ; grades de l'Axe en noms allemands, la correspondance avec les six grades français est approximative (aucune table n'en donne une) ; le mémorial garde les pilotes morts avec leurs chiffres. Le tableau de chasse est le Squadron Roster de Wings, avec les onglets « Escadrille » et « Mémorial » à la place du bouton « Current pilot » ; la fiche reprend celle de Wings sans les réprimandes ni les 40 points à répartir. Attention : un pilote promu au grade 4 devient officier et gagne un coup de plus au duel sur grille. Le tutoriel est dit par « Le colonel » (« Oberst » pour l'Axe), sans nom : je n'en invente pas.
 - **Silhouettes des avions abattus** (« j'ai rien compris tout le moteur du jeu c toi qu'il la fait tu va pas me die que tu saurais pas quel type d'eenemi le joueur a abatu y a pas de sujet la », 24/11, pris comme un oui) : le serveur donne son ennemi à chaque alerte, par la règle que le navigateur suivait (le numéro de l'alerte modulo la liste du côté et du genre d'alerte : Bf 109 et D.520 de Vichy dans le cockpit, He 111 et Ju 87 sur la grille pour les Alliés ; D.520 français dans le cockpit, Amiot 143 et LeO 451 sur la grille pour l'Axe), donc les combats ne changent pas, et il garde chaque victoire avec le type de l'ennemi abattu. La fiche montre une silhouette noire par avion abattu ; une victoire d'avant que les types soient gardés reste une marque d'avion sans type.
 - **Bureau allemand, tutoriel** (« j'ai tout généré meme ton oubli du bureau allemand », 24/11) : tu as généré le bureau allemand toi-même, je l'ai posé comme le français. Dans cette image le drapeau est rouge à disque blanc vide (sans croix gammée) et la casquette sur le bureau porte un petit aigle sans croix gammée : à corriger si tu n'en veux pas. La fenêtre d'accueil du tutoriel montre le bureau de ton camp avec l'officier au pied de l'image ; les étapes suivantes montrent l'officier et son texte, sans le bureau.
@@ -31,11 +29,7 @@ Lectures prises seul, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-| N° | Instruction (tes mots) | Ce que j'en comprends | Go |
-|---|---|---|---|
-| 1 | « les avatar de pilote allemand ils y sont pas il me semble » (24/11) | Exact : les huit visages de pilotes sont français et servent aux deux camps. Prompt donné d'une planche de huit pilotes allemands, même grille et même rendu. À ton « généré » : contrôle, détourage, rangement, et chaque pilote prend un visage de son camp (la fiche, la tour de contrôle). | prompt donné, attend ton « généré » |
-| 2 | « l'horodatage doit suivre la même heure que le serveur, pas de décalage » (24/11) | Voir la question 1 : aucun écart mesuré en local, il me faut où tu le vois et la référence. | attend ta réponse |
-| 3 | Noms des pilotes de l'Axe (non demandé : relevé en passant) | Voir la question 2. | attend ta réponse |
+Rien. Tout ce que tu as demandé est fait ; le prochain mot ouvre la suite.
 
 
 ## Mis de côté

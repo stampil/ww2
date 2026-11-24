@@ -8,7 +8,7 @@ use LogicException;
 use Ww2\Database\Database;
 
 /**
- * Reads the game clock of a base: the one of its instance, which runs from the creation of the instance, by the clock of the database.
+ * Reads the game clock of a base: the one of its instance, which runs from the creation of the instance, by the clock of the database, whatever time zone that clock keeps.
  */
 final class GameClockStore
 {
@@ -19,7 +19,7 @@ final class GameClockStore
     public function of(int $baseId): GameClock
     {
         $rows = $this->database->fetchAll(
-            'SELECT TIMESTAMPDIFF(SECOND, instances.started_at, NOW()) AS game_seconds, TIME_TO_SEC(instances.started_at) AS start_second_of_day
+            'SELECT UNIX_TIMESTAMP(instances.started_at) AS started_epoch, UNIX_TIMESTAMP() AS now_epoch
              FROM bases JOIN instances ON instances.id = bases.instance_id WHERE bases.id = :base_id',
             ['base_id' => $baseId],
         );
@@ -27,6 +27,6 @@ final class GameClockStore
             throw new LogicException('The base does not exist.');
         }
 
-        return new GameClock((int) $rows[0]['game_seconds'], (int) $rows[0]['start_second_of_day']);
+        return new GameClock((int) $rows[0]['now_epoch'] - (int) $rows[0]['started_epoch'], (int) $rows[0]['started_epoch']);
     }
 }

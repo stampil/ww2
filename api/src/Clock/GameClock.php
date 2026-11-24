@@ -9,22 +9,21 @@ use DateTimeZone;
 
 /**
  * The game time of an instance: the seconds gone by since the battle began, which never stops. The battle began on 10 May 1940
- * at the hour of the server when the instance was created, so the hour of the game is the real hour of the server, and the date follows the battle and starts it again.
+ * on the day the instance was created, and the hour of the game is the real hour in Paris, whatever the clock of the server: the date follows the battle and starts it again.
  */
 final readonly class GameClock
 {
     private const BATTLE_DAY = '1940-05-10';
     // The battle of France lasts from 10 May to 24 June 1940, and the calendar of the game starts again after it.
     private const BATTLE_DAYS = 46;
-    private const SECONDS_PER_DAY = 86400;
-    private const GAME_TIME_FORMAT = 'Y-m-d\TH:i:s';
-    // The game date follows no real time zone, so UTC keeps daylight saving from shifting it.
-    private const TIME_ZONE = 'UTC';
+    private const DATE_FORMAT = 'Y-m-d';
+    private const TIME_FORMAT = '\TH:i:s';
+    private const TIME_ZONE = 'Europe/Paris';
 
     /**
-     * @param int $startSecondOfDay the seconds since midnight, by the clock of the server, at which the instance was created
+     * @param int $startEpoch the moment the instance was created, in seconds since 1 January 1970 UTC
      */
-    public function __construct(public int $gameSeconds, private int $startSecondOfDay)
+    public function __construct(public int $gameSeconds, private int $startEpoch)
     {
     }
 
@@ -33,9 +32,12 @@ final readonly class GameClock
      */
     public function toArray(): array
     {
-        $battleDay = new DateTimeImmutable(self::BATTLE_DAY, new DateTimeZone(self::TIME_ZONE));
-        $elapsedSeconds = ($this->startSecondOfDay + $this->gameSeconds) % (self::BATTLE_DAYS * self::SECONDS_PER_DAY);
+        $timeZone = new DateTimeZone(self::TIME_ZONE);
+        $start = (new DateTimeImmutable('@' . $this->startEpoch))->setTimezone($timeZone);
+        $now = (new DateTimeImmutable('@' . ($this->startEpoch + $this->gameSeconds)))->setTimezone($timeZone);
+        $daysSinceStart = $start->setTime(0, 0)->diff($now->setTime(0, 0))->days;
+        $gameDay = (new DateTimeImmutable(self::BATTLE_DAY, $timeZone))->modify('+' . ($daysSinceStart % self::BATTLE_DAYS) . ' days');
 
-        return ['gameTime' => $battleDay->modify('+' . $elapsedSeconds . ' seconds')->format(self::GAME_TIME_FORMAT)];
+        return ['gameTime' => $gameDay->format(self::DATE_FORMAT) . $now->format(self::TIME_FORMAT)];
     }
 }

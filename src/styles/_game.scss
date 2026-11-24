@@ -853,19 +853,36 @@ button.base-sprite {
   flex-wrap: wrap;
 }
 
-// The officer who commands the base speaks in a box, with their portrait on the left; the portrait is a silhouette until the officers are drawn.
+// The first window shows the office of the officer, whose speech lies in a box at the foot of the picture.
+.guide-welcome {
+  padding: 38% 0.75rem 0.75rem;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  .officer-speech {
+    @include inset-frame;
+    padding: 0.75rem;
+  }
+}
+
+// The officer who commands the base speaks in a box, with their portrait on the left.
 .officer-speech {
   @include flex($gap: 0.75rem);
   align-items: flex-start;
 }
 
 .portrait.officer-portrait {
-  width: 4rem;
-  height: 4rem;
+  align-items: flex-end;
+  width: 5rem;
+  height: 5.5rem;
+  overflow: hidden;
 
-  .icon {
-    width: 2.5rem;
-    height: 2.5rem;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
   }
 }
 
@@ -1664,10 +1681,12 @@ $notebook-edge-height: 60;
 
 .journal-edge {
   aspect-ratio: #{$notebook-width} / #{$notebook-edge-height};
+  margin-top: -1px;
 }
 
 .journal-stack {
   position: relative;
+  margin-top: -1px;
   perspective: 1400px;
 }
 
@@ -1838,25 +1857,92 @@ $notebook-edge-height: 60;
   text-transform: uppercase;
 }
 
+// The sheet of a pilot is a dossier of three images of one width (the sizes below are theirs): the top with the paper clip and the frame of the photo, the body, which stretches to the text, and the foot.
+$dossier-width: 825;
+$dossier-top-height: 430;
+$dossier-foot-height: 34;
+
 .pilot-sheet {
-  @include flex($direction: column, $gap: 0.5rem);
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+  color: $ink;
 
   h5 {
     margin: 0.4rem 0 0;
-    color: $gold;
+    padding-bottom: 0.1rem;
+    border-bottom: 1px solid rgba($ink, 0.4);
     font-size: 0.7rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
+
+  .gauge-label {
+    color: $ink;
+  }
+
+  .ace-tag {
+    border-color: $alarm;
+    color: $alarm;
+    transform: rotate(-4deg);
+  }
+}
+
+.pilot-sheet-head,
+.pilot-sheet-body,
+.pilot-sheet-foot {
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 
 .pilot-sheet-head {
-  @include flex($align: center, $gap: 0.75rem);
+  position: relative;
+  aspect-ratio: #{$dossier-width} / #{$dossier-top-height};
+}
+
+// The photo lies in the frame of the top image: the share of the image that the empty frame takes.
+.pilot-sheet-photo {
+  position: absolute;
+  top: 22.3%;
+  left: 7.4%;
+  width: 25.3%;
+  height: 68.1%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.pilot-sheet-identity {
+  position: absolute;
+  top: 18%;
+  right: 17%;
+  left: 37%;
 
   strong,
-  span:not(.portrait):not(.ace-tag) {
+  span:not(.ace-tag) {
     display: block;
+    overflow-wrap: anywhere;
   }
+
+  strong {
+    font-size: 0.95rem;
+  }
+
+  .ace-tag {
+    display: inline-block;
+    margin-top: 0.25rem;
+  }
+}
+
+// The body and the foot lie one pixel over the image above them, so that no hairline of the background shows between the images.
+.pilot-sheet-body {
+  @include flex($direction: column, $gap: 0.5rem);
+  margin-top: -1px;
+  padding: 0 8% 0.5rem;
+}
+
+.pilot-sheet-foot {
+  aspect-ratio: #{$dossier-width} / #{$dossier-foot-height};
+  margin-top: -1px;
 }
 
 .pilot-sheet-figures {
@@ -1866,7 +1952,6 @@ $notebook-edge-height: 60;
   margin: 0;
 
   dt {
-    color: $muted-text;
     font-size: 0.8rem;
   }
 
@@ -1882,7 +1967,6 @@ $notebook-edge-height: 60;
   @include flex($align: center, $gap: 0.15rem);
   flex-wrap: wrap;
   margin: 0;
-  color: $gold;
 
   .icon {
     width: 1rem;
@@ -1890,20 +1974,38 @@ $notebook-edge-height: 60;
   }
 }
 
+// The silhouettes of the aircraft shot down are black shapes, whatever the colors of the pictures they come from.
+.enemy-silhouette {
+  width: 1.6rem;
+  height: 1.6rem;
+  object-fit: contain;
+  filter: brightness(0);
+  opacity: 0.85;
+}
+
 .medal-list {
-  @include flex($direction: column, $gap: 0.25rem);
+  @include flex($gap: 0.75rem);
+  flex-wrap: wrap;
   margin: 0;
   padding: 0;
   list-style: none;
 
   li {
-    @include flex($align: center, $gap: 0.4rem);
+    @include flex($direction: column, $align: center, $gap: 0.15rem);
+    width: 5rem;
+    font-size: 0.7rem;
+    text-align: center;
   }
+}
 
-  .icon {
-    width: 1.1rem;
-    height: 1.1rem;
-    color: $gold;
+.medal-picture {
+  @include flex($align: center, $justify: center);
+  width: 3.5rem;
+  height: 5rem;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
   }
 }
 

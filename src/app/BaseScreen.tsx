@@ -417,7 +417,6 @@ function BaseScreen({ player }: { player: Player }) {
         {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'dogfight' && (
           <DogfightWindow
             alert={duel.alert}
-            clan={base.clan}
             livery={duelCrew.aircraft.livery}
             onStart={(alertId) => order(startAlert(alertId))}
             onPlay={(alertId, maneuver) => order(playAlert(alertId, maneuver))}
@@ -438,7 +437,6 @@ function BaseScreen({ player }: { player: Player }) {
         {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && duel.flight.type === 'fighterCombat' && (
           <CockpitCombatWindow
             alert={duel.alert}
-            clan={base.clan}
             livery={duelCrew.aircraft.livery}
             maneuverability={duelCrew.aircraft.model.maneuverability}
             accuracy={duelCrew.pilot.effectiveAccuracy}

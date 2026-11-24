@@ -8,6 +8,7 @@ use Random\Randomizer;
 use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
 use Ww2\Mission\AlertKind;
+use Ww2\Mission\EnemyType;
 use Ww2\Mission\FlightAlertStore;
 use Ww2\Mission\Dogfight\Dogfight;
 use Ww2\Mission\Dogfight\DogfightOutcome;
@@ -16,6 +17,7 @@ use Ww2\Mission\Mission;
 use Ww2\Mission\MissionType;
 use Ww2\Squadron\Aircraft;
 use Ww2\Squadron\Pilot;
+use Ww2\World\Clan;
 
 /**
  * The calls to the player during a flight, the toasts of the mini-games: an interception of bombers calls for one dogfight on the grid per aircraft, an air combat
@@ -63,16 +65,32 @@ final class Alerts
     }
 
     /**
+     * @param Clan $clan the side of the base, which sets the enemy of each alert
      * @return array<int, list<array<string, mixed>>> the alerts of each flight of the base, by the id of the mission
      */
-    public function describeByMission(int $baseId, int $gameSeconds): array
+    public function describeByMission(int $baseId, int $gameSeconds, Clan $clan): array
     {
         $byMission = [];
         foreach ($this->store->of($baseId) as $alert) {
-            $byMission[$alert->missionId][] = $alert->toArray($gameSeconds);
+            $byMission[$alert->missionId][] = $alert->toArray($gameSeconds, EnemyType::of($clan, $alert->kind, $alert->id));
         }
 
         return $byMission;
+    }
+
+    /**
+     * @return array<int, EnemyType> the enemy that each aircraft of a flight met or was to meet, by the id of the aircraft
+     */
+    public function enemiesOf(int $baseId, int $missionId, Clan $clan): array
+    {
+        $enemies = [];
+        foreach ($this->store->of($baseId) as $alert) {
+            if ($alert->missionId === $missionId) {
+                $enemies[$alert->aircraftId] = EnemyType::of($clan, $alert->kind, $alert->id);
+            }
+        }
+
+        return $enemies;
     }
 
     /**

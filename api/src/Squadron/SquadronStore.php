@@ -181,6 +181,13 @@ final class SquadronStore
                 'added_aircraft_lost' => $flight->aircraftLost,
             ],
         );
+        foreach ($flight->victoriesOver as $enemy => $victories) {
+            $this->database->execute(
+                'INSERT INTO pilot_enemy_victories (pilot_id, enemy, victories) VALUES (:pilot_id, :enemy, :victories)
+                 ON DUPLICATE KEY UPDATE victories = victories + :added_victories',
+                ['pilot_id' => $pilotId, 'enemy' => $enemy, 'victories' => $victories, 'added_victories' => $victories],
+            );
+        }
         $rows = $this->database->fetchAll('SELECT missions_succeeded FROM pilot_records WHERE pilot_id = :pilot_id', ['pilot_id' => $pilotId]);
         $meritRank = (new PilotRecord(missionsSucceeded: (int) $rows[0]['missions_succeeded']))->meritRank();
         $this->database->execute(
@@ -242,6 +249,7 @@ final class SquadronStore
              FROM pilots LEFT JOIN pilot_records AS records ON records.pilot_id = pilots.id WHERE pilots.base_id = :base_id ORDER BY pilots.id',
             ['base_id' => $baseId],
         );
+        $victoriesOver = $this->victoriesOverOf($baseId);
 
         return array_map(
             static fn (array $row): Pilot => new Pilot(
@@ -252,16 +260,35 @@ final class SquadronStore
                 (int) $row['stress'],
                 (int) $row['accuracy'],
                 (int) $row['resilience'],
-                self::recordFrom($row),
+                self::recordFrom($row, $victoriesOver[(int) $row['id']] ?? []),
             ),
             $rows,
         );
     }
 
     /**
-     * @param array<string, scalar|null> $row
+     * @return array<int, array<string, int>> the victories of each pilot of the base over each type of enemy, by the id of the pilot and the name of the type
      */
-    private static function recordFrom(array $row): PilotRecord
+    private function victoriesOverOf(int $baseId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT pilot_enemy_victories.pilot_id, pilot_enemy_victories.enemy, pilot_enemy_victories.victories
+             FROM pilot_enemy_victories JOIN pilots ON pilots.id = pilot_enemy_victories.pilot_id WHERE pilots.base_id = :base_id',
+            ['base_id' => $baseId],
+        );
+        $victoriesOver = [];
+        foreach ($rows as $row) {
+            $victoriesOver[(int) $row['pilot_id']][(string) $row['enemy']] = (int) $row['victories'];
+        }
+
+        return $victoriesOver;
+    }
+
+    /**
+     * @param array<string, scalar|null> $row
+     * @param array<string, int> $victoriesOver
+     */
+    private static function recordFrom(array $row, array $victoriesOver = []): PilotRecord
     {
         return new PilotRecord(
             (int) $row['missions_flown'],
@@ -270,6 +297,7 @@ final class SquadronStore
             (int) $row['victories'],
             (int) $row['ground_successes'],
             (int) $row['aircraft_lost'],
+            $victoriesOver,
         );
     }
 

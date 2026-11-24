@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import type { CockpitEnemy } from '../three/CockpitCombatScene'
+import type { DuelBomber } from '../three/DogfightScene'
 import type { Livery } from '../three/liveries'
 import { parseGameTime } from './gameDate'
 import type { Player } from './useAccount'
@@ -30,10 +32,15 @@ export type DogfightOutcome = 'won' | 'escaped'
 export type DogfightState = { turn: number; player: DogfightPosition; enemy: DogfightPosition; outcome: DogfightOutcome | null }
 export type Maneuver = 'accelerate' | 'turnLeft' | 'turnRight' | 'slipLeft' | 'slipRight'
 /** A call to the player during a flight: a dogfight for one aircraft, that shows when `dueSeconds` is down to zero, and is won or lost in `moves` moves. */
+/** The enemy aircraft a pilot can meet: fighters in the cockpit, bombers on the grid. */
+export type EnemyType = CockpitEnemy | DuelBomber
+
 export type FlightAlert = {
   id: number
   kind: 'dogfight' | 'cockpit'
   aircraftId: number
+  /** The enemy the server has given this alert. */
+  enemy: EnemyType
   dueSeconds: number
   arenaSize: number
   moves: number
@@ -68,6 +75,8 @@ export type PilotRecord = {
   aircraftLost: number
   medals: number
   isAce: boolean
+  /** The victories over each type of enemy; those won before the types were kept are in `victories` only. */
+  victoriesOver: { enemy: EnemyType; victories: number }[]
 }
 export type Pilot = {
   id: number

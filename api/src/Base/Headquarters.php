@@ -7,6 +7,7 @@ namespace Ww2\Base;
 use Ww2\Clock\GameClock;
 use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
+use Ww2\Mission\EnemyType;
 use Ww2\Mission\Flight;
 use Ww2\Mission\Mission;
 use Ww2\Mission\MissionGenerator;
@@ -19,6 +20,7 @@ use Ww2\Squadron\Aircraft;
 use Ww2\Squadron\AircraftCategory;
 use Ww2\Squadron\PilotRecord;
 use Ww2\Squadron\SquadronStore;
+use Ww2\World\Bases;
 
 /**
  * The headquarters: keeps a few missions on the table that the squadron can fly, sends squadrons out on them, and receives them back.
@@ -46,6 +48,7 @@ final class Headquarters
         private readonly StationingStore $stationings,
         private readonly CampStore $camps,
         private readonly Attacks $attacks,
+        private readonly Bases $world,
     ) {
     }
 
@@ -59,7 +62,7 @@ final class Headquarters
     public function describe(int $baseId, GameClock $clock): array
     {
         $this->fillTable($baseId);
-        $alerts = $this->alerts->describeByMission($baseId, $clock->gameSeconds);
+        $alerts = $this->alerts->describeByMission($baseId, $clock->gameSeconds, $this->world->clanOfBase($baseId));
         $flights = [];
         foreach ($this->missions->flightsOf($baseId, $clock->gameSeconds) as $flight) {
             $flights[] = $flight->toArray() + ['alerts' => $alerts[$flight->mission->id] ?? []];
@@ -160,7 +163,7 @@ final class Headquarters
             }
             $duels = $this->alerts->finishedDuelsOf($baseId, $missionId);
             $report = $this->resolver->resolve($flight, $this->squadrons->pilotsById($baseId), $this->squadrons->aircraftById($baseId), $duels);
-            $this->applyReport($baseId, $report, $gameSeconds);
+            $this->applyReport($baseId, $report, $gameSeconds, $this->alerts->enemiesOf($baseId, $missionId, $this->world->clanOfBase($baseId)));
             $attack = $this->attacks->resolve($baseId, $flight, $report, $gameSeconds);
             $this->missions->remove($missionId);
             $spotted = false;
@@ -254,10 +257,13 @@ final class Headquarters
         return $categories;
     }
 
-    private function applyReport(int $baseId, MissionReport $report, int $gameSeconds): void
+    /**
+     * @param array<int, EnemyType> $enemies the enemy each aircraft of the flight met, by the id of the aircraft
+     */
+    private function applyReport(int $baseId, MissionReport $report, int $gameSeconds, array $enemies): void
     {
         foreach ($report->crews as $crew) {
-            $this->squadrons->recordFlight($crew->pilotId, PilotRecord::ofFlight($report->type->isAirCombat(), $report->type->isGroundStrike(), $crew->succeeded, $crew->aircraftLost));
+            $this->squadrons->recordFlight($crew->pilotId, PilotRecord::ofFlight($report->type->isAirCombat(), $report->type->isGroundStrike(), $crew->succeeded, $crew->aircraftLost, $enemies[$crew->aircraftId]));
             if ($crew->pilotKilled) {
                 $this->squadrons->bury($crew->pilotId);
             } else {

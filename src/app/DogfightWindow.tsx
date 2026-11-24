@@ -4,16 +4,13 @@ import DogfightView from './DogfightView'
 import GameWindow from './GameWindow'
 import type { DuelBomber } from '../three/DogfightScene'
 import type { Livery } from '../three/liveries'
-import type { Clan, FlightAlert, Maneuver } from './useBase'
+import type { FlightAlert, Maneuver } from './useBase'
 
 const MANEUVERS: Maneuver[] = ['accelerate', 'turnLeft', 'turnRight', 'slipLeft', 'slipRight']
-// Whom each side meets on the grid: the Allies the German bombers, the Axe the French ones.
-const BOMBERS: Record<Clan, DuelBomber[]> = { french: ['he111', 'ju87'], axe: ['amiot143', 'leo451'] }
 
 type Props = {
   alert: FlightAlert
-  /** The side of the player, which sets which bombers they meet, and the livery of their aircraft. */
-  clan: Clan
+  /** The livery of the aircraft of the player. */
   livery: Livery
   onStart: (alertId: number) => Promise<void>
   onPlay: (alertId: number, maneuver: Maneuver) => Promise<void>
@@ -24,12 +21,12 @@ type Props = {
  * A dogfight: the player attacks an enemy bomber from behind and plays one maneuver card per move; after the last move the bomber is shot down if it
  * stands in the firing cone, else it gets away. The dogfight begins when the window opens, and goes on from where it was if the window is closed and opened again.
  */
-function DogfightWindow({ alert, clan, livery, onStart, onPlay, onClose }: Props) {
+function DogfightWindow({ alert, livery, onStart, onPlay, onClose }: Props) {
   const { t } = useTranslation()
   const [isPlaying, setIsPlaying] = useState(false)
   const state = alert.state
-  const bombers = BOMBERS[clan]
-  const bomber = bombers[alert.id % bombers.length]
+  // The server gives a bomber to the alerts that are played on the grid.
+  const bomber = alert.enemy as DuelBomber
 
   useEffect(() => {
     if (state === null) {

@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { assetUrl } from '../assetUrl'
 import { GAME_TIME_ZONE, parseGameTime } from './gameDate'
 import GameWindow from './GameWindow'
 import { composeMissionPage } from './journalPage'
@@ -41,6 +42,10 @@ function MissionPage({ report, gameTime }: { report: MissionReport; gameTime: Da
 
 // How long a page takes to turn: the page carries it as the duration of its animation.
 const TURN_MILLISECONDS = 700
+// The notebook is three images of one width: the band of the rings, the body of the page, which stretches to the text, and the edges of the sheets underneath.
+const RINGS_IMAGE = `url(${assetUrl('sprites/journal/journal-rings.png')})`
+const PAPER_IMAGE = `url(${assetUrl('sprites/journal/journal-paper.png')})`
+const EDGE_IMAGE = `url(${assetUrl('sprites/journal/journal-stack.png')})`
 
 type TurnDirection = 'forward' | 'backward'
 /** A page that is turning: the one the reader leaves, and which way they go. */
@@ -60,7 +65,7 @@ function JournalPage({ event, site, turning }: PageProps) {
   const formatter = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'long', timeStyle: 'short', timeZone: GAME_TIME_ZONE })
 
   return (
-    <article className="journal-leaf" data-turning={turning} aria-hidden={turning === undefined ? undefined : true} style={turning === undefined ? undefined : { animationDuration: `${TURN_MILLISECONDS}ms` }}>
+    <article className="journal-leaf" data-turning={turning} aria-hidden={turning === undefined ? undefined : true} style={turning === undefined ? undefined : { backgroundImage: PAPER_IMAGE, animationDuration: `${TURN_MILLISECONDS}ms` }}>
       <header className="journal-head">
         {gameTime !== null && <time dateTime={event.gameTime}>{formatter.format(gameTime)}</time>}
         <span>{t(`world.site.${site}`)}</span>
@@ -117,11 +122,12 @@ function JournalBook({ site, onDismiss }: Props) {
     content = (
       <>
         <div className="journal-notebook">
-          <div className="journal-rings" aria-hidden="true" />
-          <div className="journal-stack">
+          <div className="journal-rings" aria-hidden="true" style={{ backgroundImage: RINGS_IMAGE }} />
+          <div className="journal-stack" style={{ backgroundImage: PAPER_IMAGE }}>
             <JournalPage event={pages[underneath]} site={site} />
             {turn !== null && <JournalPage event={pages[moving]} site={site} turning={turn.direction} />}
           </div>
+          <div className="journal-edge" aria-hidden="true" style={{ backgroundImage: EDGE_IMAGE }} />
         </div>
         <nav className="journal-nav" aria-label={t('journal.pages')}>
           <button type="button" disabled={current === 0} onClick={() => turnTo(current - 1, current)}>

@@ -1,25 +1,39 @@
-/** How many aircraft leave together: the lead and one on each side behind it. */
-export const GROUP_SIZE = 3
+// The place of each aircraft along the line, in the order they come: the first at the rear, where the roll starts, the second at the front, the third between them.
+// The junction lies between the middle place and the front one, so each aircraft comes to its place without passing through one that came before it.
+const SLOT_OF_ARRIVAL = [0, 2, 1]
+
+/** How many aircraft leave together. */
+export const GROUP_SIZE = SLOT_OF_ARRIVAL.length
 /** How long a group waits after its last aircraft has arrived, unless it is full. */
 export const GROUP_WAIT_SECONDS = 10
 /** How long after one aircraft of a group starts to roll the next one does. */
 export const DEPARTURE_STAGGER_SECONDS = 0.5
-// A new group reaches the slots only this long after the previous group has started to roll, so the slots are empty.
-const CLEARANCE_SECONDS = 3
-// An aircraft reaches its slot at least this long after the one behind it, which came before: none has to pass another.
+// An aircraft reaches its place at least this long after the one before it: at the speed of taxiing, a longer way than an aircraft is long, so no two are on a taxiway together.
 const ARRIVAL_SPACING_SECONDS = 2.5
 
-/** The aircraft waiting on the runway to leave together, one behind the other; times are seconds on the clock of the scene. */
+/** The aircraft waiting on the runway to leave together, in their places along it; times are seconds on the clock of the scene. */
 export class DepartureGroup {
   private readonly arrivals: number[]
+  private readonly slots: number[]
 
   constructor(firstArrivalSeconds: number) {
     this.arrivals = [firstArrivalSeconds]
+    this.slots = [SLOT_OF_ARRIVAL[0]]
   }
 
   /** How many aircraft the group has. */
   get size(): number {
     return this.arrivals.length
+  }
+
+  /** The place of the aircraft at the front, which the others stand behind: 0 is the rear. */
+  get frontSlot(): number {
+    return Math.max(...this.slots)
+  }
+
+  /** The place that the next aircraft to come takes. */
+  get nextSlot(): number {
+    return SLOT_OF_ARRIVAL[this.arrivals.length]
   }
 
   /** When the front aircraft starts to roll: at once when the group is full, else after the wait that follows the last arrival. */
@@ -28,39 +42,54 @@ export class DepartureGroup {
     return this.arrivals.length === GROUP_SIZE ? lastArrival : lastArrival + GROUP_WAIT_SECONDS
   }
 
-  /** Whether an aircraft sent out at this time still finds the group waiting, with a slot free: the group then waits for it. */
+  /** Whether an aircraft sent out at this time still finds the group waiting, with a place free: the group then waits for it. */
   canTake(orderSeconds: number): boolean {
     return this.arrivals.length < GROUP_SIZE && orderSeconds < this.releaseSeconds
   }
 
-  /** Takes one more aircraft in, in the slot in front of the last: 0 is the rear, where the first to come stands, and the last to come is at the front. */
+  /** Takes one more aircraft in, in the next place, which it reaches no sooner than it could and no sooner than the spacing from the one before it allows. */
   add(naturalArrivalSeconds: number): { slot: number; arrivalSeconds: number } {
     const arrivalSeconds = Math.max(naturalArrivalSeconds, Math.max(...this.arrivals) + ARRIVAL_SPACING_SECONDS)
+    const slot = this.nextSlot
     this.arrivals.push(arrivalSeconds)
-    return { slot: this.arrivals.length - 1, arrivalSeconds }
+    this.slots.push(slot)
+    return { slot, arrivalSeconds }
   }
 
   /** The aircraft at the front rolls first, then the one behind it, half a second apart. */
   startSecondsOf(slot: number): number {
-    return this.releaseSeconds + (this.size - 1 - slot) * DEPARTURE_STAGGER_SECONDS
+    let aircraftAhead = 0
+    for (const other of this.slots) {
+      if (other > slot) {
+        aircraftAhead += 1
+      }
+    }
+
+    return this.releaseSeconds + aircraftAhead * DEPARTURE_STAGGER_SECONDS
   }
 }
 
-/** Where an aircraft stands and when it gets there: its group, its slot, and the time it arrives at it. */
+/** Where an aircraft stands and when it gets there: its group, its place along the runway (0 at the rear), and the time it arrives at it. */
 export type Assignment = { group: DepartureGroup; slot: number; arrivalSeconds: number }
 
 /** Puts each aircraft in the group that is still waiting, or in a new one when there is none or it would come too late. */
 export class DepartureQueue {
   private latest: DepartureGroup | undefined
 
-  /** The aircraft is sent out at `orderSeconds` and would reach the start of the runway at `naturalArrivalSeconds`; it arrives later if the slots are not yet empty. */
-  join(orderSeconds: number, naturalArrivalSeconds: number): Assignment {
+  /** `clearanceSeconds` is how long after a group starts to roll the places are free of it, for the next group to come to them. */
+  constructor(private readonly clearanceSeconds: number) {}
+
+  /** The aircraft is sent out at `orderSeconds`; `naturalArrivalSecondsAt` tells when it would reach a place of the line, which depends on the way to it. */
+  join(orderSeconds: number, naturalArrivalSecondsAt: (slot: number) => number): Assignment {
     if (this.latest !== undefined && this.latest.canTake(orderSeconds)) {
-      return { group: this.latest, ...this.latest.add(naturalArrivalSeconds) }
+      return { group: this.latest, ...this.latest.add(naturalArrivalSecondsAt(this.latest.nextSlot)) }
     }
-    const slotsEmptySeconds = this.latest === undefined ? naturalArrivalSeconds : this.latest.releaseSeconds + CLEARANCE_SECONDS
-    const arrivalSeconds = Math.max(naturalArrivalSeconds, slotsEmptySeconds)
+    const firstSlot = SLOT_OF_ARRIVAL[0]
+    const naturalArrivalSeconds = naturalArrivalSecondsAt(firstSlot)
+    const placesFreeSeconds = this.latest === undefined ? naturalArrivalSeconds : this.latest.releaseSeconds + this.clearanceSeconds
+    const arrivalSeconds = Math.max(naturalArrivalSeconds, placesFreeSeconds)
     this.latest = new DepartureGroup(arrivalSeconds)
-    return { group: this.latest, slot: 0, arrivalSeconds }
+
+    return { group: this.latest, slot: firstSlot, arrivalSeconds }
   }
 }

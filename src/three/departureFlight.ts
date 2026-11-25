@@ -66,6 +66,16 @@ export class DepartureFlight {
     return smoothStep(swingInStart, swingInStart + FRONT_VIEW_SWING_SECONDS, time) * (1 - smoothStep(swingOutStart, swingOutStart + FRONT_VIEW_SWING_SECONDS, time))
   }
 
+  /** How long after the start of the roll the aircraft has covered a distance along the runway: on the ground at first, then climbing straight at the speed of liftoff, up to where it turns. */
+  secondsToCover(distanceMeters: number): number {
+    const rolledMeters = (ACCELERATION_METERS_PER_SECOND_SQUARED * this.rollSeconds * this.rollSeconds) / 2
+    if (distanceMeters <= rolledMeters) {
+      return Math.sqrt((2 * distanceMeters) / ACCELERATION_METERS_PER_SECOND_SQUARED)
+    }
+
+    return this.rollSeconds + (distanceMeters - rolledMeters) / LIFTOFF_SPEED_METERS_PER_SECOND
+  }
+
   /** `startX` is where the aircraft stands on the runway at the start of the roll, `groundPitchRadians` the nose-up angle it rests at. */
   pose(time: number, startX: number, groundPitchRadians: number): FlightPose {
     const rolledSeconds = clamp(time, 0, this.rollSeconds)

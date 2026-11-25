@@ -16,7 +16,7 @@ import type { AircraftModel3D } from './aircraftModel'
 import { createAircraftModel } from './aircraftModels'
 import { ArrivalFlight } from './arrivalFlight'
 import { DepartureFlight } from './departureFlight'
-import { DepartureQueue } from './departureQueue'
+import { DEPARTURE_STAGGER_SECONDS, DepartureQueue, GROUP_SIZE } from './departureQueue'
 import type { Assignment } from './departureQueue'
 import type { AircraftState } from './aircraftState'
 import { smoothStep } from './easing'
@@ -62,12 +62,9 @@ const NORTH_HEADING_RADIANS = Math.PI / 2
 // The aircraft in front of which the camera swings, as in the takeoff of the home page, in meters for the real aircraft.
 const REAL_FRONT_DISTANCE_METERS = 18
 const REAL_FRONT_HEIGHT_METERS = 8
-// The aircraft of a group stand in a line this far apart for the real aircraft, the first to come at the rear, at the start of the runway.
+// The aircraft of a group stand in a line this far apart for the real aircraft, the places running from the rear, at the start of the runway, to the front.
 const REAL_FORMATION_GAP_METERS = 10.5
 const REAR_SLOT_X_METERS = 30
-// A slot beyond the junction where all come onto the runway is reached from the north, over the grass, so that no aircraft taxis through another.
-const JUNCTION_CLEARANCE_METERS = 20
-const NORTH_APPROACH_METERS = 56
 const PIVOT_SECONDS = 1
 const TAXI_SPEED_METERS_PER_SECOND = 30
 // An aircraft that has landed taxis more slowly to its stand, and the next one lands this long after it.
@@ -192,7 +189,9 @@ export class AirfieldScene {
   private readonly flight: DepartureFlight
   private readonly landingFlight: ArrivalFlight
   private readonly runwayY: number
-  private readonly queue = new DepartureQueue()
+  private readonly queue: DepartureQueue
+  // The cells of the runway that the taxiways to it do not cross: all but the first junction, where every aircraft comes onto it.
+  private readonly runwayToAvoid: Cell[] = []
   private readonly models: AircraftModel3D[] = []
   private readonly idleModels = new Map<Livery, AircraftModel3D[]>()
   private readonly departing: DepartingAircraft[] = []
@@ -236,6 +235,12 @@ export class AirfieldScene {
     this.shadows = new AircraftShadows(this.scene, options.shadowImage, AIRCRAFT_SPRITE_WIDTH_METERS * this.scale, SUN_POSITION)
     this.gapMeters = REAL_FORMATION_GAP_METERS * this.scale
     this.flight = new DepartureFlight()
+    this.queue = new DepartureQueue(this.groupClearanceSeconds())
+    for (let column = this.runway.firstColumn; column <= this.runway.lastColumn; column += 1) {
+      if (column !== this.runway.entryColumn) {
+        this.runwayToAvoid.push({ row: this.runway.row, column })
+      }
+    }
     const touchdownX = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x + TOUCHDOWN_PAST_ENTRY_METERS
     this.landingFlight = new ArrivalFlight(touchdownX, this.exitX())
     this.runwayY = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).y
@@ -289,20 +294,19 @@ export class AirfieldScene {
     this.showParked()
   }
 
-  /** Sends an aircraft from its stand to the junction, onto the runway and into its place in the line, to leave with the group waiting there, or a new one. */
+  /** Sends an aircraft from its stand by the taxiways to the junction, onto the runway and into its place in the line, to leave with the group waiting there, or a new one; it waits on its stand until its turn to taxi. */
   depart(aircraftId: number, stand: Cell, tailNumber: number, livery: Livery): void {
-    const startSeconds = this.secondsNow()
-    const rearPath = this.taxiPathFrom(stand, 0)
-    const naturalArrivalSeconds = startSeconds + rearPath.lengthMeters / TAXI_SPEED_METERS_PER_SECOND + PIVOT_SECONDS
-    const assignment = this.queue.join(startSeconds, naturalArrivalSeconds)
-    const path = assignment.slot === 0 ? rearPath : this.taxiPathFrom(stand, assignment.slot)
+    const orderSeconds = this.secondsNow()
+    const assignment = this.queue.join(orderSeconds, (slot) => orderSeconds + this.taxiPathFrom(stand, slot).lengthMeters / TAXI_SPEED_METERS_PER_SECOND + PIVOT_SECONDS)
+    const path = this.taxiPathFrom(stand, assignment.slot)
+    const taxiSeconds = path.lengthMeters / TAXI_SPEED_METERS_PER_SECOND
     this.departing.push({
       aircraftId,
       model: this.acquireModel(tailNumber, livery),
       assignment,
       path,
-      startSeconds,
-      taxiSeconds: assignment.arrivalSeconds - PIVOT_SECONDS - startSeconds,
+      startSeconds: assignment.arrivalSeconds - PIVOT_SECONDS - taxiSeconds,
+      taxiSeconds,
       endHeading: path.headingAt(path.lengthMeters, HEADING_SPAN_METERS),
     })
   }
@@ -483,28 +487,31 @@ export class AirfieldScene {
     this.onFramed(groundTransformOf(corners, width, height))
   }
 
-  /** Where an aircraft of a group stands on the runway: the rear one at the start, the others each a step further. */
+  /** Where an aircraft of a group stands on the runway: the rear place at the start, the others each a step further. */
   private slotX(slot: number): number {
     return REAR_SLOT_X_METERS + this.gapMeters * slot
   }
 
-  /** The taxiways to the junction and along the runway to a place of the line; a place beyond the junction is reached from the north, over the grass. */
+  /** The taxiways to the junction, which never cross the runway before it, then along the runway to a place of the line. */
   private taxiPathFrom(stand: Cell, slot: number): TaxiPath {
-    const steps = findPath(this.plan, stand, { row: this.runway.row, column: this.runway.entryColumn })
-    const junctionX = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x
-    const slotX = this.slotX(slot)
-    const isBeyondJunction = slotX > junctionX + JUNCTION_CLEARANCE_METERS
+    const steps = findPath(this.plan, stand, { row: this.runway.row, column: this.runway.entryColumn }, this.runwayToAvoid)
     const points: THREE.Vector2[] = []
     for (const step of steps) {
-      if (!isBeyondJunction || step.cell.row < this.runway.row - 1) {
-        points.push(tileCenterOf(this.runway, step.cell.row, step.cell.column))
-      }
+      points.push(tileCenterOf(this.runway, step.cell.row, step.cell.column))
     }
-    if (isBeyondJunction) {
-      points.push(new THREE.Vector2(slotX, NORTH_APPROACH_METERS))
-    }
-    points.push(new THREE.Vector2(slotX, 0))
+    points.push(new THREE.Vector2(this.slotX(slot), 0))
+
     return new TaxiPath(points)
+  }
+
+  /** How long after a group starts to roll the next one may come onto the runway: the last of the one before, which rolls from the rear, has rolled a gap past the junction, and the first of the next comes from the junction to the rear. */
+  private groupClearanceSeconds(): number {
+    const junctionX = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x
+    const lastRollStartSeconds = (GROUP_SIZE - 1) * DEPARTURE_STAGGER_SECONDS
+    const pastJunctionSeconds = this.flight.secondsToCover(junctionX + this.gapMeters - REAR_SLOT_X_METERS)
+    const comingToRearSeconds = (junctionX - REAR_SLOT_X_METERS) / TAXI_SPEED_METERS_PER_SECOND + PIVOT_SECONDS
+
+    return lastRollStartSeconds + pastJunctionSeconds + comingToRearSeconds
   }
 
   /** Keeps a model that has flown off or landed, with the others of its livery, for the next aircraft that wears it. */
@@ -635,8 +642,8 @@ export class AirfieldScene {
       return
     }
     const { group, slot } = assignment
-    const pose = this.flight.pose(seconds - group.startSecondsOf(slot), this.slotX(group.size - 1), model.groundPitchRadians)
-    const behind = this.gapMeters * (group.size - 1 - slot)
+    const pose = this.flight.pose(seconds - group.startSecondsOf(slot), this.slotX(group.frontSlot), model.groundPitchRadians)
+    const behind = this.gapMeters * (group.frontSlot - slot)
     model.setState(pose.state)
     this.place(model, pose.x - Math.cos(pose.heading) * behind, pose.y - Math.sin(pose.heading) * behind, pose.altitude, pose.heading, pose.pitch, pose.roll)
   }
@@ -676,7 +683,7 @@ export class AirfieldScene {
     let lead: AircraftModel3D | undefined
     for (const aircraft of this.departing) {
       const { group, slot } = aircraft.assignment
-      if (slot === group.size - 1) {
+      if (slot === group.frontSlot) {
         const leadShare = this.flight.frontViewShare(seconds - group.startSecondsOf(slot))
         if (leadShare > frontShare) {
           frontShare = leadShare

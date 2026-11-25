@@ -11,7 +11,12 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+**Le journal : une page par pilote quand deux avions ont volé** (« en fin de misison si y avait 2 avions d'impliquer le diary tu fait au clique, tourner la page, qu'on voyent les 2 pages. si le pilote est mort c'est un autre qui en parle et raconte la situation », 25/11). Relevé dans le code : un compte rendu de mission donne aujourd'hui une seule feuille, écrite par un seul pilote tiré au sort parmi ceux qui sont revenus, qui cite les autres comme camarades et les morts d'une phrase ; si personne n'est revenu, la feuille est blanche (« Cette page est restée blanche : personne ne l'a écrite », avec les noms des disparus, sans signature). Les feuilles se tournent avec les flèches « précédente » et « suivante » ; le journal s'ouvre sur la dernière feuille.
+
+Compris, sans question : un compte rendu de mission qui compte plusieurs équipages donne une feuille par avion, l'une après l'autre dans le journal, dans l'ordre du compte rendu ; la mission d'un seul avion garde sa feuille. Chaque feuille raconte le vol à la première personne, comme aujourd'hui, signée de son pilote ; la ligne des faits de la mission (résultat, gains, vent, prime) reste sur la première feuille seulement. Le journal s'ouvre sur la première feuille de la dernière mission ; le compteur de pages compte les feuilles ; la musique et le jingle suivent la mission, pas la feuille. Pour une mission de plus de deux avions (jusqu'à trois pour un raid, six pour une prise de camp), une feuille par avion aussi. Les textes de la feuille d'un pilote mort sont à écrire en français et en anglais, de ma main.
+
+1. **La feuille du pilote mort.** Option A, ma reco : elle existe, pour qu'on voie toujours une page par avion, et elle est écrite par le pilote de la mission revenu, signée de lui, qui raconte comment son camarade a été perdu ; quand personne de la mission n'est revenu, par un autre pilote du camp resté au sol, que le serveur choisit et inscrit dans le compte rendu (pour que la même page ne change jamais), qui raconte que l'escadrille n'est pas rentrée ; sans pilote au sol, la feuille blanche d'aujourd'hui. Option B : pas de feuille pour le pilote mort : sa perte est dite par le survivant dans sa propre feuille, comme aujourd'hui, et seul le cas « personne n'est revenu » change : un autre pilote du camp l'écrit.
+2. **Cliquer sur la feuille.** Option A, ma reco : un clic sur la feuille la tourne vers la suivante, en plus des flèches. Option B : seules les flèches tournent la page, comme aujourd'hui.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -49,7 +54,9 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : tout est fait.
+| N° | Instruction | Go |
+|---|---|---|
+| 1 | Le journal : une page par pilote quand deux avions ont volé, le pilote mort raconté par un autre (25/11, voir la section 2) | non : attend tes réponses aux deux questions et ton « go » |
 
 ## Mis de côté
 

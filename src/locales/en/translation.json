@@ -156,7 +156,7 @@
   },
   "flak": {
     "title": "Flak",
-    "hint": "The enemy guns fire at your aircraft: a red ring on the sky marks where each shell will burst, get out of it. The guns aim where you will be: they fire at random at first, then more and more accurately if you keep your line, so change it. Two hits destroy your aircraft ({{destroyed}}), the first damages it.",
+    "hint": "The enemy guns fire at your aircraft: a big black dot swells where each shell will burst, get out of it. The guns aim where you will be: they fire at random at first, then more and more accurately if you keep your line, so change it. Two hits destroy your aircraft ({{destroyed}}), the first damages it.",
     "controls": "Steer with the left and right arrow keys, or with the stick under the view.",
     "toast": "Flak is firing at the aircraft of {{pilot}}: it can dodge it.",
     "toastResume": "Flak under way: {{pilot}}.",

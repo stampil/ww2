@@ -7,7 +7,7 @@ import type { GroundRunProps } from './GroundRunWindow'
 const SECONDS_PER_MINUTE = 60
 const HINT_VALUES = { destroyed: FLAK_HITS_TO_DESTROY }
 
-/** The flak of an enemy camp: shells burst around the aircraft, each marked by a ring on the sky first, and the player steers out of them; the guns settle on an aircraft that holds its line. */
+/** The flak of an enemy camp: shells burst around the aircraft, each seen coming as a black dot first, and the player steers out of them; the guns settle on an aircraft that holds its line. */
 function FlakWindow(props: GroundRunProps) {
   const { t } = useTranslation()
   const shellsPerSecond = props.alert.flakShellsPerSecond!

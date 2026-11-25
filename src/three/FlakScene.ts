@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { FlakEffects } from './FlakEffects'
 import { GroundRunScene } from './GroundRunScene'
 import type { RunEnd, RunOutcome, TargetNationality } from './GroundRunScene'
 import type { Livery } from './liveries'
@@ -11,7 +12,6 @@ export const FLAK_HITS_TO_DESTROY = 2
 export const FLAK_SECONDS = 20
 
 const FUSE_SECONDS = 0.9
-const BURST_SECONDS = 1.2
 const BLAST_RADIUS_METERS = 4.5
 // How far a shell lands from where it was aimed: the guns are wild at first and settle on an aircraft that holds its line.
 const WILDEST_AIM_ERROR_METERS = 16
@@ -33,27 +33,20 @@ const CLOUD_HEIGHT_METERS = { min: 1, max: 5 }
 const CLOUD_SEED_OFFSET = 1940
 const CLOUD_COLOR = 0xffffff
 const CLOUD_OPACITY = 0.92
-const WARNING_COLOR = 0xc94e36
-const WARNING_OPACITY = 0.8
-const WARNING_INNER_SHARE = 0.8
-const RING_SEGMENTS = 24
-const WARNING_SHRINK_SHARE = 0.5
-const BURST_COLOR = 0x2a2622
-const BURST_START_SHARE = 0.4
 const BURST_LIFT_METERS = 8
-const WARNING_LIFT_METERS = 0.3
 // The error of a shell along the flight is half its error across it, and is drawn in hundredths of its largest.
 const ALONG_ERROR_SHARE = 0.5
 const ERROR_RESOLUTION = 100
 
-type Shell = { aim: THREE.Vector2; ageSeconds: number; warning: THREE.Mesh; burst: THREE.Mesh | null }
+type Shell = { aim: THREE.Vector2; ageSeconds: number }
 
 /**
- * The flak on the way to an enemy camp, flown from above over clouds: the guns fire shells at the aircraft, each marked by a ring on the sky where it will burst, and the player steers out of it.
+ * The flak on the way to an enemy camp, flown from above over clouds: the guns fire shells at the aircraft, each seen coming as a black dot that swells where it will burst, and the player steers out of it.
  * The guns aim where the aircraft will be; they are wild at first and settle on an aircraft that holds its line. The first hit damages the aircraft, which smokes behind it, the second destroys it.
  */
 export class FlakScene extends GroundRunScene<FlakStatus> {
   private readonly shells: Shell[] = []
+  private readonly effects = new FlakEffects(FUSE_SECONDS, BLAST_RADIUS_METERS)
   private readonly random: SeededRandom
   private hits = 0
   private shellCountdownSeconds = 1
@@ -73,6 +66,7 @@ export class FlakScene extends GroundRunScene<FlakStatus> {
   ) {
     super(container, seed, shadowImage, livery, nationality, windSpeed, onStatus, onEnd)
     this.random = new SeededRandom(seed)
+    this.scene.add(this.effects.object)
     this.player.setVelocity(new THREE.Vector3(0, AIRCRAFT_SPEED_FOR_SMOKE_METERS_PER_SECOND, 0))
     this.start()
     void this.player.ready.then(() => {
@@ -117,28 +111,15 @@ export class FlakScene extends GroundRunScene<FlakStatus> {
     }
     for (const shell of [...this.shells]) {
       shell.ageSeconds += deltaSeconds
-      if (shell.burst === null && shell.ageSeconds >= FUSE_SECONDS) {
+      if (shell.ageSeconds >= FUSE_SECONDS) {
         this.burst(shell)
+        this.shells.splice(this.shells.indexOf(shell), 1)
       }
     }
   }
 
-  protected animate(): void {
-    for (const shell of [...this.shells]) {
-      if (shell.burst === null) {
-        shell.warning.scale.setScalar(1 - WARNING_SHRINK_SHARE * (shell.ageSeconds / FUSE_SECONDS))
-        continue
-      }
-      const burstAge = shell.ageSeconds - FUSE_SECONDS
-      if (burstAge >= BURST_SECONDS) {
-        this.scene.remove(shell.warning, shell.burst)
-        this.shells.splice(this.shells.indexOf(shell), 1)
-        continue
-      }
-      const material = shell.burst.material as THREE.MeshBasicMaterial
-      material.opacity = 1 - burstAge / BURST_SECONDS
-      shell.burst.scale.setScalar(BLAST_RADIUS_METERS * (BURST_START_SHARE + burstAge))
-    }
+  protected animate(deltaSeconds: number): void {
+    this.effects.update(deltaSeconds)
   }
 
   protected isOver(): boolean {
@@ -157,7 +138,7 @@ export class FlakScene extends GroundRunScene<FlakStatus> {
     return { hits: this.hits, secondsLeft: Math.max(0, FLAK_SECONDS - this.secondsFlown) }
   }
 
-  /** A shell aimed at where the aircraft will be when it bursts, off by how wild the guns still are: its ring shows on the sky. */
+  /** A shell aimed at where the aircraft will be when it bursts, off by how wild the guns still are: it shows as a dot that swells there. */
   private fire(): void {
     const steadiness = Math.min(1, this.steadySeconds / STEADY_SECONDS_FOR_BEST_AIM)
     const errorMeters = WILDEST_AIM_ERROR_METERS - (WILDEST_AIM_ERROR_METERS - STEADIEST_AIM_ERROR_METERS) * steadiness
@@ -166,21 +147,12 @@ export class FlakScene extends GroundRunScene<FlakStatus> {
       this.position.x + this.lastSteering * this.lateralSpeedMetersPerSecond * FUSE_SECONDS + spread() * errorMeters,
       this.position.y + this.forwardSpeedMetersPerSecond * FUSE_SECONDS + spread() * errorMeters * ALONG_ERROR_SHARE,
     )
-    const warning = new THREE.Mesh(new THREE.RingGeometry(BLAST_RADIUS_METERS * WARNING_INNER_SHARE, BLAST_RADIUS_METERS, RING_SEGMENTS), new THREE.MeshBasicMaterial({ color: WARNING_COLOR, transparent: true, opacity: WARNING_OPACITY }))
-    warning.position.set(aim.x, aim.y, WARNING_LIFT_METERS)
-    this.scene.add(warning)
-    this.shells.push({ aim, ageSeconds: 0, warning, burst: null })
+    this.effects.launch(new THREE.Vector3(aim.x, aim.y, BURST_LIFT_METERS))
+    this.shells.push({ aim, ageSeconds: 0 })
   }
 
-  /** The shell bursts: a black puff with an orange heart, which hits the aircraft if it is inside the blast. */
+  /** The shell bursts, which hits the aircraft if it is inside the blast: the effects draw the flash and the cloud of smoke. */
   private burst(shell: Shell): void {
-    const material = new THREE.MeshBasicMaterial({ color: BURST_COLOR, transparent: true, opacity: 1 })
-    const puff = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 1), material)
-    puff.position.set(shell.aim.x, shell.aim.y, BURST_LIFT_METERS)
-    puff.scale.setScalar(BLAST_RADIUS_METERS * BURST_START_SHARE)
-    this.scene.add(puff)
-    shell.burst = puff
-    shell.warning.visible = false
     if (this.position.distanceTo(shell.aim) <= BLAST_RADIUS_METERS && this.hits < FLAK_HITS_TO_DESTROY) {
       this.hits += 1
       const levels = this.hits === 1 ? SMOKE_LEVELS_FOR_FIRST_HIT : DESTROYED_LEVELS_FOR_SECOND_HIT

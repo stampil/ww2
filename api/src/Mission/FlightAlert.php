@@ -22,6 +22,8 @@ final readonly class FlightAlert
         public int $moves,
         public ?DogfightState $state,
         public ?CockpitDuel $cockpit,
+        public ?int $flakShellsPerSecond = null,
+        public ?int $flakHits = null,
     ) {
     }
 
@@ -37,7 +39,7 @@ final readonly class FlightAlert
     }
 
     /**
-     * @return array{id: int, kind: string, aircraftId: int, enemy: string, dueSeconds: int, lateSeconds: int, arenaSize: int, moves: int, state: array<string, mixed>|null, cockpit: array{outcome: string|null}|null}
+     * @return array{id: int, kind: string, aircraftId: int, enemy: string, dueSeconds: int, lateSeconds: int, arenaSize: int, moves: int, state: array<string, mixed>|null, cockpit: array{outcome: string|null}|null, flakShellsPerSecond: int|null}
      */
     public function toArray(int $gameSeconds, EnemyType $enemy): array
     {
@@ -52,6 +54,7 @@ final readonly class FlightAlert
             'moves' => $this->moves,
             'state' => $this->state?->toArray(),
             'cockpit' => $this->cockpit === null ? null : ['outcome' => $this->cockpit->outcome?->value],
+            'flakShellsPerSecond' => $this->flakShellsPerSecond,
         ];
     }
 }

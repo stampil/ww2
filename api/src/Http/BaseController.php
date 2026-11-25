@@ -351,6 +351,20 @@ final class BaseController
      * @throws UnauthorizedException when nobody is signed in
      * @throws BadRequestException when the order is not understood
      */
+    public function finishFlak(ServerRequestInterface $request): array
+    {
+        $baseId = $this->ownBaseId();
+        $fields = JsonRequestBody::integers($request, 'alertId', 'hits');
+        $this->carryOut(fn () => $this->alerts->finishFlak($baseId, $fields['alertId'], $fields['hits']));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
+     */
     public function inspectAircraft(ServerRequestInterface $request): array
     {
         $baseId = $this->ownBaseId();

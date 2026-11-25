@@ -151,6 +151,18 @@
     "won": "Convoi détruit !",
     "escaped": "Le convoi s'est échappé."
   },
+  "flak": {
+    "title": "Tir de DCA",
+    "hint": "Les canons de l'ennemi tirent sur ton avion : un cercle rouge marque sur le ciel l'endroit où chaque obus va éclater, quitte-le. Les canons visent où tu seras : ils tirent au hasard d'abord, puis de plus en plus juste si tu gardes ta trajectoire, change-la. Deux coups détruisent ton avion ({{destroyed}}), le premier l'abîme.",
+    "controls": "Pilote avec les flèches gauche et droite du clavier, ou avec le manche sous la vue.",
+    "toast": "La DCA tire sur l'avion de {{pilot}} : il peut l'éviter.",
+    "toastResume": "DCA en cours : {{pilot}}.",
+    "take": "Éviter",
+    "hits": "Touches : {{count}} sur {{total}}",
+    "starting": "Mise en route…",
+    "won": "Tu as passé la DCA !",
+    "escaped": "Ton avion est détruit."
+  },
   "photo": {
     "title": "Reconnaissance photo",
     "hint": "Tu survoles une zone ennemie : l'appareil photo de ton avion prend seul la cible qu'il garde un instant dans son cadre. Prends {{required}} photos sur {{total}} sans te faire repérer : chaque tour que tu survoles fait monter la détection de {{percent}} %, et à 100 % tu es repéré.",

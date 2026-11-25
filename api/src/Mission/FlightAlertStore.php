@@ -13,7 +13,7 @@ use Ww2\Mission\Dogfight\DogfightState;
  */
 final class FlightAlertStore
 {
-    private const COLUMNS = 'flight_alerts.id, flight_alerts.mission_id, flight_alerts.aircraft_id, flight_alerts.kind, flight_alerts.due_game_second, flight_alerts.moves, flight_alerts.state, cockpit_duels.alert_id AS cockpit_alert_id, cockpit_duels.outcome AS cockpit_outcome';
+    private const COLUMNS = 'flight_alerts.id, flight_alerts.mission_id, flight_alerts.aircraft_id, flight_alerts.kind, flight_alerts.due_game_second, flight_alerts.moves, flight_alerts.state, cockpit_duels.alert_id AS cockpit_alert_id, cockpit_duels.outcome AS cockpit_outcome, flak_alerts.shells_per_second AS flak_shells, flak_alerts.hits AS flak_hits';
 
     public function __construct(private readonly Database $database)
     {
@@ -27,6 +27,22 @@ final class FlightAlertStore
         );
     }
 
+    /** Adds the alert of the flak an aircraft meets on the way to an enemy camp: how many shells a second the guns fire at it. */
+    public function addFlak(int $missionId, int $aircraftId, int $dueGameSecond, int $shellsPerSecond): void
+    {
+        $this->add($missionId, $aircraftId, AlertKind::Flak, $dueGameSecond, 0);
+        $this->database->execute(
+            'INSERT INTO flak_alerts (alert_id, shells_per_second) VALUES (LAST_INSERT_ID(), :shells_per_second)',
+            ['shells_per_second' => $shellsPerSecond],
+        );
+    }
+
+    /** Keeps how many times the flak hit an aircraft in the mini-game, if it was not kept yet. */
+    public function recordFlakHits(int $alertId, int $hits): void
+    {
+        $this->database->execute('UPDATE flak_alerts SET hits = :hits WHERE alert_id = :alert_id AND hits IS NULL', ['hits' => $hits, 'alert_id' => $alertId]);
+    }
+
     /**
      * @return list<FlightAlert> the alerts of the flights of the base
      */
@@ -34,7 +50,7 @@ final class FlightAlertStore
     {
         $rows = $this->database->fetchAll(
             'SELECT ' . self::COLUMNS . ' FROM flight_alerts JOIN missions ON missions.id = flight_alerts.mission_id
-             LEFT JOIN cockpit_duels ON cockpit_duels.alert_id = flight_alerts.id
+             LEFT JOIN cockpit_duels ON cockpit_duels.alert_id = flight_alerts.id LEFT JOIN flak_alerts ON flak_alerts.alert_id = flight_alerts.id
              WHERE missions.base_id = :base_id ORDER BY flight_alerts.id',
             ['base_id' => $baseId],
         );
@@ -46,7 +62,7 @@ final class FlightAlertStore
     {
         $rows = $this->database->fetchAll(
             'SELECT ' . self::COLUMNS . ' FROM flight_alerts JOIN missions ON missions.id = flight_alerts.mission_id
-             LEFT JOIN cockpit_duels ON cockpit_duels.alert_id = flight_alerts.id
+             LEFT JOIN cockpit_duels ON cockpit_duels.alert_id = flight_alerts.id LEFT JOIN flak_alerts ON flak_alerts.alert_id = flight_alerts.id
              WHERE missions.base_id = :base_id AND flight_alerts.id = :alert_id',
             ['base_id' => $baseId, 'alert_id' => $alertId],
         );
@@ -119,6 +135,8 @@ final class FlightAlertStore
             (int) $row['moves'],
             $row['state'] === null ? null : DogfightState::fromArray(json_decode((string) $row['state'], true, 512, JSON_THROW_ON_ERROR)),
             $row['cockpit_alert_id'] === null ? null : new CockpitDuel($row['cockpit_outcome'] === null ? null : DogfightOutcome::from((string) $row['cockpit_outcome'])),
+            $row['flak_shells'] === null ? null : (int) $row['flak_shells'],
+            $row['flak_hits'] === null ? null : (int) $row['flak_hits'],
         );
     }
 }

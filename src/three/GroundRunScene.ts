@@ -15,8 +15,8 @@ export type RunOutcome = 'won' | 'escaped'
 export type VehicleKind = 'truck' | 'tanker' | 'armored-car' | 'light-tank' | 'motorcycle'
 /** What a run can destroy beside the road, which pays on top of the mission. */
 export type RoadsideKind = 'barrels' | 'tent'
-/** How a run ended, and what it destroyed beside the road. */
-export type RunEnd = { outcome: RunOutcome; roadsideDestroyed: RoadsideKind[] }
+/** How a run ended, what it destroyed beside the road, and how many times the aircraft was hit. */
+export type RunEnd = { outcome: RunOutcome; roadsideDestroyed: RoadsideKind[]; hits: number }
 
 /** What a run can show on the ground: the vehicles of a convoy, an ambulance of the Red Cross, and a fuel dump and a tent beside the road. */
 export type TargetKind = VehicleKind | 'ambulance' | 'barrels' | 'tent'
@@ -135,7 +135,7 @@ export abstract class GroundRunScene<Status> {
   protected readonly lateralSpeedMetersPerSecond: number = LATERAL_SPEED_METERS_PER_SECOND
   private readonly renderer: THREE.WebGLRenderer
   private readonly resizeObserver: ResizeObserver
-  private readonly player: AircraftModel3D
+  protected readonly player: AircraftModel3D
   private readonly liveries: LiveryTextures
   private readonly shadow: THREE.Mesh
   private readonly textures = new Map<string, THREE.Texture>()
@@ -176,7 +176,7 @@ export abstract class GroundRunScene<Status> {
     this.placeCamera()
     this.screenUp.set(0, 1, 0).applyQuaternion(this.camera.quaternion)
 
-    this.scene.add(this.createGround(), this.createRoad(), new Bushes(this.bushPlacements(this.seed)).object)
+    this.scene.add(...this.createBackdrop())
     this.shadow = this.createShadow(shadowImage)
     this.player.setState(FLYING)
     this.player.object.scale.setScalar(AIRCRAFT_SCALE)
@@ -184,6 +184,11 @@ export abstract class GroundRunScene<Status> {
 
     this.resizeObserver = new ResizeObserver(() => this.fit())
     this.resizeObserver.observe(container)
+  }
+
+  /** What the aircraft flies over: the grass, the road and the bushes. A run that flies elsewhere puts its own, made without anything the subclass sets up, since this runs while the scene is made. */
+  protected createBackdrop(): THREE.Object3D[] {
+    return [this.createGround(), this.createRoad(), new Bushes(this.bushPlacements(this.seed)).object]
   }
 
   /** The way the player steers across the road: -1 to the left, 1 to the right. */
@@ -208,6 +213,11 @@ export abstract class GroundRunScene<Status> {
   protected abstract isOver(): boolean
 
   protected abstract outcome(): RunOutcome
+
+  /** How many times the aircraft was hit: never, unless something shoots at it in the run. */
+  protected hitsTaken(): number {
+    return 0
+  }
 
   /** What the run destroyed beside the road: nothing, unless the run has such targets. */
   protected roadsideDestroyed(): RoadsideKind[] {
@@ -382,7 +392,7 @@ export abstract class GroundRunScene<Status> {
     this.endPauseSeconds += deltaSeconds
     if (this.endPauseSeconds > END_PAUSE_SECONDS) {
       this.hasEnded = true
-      this.onEnd({ outcome: this.outcome(), roadsideDestroyed: this.roadsideDestroyed() })
+      this.onEnd({ outcome: this.outcome(), roadsideDestroyed: this.roadsideDestroyed(), hits: this.hitsTaken() })
     }
   }
 

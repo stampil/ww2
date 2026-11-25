@@ -29,7 +29,7 @@ export type GroundRunProps = {
 
 type Props<Status> = GroundRunProps & {
   /** The prefix of the texts of the mini-game: its title, hint, controls, and the three ends. */
-  namespace: 'strafe' | 'photo'
+  namespace: 'strafe' | 'photo' | 'flak'
   hintValues: Record<string, number | string>
   createScene: (
     view: HTMLElement,

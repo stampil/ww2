@@ -38,7 +38,7 @@ export type EnemyType = CockpitEnemy | DuelBomber
 
 export type FlightAlert = {
   id: number
-  kind: 'dogfight' | 'cockpit'
+  kind: 'dogfight' | 'cockpit' | 'flak'
   aircraftId: number
   /** The enemy the server has given this alert. */
   enemy: EnemyType
@@ -50,6 +50,8 @@ export type FlightAlert = {
   state: DogfightState | null
   /** For a dogfight flown from the cockpit: null before the player takes the controls, then how it ended once it is over. */
   cockpit: { outcome: DogfightOutcome | null } | null
+  /** For the flak of an attack on an enemy camp: how many shells a second its guns fire at the aircraft; null for the other alerts. */
+  flakShellsPerSecond: number | null
 }
 
 /** A mission under way: its crews, what each aircraft carries, the game seconds left before it is back, and its alerts. */
@@ -513,6 +515,10 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/alerts/finish`, { alertId, outcome, tents, barrels }))
   }
 
+  async function finishFlak(alertId: number, hits: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/alerts/flak`, { alertId, hits }))
+  }
+
   async function receiveSquadron(missionId: number): Promise<string | null> {
     return receive(await request(`${BASE_URL}/missions/return`, { missionId }))
   }
@@ -591,6 +597,7 @@ export function useBase(player: Player | null) {
     startAlert,
     playAlert,
     finishAlert,
+    finishFlak,
     receiveSquadron,
     inspectAircraft,
     repairAircraft,

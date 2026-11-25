@@ -88,7 +88,7 @@ final class Headquarters
     public function launch(int $baseId, int $missionId, array $pilotIds, array $aircraftIds, int $fuelPerAircraft, int $ammunitionPerAircraft): void
     {
         $this->database->transaction(function () use ($baseId, $missionId, $pilotIds, $aircraftIds, $fuelPerAircraft, $ammunitionPerAircraft): void {
-            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $fuelPerAircraft, $ammunitionPerAircraft, mayUseGuests: true);
+            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $fuelPerAircraft, $ammunitionPerAircraft, mayUseGuests: true, flakShellsPerSecond: 0);
         });
     }
 
@@ -111,7 +111,7 @@ final class Headquarters
             }
             $mission = $this->attacks->missionFor($baseId, $targetBaseId, $type, $aircraftCount);
             $missionId = $this->missions->addAttack($baseId, $mission, $targetBaseId);
-            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $mission->fuelPerAircraft, $mission->ammunitionPerAircraft, mayUseGuests: false);
+            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $mission->fuelPerAircraft, $mission->ammunitionPerAircraft, mayUseGuests: false, flakShellsPerSecond: $this->attacks->flakShellsPerSecond($baseId, $targetBaseId));
         });
     }
 
@@ -119,8 +119,9 @@ final class Headquarters
      * @param list<int> $pilotIds
      * @param list<int> $aircraftIds
      * @param bool $mayUseGuests whether the aircraft of other bases standing at the camp may fly: not an attack, whose aircraft land on the camp it takes
+     * @param int $flakShellsPerSecond how many shells a second the guns of the camp an attack goes against fire at each aircraft, none for a mission that goes against no camp
      */
-    private function depart(int $baseId, int $missionId, array $pilotIds, array $aircraftIds, int $fuelPerAircraft, int $ammunitionPerAircraft, bool $mayUseGuests): void
+    private function depart(int $baseId, int $missionId, array $pilotIds, array $aircraftIds, int $fuelPerAircraft, int $ammunitionPerAircraft, bool $mayUseGuests, int $flakShellsPerSecond): void
     {
         $resources = $this->bases->lockResources($baseId);
         $this->camps->assertStanding($baseId, Building::Headquarters);
@@ -147,7 +148,7 @@ final class Headquarters
         foreach ($pilotIds as $pilotId) {
             $crewPilots[] = $ownedPilots[$pilotId];
         }
-        $this->alerts->schedule($mission, $crewPilots, $aircraft, $gameSeconds);
+        $this->alerts->schedule($mission, $crewPilots, $aircraft, $gameSeconds, $flakShellsPerSecond);
     }
 
     /**
@@ -170,7 +171,7 @@ final class Headquarters
             foreach ($this->garrison->guestsAt($baseId, $gameSeconds) as $aircraftId => $guest) {
                 $flyable[$aircraftId] = $guest->aircraft;
             }
-            $report = $this->resolver->resolve($flight, $this->squadrons->pilotsById($baseId), $flyable, $duels);
+            $report = $this->resolver->resolve($flight, $this->squadrons->pilotsById($baseId), $flyable, $duels, $this->alerts->flakHitsOf($baseId, $missionId));
             $bonusSupplies = $this->alerts->bonusSuppliesOf($missionId);
             $progress = $this->applyReport($baseId, $report, $gameSeconds, $this->alerts->enemiesOf($baseId, $missionId, $this->world->clanOfBase($baseId)), $bonusSupplies);
             $attack = $this->attacks->resolve($baseId, $flight, $report, $gameSeconds);

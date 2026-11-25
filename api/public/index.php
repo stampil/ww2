@@ -103,7 +103,7 @@ $holdings = new Holdings($database, $bases, $baseFounder, $squadrons, $stationin
 $sitePlaces = SitePlaces::fromFile(dirname(__DIR__) . '/data/site-places.json');
 $stationings = new Stationings($database, $baseStore, $baseFounder, $stationingStore, $squadrons, $missions, $hangarStore, $warehouse, $bases, $clocks, $events, $sitePlaces);
 $missionGenerator = new MissionGenerator();
-$attacks = new Attacks($bases, $camps, $garrison, $holdings, $activity, $stationings, $missionGenerator, $squadrons, $events, $clocks);
+$attacks = new Attacks($bases, $camps, $garrison, $holdings, $activity, $stationings, $missionGenerator, $squadrons, $events, $clocks, $sitePlaces);
 $headquarters = new Headquarters($database, $baseStore, $missions, $squadrons, $clocks, $hangarStore, $events, $battleStore, $missionGenerator, new WeatherForecast(), new MissionResolver(), $alerts, $stationingStore, $camps, $attacks, $bases, $garrison);
 $overview = new BaseOverview($baseStore, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $squadrons, $events, $clocks, $bases, $stationings, $camps, $attacks, new SupplyIncome($database, $baseStore, $bases, $sitePlaces), $garrison, new LifeEvents($database, $events, $squadrons));
 $gifts = new Gifts($database, $baseStore, $squadrons, $missions, $hangarStore, $bases, $events, $stationingStore, $clocks);
@@ -138,6 +138,7 @@ $router->group('/api', function (RouteGroup $routes) use ($accounts, $players, $
     $routes->post('/base/alerts/start', [$baseController, 'startAlert']);
     $routes->post('/base/alerts/play', [$baseController, 'playAlert']);
     $routes->post('/base/alerts/finish', [$baseController, 'finishAlert']);
+    $routes->post('/base/alerts/flak', [$baseController, 'finishFlak']);
     $routes->post('/base/hangar/inspect', [$baseController, 'inspectAircraft']);
     $routes->post('/base/hangar/repair', [$baseController, 'repairAircraft']);
     $routes->post('/base/pilots/rest', [$baseController, 'restPilot']);

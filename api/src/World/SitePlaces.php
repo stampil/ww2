@@ -54,6 +54,14 @@ final class SitePlaces
     }
 
     /**
+     * @return float how far apart two camps stand, from 0 to 1: their distance on the map against the longest one
+     */
+    public function distanceShare(Site $first, Site $second): float
+    {
+        return $this->distance($first, $second) / $this->farthestDistance;
+    }
+
+    /**
      * @return float how deep in the rear a camp stands, from 0 at the front to 1: how far it is from the nearest camp of the other side, against a share of the longest flight
      */
     public function frontDepth(Site $site): float

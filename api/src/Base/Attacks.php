@@ -13,6 +13,7 @@ use Ww2\Mission\MissionReport;
 use Ww2\Mission\MissionType;
 use Ww2\Squadron\SquadronStore;
 use Ww2\World\Bases;
+use Ww2\World\SitePlaces;
 
 /**
  * Raids and captures against the camps of players of the other side: which camps can be attacked, what an attack is, and what it does to the camp when its squadron is received.
@@ -32,6 +33,9 @@ final class Attacks
     /** The defense of a camp that has just been taken. */
     private const CAPTURED_DEFENSE = 50;
     private const BACK_AND_FORTH = 2;
+    // The guns of a camp fire this many shells a second at an aircraft, and up to this many more the farther the camp stands from the camps of the side that attacks it.
+    private const FLAK_BASE_SHELLS_PER_SECOND = 2;
+    private const FLAK_EXTRA_SHELLS_PER_SECOND = 4;
 
     public function __construct(
         private readonly Bases $bases,
@@ -44,8 +48,26 @@ final class Attacks
         private readonly SquadronStore $squadrons,
         private readonly EventLog $events,
         private readonly GameClockStore $clocks,
+        private readonly SitePlaces $places,
         private readonly Randomizer $random = new Randomizer(),
     ) {
+    }
+
+    /**
+     * @return int how many shells a second the flak of a camp fires at each aircraft that attacks it: the farther it stands from the nearest camp of the attacker's side, the more
+     */
+    public function flakShellsPerSecond(int $attackerBaseId, int $targetBaseId): int
+    {
+        $target = $this->bases->siteOf($targetBaseId);
+        $attackerClan = $this->bases->clanOfPlayer($this->bases->holderIdOf($attackerBaseId));
+        $nearest = 1.0;
+        foreach ($this->bases->campsOf($this->bases->instanceOf($attackerBaseId)) as $camp) {
+            if ($camp['holderId'] !== null && $this->bases->clanOfPlayer($camp['holderId']) === $attackerClan) {
+                $nearest = min($nearest, $this->places->distanceShare($target, $this->bases->siteOf($camp['id'])));
+            }
+        }
+
+        return self::FLAK_BASE_SHELLS_PER_SECOND + (int) round(self::FLAK_EXTRA_SHELLS_PER_SECOND * $nearest);
     }
 
     /**

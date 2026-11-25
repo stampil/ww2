@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS flak_alerts (
+    alert_id INT UNSIGNED NOT NULL PRIMARY KEY,
+    shells_per_second TINYINT UNSIGNED NOT NULL,
+    hits TINYINT UNSIGNED NULL,
+    FOREIGN KEY (alert_id) REFERENCES flight_alerts (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci

@@ -22,10 +22,13 @@ type Props = {
   isTowerOpen: boolean
 }
 
-/** The texts of the toast and of the window of a mini-game: the grid duel, the strafing run of a ground attack, the photos of a reconnaissance, or the dogfight from the cockpit. */
-function namespaceOf(alert: FlightAlert, flight: Flight): 'duel' | 'strafe' | 'photo' | 'combat' {
+/** The texts of the toast and of the window of a mini-game: the grid duel, the strafing run of a ground attack, the photos of a reconnaissance, the flak to dodge on the way to an enemy camp, or the dogfight from the cockpit. */
+function namespaceOf(alert: FlightAlert, flight: Flight): 'duel' | 'strafe' | 'photo' | 'combat' | 'flak' {
   if (alert.kind === 'dogfight') {
     return 'duel'
+  }
+  if (alert.kind === 'flak') {
+    return 'flak'
   }
   if (STRAFING_TYPES.includes(flight.type)) {
     return 'strafe'

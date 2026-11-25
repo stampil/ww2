@@ -37,6 +37,9 @@ final class MissionResolver
     private const GAUGE_MAX = 100;
     private const DAMAGE_PER_MODULE_HIT = 10;
     private const FIRE_DURABILITY_PERCENT = 25;
+    // A hit of the flak takes this much durability, and the second hit destroys the aircraft.
+    private const FLAK_HIT_DAMAGE = 25;
+    private const FLAK_HITS_TO_DESTROY = 2;
     // A failed mission may cost the aircraft altogether: it does not come back.
     private const FAILED_FLIGHT_LOSS_PERCENT = 10;
 
@@ -48,8 +51,9 @@ final class MissionResolver
      * @param array<int, Pilot> $pilots the pilots of the flight, by id
      * @param array<int, Aircraft> $aircraft the aircraft of the flight, by id
      * @param array<int, DogfightOutcome> $duels how the dogfights of the flight that were played to their end ended, by the id of the aircraft
+     * @param array<int, int> $flakHits how many times the flak hit each aircraft of the flight, by the id of the aircraft
      */
-    public function resolve(Flight $flight, array $pilots, array $aircraft, array $duels = []): MissionReport
+    public function resolve(Flight $flight, array $pilots, array $aircraft, array $duels = [], array $flakHits = []): MissionReport
     {
         $successes = [];
         $unplayed = [];
@@ -69,7 +73,7 @@ final class MissionResolver
 
         $outcomes = [];
         foreach ($flight->crews as $crew) {
-            $outcomes[] = $this->outcomeOf($flight->mission, $pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']], $successes[$crew['aircraftId']]);
+            $outcomes[] = $this->outcomeOf($flight->mission, $pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']], $successes[$crew['aircraftId']], $flakHits[$crew['aircraftId']] ?? 0);
         }
         $success = !in_array(false, $successes, true);
 
@@ -138,11 +142,12 @@ final class MissionResolver
         return min($ratios);
     }
 
-    private function outcomeOf(Mission $mission, Pilot $pilot, Aircraft $aircraft, bool $success): CrewOutcome
+    private function outcomeOf(Mission $mission, Pilot $pilot, Aircraft $aircraft, bool $success, int $flakHits): CrewOutcome
     {
         $damagePerRisk = $success ? self::MAX_DAMAGE_PER_RISK_ON_SUCCESS : self::MAX_DAMAGE_PER_RISK_ON_FAILURE;
         $vanished = !$success && $this->random->getInt(1, self::PERCENT) <= self::FAILED_FLIGHT_LOSS_PERCENT;
-        $durability = $vanished ? 0 : max(0, $aircraft->durability - $this->random->getInt(0, $damagePerRisk * $mission->risk));
+        $shotDown = $flakHits >= self::FLAK_HITS_TO_DESTROY;
+        $durability = $vanished || $shotDown ? 0 : max(0, $aircraft->durability - $this->random->getInt(0, $damagePerRisk * $mission->risk) - $flakHits * self::FLAK_HIT_DAMAGE);
         $aircraftLost = $durability === 0;
         $pilotKilled = $aircraftLost && $this->random->getInt(1, self::PERCENT) > $pilot->effectiveResilience();
         $hits = min(count(SparePart::cases()), intdiv($aircraft->durability - $durability, self::DAMAGE_PER_MODULE_HIT));

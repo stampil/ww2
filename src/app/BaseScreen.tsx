@@ -19,6 +19,7 @@ import { damageLevelOf } from '../three/damageStages'
 import GameWindow from './GameWindow'
 import Guide from './Guide'
 import { guideStepOf, markedBuildingOf, speaksInWindowOf } from './guideSteps'
+import FlakWindow from './FlakWindow'
 import GuideWelcome from './GuideWelcome'
 import MilestonePopins from './MilestonePopins'
 import HangarPanel from './HangarPanel'
@@ -87,6 +88,7 @@ function BaseScreen({ player }: { player: Player }) {
     startAlert,
     playAlert,
     finishAlert,
+    finishFlak,
     receiveSquadron,
     inspectAircraft,
     repairAircraft,
@@ -281,7 +283,7 @@ function BaseScreen({ player }: { player: Player }) {
   }
 
   const duel = duelAlertId === null ? undefined : findAlert(flights, duelAlertId)
-  const MissionWindow = duel === undefined ? undefined : GROUND_RUN_WINDOWS[duel.flight.type]
+  const MissionWindow = duel === undefined ? undefined : duel.alert.kind === 'flak' ? FlakWindow : GROUND_RUN_WINDOWS[duel.flight.type]
   const duelCrewPlace = duel?.flight.crews.find((crew) => crew.aircraftId === duel.alert.aircraftId)
   const duelCrew =
     duelCrewPlace === undefined
@@ -434,14 +436,14 @@ function BaseScreen({ player }: { player: Player }) {
             onClose={() => setDuelAlertId(null)}
           />
         )}
-        {MissionWindow !== undefined && duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && (
+        {MissionWindow !== undefined && duelCrew !== undefined && duel !== undefined && (duel.alert.kind === 'cockpit' || duel.alert.kind === 'flak') && (
           <MissionWindow
             alert={duel.alert}
             clan={base.clan}
             livery={duelCrew.aircraft.livery}
             windSpeed={duel.flight.windSpeed}
             onStart={(alertId) => order(startAlert(alertId))}
-            onFinish={(alertId, end) => order(finishAlert(alertId, end.outcome, end.roadsideDestroyed))}
+            onFinish={(alertId, end) => order(duel.alert.kind === 'flak' ? finishFlak(alertId, end.hits) : finishAlert(alertId, end.outcome, end.roadsideDestroyed))}
             onClose={() => setDuelAlertId(null)}
           />
         )}

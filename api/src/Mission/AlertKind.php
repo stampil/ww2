@@ -11,4 +11,5 @@ enum AlertKind: string
 {
     case Dogfight = 'dogfight';
     case Cockpit = 'cockpit';
+    case Flak = 'flak';
 }

@@ -30,6 +30,14 @@ final class Alerts
     private const LATEST_PERCENT = 75;
     private const PERCENT = 100;
     private const NO_MOVES = 0;
+    // The flak comes first on the way to an enemy camp: between a twentieth and a fifth of the flight.
+    private const FLAK_EARLIEST_PERCENT = 5;
+    private const FLAK_LATEST_PERCENT = 20;
+    // The flak can hit an aircraft twice: the first hit damages it, the second destroys it.
+    private const MAX_FLAK_HITS = 2;
+    // A flak that was not played hits for each of its two shots by this much for each shell a second the guns fire, at most the cap.
+    private const UNPLAYED_HIT_PERCENT_PER_SHELL = 8;
+    private const UNPLAYED_HIT_PERCENT_CAP = 60;
 
     public function __construct(
         private readonly Database $database,
@@ -46,8 +54,9 @@ final class Alerts
      *
      * @param list<Pilot> $pilots the pilots of the flight, each flying the aircraft at the same place of the next list
      * @param list<Aircraft> $aircraft
+     * @param int $flakShellsPerSecond how many shells a second the guns of the camp the flight goes against fire, for each aircraft: none when it goes against no camp
      */
-    public function schedule(Mission $mission, array $pilots, array $aircraft, int $launchGameSecond): void
+    public function schedule(Mission $mission, array $pilots, array $aircraft, int $launchGameSecond, int $flakShellsPerSecond): void
     {
         $kind = match ($mission->type) {
             MissionType::AirCombat => AlertKind::Dogfight,
@@ -56,6 +65,13 @@ final class Alerts
         };
         if ($kind === null) {
             return;
+        }
+        if ($flakShellsPerSecond > 0) {
+            $flakEarliest = intdiv($mission->durationSeconds * self::FLAK_EARLIEST_PERCENT, self::PERCENT);
+            $flakLatest = intdiv($mission->durationSeconds * self::FLAK_LATEST_PERCENT, self::PERCENT);
+            foreach ($aircraft as $flown) {
+                $this->store->addFlak($mission->id, $flown->id, $launchGameSecond + $this->random->getInt($flakEarliest, $flakLatest), $flakShellsPerSecond);
+            }
         }
         $earliest = intdiv($mission->durationSeconds * self::EARLIEST_PERCENT, self::PERCENT);
         $latest = intdiv($mission->durationSeconds * self::LATEST_PERCENT, self::PERCENT);
@@ -86,7 +102,7 @@ final class Alerts
     {
         $enemies = [];
         foreach ($this->store->of($baseId) as $alert) {
-            if ($alert->missionId === $missionId) {
+            if ($alert->missionId === $missionId && $alert->kind !== AlertKind::Flak) {
                 $enemies[$alert->aircraftId] = EnemyType::of($clan, $alert->kind, $alert->id);
             }
         }
@@ -101,7 +117,7 @@ final class Alerts
     {
         $duels = [];
         foreach ($this->store->of($baseId) as $alert) {
-            if ($alert->missionId === $missionId && $alert->isFinished()) {
+            if ($alert->missionId === $missionId && $alert->kind !== AlertKind::Flak && $alert->isFinished()) {
                 $duels[$alert->aircraftId] = $alert->outcome();
             }
         }
@@ -125,7 +141,7 @@ final class Alerts
             if ($alert->dueGameSecond > $this->clocks->of($baseId)->gameSeconds) {
                 throw new BaseException(BaseError::AlertNotDue);
             }
-            if ($alert->kind === AlertKind::Cockpit) {
+            if ($alert->kind === AlertKind::Cockpit || $alert->kind === AlertKind::Flak) {
                 $this->store->startCockpit($alertId);
             } elseif ($alert->state === null) {
                 $this->store->saveState($alertId, $this->dogfight->begin());
@@ -184,6 +200,61 @@ final class Alerts
             $this->store->finishCockpit($alertId, $outcome);
             $this->store->recordBonuses($alertId, $bonuses);
         });
+    }
+
+    /**
+     * Keeps how many times the flak hit an aircraft, which the browser has played: two hits destroy it.
+     *
+     * @throws BaseException when the base has no such alert, it is not a flak, it was not started, it is over, or the hits are not 0, 1 or 2
+     */
+    public function finishFlak(int $baseId, int $alertId, int $hits): void
+    {
+        if ($hits < 0 || $hits > self::MAX_FLAK_HITS) {
+            throw new BaseException(BaseError::InvalidQuantity);
+        }
+        $this->database->transaction(function () use ($baseId, $alertId, $hits): void {
+            $this->bases->lockResources($baseId);
+            $alert = $this->store->find($baseId, $alertId) ?? throw new BaseException(BaseError::UnknownAlert);
+            if ($alert->kind !== AlertKind::Flak) {
+                throw new BaseException(BaseError::AlertWrongKind);
+            }
+            if ($alert->cockpit === null) {
+                throw new BaseException(BaseError::AlertNotStarted);
+            }
+            if ($alert->isFinished()) {
+                throw new BaseException(BaseError::AlertDone);
+            }
+            $this->store->finishCockpit($alertId, $hits < self::MAX_FLAK_HITS ? DogfightOutcome::Won : DogfightOutcome::Escaped);
+            $this->store->recordFlakHits($alertId, $hits);
+        });
+    }
+
+    /**
+     * @return array<int, int> how many times the flak hit each aircraft of a flight, by the id of the aircraft: as it was played, or drawn for a flak that was not played
+     */
+    public function flakHitsOf(int $baseId, int $missionId): array
+    {
+        $hits = [];
+        foreach ($this->store->of($baseId) as $alert) {
+            if ($alert->missionId === $missionId && $alert->kind === AlertKind::Flak) {
+                $hits[$alert->aircraftId] = $alert->flakHits ?? $this->drawnHits($alert->flakShellsPerSecond ?? 0);
+            }
+        }
+
+        return $hits;
+    }
+
+    private function drawnHits(int $shellsPerSecond): int
+    {
+        $percent = min(self::UNPLAYED_HIT_PERCENT_CAP, $shellsPerSecond * self::UNPLAYED_HIT_PERCENT_PER_SHELL);
+        $hits = 0;
+        for ($shot = 0; $shot < self::MAX_FLAK_HITS; $shot += 1) {
+            if ($this->random->getInt(1, self::PERCENT) <= $percent) {
+                $hits += 1;
+            }
+        }
+
+        return $hits;
     }
 
     /**

@@ -8,7 +8,7 @@ use Random\Randomizer;
 use Ww2\Database\Database;
 
 /**
- * The camps that the AI holds in a new instance: a share of the camps of each side, held half by the AI of each side, so that the AI of a side holds camps of its own and camps it has taken from the other.
+ * The camps that the AI holds in a new instance: a share of the camps of each side, held by the AI of that side, so that each AI starts at home; its turn then gives back the camps that are islands in the other side.
  * The AI of a side is a player of the instance that no one can sign in as; its camps are the ones that the players of the other side can raid and take.
  */
 final class AiCamps
@@ -29,15 +29,14 @@ final class AiCamps
     }
 
     /**
-     * The sites the AI holds in a new instance, drawn at random among the sites of each side, with the side that holds each: the first, the third, and so on for the Allies, the others for the Axe.
+     * The sites the AI holds in a new instance, drawn at random among the sites of each side, with the side that holds each, which is the side of the site.
      *
      * @return list<array{site: Site, clan: Clan}>
      */
     public function draw(): array
     {
-        $sides = Clan::cases();
         $holds = [];
-        foreach ($sides as $nativeClan) {
+        foreach (Clan::cases() as $nativeClan) {
             $sites = [];
             foreach (Site::cases() as $site) {
                 if ($site->clan() === $nativeClan) {
@@ -45,8 +44,8 @@ final class AiCamps
                 }
             }
             $count = (int) round(count($sites) * self::SHARE_PERCENT / self::PERCENT);
-            foreach (array_slice($this->random->shuffleArray($sites), 0, $count) as $index => $site) {
-                $holds[] = ['site' => $site, 'clan' => $sides[$index % count($sides)]];
+            foreach (array_slice($this->random->shuffleArray($sites), 0, $count) as $site) {
+                $holds[] = ['site' => $site, 'clan' => $nativeClan];
             }
         }
 

@@ -803,6 +803,7 @@
       "pilot": "Pilot",
       "aircraft": "Aircraft",
       "aircraftOption": "{{name}} no. {{number}}, durability {{durability}}",
+      "borrowedAircraftOption": "{{name}} no. {{number}}, durability {{durability}}, guest of {{holder}}",
       "fuelLoad": "Fuel per aircraft",
       "ammunitionLoad": "Ammunition per aircraft",
       "noFreeAircraft": "No free aircraft suits this mission.",
@@ -917,7 +918,7 @@
   },
   "stationing": {
     "title": "Station an aircraft",
-    "text": "An aircraft and its pilot land at another camp, with fuel and ammunition for it, and stay there until you recall them. On a free camp, they take it for you while they are there. While they are away they do not fly, rest or get given.",
+    "text": "An aircraft and its pilot land at another camp, with fuel and ammunition for it, and stay there until you recall them. On a free camp, they take it for you while they are there. While they are away they do not fly, rest or get given; once landed, the camp they are at flies them on its missions, with its pilots.",
     "aircraft": "Aircraft",
     "fuel": "Fuel carried",
     "ammunition": "Ammunition carried",

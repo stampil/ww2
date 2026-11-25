@@ -6,6 +6,7 @@ import Icon from './Icon'
 import OrderButton from './OrderButton'
 import Pane from './Pane'
 import { crewShortage, freeCrewOf, loadShortage } from './shortages'
+import { isBorrowed } from './useBase'
 import type { Base, Offer, Squadron } from './useBase'
 
 type Props = {
@@ -98,7 +99,9 @@ function MissionBriefing({ offer, squadron, resources, busy, onLaunch }: Props) 
                 <option value="">—</option>
                 {freeAircraft.map((aircraft) => (
                   <option key={aircraft.id} value={aircraft.id} disabled={aircraftChoices.includes(aircraft.id) && aircraftChoices[place] !== aircraft.id}>
-                    {t('base.mission.aircraftOption', { name: aircraft.model.name, number: aircraft.number, durability: aircraft.durability })}
+                    {isBorrowed(aircraft)
+                      ? t('base.mission.borrowedAircraftOption', { name: aircraft.model.name, number: aircraft.number, durability: aircraft.durability, holder: aircraft.holder })
+                      : t('base.mission.aircraftOption', { name: aircraft.model.name, number: aircraft.number, durability: aircraft.durability })}
                   </option>
                 ))}
               </select>

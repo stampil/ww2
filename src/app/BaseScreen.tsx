@@ -32,7 +32,7 @@ import { useAircraftSprite } from './useAircraftSprite'
 import RebuildNotice from './RebuildNotice'
 import ResetConfirm from './ResetConfirm'
 import SquadronRoster from './SquadronRoster'
-import { useBase } from './useBase'
+import { squadronAircraft, useBase } from './useBase'
 import type { Aircraft, AttackKind, Cargo, HangarAircraft, MissionType, UpgradeName } from './useBase'
 import { useGuideStatus } from './useGuideStatus'
 import WarehousePanel from './WarehousePanel'
@@ -227,7 +227,11 @@ function BaseScreen({ player }: { player: Player }) {
 
   // The squadron is received: the window closes to show the aircraft that are left landing and taxiing to their stands.
   async function receive(missionId: number): Promise<string | null> {
-    const crewAircraftIds = flights.find((flight) => flight.id === missionId)!.crews.map((crew) => crew.aircraftId)
+    const ownAircraftIds = base?.squadron.aircraft.map((aircraft) => aircraft.id) ?? []
+    const crewAircraftIds = flights
+      .find((flight) => flight.id === missionId)!
+      .crews.map((crew) => crew.aircraftId)
+      .filter((aircraftId) => ownAircraftIds.includes(aircraftId))
     const receiveErrorCode = await receiveSquadron(missionId)
     if (receiveErrorCode === null) {
       setOpenBuilding(null)
@@ -282,7 +286,7 @@ function BaseScreen({ player }: { player: Player }) {
       ? undefined
       : {
           pilot: base.squadron.pilots.find((pilot) => pilot.id === duelCrewPlace.pilotId)!,
-          aircraft: base.squadron.aircraft.find((aircraft) => aircraft.id === duelCrewPlace.aircraftId)!,
+          aircraft: squadronAircraft(base.squadron).find((aircraft) => aircraft.id === duelCrewPlace.aircraftId)!,
         }
 
   const guideStep = guideStepOf(guideStatus, { flights, eventCount: base.events.length, hangarAircraft })

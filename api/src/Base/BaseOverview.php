@@ -32,6 +32,7 @@ final class BaseOverview
         private readonly CampStore $camps,
         private readonly Attacks $attacks,
         private readonly SupplyIncome $income,
+        private readonly Garrison $garrison,
     ) {
     }
 
@@ -46,6 +47,14 @@ final class BaseOverview
         $roster = $this->roster->describe($baseId, $clock);
         $headquarters = $this->headquarters->describe($baseId, $clock);
         $stationings = $this->stationings->describe($baseId, $clock);
+        $borrowed = [];
+        foreach ($this->garrison->guestsAt($baseId, $clock->gameSeconds) as $guest) {
+            $borrowed[] = $guest->aircraft->toArray(time()) + [
+                'holder' => $this->sites->holderNameOf($guest->originBaseId),
+                'site' => $this->sites->siteOf($guest->originBaseId)->value,
+                'grounded' => $guest->isGrounded,
+            ];
+        }
 
         return [
             'baseId' => $baseId,
@@ -75,6 +84,7 @@ final class BaseOverview
             'squadron' => [
                 'pilots' => array_map(static fn (Pilot $pilot): array => $pilot->toArray(), $this->squadrons->pilotsOf($baseId)),
                 'aircraft' => array_map(static fn (Aircraft $aircraft): array => $aircraft->toArray(time()), $this->squadrons->aircraftOf($baseId)),
+                'borrowed' => $borrowed,
             ],
             'events' => $this->events->latest($baseId),
             'upgrades' => $this->upgrades->describe($baseId),

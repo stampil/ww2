@@ -1,4 +1,5 @@
 import type { BusyCrews } from './flights'
+import { isBorrowed, squadronAircraft } from './useBase'
 import type { Base, Offer, Part, Pilot, Aircraft, Squadron, Stock, UpgradeInfo } from './useBase'
 
 /** The key of the text of an error code of the API. */
@@ -87,7 +88,9 @@ export function rebuildShortage(materials: number, cost: number): string | null 
 export function freeCrewOf(offer: Offer, squadron: Squadron, busy: BusyCrews): { freePilots: Pilot[]; freeAircraft: Aircraft[] } {
   return {
     freePilots: squadron.pilots.filter((pilot) => !busy.pilotIds.includes(pilot.id)),
-    freeAircraft: squadron.aircraft.filter((aircraft) => !busy.aircraftIds.includes(aircraft.id) && (offer.category === null || aircraft.model.category === offer.category)),
+    freeAircraft: squadronAircraft(squadron).filter(
+      (aircraft) => !busy.aircraftIds.includes(aircraft.id) && !(isBorrowed(aircraft) && aircraft.grounded) && (offer.category === null || aircraft.model.category === offer.category),
+    ),
   }
 }
 

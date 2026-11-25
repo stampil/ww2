@@ -803,6 +803,7 @@
       "pilot": "Pilote",
       "aircraft": "Avion",
       "aircraftOption": "{{name}} n°{{number}}, durabilité {{durability}}",
+      "borrowedAircraftOption": "{{name}} n°{{number}}, durabilité {{durability}}, invité de {{holder}}",
       "fuelLoad": "Carburant par avion",
       "ammunitionLoad": "Munitions par avion",
       "noFreeAircraft": "Aucun avion libre ne convient à cette mission.",
@@ -917,7 +918,7 @@
   },
   "stationing": {
     "title": "Stationner un avion",
-    "text": "Un avion et son pilote vont se poser sur un autre camp, avec du carburant et des munitions pour lui, et y restent jusqu'à ce que tu les rappelles. Sur un camp libre, ils le prennent pour toi tant qu'ils y sont. Ils ne volent pas, ne se reposent pas et ne se donnent pas tant qu'ils sont partis.",
+    "text": "Un avion et son pilote vont se poser sur un autre camp, avec du carburant et des munitions pour lui, et y restent jusqu'à ce que tu les rappelles. Sur un camp libre, ils le prennent pour toi tant qu'ils y sont. Partis, ils ne volent pas, ne se reposent pas et ne se donnent pas ; posés, le camp où ils se trouvent les fait voler sur ses missions, avec ses pilotes.",
     "aircraft": "Avion",
     "fuel": "Carburant emporté",
     "ammunition": "Munitions emportées",

@@ -11,6 +11,11 @@ use Ww2\Database\Database;
  */
 final class HangarStore
 {
+    private const GROUNDED_CONDITION = 'id IN (SELECT aircraft_id FROM inspections)
+        OR id IN (SELECT aircraft_id FROM destroyed_modules)
+        OR id IN (SELECT aircraft_id FROM repairs)
+        OR id IN (SELECT aircraft_id FROM burning_aircraft)';
+
     public function __construct(private readonly Database $database)
     {
     }
@@ -221,16 +226,18 @@ final class HangarStore
      */
     public function groundedAircraftIds(int $baseId): array
     {
-        $rows = $this->database->fetchAll(
-            'SELECT id FROM aircraft WHERE base_id = :base_id AND (
-                id IN (SELECT aircraft_id FROM inspections)
-                OR id IN (SELECT aircraft_id FROM destroyed_modules)
-                OR id IN (SELECT aircraft_id FROM repairs)
-                OR id IN (SELECT aircraft_id FROM burning_aircraft)
-             )',
-            ['base_id' => $baseId],
-        );
+        $rows = $this->database->fetchAll('SELECT id FROM aircraft WHERE base_id = :base_id AND (' . self::GROUNDED_CONDITION . ')', ['base_id' => $baseId]);
 
         return array_map(static fn (array $row): int => (int) $row['id'], $rows);
+    }
+
+    /**
+     * @return bool whether the aircraft cannot take off: to inspect, with a destroyed module, under repair, or on fire
+     */
+    public function isGrounded(int $aircraftId): bool
+    {
+        $rows = $this->database->fetchAll('SELECT COUNT(*) AS total FROM aircraft WHERE id = :id AND (' . self::GROUNDED_CONDITION . ')', ['id' => $aircraftId]);
+
+        return (int) $rows[0]['total'] > 0;
     }
 }

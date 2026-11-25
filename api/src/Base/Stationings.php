@@ -14,7 +14,7 @@ use Ww2\World\Kinship;
 use Ww2\World\SitePlaces;
 
 /**
- * Aircraft sent to another base of the world, the player's own, an ally's or a free camp, which the aircraft takes by landing first: they fly out with fuel and ammunition in the hold, unload it and stay there until recalled, which sends them back. Away, they cannot fly a mission, rest or be given.
+ * Aircraft sent to another base of the world, the player's own, an ally's or a free camp, which the aircraft takes by landing first: they fly out with fuel and ammunition in the hold, unload it and stay there until recalled, which sends them back. Away, they cannot fly a mission of their base, rest or be given; once landed, the camp flies them on its own missions.
  * A supply flight is the same flight to a base of the player or of an ally with a hold of any resource, from which the aircraft turns round at once; each flight lasts as the distance on the map says, fifteen minutes each way at most.
  */
 final class Stationings
@@ -140,12 +140,18 @@ final class Stationings
     /**
      * Recalls a stationed aircraft: it flies back to its base, where it and its pilot are free again. A base of the same player can give the order as well as the aircraft's own.
      *
-     * @throws BaseException when the aircraft is not standing at a camp after being sent from a base of the player: it is not sent, still flying out, or already flying back
+     * @throws BaseException when the aircraft is not standing at a camp after being sent from a base of the player: it is not sent, still flying out, or already flying back,
+     *                       or when it is out on a mission of that camp
      */
     public function recall(int $baseId, int $aircraftId): void
     {
         $this->database->transaction(function () use ($baseId, $aircraftId): void {
-            $this->baseStore->lockResources($baseId);
+            $located = $this->stationings->of($aircraftId);
+            if ($located === null) {
+                throw new BaseException(BaseError::NotStationed);
+            }
+            // The camp is locked too, so that a mission launched from it and this recall cannot cross.
+            $this->baseStore->lockBoth($baseId, $located->destinationBaseId);
             $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
             $stationing = $this->stationings->of($aircraftId);
             if ($stationing === null || ($stationing->originBaseId !== $baseId && $this->bases->kinshipTo($baseId, $stationing->originBaseId) !== Kinship::Own)) {
@@ -153,6 +159,9 @@ final class Stationings
             }
             if ($stationing->phaseAt($gameSeconds) !== StationingPhase::Stationed) {
                 throw new BaseException(BaseError::NotStationed);
+            }
+            if ($this->missions->isOnFlight($aircraftId)) {
+                throw new BaseException(BaseError::CrewBusy);
             }
             $this->stationings->startReturn($aircraftId, $gameSeconds + $this->flightSecondsBetween($stationing->originBaseId, $stationing->destinationBaseId));
         });

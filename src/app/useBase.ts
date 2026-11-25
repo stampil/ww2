@@ -102,7 +102,18 @@ export type Aircraft = {
   serviceDays: number
   model: { name: string; category: string; durability: number; maneuverability: number; fuelCapacity: number; ammunitionCapacity: number }
 }
-export type Squadron = { pilots: Pilot[]; aircraft: Aircraft[] }
+/** An aircraft of another base standing at this camp, whose own it is and where it comes from; the camp flies it on its missions unless it is grounded. */
+export type BorrowedAircraft = Aircraft & { holder: string; site: string; grounded: boolean }
+export type Squadron = { pilots: Pilot[]; aircraft: Aircraft[]; borrowed: BorrowedAircraft[] }
+
+export function isBorrowed(aircraft: Aircraft): aircraft is BorrowedAircraft {
+  return 'holder' in aircraft
+}
+
+/** The aircraft that can be on a flight of the camp: its own, and those of other bases standing there. */
+export function squadronAircraft(squadron: Squadron): Aircraft[] {
+  return [...squadron.aircraft, ...squadron.borrowed]
+}
 
 /**
  * What the hangar knows of an aircraft: whether it is to inspect and the seconds left of the inspection, the modules destroyed, and the

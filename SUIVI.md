@@ -44,11 +44,10 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Message du 25/11 : « ajoute se suivi : » puis, dans l'ordre, les lignes ci-dessous (tes mots exacts). Ordre proposé pour dépiler : **B** le hangar (2), **C** les pilotes (21 à 25), **D** le journal et la musique (7, 8, 15), **E** le monde (11, 12, 13, 14), **F** le zoom (18), **G** le reste (26, 28).
+Message du 25/11 : « ajoute se suivi : » puis, dans l'ordre, les lignes ci-dessous (tes mots exacts). Ordre proposé pour dépiler : **C** les pilotes (21 à 25), **D** le journal et la musique (7, 8, 15), **E** le monde (11, 12, 13, 14), **F** le zoom (18), **G** le reste (26, 28).
 
 | N° | Instruction (tes mots) | Ce que j'en comprends | Go |
 |---|---|---|---|
-| 2 | « quand on affecte un avion ala base, cet avion est disponible pour des mission. » | Lu (reco prise) : un avion posé sur un camp allié (stationnement) peut voler les missions de ce camp, piloté par un pilote de ce camp. Plan à reprendre : `Headquarters::freeCrew` et `receive` acceptent les invités posés (liste `squadron.borrowed` envoyée au navigateur : avion, base d'origine, cloué au sol ou non) ; `Stationings::recall` refusé pendant un vol ; dégâts, inspection, réparation et feu restent gérés par la base d'origine ; pas d'animation de décollage ni d'atterrissage pour un invité (pas de place sur la carte) ; une prise de camp dont l'équipage compte un invité ne doit pas recréer son stationnement (clé unique `stationings.aircraft_id`, `Attacks::capture`). | go donné |
 | 7 | « a chaue retour de mission des ue l'avion est rappelable a l'atterisage tu fait popé son journal de bord. » | Lu (reco prise) : le journal s'ouvre juste après « Autoriser à atterrir », à la page de ce vol. | go donné |
 | 8 | « en cas d'echec de mission il y a une faible chance que l'avion ne rentre pas, tu fait une anim terrain herbe sans camps, avec l'avion qui se crash et explose. » | Sur une mission échouée, 10 % de chances que l'avion ne rentre pas ; une scène 3D d'herbe sans camp montre l'avion qui s'écrase et explose à la réception. | go donné |
 | 11 | « force le serveur a faire un hard reset / update de ses caps, celui qui tourne en se moment n'a pas d'IA » | Les instances déjà créées reçoivent leurs camps d'IA (camps libres seulement, jamais celui d'un joueur), automatiquement au premier appel qui suit l'envoi. | go donné |

@@ -49,6 +49,7 @@ final class Headquarters
         private readonly CampStore $camps,
         private readonly Attacks $attacks,
         private readonly Bases $world,
+        private readonly Garrison $garrison,
     ) {
     }
 
@@ -77,6 +78,7 @@ final class Headquarters
 
     /**
      * Sends a mission out: the pilots and the aircraft are paired by their place in the lists, and each aircraft takes the same load.
+     * The aircraft of other bases standing at the camp fly it too, with the pilots of the camp.
      *
      * @param list<int> $pilotIds
      * @param list<int> $aircraftIds
@@ -85,7 +87,7 @@ final class Headquarters
     public function launch(int $baseId, int $missionId, array $pilotIds, array $aircraftIds, int $fuelPerAircraft, int $ammunitionPerAircraft): void
     {
         $this->database->transaction(function () use ($baseId, $missionId, $pilotIds, $aircraftIds, $fuelPerAircraft, $ammunitionPerAircraft): void {
-            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $fuelPerAircraft, $ammunitionPerAircraft);
+            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $fuelPerAircraft, $ammunitionPerAircraft, mayUseGuests: true);
         });
     }
 
@@ -108,21 +110,22 @@ final class Headquarters
             }
             $mission = $this->attacks->missionFor($baseId, $targetBaseId, $type, $aircraftCount);
             $missionId = $this->missions->addAttack($baseId, $mission, $targetBaseId);
-            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $mission->fuelPerAircraft, $mission->ammunitionPerAircraft);
+            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $mission->fuelPerAircraft, $mission->ammunitionPerAircraft, mayUseGuests: false);
         });
     }
 
     /**
      * @param list<int> $pilotIds
      * @param list<int> $aircraftIds
+     * @param bool $mayUseGuests whether the aircraft of other bases standing at the camp may fly: not an attack, whose aircraft land on the camp it takes
      */
-    private function depart(int $baseId, int $missionId, array $pilotIds, array $aircraftIds, int $fuelPerAircraft, int $ammunitionPerAircraft): void
+    private function depart(int $baseId, int $missionId, array $pilotIds, array $aircraftIds, int $fuelPerAircraft, int $ammunitionPerAircraft, bool $mayUseGuests): void
     {
         $resources = $this->bases->lockResources($baseId);
         $this->camps->assertStanding($baseId, Building::Headquarters);
         $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
         $mission = $this->missions->offer($baseId, $missionId) ?? throw new BaseException(BaseError::UnknownMission);
-        $aircraft = $this->freeCrew($baseId, $mission, $pilotIds, $aircraftIds, $gameSeconds);
+        $aircraft = $this->freeCrew($baseId, $mission, $pilotIds, $aircraftIds, $gameSeconds, $mayUseGuests);
         $this->checkLoad($aircraft, $fuelPerAircraft, $ammunitionPerAircraft);
         $fuelTotal = $fuelPerAircraft * $mission->aircraftCount;
         $ammunitionTotal = $ammunitionPerAircraft * $mission->aircraftCount;
@@ -162,7 +165,11 @@ final class Headquarters
                 throw new BaseException(BaseError::StillInFlight);
             }
             $duels = $this->alerts->finishedDuelsOf($baseId, $missionId);
-            $report = $this->resolver->resolve($flight, $this->squadrons->pilotsById($baseId), $this->squadrons->aircraftById($baseId), $duels);
+            $flyable = $this->squadrons->aircraftById($baseId);
+            foreach ($this->garrison->guestsAt($baseId, $gameSeconds) as $aircraftId => $guest) {
+                $flyable[$aircraftId] = $guest->aircraft;
+            }
+            $report = $this->resolver->resolve($flight, $this->squadrons->pilotsById($baseId), $flyable, $duels);
             $this->applyReport($baseId, $report, $gameSeconds, $this->alerts->enemiesOf($baseId, $missionId, $this->world->clanOfBase($baseId)));
             $attack = $this->attacks->resolve($baseId, $flight, $report, $gameSeconds);
             $this->missions->remove($missionId);
@@ -300,9 +307,9 @@ final class Headquarters
      * @param list<int> $pilotIds
      * @param list<int> $aircraftIds
      * @return list<Aircraft> the aircraft chosen, in the order of the ids
-     * @throws BaseException when the crews are not the right number, not the base's, not suited, or already on a flight
+     * @throws BaseException when the crews are not the right number, not the base's or a guest's, not suited, or already on a flight
      */
-    private function freeCrew(int $baseId, Mission $mission, array $pilotIds, array $aircraftIds, int $gameSeconds): array
+    private function freeCrew(int $baseId, Mission $mission, array $pilotIds, array $aircraftIds, int $gameSeconds, bool $mayUseGuests): array
     {
         if (count($pilotIds) !== $mission->aircraftCount || count($aircraftIds) !== $mission->aircraftCount) {
             throw new BaseException(BaseError::InvalidCrew);
@@ -321,20 +328,27 @@ final class Headquarters
             }
         }
         $ownedAircraft = $this->squadrons->aircraftById($baseId);
+        $guests = $mayUseGuests ? $this->garrison->guestsAt($baseId, $gameSeconds) : [];
         $chosen = [];
         $category = $mission->type->profile()->category;
         $grounded = $this->hangar->groundedAircraftIds($baseId);
         foreach ($aircraftIds as $aircraftId) {
-            if (!isset($ownedAircraft[$aircraftId])) {
+            if (isset($guests[$aircraftId])) {
+                $aircraft = $guests[$aircraftId]->aircraft;
+                $isGrounded = $guests[$aircraftId]->isGrounded;
+            } elseif (isset($ownedAircraft[$aircraftId])) {
+                $aircraft = $ownedAircraft[$aircraftId];
+                $isGrounded = in_array($aircraftId, $grounded, true);
+            } else {
                 throw new BaseException(BaseError::InvalidCrew);
             }
-            if ($category !== null && $ownedAircraft[$aircraftId]->model->category !== $category) {
+            if ($category !== null && $aircraft->model->category !== $category) {
                 throw new BaseException(BaseError::AircraftNotSuited);
             }
-            if (in_array($aircraftId, $grounded, true)) {
+            if ($isGrounded) {
                 throw new BaseException(BaseError::AircraftGrounded);
             }
-            $chosen[] = $ownedAircraft[$aircraftId];
+            $chosen[] = $aircraft;
         }
         foreach ($this->missions->flightsOf($baseId, $gameSeconds) as $flight) {
             foreach ($flight->crews as $crew) {
@@ -349,7 +363,7 @@ final class Headquarters
             }
         }
         foreach ($aircraftIds as $aircraftId) {
-            if ($this->stationings->isAircraftAway($aircraftId, $gameSeconds)) {
+            if (!isset($guests[$aircraftId]) && $this->stationings->isAircraftAway($aircraftId, $gameSeconds)) {
                 throw new BaseException(BaseError::CrewBusy);
             }
         }

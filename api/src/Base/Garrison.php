@@ -16,7 +16,22 @@ final class Garrison
         private readonly SquadronStore $squadrons,
         private readonly StationingStore $stationings,
         private readonly MissionStore $missions,
+        private readonly HangarStore $hangar,
     ) {
+    }
+
+    /**
+     * @return array<int, LandedAircraft> the aircraft of other bases standing at the camp after landing, not recalled, by id
+     */
+    public function guestsAt(int $campId, int $gameSeconds): array
+    {
+        $guests = [];
+        foreach ($this->stationings->landedAt($campId, $gameSeconds) as $stationing) {
+            $aircraft = $this->squadrons->aircraftById($stationing->originBaseId)[$stationing->aircraftId];
+            $guests[$aircraft->id] = new LandedAircraft($aircraft, $stationing->originBaseId, $this->hangar->isGrounded($aircraft->id));
+        }
+
+        return $guests;
     }
 
     /**

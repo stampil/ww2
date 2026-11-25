@@ -3,6 +3,7 @@ import { formatDuration } from './formatDuration'
 import Icon from './Icon'
 import OrderButton from './OrderButton'
 import Pane from './Pane'
+import { squadronAircraft } from './useBase'
 import type { Flight, Squadron } from './useBase'
 
 type Props = {
@@ -17,7 +18,7 @@ function FlightList({ flights, squadron, onReceive }: Props) {
 
   function crewLabel(crew: Flight['crews'][number]): string {
     const pilot = squadron.pilots.find((candidate) => candidate.id === crew.pilotId)!
-    const aircraft = squadron.aircraft.find((candidate) => candidate.id === crew.aircraftId)!
+    const aircraft = squadronAircraft(squadron).find((candidate) => candidate.id === crew.aircraftId)!
     return `${pilot.name} (${aircraft.model.name} ${t('squadron.aircraftNumber', { number: aircraft.number })})`
   }
 

@@ -11,16 +11,11 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-**Un seul mécanicien au départ, trois au plus par camp** (« on ne peut avoir que 3 mecanicien dans un camps, fait commencer avec 1 seul », 25/11). Compris : (a) un camp ne loge plus que 3 mécaniciens (6 aujourd'hui, `Workshop::MAX_MECHANICS`) ; (b) un camp neuf démarre avec 1 mécanicien (2 aujourd'hui, `SquadronFounder::STARTING_MECHANICS`, compétence de départ 40 inchangée), y compris après « Recommencer la partie » et pour un camp pris par un atterrissage, qui passent par le même chiffre. Le recrutement reste à 300 de ravitaillement, compétence tirée de 20 à 60 : monter de 1 à 3 coûte donc 600. L'interface n'a aucun de ces chiffres en dur (elle lit le maximum que le serveur envoie).
-
-1. **Et les camps déjà fondés ?** Ils ont 2 mécaniciens au moins (la migration 057 en a donné 2 aux camps qui n'en avaient pas) et certains en ont recruté jusqu'à 6.
-   - **A, ma reco : inchangés.** Ceux qui en ont plus de 3 les gardent (le recrutement est refusé tant qu'ils sont à 3 ou plus), ceux qui en ont 2 aussi ; seuls les camps fondés après cette modification partent avec 1. Rien n'est retiré à personne.
-   - **B : ramenés à la règle par une migration.** Un camp à 2 mécaniciens passe à 1, un camp à plus de 3 passe à 3, un camp à 3 reste à 3 ; les derniers mécaniciens recrutés sont retirés, et les 300 de ravitaillement payés ne sont pas rendus.
-
-À savoir, sans question : avec un seul mécanicien, tout ce qui en prend un se fait l'un après l'autre : inspection, réparation, reconstruction d'une épave, pièce fabriquée « avec un mécanicien » ; tant qu'il est pris, le serveur refuse le reste (« Aucun mécanicien n'est libre. », que les boutons disent déjà). Une pièce fabriquée sans mécanicien ne le prend pas, mais dure deux fois plus longtemps. La règle de blocage du 25/11 n'en dépend pas.
+Aucune question en suspens.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
+- **Mécaniciens : un au départ, trois au plus** (« on ne peut avoir que 3 mecanicien dans un camps, fait commencer avec 1 seul », « A, ta reco », 25/11) : un camp neuf part avec 1 mécanicien (compétence 40), y compris après « Recommencer la partie », pour un camp pris par un atterrissage et pour un camp tenu par l'IA ; un camp loge 3 mécaniciens au plus, et le recrutement (300 de ravitaillement, compétence de 20 à 60) est refusé (« L'atelier ne peut pas loger plus de mécaniciens. ») dès qu'il y en a 3 ou plus. Les camps déjà fondés gardent leurs mécaniciens, même au-delà de 3 : rien n'est retiré. Avec un seul, inspection, réparation, reconstruction et pièce fabriquée « avec un mécanicien » se font l'une après l'autre.
 - **Recommencer seulement si le camp est bloqué** (« ne propose de recomencer la partie que si tu detecte que le jeu est bloqué ( plus d'argent pour acheter ressource pour faire décoller un avion) », « Go, tes reco » puis « A, ta reco », 25/11) : le bouton « Recommencer la partie » n'est plus dans la fenêtre de la tour que si le camp est bloqué, avec une phrase (« Plus de quoi faire décoller un avion : le ravitaillement envoyé par le front comble le manque dans N min ») et un marqueur d'alerte (icône du ravitaillement) sur la tour. Bloqué : rien n'est en cours (ni vol, ni repos, ni avion en stationnement ailleurs, ni fabrication, inspection, réparation ou reconstruction) et la démarche la moins chère vers un vol coûte plus que le ravitaillement du camp. Les démarches chiffrées : lancer une mission que des pilotes et des avions libres peuvent voler (le carburant et les munitions qui manquent au stock, à 1 de ravitaillement l'unité), réparer un avion cloué au sol ou en feu (les matériaux de la pièce la moins chère qui manque, à 2 l'unité), reconstruire une épave (idem), recruter un premier pilote quand il n'y en a plus. Une inspection à faire est gratuite : un avion à inspecter suffit à ne pas être bloqué. N est le temps que le revenu du front (10 à 40 par minute) met à combler le manque, arrondi au-dessus. Un camp sans aucune démarche à chiffrer (plus d'avion ni d'épave) n'est pas dit bloqué : je n'affirme rien que je ne sache. Le calcul se fait dans le navigateur ; la route de remise à zéro ne refuse rien. Hors blocage, plus aucun bouton ne repart de zéro ni ne rejoue le tutoriel, et il n'y a pas de fenêtre de fin de bataille (la bataille ne finit jamais) : ce que j'avais écrit d'une fenêtre « Nouvelle bataille » était faux.
 - **Fondu entre les musiques** (ligne 35, « Go, tes reco », 25/11) : un morceau qui en remplace un autre le fait en fondu enchaîné d'une seconde : celui qui part baisse jusqu'à zéro pendant que l'autre monte de zéro à son volume, puis celui qui part est mis en pause où il en est. Sous un jingle, le fond baisse en une demi-seconde, et remonte en une demi-seconde quand le jingle s'en va, pendant que le jingle baisse. Un écran ouvert puis fermé en moins d'une seconde repart du volume du moment : aucun morceau ne reste à mi-volume.
 - **Prime de photo** (ligne 28, « go pour tout j'ai dit », 25/11) : une photo de plus que les 3 requises rapporte 15 de ravitaillement en plus du gain de la mission (2 au plus : il y a 5 cibles), payée à l'avion dont la reconnaissance a réussi (3 photos au moins et sous la limite de détection) ; elle s'ajoute à la prime « bord de route » du journal, dont le texte la dit. Le serveur la borne à 2 par mini-jeu et la refuse sur un mini-jeu perdu.
@@ -45,9 +40,7 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-| N° | Instruction | Go |
-|---|---|---|
-| 1 | Un seul mécanicien au départ, trois au plus par camp (25/11, voir la section 2) | non : attend ta réponse à la question 1 et ton « go » |
+Rien : tout est fait.
 
 ## Mis de côté
 

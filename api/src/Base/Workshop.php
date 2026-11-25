@@ -20,7 +20,7 @@ final class Workshop
     private const BASE_BENCHES = 2;
     private const MECHANIC_TIME_DIVISOR = 2;
     private const MECHANIC_COST = 300;
-    public const MAX_MECHANICS = 6;
+    public const MAX_MECHANICS = 3;
     private const MIN_MECHANIC_SKILL = 20;
     private const MAX_MECHANIC_SKILL = 60;
 

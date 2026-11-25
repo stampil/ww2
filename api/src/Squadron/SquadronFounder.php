@@ -15,7 +15,7 @@ final class SquadronFounder
     private const AIRCRAFT_COUNT = 3;
     /** @var list<int> the rank of each starting pilot: a sub-lieutenant, two staff sergeants, a sergeant */
     private const PILOT_RANKS = [4, 2, 2, 1];
-    private const STARTING_MECHANICS = 2;
+    private const STARTING_MECHANICS = 1;
     private const STARTING_MECHANIC_SKILL = 40;
 
     public function __construct(private readonly SquadronStore $squadrons, private readonly PilotGenerator $pilots)

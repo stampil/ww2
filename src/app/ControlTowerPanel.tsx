@@ -123,23 +123,25 @@ function ControlTowerPanel({ squadron, resources, weather, offers, flights, rest
               </li>
             )
           })}
-          <li className="card">
-            <div className="card-head">
-              <span className="portrait" aria-hidden="true">
-                <Icon name="recruit" />
-              </span>
-              <div>
-                <strong>{t('base.mission.recruit')}</strong>
-                <span>{t('base.mission.recruitCost', { cost: recruitment.cost })}</span>
+          {squadron.pilots.length < recruitment.maxPilots && (
+            <li className="card">
+              <div className="card-head">
+                <span className="portrait" aria-hidden="true">
+                  <Icon name="recruit" />
+                </span>
+                <div>
+                  <strong>{t('base.mission.recruit')}</strong>
+                  <span>{t('base.mission.recruitCost', { cost: recruitment.cost })}</span>
+                </div>
               </div>
-            </div>
-            <div className="card-actions">
-              <OrderButton onOrder={onRecruit} reasonKey={recruitShortage(squadron.pilots.length, recruitment, resources.supplies)}>
-                <Icon name="recruit" />
-                {t('base.mission.recruitButton')}
-              </OrderButton>
-            </div>
-          </li>
+              <div className="card-actions">
+                <OrderButton onOrder={onRecruit} reasonKey={recruitShortage(recruitment, resources.supplies)}>
+                  <Icon name="recruit" />
+                  {t('base.mission.recruitButton')}
+                </OrderButton>
+              </div>
+            </li>
+          )}
         </ul>
       </Pane>
       {blockedMinutes !== null && (

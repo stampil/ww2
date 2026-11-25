@@ -43,9 +43,6 @@ export function rebuildAircraftShortage(workshop: Base['workshop']): string | nu
 }
 
 export function recruitMechanicShortage(workshop: Base['workshop'], supplies: number): string | null {
-  if (workshop.mechanics.length >= workshop.mechanicRecruitment.max) {
-    return refusalKey('tooManyMechanics')
-  }
   return supplies < workshop.mechanicRecruitment.cost ? refusalKey('insufficientSupplies') : null
 }
 
@@ -63,10 +60,7 @@ export function repairShortage(workshop: Base['workshop'], destroyedModules: Par
   return null
 }
 
-export function recruitShortage(pilotCount: number, recruitment: Base['roster']['recruitment'], supplies: number): string | null {
-  if (pilotCount >= recruitment.maxPilots) {
-    return refusalKey('tooManyPilots')
-  }
+export function recruitShortage(recruitment: Base['roster']['recruitment'], supplies: number): string | null {
   if (supplies < recruitment.cost) {
     return refusalKey('insufficientSupplies')
   }

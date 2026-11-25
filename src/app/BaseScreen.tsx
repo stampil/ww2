@@ -354,7 +354,7 @@ function BaseScreen({ player }: { player: Player }) {
           </div>
         </div>
 
-        <MissionToasts clan={base.clan} flights={flights} squadron={base.squadron} onOpen={setDuelAlertId} isTowerOpen={openBuilding === 'controlTower'} isPlaying={duelCrew !== undefined} />
+        <MissionToasts clan={base.clan} flights={flights} squadron={base.squadron} onOpen={setDuelAlertId} isPaused={openBuilding === 'controlTower' || duelCrew !== undefined} />
         {openBuilding === null && guide}
         {openBuilding === null && errorMessage}
 

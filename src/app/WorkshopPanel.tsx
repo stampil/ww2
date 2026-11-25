@@ -86,23 +86,25 @@ function WorkshopPanel({ workshop, jobs, materials, supplies, onProduce, onRecru
               <Gauge label={t('base.staff.skill')} value={mechanic.skill} max={GAUGE_MAX} higherIsBetter />
             </li>
           ))}
-          <li className="card">
-            <div className="card-head">
-              <span className="portrait" aria-hidden="true">
-                <Icon name="recruit" />
-              </span>
-              <div>
-                <strong>{t('base.staff.recruit')}</strong>
-                <span>{t('base.staff.cost', { cost: workshop.mechanicRecruitment.cost })}</span>
+          {workshop.mechanics.length < workshop.mechanicRecruitment.max && (
+            <li className="card">
+              <div className="card-head">
+                <span className="portrait" aria-hidden="true">
+                  <Icon name="recruit" />
+                </span>
+                <div>
+                  <strong>{t('base.staff.recruit')}</strong>
+                  <span>{t('base.staff.cost', { cost: workshop.mechanicRecruitment.cost })}</span>
+                </div>
               </div>
-            </div>
-            <div className="card-actions">
-              <OrderButton onOrder={onRecruitMechanic} reasonKey={recruitMechanicShortage(workshop, supplies)}>
-                <Icon name="recruit" />
-                {t('base.staff.button')}
-              </OrderButton>
-            </div>
-          </li>
+              <div className="card-actions">
+                <OrderButton onOrder={onRecruitMechanic} reasonKey={recruitMechanicShortage(workshop, supplies)}>
+                  <Icon name="recruit" />
+                  {t('base.staff.button')}
+                </OrderButton>
+              </div>
+            </li>
+          )}
         </ul>
       </Pane>
       {jobs.length > 0 && (

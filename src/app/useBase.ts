@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CockpitEnemy } from '../three/CockpitCombatScene'
 import type { DuelBomber } from '../three/DogfightScene'
+import type { RoadsideKind } from '../three/GroundRunScene'
 import type { Livery } from '../three/liveries'
 import { parseGameTime } from './gameDate'
 import type { Player } from './useAccount'
@@ -159,6 +160,8 @@ export type MissionReport = {
   durationSeconds?: number
   suppliesWon: number
   commandPointsWon: number
+  /** What the mini-games destroyed beside what the mission asked for paid on top of the mission, in supplies; absent from the reports kept before it was. */
+  bonusSupplies?: number
   /** Whether the reconnaissance spotted a better paid mission; absent from the reports kept before missions could be spotted. */
   spottedMission?: boolean
   /** The camp an attack was sent against, and what it did; absent from the reports of the other missions. */
@@ -504,8 +507,10 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/alerts/play`, { alertId, maneuver }))
   }
 
-  async function finishAlert(alertId: number, outcome: DogfightOutcome): Promise<string | null> {
-    return receive(await request(`${BASE_URL}/alerts/finish`, { alertId, outcome }))
+  async function finishAlert(alertId: number, outcome: DogfightOutcome, roadsideDestroyed: RoadsideKind[] = []): Promise<string | null> {
+    const tents = roadsideDestroyed.filter((kind) => kind === 'tent').length
+    const barrels = roadsideDestroyed.filter((kind) => kind === 'barrels').length
+    return receive(await request(`${BASE_URL}/alerts/finish`, { alertId, outcome, tents, barrels }))
   }
 
   async function receiveSquadron(missionId: number): Promise<string | null> {

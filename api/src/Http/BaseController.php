@@ -32,6 +32,7 @@ use Ww2\Base\Upgrade;
 use Ww2\Base\Upgrades;
 use Ww2\Base\Warehouse;
 use Ww2\Base\Workshop;
+use Ww2\Mission\BonusKind;
 use Ww2\Mission\Dogfight\DogfightOutcome;
 use Ww2\Mission\Dogfight\Maneuver;
 use Ww2\Mission\MissionType;
@@ -337,9 +338,10 @@ final class BaseController
     public function finishAlert(ServerRequestInterface $request): array
     {
         $baseId = $this->ownBaseId();
-        $alertId = JsonRequestBody::integers($request, 'alertId')['alertId'];
+        $destroyed = JsonRequestBody::integers($request, 'alertId', 'tents', 'barrels');
         $outcome = DogfightOutcome::tryFrom(JsonRequestBody::texts($request, 'outcome')['outcome']) ?? throw new BadRequestException('invalidBody');
-        $this->carryOut(fn () => $this->alerts->finish($baseId, $alertId, $outcome));
+        $bonuses = [BonusKind::Tent->value => $destroyed['tents'], BonusKind::Barrels->value => $destroyed['barrels']];
+        $this->carryOut(fn () => $this->alerts->finish($baseId, $destroyed['alertId'], $outcome, $bonuses));
 
         return $this->overview->of($baseId);
     }

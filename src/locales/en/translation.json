@@ -843,6 +843,7 @@
       "pilot": "Pilot",
       "aircraft": "Aircraft",
       "aircraftOption": "{{name}} no. {{number}}, durability {{durability}}",
+      "bonus": "bonus: +{{supplies}} supplies for what stood beside the road",
       "borrowedAircraftOption": "{{name}} no. {{number}}, durability {{durability}}, guest of {{holder}}",
       "fuelLoad": "Fuel per aircraft",
       "ammunitionLoad": "Ammunition per aircraft",

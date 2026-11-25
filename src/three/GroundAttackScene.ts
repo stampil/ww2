@@ -11,7 +11,7 @@ import {
   VEHICLE_KIND_NAMES,
   VEHICLE_STATES,
 } from './GroundRunScene'
-import type { RunOutcome, TargetKind, TargetNationality } from './GroundRunScene'
+import type { RoadsideKind, RunEnd, RunOutcome, TargetKind, TargetNationality } from './GroundRunScene'
 import type { Livery } from './liveries'
 import { SeededRandom } from './SeededRandom'
 
@@ -33,6 +33,10 @@ const ARMOR: Record<TargetKind, number> = { truck: 1, tanker: 1, 'armored-car': 
 // The ambulance of the Red Cross is to be spared; the fuel dump and the tent stand beside the road and do not count in the score.
 const SPARED_KIND: TargetKind = 'ambulance'
 const ROADSIDE_KINDS: TargetKind[] = ['barrels', 'tent']
+
+function isRoadside(kind: TargetKind): kind is RoadsideKind {
+  return ROADSIDE_KINDS.includes(kind)
+}
 // What burns when it is hit: it takes the vehicles near it one state down.
 const EXPLOSIVE_KINDS: TargetKind[] = ['tanker', 'barrels']
 const DAMAGED_AFTER_SECONDS = 0.5
@@ -86,7 +90,7 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
     nationality: TargetNationality,
     windSpeed: number,
     onStatus: (status: StrafeStatus) => void,
-    onEnd: (outcome: RunOutcome) => void,
+    onEnd: (end: RunEnd) => void,
   ) {
     super(container, seed, shadowImage, livery, nationality, windSpeed, onStatus, onEnd)
     this.zone = this.createZone()
@@ -108,6 +112,17 @@ export class GroundAttackScene extends GroundRunScene<StrafeStatus> {
   protected isOver(): boolean {
     const hasAllPassed = this.vehicles.every((vehicle) => vehicle.stateIndex === DESTROYED_INDEX || vehicle.position.y < this.position.y - PASSED_BEHIND_METERS)
     return this.isRedCrossHit || hasAllPassed || this.secondsFlown > TIME_LIMIT_SECONDS
+  }
+
+  protected roadsideDestroyed(): RoadsideKind[] {
+    const kinds: RoadsideKind[] = []
+    for (const vehicle of this.vehicles) {
+      if (vehicle.stateIndex === DESTROYED_INDEX && isRoadside(vehicle.kind)) {
+        kinds.push(vehicle.kind)
+      }
+    }
+
+    return kinds
   }
 
   /** The attack fails when the ambulance of the Red Cross is destroyed, whatever else was. */

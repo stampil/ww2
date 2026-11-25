@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { assetUrl } from '../assetUrl'
 import { GroundRunScene, PASSED_BEHIND_METERS, ROAD_LIFT_METERS, VEHICLE_KIND_NAMES } from './GroundRunScene'
-import type { RunOutcome, TargetNationality } from './GroundRunScene'
+import type { RunEnd, RunOutcome, TargetNationality } from './GroundRunScene'
 import type { Livery } from './liveries'
 import { SeededRandom } from './SeededRandom'
 
@@ -73,7 +73,7 @@ export class ReconnaissanceScene extends GroundRunScene<PhotoStatus> {
     nationality: TargetNationality,
     windSpeed: number,
     onStatus: (status: PhotoStatus) => void,
-    onEnd: (outcome: RunOutcome) => void,
+    onEnd: (end: RunEnd) => void,
   ) {
     super(container, seed, shadowImage, livery, nationality, windSpeed, onStatus, onEnd)
     this.frame = this.createFrame()

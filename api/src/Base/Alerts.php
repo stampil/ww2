@@ -8,6 +8,7 @@ use Random\Randomizer;
 use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
 use Ww2\Mission\AlertKind;
+use Ww2\Mission\BonusKind;
 use Ww2\Mission\EnemyType;
 use Ww2\Mission\FlightAlertStore;
 use Ww2\Mission\Dogfight\Dogfight;
@@ -158,11 +159,17 @@ final class Alerts
     /**
      * Keeps the result of a dogfight flown from the cockpit, which the browser has played.
      *
-     * @throws BaseException when the base has no such alert, it is not a cockpit dogfight, it was not started, or it is over
+     * @param array<string, int> $bonuses what the player destroyed beside what the mission asks for, by the value of the kind: it pays when the squadron is received
+     * @throws BaseException when the base has no such alert, it is not a cockpit dogfight, it was not started, it is over, or more was destroyed than a run holds
      */
-    public function finish(int $baseId, int $alertId, DogfightOutcome $outcome): void
+    public function finish(int $baseId, int $alertId, DogfightOutcome $outcome, array $bonuses): void
     {
-        $this->database->transaction(function () use ($baseId, $alertId, $outcome): void {
+        foreach (BonusKind::cases() as $kind) {
+            if ($bonuses[$kind->value] < 0 || $bonuses[$kind->value] > $kind->maxPerRun()) {
+                throw new BaseException(BaseError::InvalidQuantity);
+            }
+        }
+        $this->database->transaction(function () use ($baseId, $alertId, $outcome, $bonuses): void {
             $this->bases->lockResources($baseId);
             $alert = $this->store->find($baseId, $alertId) ?? throw new BaseException(BaseError::UnknownAlert);
             if ($alert->kind !== AlertKind::Cockpit) {
@@ -175,6 +182,20 @@ final class Alerts
                 throw new BaseException(BaseError::AlertDone);
             }
             $this->store->finishCockpit($alertId, $outcome);
+            $this->store->recordBonuses($alertId, $bonuses);
         });
+    }
+
+    /**
+     * @return int the supplies that what the alerts of a flight destroyed beside what the mission asked for pays on top of the mission
+     */
+    public function bonusSuppliesOf(int $missionId): int
+    {
+        $supplies = 0;
+        foreach ($this->store->bonusesOfMission($missionId) as $kind => $quantity) {
+            $supplies += BonusKind::from($kind)->supplies() * $quantity;
+        }
+
+        return $supplies;
     }
 }

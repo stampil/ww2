@@ -13,6 +13,11 @@ import { loadTerrainTextures } from './terrainTextures'
 
 export type RunOutcome = 'won' | 'escaped'
 export type VehicleKind = 'truck' | 'tanker' | 'armored-car' | 'light-tank' | 'motorcycle'
+/** What a run can destroy beside the road, which pays on top of the mission. */
+export type RoadsideKind = 'barrels' | 'tent'
+/** How a run ended, and what it destroyed beside the road. */
+export type RunEnd = { outcome: RunOutcome; roadsideDestroyed: RoadsideKind[] }
+
 /** What a run can show on the ground: the vehicles of a convoy, an ambulance of the Red Cross, and a fuel dump and a tent beside the road. */
 export type TargetKind = VehicleKind | 'ambulance' | 'barrels' | 'tent'
 /** Whose vehicles stand on the ground: the Allies attack German convoys, the Axe French ones. */
@@ -149,7 +154,7 @@ export abstract class GroundRunScene<Status> {
     private readonly nationality: TargetNationality,
     private readonly windSpeed: number,
     private readonly onStatus: (status: Status) => void,
-    private readonly onEnd: (outcome: RunOutcome) => void,
+    private readonly onEnd: (end: RunEnd) => void,
   ) {
     this.player = createAircraftModel(livery)
     this.renderer = createRenderer(container, false)
@@ -203,6 +208,11 @@ export abstract class GroundRunScene<Status> {
   protected abstract isOver(): boolean
 
   protected abstract outcome(): RunOutcome
+
+  /** What the run destroyed beside the road: nothing, unless the run has such targets. */
+  protected roadsideDestroyed(): RoadsideKind[] {
+    return []
+  }
 
   protected abstract currentStatus(): Status
 
@@ -372,7 +382,7 @@ export abstract class GroundRunScene<Status> {
     this.endPauseSeconds += deltaSeconds
     if (this.endPauseSeconds > END_PAUSE_SECONDS) {
       this.hasEnded = true
-      this.onEnd(this.outcome())
+      this.onEnd({ outcome: this.outcome(), roadsideDestroyed: this.roadsideDestroyed() })
     }
   }
 

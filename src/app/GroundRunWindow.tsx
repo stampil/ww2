@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { windDirectionOf } from '../three/GroundRunScene'
-import type { GroundRunScene, RunOutcome, TargetNationality } from '../three/GroundRunScene'
+import type { GroundRunScene, RunEnd, RunOutcome, TargetNationality } from '../three/GroundRunScene'
 import type { Livery } from '../three/liveries'
 import GameWindow from './GameWindow'
 import { TARGET_NATIONALITIES } from './targetNationality'
@@ -23,7 +23,7 @@ export type GroundRunProps = {
   /** The wind the flight left in, in km/h, which pushes the aircraft across the road. */
   windSpeed: number
   onStart: (alertId: number) => Promise<void>
-  onFinish: (alertId: number, outcome: RunOutcome) => Promise<void>
+  onFinish: (alertId: number, end: RunEnd) => Promise<void>
   onClose: () => void
 }
 
@@ -39,7 +39,7 @@ type Props<Status> = GroundRunProps & {
     nationality: TargetNationality,
     windSpeed: number,
     onStatus: (status: Status) => void,
-    onEnd: (outcome: RunOutcome) => void,
+    onEnd: (end: RunEnd) => void,
   ) => GroundRunScene<Status>
   renderStatus: (status: Status) => ReactNode
 }
@@ -76,9 +76,9 @@ function GroundRunWindow<Status>({ alert, clan, livery, windSpeed, namespace, hi
     if (!isReady || aircraftSprite === null) {
       return
     }
-    const scene = createScene(viewRef.current!, alert.id, aircraftSprite, livery, TARGET_NATIONALITIES[clan], windSpeed, setStatus, (result) => {
-      setOutcome(result)
-      void onFinish(alert.id, result)
+    const scene = createScene(viewRef.current!, alert.id, aircraftSprite, livery, TARGET_NATIONALITIES[clan], windSpeed, setStatus, (end) => {
+      setOutcome(end.outcome)
+      void onFinish(alert.id, end)
     })
     sceneRef.current = scene
     const pressed = new Set<string>()

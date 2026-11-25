@@ -68,6 +68,37 @@ final class FlightAlertStore
         $this->database->execute('INSERT IGNORE INTO cockpit_duels (alert_id) VALUES (:alert_id)', ['alert_id' => $alertId]);
     }
 
+    /**
+     * @param array<string, int> $quantities what was destroyed beside what the mission asks for, by the value of the kind
+     */
+    public function recordBonuses(int $alertId, array $quantities): void
+    {
+        foreach ($quantities as $kind => $quantity) {
+            $this->database->execute(
+                'INSERT INTO flight_alert_bonuses (alert_id, kind, quantity) VALUES (:alert_id, :kind, :quantity) ON DUPLICATE KEY UPDATE quantity = :updated_quantity',
+                ['alert_id' => $alertId, 'kind' => $kind, 'quantity' => $quantity, 'updated_quantity' => $quantity],
+            );
+        }
+    }
+
+    /**
+     * @return array<string, int> what the alerts of a flight destroyed beside what the mission asked for, by the value of the kind
+     */
+    public function bonusesOfMission(int $missionId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT flight_alert_bonuses.kind AS kind, SUM(flight_alert_bonuses.quantity) AS total FROM flight_alert_bonuses
+             JOIN flight_alerts ON flight_alerts.id = flight_alert_bonuses.alert_id WHERE flight_alerts.mission_id = :mission_id GROUP BY flight_alert_bonuses.kind',
+            ['mission_id' => $missionId],
+        );
+        $quantities = [];
+        foreach ($rows as $row) {
+            $quantities[(string) $row['kind']] = (int) $row['total'];
+        }
+
+        return $quantities;
+    }
+
     /** Keeps the result of a dogfight flown from the cockpit, if it has none yet. */
     public function finishCockpit(int $alertId, DogfightOutcome $outcome): void
     {

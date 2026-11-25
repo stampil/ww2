@@ -171,7 +171,8 @@ final class Headquarters
                 $flyable[$aircraftId] = $guest->aircraft;
             }
             $report = $this->resolver->resolve($flight, $this->squadrons->pilotsById($baseId), $flyable, $duels);
-            $progress = $this->applyReport($baseId, $report, $gameSeconds, $this->alerts->enemiesOf($baseId, $missionId, $this->world->clanOfBase($baseId)));
+            $bonusSupplies = $this->alerts->bonusSuppliesOf($missionId);
+            $progress = $this->applyReport($baseId, $report, $gameSeconds, $this->alerts->enemiesOf($baseId, $missionId, $this->world->clanOfBase($baseId)), $bonusSupplies);
             $attack = $this->attacks->resolve($baseId, $flight, $report, $gameSeconds);
             $this->missions->remove($missionId);
             $spotted = false;
@@ -182,7 +183,7 @@ final class Headquarters
             foreach ($report->crews as $place => $crew) {
                 $entry['crews'][$place] += $progress[$crew->pilotId]->toArray();
             }
-            $this->events->record($baseId, $entry + ['spottedMission' => $spotted, 'targetSite' => $flight->targetSite, 'attack' => $attack]);
+            $this->events->record($baseId, $entry + ['bonusSupplies' => $bonusSupplies, 'spottedMission' => $spotted, 'targetSite' => $flight->targetSite, 'attack' => $attack]);
         });
     }
 
@@ -271,9 +272,10 @@ final class Headquarters
 
     /**
      * @param array<int, EnemyType> $enemies the enemy each aircraft of the flight met, by the id of the aircraft
+     * @param int $bonusSupplies what the mini-games destroyed beside what the mission asked for pays, on top of the mission
      * @return array<int, PilotProgress> what the flight made of each pilot of the crews, by the id of the pilot
      */
-    private function applyReport(int $baseId, MissionReport $report, int $gameSeconds, array $enemies): array
+    private function applyReport(int $baseId, MissionReport $report, int $gameSeconds, array $enemies, int $bonusSupplies): array
     {
         $progress = [];
         foreach ($report->crews as $crew) {
@@ -298,7 +300,7 @@ final class Headquarters
                 $this->hangar->ignite($crew->aircraftId, $crew->pilotId, $gameSeconds + self::FIRE_SECONDS);
             }
         }
-        $this->bases->addRewards($baseId, $report->suppliesWon, $report->commandPointsWon);
+        $this->bases->addRewards($baseId, $report->suppliesWon + $bonusSupplies, $report->commandPointsWon);
         if ($report->type->isAirCombat()) {
             $kills = 0;
             foreach ($report->crews as $crew) {

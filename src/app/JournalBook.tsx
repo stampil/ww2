@@ -34,6 +34,7 @@ function MissionPage({ report, gameTime }: { report: MissionReport; gameTime: Da
         {report.success ? t('base.mission.gains', { supplies: report.suppliesWon, points: report.commandPointsWon }) : t('base.mission.noGain')}
         {' · '}
         {t('base.mission.windAtTakeoff', { windSpeed: report.windSpeed })}
+        {report.bonusSupplies != null && report.bonusSupplies > 0 && ` · ${t('base.mission.bonus', { supplies: report.bonusSupplies })}`}
         {report.spottedMission === true && ` · ${t('base.mission.spotted')}`}
         {report.attack != null && report.targetSite != null && ` · ${attackSentence(report, t)}`}
       </p>

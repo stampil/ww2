@@ -73,6 +73,8 @@ const TAXI_SPEED_METERS_PER_SECOND = 30
 // An aircraft that has landed taxis more slowly to its stand, and the next one lands this long after it.
 const LANDED_TAXI_SPEED_METERS_PER_SECOND = 18
 const HANGAR_TAXI_SPEED_METERS_PER_SECOND = 10
+// The runway is a band of half the width of a tile along the middle of its row: an aircraft whose canopy is closed is inside it, or in the air.
+const RUNWAY_HALF_WIDTH_METERS = TILE_SIZE_METERS / 4
 const LANDING_SPACING_SECONDS = 3.5
 // An aircraft touches down just past the junction where aircraft come onto the runway, and leaves it at the last junction.
 const TOUCHDOWN_PAST_ENTRY_METERS = 30
@@ -189,6 +191,7 @@ export class AirfieldScene {
   private readonly gapMeters: number
   private readonly flight: DepartureFlight
   private readonly landingFlight: ArrivalFlight
+  private readonly runwayY: number
   private readonly queue = new DepartureQueue()
   private readonly models: AircraftModel3D[] = []
   private readonly idleModels = new Map<Livery, AircraftModel3D[]>()
@@ -235,6 +238,7 @@ export class AirfieldScene {
     this.flight = new DepartureFlight()
     const touchdownX = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x + TOUCHDOWN_PAST_ENTRY_METERS
     this.landingFlight = new ArrivalFlight(touchdownX, this.exitX())
+    this.runwayY = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).y
     this.placeSideView()
     this.renderer = createRenderer(container, false)
     this.liveries = new LiveryTextures(
@@ -584,6 +588,7 @@ export class AirfieldScene {
     aircraft.model.object.visible = true
     aircraft.model.setState({ engine: TAXI_ENGINE, gearRetraction: 0, flaps: 1, wheels: TAXI_WHEELS, aileron: 0, rudder: 0, elevator: 0 })
     this.place(aircraft.model, place.x, place.y, 0, aircraft.path.headingAt(distance, HEADING_SPAN_METERS), aircraft.model.groundPitchRadians, 0)
+    this.trail(aircraft.model, HANGAR_TAXI_SPEED_METERS_PER_SECOND)
     return false
   }
 
@@ -598,6 +603,7 @@ export class AirfieldScene {
       const pose = this.landingFlight.pose(elapsedSeconds, aircraft.model.groundPitchRadians)
       aircraft.model.setState(pose.state)
       this.place(aircraft.model, pose.x, pose.y, pose.altitude, pose.heading, pose.pitch, pose.roll)
+      this.trail(aircraft.model, this.landingFlight.speedAt(elapsedSeconds))
       return false
     }
     const distance = (elapsedSeconds - this.landingFlight.durationSeconds) * LANDED_TAXI_SPEED_METERS_PER_SECOND
@@ -607,6 +613,7 @@ export class AirfieldScene {
     const place = aircraft.path.pointAt(distance)
     aircraft.model.setState({ engine: TAXI_ENGINE, gearRetraction: 0, flaps: 1, wheels: TAXI_WHEELS, aileron: 0, rudder: 0, elevator: 0 })
     this.place(aircraft.model, place.x, place.y, 0, aircraft.path.headingAt(distance, HEADING_SPAN_METERS), aircraft.model.groundPitchRadians, 0)
+    this.trail(aircraft.model, LANDED_TAXI_SPEED_METERS_PER_SECOND)
     return false
   }
 
@@ -634,10 +641,16 @@ export class AirfieldScene {
     this.place(model, pose.x - Math.cos(pose.heading) * behind, pose.y - Math.sin(pose.heading) * behind, pose.altitude, pose.heading, pose.pitch, pose.roll)
   }
 
+  /** The smoke of a damaged aircraft stays in the air, so it trails against the velocity of the aircraft, in its own frame, where the aircraft is `scale` times its real size on the map. */
+  private trail(model: AircraftModel3D, speedMetersPerSecond: number): void {
+    model.setVelocity(new THREE.Vector3(0, speedMetersPerSecond / model.object.scale.x, 0))
+  }
+
   private place(model: AircraftModel3D, x: number, y: number, altitude: number, heading: number, pitch: number, roll: number): void {
     const scale = this.scale * (1 + ALTITUDE_GROWTH_PER_METER * Math.min(altitude, MAX_GROWTH_ALTITUDE_METERS))
     model.object.scale.setScalar(scale)
     model.object.position.set(x, y, model.axisHeightOnGround(pitch) * scale + altitude)
+    model.setControl('openCanopy', altitude === 0 && Math.abs(y - this.runwayY) > RUNWAY_HALF_WIDTH_METERS)
     const turnRadians = heading - NOSE_ALONG_Y_ROTATION_RADIANS
     model.object.rotation.set(pitch, roll, turnRadians, 'ZXY')
     this.shadows.place(model, x, y, altitude, turnRadians)
@@ -645,7 +658,7 @@ export class AirfieldScene {
 
   /** To the south of the high pass of a landing, in the middle of its dive, looking at the aircraft as it crosses the picture from left to right. */
   private placeSideView(): void {
-    const centerX = this.landingFlight.diveMiddleX()
+    const centerX = this.landingFlight.descentMiddleX()
     this.sidePosition.set(centerX, -SIDE_VIEW_DISTANCE_METERS, SIDE_VIEW_HEIGHT_METERS)
     this.lookMatrix.lookAt(this.sidePosition, new THREE.Vector3(centerX, 0, SIDE_VIEW_LOOK_HEIGHT_METERS), WORLD_UP)
     this.sideOrientation.setFromRotationMatrix(this.lookMatrix)

@@ -197,7 +197,7 @@
     "signedInAs": "Signed in: {{nickname}}",
     "errors": {
       "invalidNickname": "The nickname is 3 to 32 characters: letters, digits, hyphen and underscore.",
-      "invalidPassword": "The password is 8 to 72 characters.",
+      "invalidPassword": "The password is required, 72 characters at most.",
       "nicknameTaken": "This nickname is already taken.",
       "wrongCredentials": "Wrong nickname or password.",
       "tooManyAttempts": "Too many attempts: try again in a quarter of an hour.",
@@ -726,7 +726,7 @@
       "explosion": "Explosion on the runway",
       "explosionAlone": "A burning {{aircraft}} exploded on the runway.",
       "explosionKilled": "A burning {{aircraft}} exploded on the runway; {{pilot}} is killed.",
-      "explosionSafe": "A burning {{aircraft}} exploded on the runway; {{pilot}} gets out.",
+      "explosionSafe": "A burning {{aircraft}} exploded on the runway; {{pilot}} was evacuated.",
       "gift": "Gift",
       "giftResource": "{{from}} ({{site}}): {{quantity}} {{resource}}.",
       "giftPilot": "{{from}} ({{site}}): the pilot {{name}}.",

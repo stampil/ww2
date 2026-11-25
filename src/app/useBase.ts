@@ -42,6 +42,8 @@ export type FlightAlert = {
   /** The enemy the server has given this alert. */
   enemy: EnemyType
   dueSeconds: number
+  /** How long ago the alert showed: the call to the player does not wait for ever. */
+  lateSeconds: number
   arenaSize: number
   moves: number
   state: DogfightState | null
@@ -155,7 +157,8 @@ export type MissionReport = {
     stress?: number
   }[]
 }
-export type ExplosionEvent = { kind: 'explosion'; id: number; aircraftName: string; pilotName: string | null; pilotKilled: boolean }
+/** An aircraft that burned and exploded on the ground; its pilot is evacuated, but the pages written when the pilot could die say `pilotKilled`. */
+export type ExplosionEvent = { kind: 'explosion'; id: number; aircraftName: string; pilotName: string | null; pilotKilled?: boolean }
 /** What can be given to another base: supplies and the three stocks. */
 export type GiftResource = 'supplies' | Stock
 /** A gift from another base: who gave it, from which site, and what, with the quantity of a resource or the name of a pilot or an aircraft. */

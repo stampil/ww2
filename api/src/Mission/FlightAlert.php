@@ -37,7 +37,7 @@ final readonly class FlightAlert
     }
 
     /**
-     * @return array{id: int, kind: string, aircraftId: int, enemy: string, dueSeconds: int, arenaSize: int, moves: int, state: array<string, mixed>|null, cockpit: array{outcome: string|null}|null}
+     * @return array{id: int, kind: string, aircraftId: int, enemy: string, dueSeconds: int, lateSeconds: int, arenaSize: int, moves: int, state: array<string, mixed>|null, cockpit: array{outcome: string|null}|null}
      */
     public function toArray(int $gameSeconds, EnemyType $enemy): array
     {
@@ -47,6 +47,7 @@ final readonly class FlightAlert
             'aircraftId' => $this->aircraftId,
             'enemy' => $enemy->value,
             'dueSeconds' => max(0, $this->dueGameSecond - $gameSeconds),
+            'lateSeconds' => max(0, $gameSeconds - $this->dueGameSecond),
             'arenaSize' => Dogfight::ARENA_SIZE,
             'moves' => $this->moves,
             'state' => $this->state?->toArray(),

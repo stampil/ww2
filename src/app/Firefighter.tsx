@@ -86,7 +86,8 @@ function Firefighter({ plan, from, to, delayMilliseconds, isWorking, onGone }: P
         left: `${(shown.x / columns) * PERCENT}%`,
         top: `${(shown.y / rows) * PERCENT}%`,
         backgroundPositionY: phase === 'working' ? `${WORK_ROW * ROW_SHARE}%` : undefined,
-        scale: '1 1',
+        // The kneeling pose faces right and the firefighters work at the right of the aircraft: it is turned round to face it.
+        scale: phase === 'working' ? '-1 1' : '1 1',
       }}
     />
   )

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ww2\Base;
 
-use Random\Randomizer;
 use Ww2\Clock\GameClock;
 use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
@@ -24,8 +23,6 @@ final class Hangar
     private const INSPECTION_SECONDS = 20;
     private const HULL_SECONDS_PER_POINT = 1;
     private const MODULE_SECONDS = 30;
-    private const EXPLOSION_KILL_PERCENT = 50;
-    private const PERCENT = 100;
 
     public function __construct(
         private readonly Database $database,
@@ -37,7 +34,6 @@ final class Hangar
         private readonly Mechanics $mechanics,
         private readonly EventLog $events,
         private readonly CampStore $camps,
-        private readonly Randomizer $random = new Randomizer(),
     ) {
     }
 
@@ -195,17 +191,8 @@ final class Hangar
     private function explode(int $baseId, Aircraft $aircraft, ?int $pilotId): void
     {
         $pilot = $this->pilotAboard($baseId, $pilotId);
-        $pilotKilled = $pilot !== null && $this->random->getInt(1, self::PERCENT) <= self::EXPLOSION_KILL_PERCENT;
-        $this->events->record($baseId, [
-            'kind' => 'explosion',
-            'aircraftName' => $aircraft->model->name,
-            'pilotName' => $pilot?->name,
-            'pilotKilled' => $pilotKilled,
-        ]);
+        $this->events->record($baseId, ['kind' => 'explosion', 'aircraftName' => $aircraft->model->name, 'pilotName' => $pilot?->name]);
         $this->squadrons->removeAircraft($aircraft->id);
-        if ($pilotKilled) {
-            $this->squadrons->bury($pilot->id);
-        }
     }
 
     private function pilotAboard(int $baseId, ?int $pilotId): ?Pilot

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Ww2\Account;
 
 /**
- * The rules of the accounts: who may take which nickname, which password is accepted, who is who.
+ * The rules of the accounts: who may take which nickname, which password is accepted (any, as long as there is one), who is who.
  */
 final class AccountService
 {
     private const MIN_NICKNAME_LENGTH = 3;
     private const MAX_NICKNAME_LENGTH = 32;
-    private const MIN_PASSWORD_LENGTH = 8;
+    // The hash keeps 72 bytes of a password and ignores the rest: a longer one would be accepted and only partly checked.
     private const BCRYPT_MAX_PASSWORD_BYTES = 72;
 
     public function __construct(private readonly PlayerStore $players, private readonly SignInAttempts $signInAttempts)
@@ -67,6 +67,6 @@ final class AccountService
 
     private function isValidPassword(string $password): bool
     {
-        return mb_strlen($password) >= self::MIN_PASSWORD_LENGTH && strlen($password) <= self::BCRYPT_MAX_PASSWORD_BYTES;
+        return $password !== '' && strlen($password) <= self::BCRYPT_MAX_PASSWORD_BYTES;
     }
 }

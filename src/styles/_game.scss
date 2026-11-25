@@ -533,6 +533,7 @@ button.base-sprite {
 .mission-toast {
   @include frame;
   @include flex($align: center, $gap: 0.6rem);
+  position: relative;
   padding: 0.5rem 0.8rem;
   color: $text;
   cursor: pointer;
@@ -557,6 +558,17 @@ button.base-sprite {
     outline: 2px solid $gold;
     outline-offset: 2px;
   }
+}
+
+// The countdown of a call: a bar along its foot that runs down from the left edge to nothing.
+.mission-toast-bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.25rem;
+  background: $gold;
+  transform-origin: left;
 }
 
 @keyframes toast-in {

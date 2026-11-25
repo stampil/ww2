@@ -78,6 +78,20 @@ final class AiCamps
     }
 
     /**
+     * @return array<string, int> the player of the AI of each side in an instance, by the name of the side, the Allies first; empty for an instance made before the AI
+     */
+    public function holdersOf(int $instanceId): array
+    {
+        $rows = $this->database->fetchAll('SELECT player_id, clan FROM ai_holders WHERE instance_id = :instance_id ORDER BY player_id', ['instance_id' => $instanceId]);
+        $holderIds = [];
+        foreach ($rows as $row) {
+            $holderIds[(string) $row['clan']] = (int) $row['player_id'];
+        }
+
+        return $holderIds;
+    }
+
+    /**
      * @return Clan|null the side of the AI that this player is, or null when the player is a person
      */
     public function clanOf(int $playerId): ?Clan

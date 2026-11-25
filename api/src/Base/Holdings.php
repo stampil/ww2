@@ -9,6 +9,7 @@ use Ww2\Database\Database;
 use Ww2\Mission\MissionStore;
 use Ww2\Squadron\SquadronFounder;
 use Ww2\Squadron\SquadronStore;
+use Ww2\World\AiTurn;
 use Ww2\World\Bases;
 
 /**
@@ -28,6 +29,7 @@ final class Holdings
         private readonly Garrison $garrison,
         private readonly MissionStore $missions,
         private readonly SquadronFounder $squadronFounder,
+        private readonly AiTurn $aiTurn,
     ) {
     }
 
@@ -59,7 +61,7 @@ final class Holdings
     }
 
     /**
-     * Settles the camps of the world of a player, as they stand now. Nothing to do for a player who holds no base yet.
+     * Settles the camps of the world of a player, as they stand now, then plays the turn of the AI if the day has brought one. Nothing to do for a player who holds no base yet.
      */
     public function settleFor(int $playerId): void
     {
@@ -73,6 +75,7 @@ final class Holdings
         foreach ($this->bases->campsOf($instanceId) as $camp) {
             $this->settleCamp($camp['id'], $camp['holderId'], $gameSeconds);
         }
+        $this->aiTurn->resolveIfDue($instanceId);
     }
 
     private function settleCamp(int $campId, ?int $holderId, int $gameSeconds): void

@@ -11,7 +11,11 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+**Les appels de mission : plus de décompte pendant un mini-jeu** (« je faidais une attaque au sol, et j'ai vu la barre d'une autre mission continur a se retraicir, je t'ai dit que si on est en mission le compte a rebour pour faire les mission proposé s'arrete ! », 25/11). Ta consigne, retrouvée dans la longue liste du 25/11 (7 h 42) : « dans les popin de mission, fait une barre de progression du decompte du temps avant qu'elle disparaisse. toute clique sur une autre et mission en cours interrompt ce compte a rebours. » Ce que le code fait : la barre des appels à l'écran s'arrête quand on en prend un autre ou qu'on ouvre la tour de contrôle (j'avais lu « mission en cours » comme les vols de la tour). Le défaut : un appel qui arrive pendant qu'on joue un mini-jeu n'est arrêté par rien, sa barre continue de rétrécir et il peut disparaître. Compris : tant que la fenêtre d'un mini-jeu est ouverte, aucune barre ne bouge, ni celles à l'écran ni celles qui arrivent pendant.
+
+1. **Et quand on ferme la fenêtre du mini-jeu ?** Option A, ma reco : une barre arrêtée reste arrêtée, l'appel reste jusqu'à ce qu'on le prenne, comme après l'ouverture de la tour (« interrompt »). Option B : les barres repartent de là où elles s'étaient arrêtées.
+
+**L'atterrissage attend la fermeture du journal** (« pareil quand on lit le journal de compte rendu de mission sa doit pas faire l'animation derriere des avion qui atterrise, sa a ttend qu'on ai fermer le journal », 25/11). Compris, sans question : à la réception d'une escadrille le journal du compte rendu s'ouvre, et aujourd'hui les avions se mettent à atterrir tout de suite derrière lui. Ils attendront, cachés (ni au parking, ni en train d'atterrir), que le journal soit fermé, puis atterriront comme aujourd'hui, l'un après l'autre. Seul le journal ouvert par la réception d'un vol est concerné ; un atterrissage déjà commencé quand on ouvre le journal par ailleurs va jusqu'au bout.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -46,7 +50,10 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : tout est fait.
+| N° | Instruction | Go |
+|---|---|---|
+| 1 | Les appels de mission : plus de décompte pendant un mini-jeu (25/11, voir la section 2) | non : attend ta réponse à la question 1 et ton « go » |
+| 2 | L'atterrissage attend la fermeture du journal (25/11, voir la section 2) | non : attend ton « go » |
 
 ## Mis de côté
 

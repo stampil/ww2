@@ -11,8 +11,12 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
+**Plus de bouton « Recruter un mécanicien » quand le camp en a 3** (« enleve le bouton et la fonciton recruter un mecanisien quand on en a deja 3, inutile de l'afficher qd c complet », 25/11). Compris : dans la fenêtre de l'atelier, la fiche « Recruter un mécanicien » (icône, prix de 300, bouton) n'est plus montrée quand le camp a le maximum de mécaniciens : 3 pour un camp neuf, et aussi un camp qui en a plus de 3 depuis l'ancienne limite. Le serveur garde sa limite (`tooManyMechanics`) : elle protège d'un appel qui ne passe pas par l'écran et d'un double clic ; ce qui disparaît, c'est l'affichage, et avec lui la raison « L'atelier ne peut pas loger plus de mécaniciens » sous le bouton, que la règle de l'écran ne peut plus donner (elle est retirée ; le texte reste, pour le cas où le serveur refuse quand même).
+
+1. **Même chose pour « Recruter un pilote » quand le camp a le maximum de pilotes ?** Aujourd'hui la fiche reste, grisée, avec la raison. Option A, ma reco : oui, la fiche disparaît comme celle des mécaniciens. Option B : seuls les mécaniciens.
+
 **La tour de contrôle et les barres des appels** (soulevé en réglant le décompte, pas une instruction de toi).
-1. **Quand on ouvre la tour, que deviennent les barres des appels à l'écran ?** Aujourd'hui elles s'arrêtent pour de bon et l'appel reste jusqu'à ce qu'on le prenne. Option A, ma reco : elles repartent de là où elles s'étaient arrêtées quand on ferme la tour, comme pour un mini-jeu. Option B : rien ne change.
+2. **Quand on ouvre la tour, que deviennent les barres des appels à l'écran ?** Aujourd'hui elles s'arrêtent pour de bon et l'appel reste jusqu'à ce qu'on le prenne. Option A, ma reco : elles repartent de là où elles s'étaient arrêtées quand on ferme la tour, comme pour un mini-jeu. Option B : rien ne change.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -49,7 +53,9 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : tout est fait.
+| N° | Instruction | Go |
+|---|---|---|
+| 1 | Plus de bouton « Recruter un mécanicien » quand le camp en a 3 (25/11, voir la section 2) | non : attend ton « go » |
 
 ## Mis de côté
 

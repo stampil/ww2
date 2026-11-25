@@ -23,6 +23,14 @@ export class TaxiPath {
     return this.points[index - 1].clone().lerp(this.points[index], share)
   }
 
+  /** The way the path runs along its last stretch. */
+  finalHeading(): number {
+    const last = this.points[this.points.length - 1]
+    const before = this.points[this.points.length - 2]
+
+    return Math.atan2(last.y - before.y, last.x - before.x)
+  }
+
   /** The way the path runs around a distance, taken from a little before to a little after, so it turns smoothly at the corners. */
   headingAt(distanceMeters: number, spanMeters: number): number {
     const from = this.pointAt(distanceMeters - spanMeters)

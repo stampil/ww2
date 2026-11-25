@@ -16,10 +16,11 @@ import type { AircraftModel3D } from './aircraftModel'
 import { createAircraftModel } from './aircraftModels'
 import { ArrivalFlight } from './arrivalFlight'
 import { DepartureFlight } from './departureFlight'
-import { DEPARTURE_STAGGER_SECONDS, DepartureQueue, GROUP_SIZE } from './departureQueue'
+import { DEPARTURE_STAGGER_SECONDS, DepartureQueue, GROUP_SIZE, MIDDLE_SLOT, REAR_SLOT } from './departureQueue'
 import type { Assignment } from './departureQueue'
 import type { AircraftState } from './aircraftState'
 import { smoothStep } from './easing'
+import { junctionCurve } from './junctionCurve'
 import { LiveryTextures } from './liveries'
 import type { Livery } from './liveries'
 import { createRenderer, disposeScene, fitToContainer } from './rendering'
@@ -62,9 +63,11 @@ const NORTH_HEADING_RADIANS = Math.PI / 2
 // The aircraft in front of which the camera swings, as in the takeoff of the home page, in meters for the real aircraft.
 const REAL_FRONT_DISTANCE_METERS = 18
 const REAL_FRONT_HEIGHT_METERS = 8
-// The aircraft of a group stand in a line this far apart for the real aircraft, the places running from the rear, at the start of the runway, to the front.
+// The middle and the front aircraft of a group stand this far apart for the real aircraft; the rear one stands at the start of the runway.
 const REAL_FORMATION_GAP_METERS = 10.5
 const REAR_SLOT_X_METERS = 30
+// The taxiway meets the runway along a quarter circle of this radius, which ends in the middle place.
+const JUNCTION_CURVE_RADIUS_METERS = 20
 const PIVOT_SECONDS = 1
 const TAXI_SPEED_METERS_PER_SECOND = 30
 // An aircraft that has landed taxis more slowly to its stand, and the next one lands this long after it.
@@ -184,6 +187,7 @@ export class AirfieldScene {
   private readonly camera = new THREE.PerspectiveCamera(CAMERA_FIELD_OF_VIEW_DEGREES, 1, CAMERA_NEAR_METERS, CAMERA_FAR_METERS)
   private readonly resizeObserver: ResizeObserver
   private readonly runway: PlanRunway
+  private readonly junction: THREE.Vector2
   private readonly scale: number
   private readonly gapMeters: number
   private readonly flight: DepartureFlight
@@ -231,6 +235,7 @@ export class AirfieldScene {
     private readonly onFramed: (groundTransform: string) => void,
   ) {
     this.runway = runwayOf(plan)
+    this.junction = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn)
     this.scale = (options.aircraftWidthTiles * TILE_SIZE_METERS) / D520_SPAN_METERS
     this.shadows = new AircraftShadows(this.scene, options.shadowImage, AIRCRAFT_SPRITE_WIDTH_METERS * this.scale, SUN_POSITION)
     this.gapMeters = REAL_FORMATION_GAP_METERS * this.scale
@@ -241,9 +246,9 @@ export class AirfieldScene {
         this.runwayToAvoid.push({ row: this.runway.row, column })
       }
     }
-    const touchdownX = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x + TOUCHDOWN_PAST_ENTRY_METERS
+    const touchdownX = this.junction.x + TOUCHDOWN_PAST_ENTRY_METERS
     this.landingFlight = new ArrivalFlight(touchdownX, this.exitX())
-    this.runwayY = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).y
+    this.runwayY = this.junction.y
     this.placeSideView()
     this.renderer = createRenderer(container, false)
     this.liveries = new LiveryTextures(
@@ -307,7 +312,7 @@ export class AirfieldScene {
       path,
       startSeconds: assignment.arrivalSeconds - PIVOT_SECONDS - taxiSeconds,
       taxiSeconds,
-      endHeading: path.headingAt(path.lengthMeters, HEADING_SPAN_METERS),
+      endHeading: path.finalHeading(),
     })
   }
 
@@ -487,29 +492,42 @@ export class AirfieldScene {
     this.onFramed(groundTransformOf(corners, width, height))
   }
 
-  /** Where an aircraft of a group stands on the runway: the rear place at the start, the others each a step further. */
+  /** Where an aircraft of a group stands on the runway: the rear place at the start, the middle one where the curve from the taxiway ends, the front one a gap further. */
   private slotX(slot: number): number {
-    return REAR_SLOT_X_METERS + this.gapMeters * slot
+    if (slot === REAR_SLOT) {
+      return REAR_SLOT_X_METERS
+    }
+
+    return this.junction.x + JUNCTION_CURVE_RADIUS_METERS + this.gapMeters * (slot - MIDDLE_SLOT)
   }
 
-  /** The taxiways to the junction, which never cross the runway before it, then along the runway to a place of the line. */
+  /** The taxiways to the junction, which never cross the runway before it; then back along the runway to the rear place, or round the curve onto the runway, heading for the front, and on to the front place. */
   private taxiPathFrom(stand: Cell, slot: number): TaxiPath {
     const steps = findPath(this.plan, stand, { row: this.runway.row, column: this.runway.entryColumn }, this.runwayToAvoid)
     const points: THREE.Vector2[] = []
     for (const step of steps) {
       points.push(tileCenterOf(this.runway, step.cell.row, step.cell.column))
     }
-    points.push(new THREE.Vector2(this.slotX(slot), 0))
+    if (slot === REAR_SLOT) {
+      points.push(new THREE.Vector2(this.slotX(slot), 0))
+
+      return new TaxiPath(points)
+    }
+    const isTaxiwayNorth = points[points.length - 2].y > this.junction.y
+    points.pop()
+    points.push(...junctionCurve(this.junction, isTaxiwayNorth, JUNCTION_CURVE_RADIUS_METERS))
+    if (slot > MIDDLE_SLOT) {
+      points.push(new THREE.Vector2(this.slotX(slot), 0))
+    }
 
     return new TaxiPath(points)
   }
 
   /** How long after a group starts to roll the next one may come onto the runway: the last of the one before, which rolls from the rear, has rolled a gap past the junction, and the first of the next comes from the junction to the rear. */
   private groupClearanceSeconds(): number {
-    const junctionX = tileCenterOf(this.runway, this.runway.row, this.runway.entryColumn).x
     const lastRollStartSeconds = (GROUP_SIZE - 1) * DEPARTURE_STAGGER_SECONDS
-    const pastJunctionSeconds = this.flight.secondsToCover(junctionX + this.gapMeters - REAR_SLOT_X_METERS)
-    const comingToRearSeconds = (junctionX - REAR_SLOT_X_METERS) / TAXI_SPEED_METERS_PER_SECOND + PIVOT_SECONDS
+    const pastJunctionSeconds = this.flight.secondsToCover(this.junction.x + this.gapMeters - REAR_SLOT_X_METERS)
+    const comingToRearSeconds = (this.junction.x - REAR_SLOT_X_METERS) / TAXI_SPEED_METERS_PER_SECOND + PIVOT_SECONDS
 
     return lastRollStartSeconds + pastJunctionSeconds + comingToRearSeconds
   }
@@ -643,7 +661,7 @@ export class AirfieldScene {
     }
     const { group, slot } = assignment
     const pose = this.flight.pose(seconds - group.startSecondsOf(slot), this.slotX(group.frontSlot), model.groundPitchRadians)
-    const behind = this.gapMeters * (group.frontSlot - slot)
+    const behind = this.slotX(group.frontSlot) - this.slotX(slot)
     model.setState(pose.state)
     this.place(model, pose.x - Math.cos(pose.heading) * behind, pose.y - Math.sin(pose.heading) * behind, pose.altitude, pose.heading, pose.pitch, pose.roll)
   }

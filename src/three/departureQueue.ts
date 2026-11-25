@@ -1,6 +1,10 @@
-// The place of each aircraft along the line, in the order they come: the first at the rear, where the roll starts, the second at the front, the third between them.
-// The junction lies between the middle place and the front one, so each aircraft comes to its place without passing through one that came before it.
-const SLOT_OF_ARRIVAL = [0, 2, 1]
+/** The places of a group along the runway, from the rear, at the start of the roll, to the front. */
+export const REAR_SLOT = 0
+export const MIDDLE_SLOT = 1
+const FRONT_SLOT = 2
+// The place of each aircraft, in the order they come: the first at the rear, the second at the front, the third between them.
+// The junction lies between the rear place and the middle one, so the second runs on to the front before the third takes the middle place, and none passes through one that came before it.
+const SLOT_OF_ARRIVAL = [REAR_SLOT, FRONT_SLOT, MIDDLE_SLOT]
 
 /** How many aircraft leave together. */
 export const GROUP_SIZE = SLOT_OF_ARRIVAL.length

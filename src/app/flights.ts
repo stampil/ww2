@@ -46,12 +46,9 @@ export function isAlertOver(alert: FlightAlert): boolean {
   return (alert.state?.outcome ?? alert.cockpit?.outcome ?? null) !== null
 }
 
-/** Whether the aircraft of an alert was lost to the flak or an earlier combat of a capture, which has a combat for each defender flown by the aircraft in turn: a lost aircraft flies no more. */
+/** Whether the aircraft of an alert was lost to the flak or to an earlier combat of a capture, which has a combat for each defender flown by the aircraft in turn: a lost aircraft flies no more. */
 function isAircraftLost(flight: Flight, alert: FlightAlert): boolean {
-  return (
-    flight.type === 'campCapture' &&
-    flight.alerts.some((earlier) => earlier.id < alert.id && earlier.kind !== 'dogfight' && earlier.aircraftId === alert.aircraftId && earlier.cockpit?.outcome === 'escaped')
-  )
+  return flight.alerts.some((earlier) => earlier.id < alert.id && earlier.kind !== 'dogfight' && earlier.aircraftId === alert.aircraftId && earlier.cockpit?.outcome === 'escaped')
 }
 
 /** The alerts that call the player now: due, not over, not of a lost aircraft, on a flight that is still in the air. */

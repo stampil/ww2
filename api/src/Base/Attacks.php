@@ -34,8 +34,8 @@ final class Attacks
     private const CAPTURED_DEFENSE = 50;
     private const BACK_AND_FORTH = 2;
     // The guns of a camp fire this many shells a second at an aircraft, and up to this many more the farther the camp stands from the camps of the side that attacks it.
-    private const FLAK_BASE_SHELLS_PER_SECOND = 2;
-    private const FLAK_EXTRA_SHELLS_PER_SECOND = 4;
+    private const FLAK_BASE_SHELLS_PER_SECOND = 1;
+    private const FLAK_EXTRA_SHELLS_PER_SECOND = 3;
 
     public function __construct(
         private readonly Bases $bases,

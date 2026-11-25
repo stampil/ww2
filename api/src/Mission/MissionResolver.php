@@ -14,6 +14,7 @@ use Ww2\Squadron\Pilot;
  * Works out the result of a flight: a crew that played its dogfight succeeds if it shot the enemy down; the other crews share one roll, the
  * strength of the crews against the risk of the mission. Then each aircraft takes damage, which destroys modules and may set it on fire, and each pilot tires;
  * an aircraft of a crew that failed may not come back at all.
+ * An aircraft that the flak destroys is out of the flight; the flight succeeds if the crews that are left do, and fails when none is.
  * The figures are mine.
  */
 final class MissionResolver
@@ -51,14 +52,19 @@ final class MissionResolver
      * @param array<int, Pilot> $pilots the pilots of the flight, by id
      * @param array<int, Aircraft> $aircraft the aircraft of the flight, by id
      * @param array<int, DogfightOutcome> $duels how the dogfights of the flight that were played to their end ended, by the id of the aircraft
-     * @param array<int, int> $flakHits how many times the flak hit each aircraft of the flight, by the id of the aircraft
+     * @param array<int, int> $flakHits how many times the flak hit each aircraft of the flight, by the id of the aircraft: one it destroyed is out of the flight
      * @param list<int> $lostInCombat the aircraft that lost a combat of a capture, which are lost whatever else happened to them
      */
     public function resolve(Flight $flight, array $pilots, array $aircraft, array $duels = [], array $flakHits = [], array $lostInCombat = []): MissionReport
     {
         $successes = [];
         $unplayed = [];
+        $shotDownAircraftIds = [];
         foreach ($flight->crews as $crew) {
+            if ($this->isShotDownByFlak($flakHits[$crew['aircraftId']] ?? 0)) {
+                $shotDownAircraftIds[] = $crew['aircraftId'];
+                continue;
+            }
             if (isset($duels[$crew['aircraftId']])) {
                 $successes[$crew['aircraftId']] = $duels[$crew['aircraftId']] === DogfightOutcome::Won;
             } else {
@@ -74,9 +80,10 @@ final class MissionResolver
 
         $outcomes = [];
         foreach ($flight->crews as $crew) {
-            $outcomes[] = $this->outcomeOf($flight->mission, $pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']], $successes[$crew['aircraftId']], $flakHits[$crew['aircraftId']] ?? 0, in_array($crew['aircraftId'], $lostInCombat, true));
+            $isShotDown = in_array($crew['aircraftId'], $shotDownAircraftIds, true);
+            $outcomes[] = $this->outcomeOf($flight->mission, $pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']], !$isShotDown && $successes[$crew['aircraftId']], $flakHits[$crew['aircraftId']] ?? 0, in_array($crew['aircraftId'], $lostInCombat, true));
         }
-        $success = !in_array(false, $successes, true);
+        $success = $successes !== [] && !in_array(false, $successes, true);
 
         return new MissionReport(
             $flight->mission->type,

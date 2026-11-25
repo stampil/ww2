@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../assetUrl'
 import { useClan, useMedal, useRankName } from './ClanContext'
+import { GAME_TIME_ZONE } from './gameDate'
 import Gauge from './Gauge'
 import { GAUGE_MAX } from './gaugeMax'
 import Icon from './Icon'
@@ -21,7 +22,8 @@ const DOSSIER_FOOT = `url(${assetUrl('sprites/dossier/dossier-foot.png')})`
 
 /** The dossier of a pilot: their photo and rank, what they have done, a mark for each victory, their medals and their gauges. */
 function PilotSheet({ pilot }: { pilot: Pilot }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const dateFormat = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'long', timeZone: GAME_TIME_ZONE })
   const clan = useClan()
   const rankName = useRankName()
   const medalOf = useMedal()
@@ -59,6 +61,10 @@ function PilotSheet({ pilot }: { pilot: Pilot }) {
           <dd>{record.airCombats}</dd>
           <dt>{t('squadron.roster.victories')}</dt>
           <dd>{record.victories}</dd>
+          <dt>{t('squadron.roster.fighterVictories')}</dt>
+          <dd>{record.fighterVictories}</dd>
+          <dt>{t('squadron.roster.bomberVictories')}</dt>
+          <dd>{record.bomberVictories}</dd>
           <dt>{t('squadron.roster.groundSuccesses')}</dt>
           <dd>{record.groundSuccesses}</dd>
           <dt>{t('squadron.roster.aircraftLost')}</dt>
@@ -95,6 +101,12 @@ function PilotSheet({ pilot }: { pilot: Pilot }) {
             })}
           </ul>
         )}
+        <h5>{t('squadron.roster.assignments')}</h5>
+        <ul className="assignment-list">
+          {pilot.assignments.map((assignment, index) => (
+            <li key={index}>{t('squadron.roster.assignedSince', { site: t(`world.site.${assignment.site}`), date: dateFormat.format(new Date(assignment.since)) })}</li>
+          ))}
+        </ul>
         <h5>{t('squadron.roster.skills')}</h5>
         <Gauge label={t('squadron.accuracy')} value={pilot.effectiveAccuracy} max={GAUGE_MAX} higherIsBetter />
         <Gauge label={t('squadron.resilience')} value={pilot.effectiveResilience} max={GAUGE_MAX} higherIsBetter />

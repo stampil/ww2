@@ -9,6 +9,7 @@ import { JournalNote } from './JournalNotes'
 import { prefersReducedMotion } from './reducedMotion'
 import type { BaseEvent, MissionReport } from './useBase'
 import { useJournal } from './useJournal'
+import { useMood } from './useMood'
 
 /** What an attack did to its camp, in a sentence: the damage of a raid, the camp taken, or why it came to nothing. */
 function attackSentence(report: MissionReport, t: TFunction): string {
@@ -92,6 +93,9 @@ function JournalBook({ site, onDismiss }: Props) {
   const pages = useJournal()
   const [selected, setSelected] = useState<number | null>(null)
   const [turn, setTurn] = useState<Turn | null>(null)
+  // A page that reports a mission plays the music of how it went: triumphant if it succeeded, sorrowful if it failed.
+  const shownEvent = pages === null || pages.length === 0 ? null : pages[selected ?? pages.length - 1]
+  useMood(shownEvent?.kind === 'mission' ? (shownEvent.success ? 'triumph' : 'sorrow') : null)
 
   useEffect(() => {
     if (turn === null) {

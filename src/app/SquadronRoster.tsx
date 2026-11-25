@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useRankName } from './ClanContext'
 import GameWindow from './GameWindow'
 import PilotSheet from './PilotSheet'
+import { useMood } from './useMood'
 import type { FallenPilot, Pilot, PilotRecord } from './useBase'
 
 type Props = {
@@ -25,6 +26,7 @@ function SquadronRoster({ pilots, fallen, onDismiss }: Props) {
   const rankName = useRankName()
   const [view, setView] = useState<View>('squadron')
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  useMood(view === 'memorial' ? 'melodrama' : null)
   const ranked = [...pilots].sort(byMerit)
   const selected = ranked.find((pilot) => pilot.id === selectedId) ?? ranked[0]
   const percent = new Intl.NumberFormat(i18n.language, { style: 'percent' })
@@ -38,7 +40,8 @@ function SquadronRoster({ pilots, fallen, onDismiss }: Props) {
       <tr>
         <th scope="col">{t('squadron.roster.pilot')}</th>
         <th scope="col">{t('squadron.roster.missions')}</th>
-        <th scope="col">{t('squadron.roster.victoriesShort')}</th>
+        <th scope="col">{t('squadron.roster.fightersShort')}</th>
+        <th scope="col">{t('squadron.roster.bombersShort')}</th>
         <th scope="col">{t('squadron.roster.ratio')}</th>
       </tr>
     </thead>
@@ -69,7 +72,8 @@ function SquadronRoster({ pilots, fallen, onDismiss }: Props) {
                     </button>
                   </th>
                   <td>{pilot.record.missionsFlown}</td>
-                  <td>{pilot.record.victories}</td>
+                  <td>{pilot.record.fighterVictories}</td>
+                  <td>{pilot.record.bomberVictories}</td>
                   <td>{ratioOf(pilot.record)}</td>
                 </tr>
               ))}
@@ -93,7 +97,8 @@ function SquadronRoster({ pilots, fallen, onDismiss }: Props) {
                     {pilot.record.isAce && <span className="ace-tag">{t('squadron.roster.ace')}</span>}
                   </th>
                   <td>{pilot.record.missionsFlown}</td>
-                  <td>{pilot.record.victories}</td>
+                  <td>{pilot.record.fighterVictories}</td>
+                  <td>{pilot.record.bomberVictories}</td>
                   <td>{ratioOf(pilot.record)}</td>
                 </tr>
               ))}

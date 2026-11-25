@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ww2\Squadron;
 
 use Ww2\Database\Database;
+use Ww2\Mission\EnemyType;
 use Ww2\World\Clan;
 use Ww2\World\Site;
 
@@ -13,6 +14,11 @@ use Ww2\World\Site;
  */
 final class SquadronStore
 {
+    /** What each rank gained adds to the accuracy and to the resilience of a pilot, what the title of ace adds, and how far they can go. */
+    private const PROMOTION_APTITUDE_GAIN = 2;
+    private const ACE_APTITUDE_GAIN = 5;
+    private const MAX_APTITUDE = 100;
+
     public function __construct(private readonly Database $database)
     {
     }
@@ -47,6 +53,10 @@ final class SquadronStore
                 'accuracy' => $pilot->accuracy,
                 'resilience' => $pilot->resilience,
             ],
+        );
+        $this->database->execute(
+            'INSERT INTO pilot_assignments (pilot_id, base_id, assigned_epoch) VALUES (LAST_INSERT_ID(), :base_id, UNIX_TIMESTAMP())',
+            ['base_id' => $baseId],
         );
     }
 
@@ -99,6 +109,28 @@ final class SquadronStore
     public function movePilot(int $pilotId, int $toBaseId): void
     {
         $this->database->execute('UPDATE pilots SET base_id = :base_id WHERE id = :id', ['base_id' => $toBaseId, 'id' => $pilotId]);
+        $this->database->execute(
+            'INSERT INTO pilot_assignments (pilot_id, base_id, assigned_epoch) VALUES (:pilot_id, :base_id, UNIX_TIMESTAMP())',
+            ['pilot_id' => $pilotId, 'base_id' => $toBaseId],
+        );
+    }
+
+    /**
+     * @return array<int, list<array{baseId: int, epoch: int}>> the bases each pilot of the base has been assigned to, the first first, by the id of the pilot
+     */
+    public function assignmentsOf(int $baseId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT pilot_assignments.pilot_id, pilot_assignments.base_id, pilot_assignments.assigned_epoch
+             FROM pilot_assignments JOIN pilots ON pilots.id = pilot_assignments.pilot_id WHERE pilots.base_id = :base_id ORDER BY pilot_assignments.id',
+            ['base_id' => $baseId],
+        );
+        $assignments = [];
+        foreach ($rows as $row) {
+            $assignments[(int) $row['pilot_id']][] = ['baseId' => (int) $row['base_id'], 'epoch' => (int) $row['assigned_epoch']];
+        }
+
+        return $assignments;
     }
 
     /**
@@ -163,9 +195,12 @@ final class SquadronStore
 
     /**
      * Adds what a flight did to the record of a pilot, and gives the pilot the rank their missions have earned if it is higher than theirs.
+     * A promotion and the title of ace make the pilot better: accuracy and resilience go up, as far as 100.
      */
-    public function recordFlight(int $pilotId, PilotRecord $flight): void
+    public function recordFlight(int $pilotId, PilotRecord $flight): PilotProgress
     {
+        $rankBefore = (int) $this->database->fetchAll('SELECT pilot_rank FROM pilots WHERE id = :id', ['id' => $pilotId])[0]['pilot_rank'];
+        $wasAce = $this->recordOf($pilotId)->isAce();
         $this->database->execute(
             'INSERT INTO pilot_records (pilot_id, missions_flown, missions_succeeded, air_combats, victories, ground_successes, aircraft_lost)
              VALUES (:pilot_id, :missions_flown, :missions_succeeded, :air_combats, :victories, :ground_successes, :aircraft_lost)
@@ -195,12 +230,38 @@ final class SquadronStore
                 ['pilot_id' => $pilotId, 'enemy' => $enemy, 'victories' => $victories, 'added_victories' => $victories],
             );
         }
-        $rows = $this->database->fetchAll('SELECT missions_succeeded FROM pilot_records WHERE pilot_id = :pilot_id', ['pilot_id' => $pilotId]);
-        $meritRank = (new PilotRecord(missionsSucceeded: (int) $rows[0]['missions_succeeded']))->meritRank();
-        $this->database->execute(
-            'UPDATE pilots SET pilot_rank = :merit_rank WHERE id = :id AND pilot_rank < :higher_than',
-            ['merit_rank' => $meritRank, 'id' => $pilotId, 'higher_than' => $meritRank],
+        $record = $this->recordOf($pilotId);
+        $meritRank = $record->meritRank();
+        $promotedTo = $meritRank > $rankBefore ? $meritRank : null;
+        $becameAce = $record->isAce() && !$wasAce;
+        $gain = ($promotedTo === null ? 0 : ($promotedTo - $rankBefore) * self::PROMOTION_APTITUDE_GAIN) + ($becameAce ? self::ACE_APTITUDE_GAIN : 0);
+        if ($promotedTo !== null) {
+            $this->database->execute('UPDATE pilots SET pilot_rank = :merit_rank WHERE id = :id', ['merit_rank' => $meritRank, 'id' => $pilotId]);
+        }
+        if ($gain > 0) {
+            $this->database->execute(
+                'UPDATE pilots SET accuracy = LEAST(:max_accuracy, accuracy + :accuracy_gain), resilience = LEAST(:max_resilience, resilience + :resilience_gain) WHERE id = :id',
+                ['max_accuracy' => self::MAX_APTITUDE, 'accuracy_gain' => $gain, 'max_resilience' => self::MAX_APTITUDE, 'resilience_gain' => $gain, 'id' => $pilotId],
+            );
+        }
+
+        return new PilotProgress($promotedTo, $becameAce);
+    }
+
+    private function recordOf(int $pilotId): PilotRecord
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT COALESCE(records.missions_flown, 0) AS missions_flown, COALESCE(records.missions_succeeded, 0) AS missions_succeeded, COALESCE(records.air_combats, 0) AS air_combats,
+                    COALESCE(records.victories, 0) AS victories, COALESCE(records.ground_successes, 0) AS ground_successes, COALESCE(records.aircraft_lost, 0) AS aircraft_lost
+             FROM pilots LEFT JOIN pilot_records AS records ON records.pilot_id = pilots.id WHERE pilots.id = :id',
+            ['id' => $pilotId],
         );
+        $victoriesOver = [];
+        foreach ($this->database->fetchAll('SELECT enemy, victories FROM pilot_enemy_victories WHERE pilot_id = :id', ['id' => $pilotId]) as $row) {
+            $victoriesOver[(string) $row['enemy']] = (int) $row['victories'];
+        }
+
+        return self::recordFrom($rows[0], $victoriesOver);
     }
 
     /**
@@ -215,6 +276,11 @@ final class SquadronStore
              FROM pilots LEFT JOIN pilot_records AS records ON records.pilot_id = pilots.id WHERE pilots.id = :id',
             ['id' => $pilotId],
         );
+        $record = $this->recordOf($pilotId);
+        $this->database->execute(
+            'INSERT INTO fallen_pilot_victories (fallen_pilot_id, fighter_victories, bomber_victories) VALUES (LAST_INSERT_ID(), :fighter_victories, :bomber_victories)',
+            ['fighter_victories' => $record->fighterVictories, 'bomber_victories' => $record->bomberVictories],
+        );
         $this->database->execute('DELETE FROM pilots WHERE id = :id', ['id' => $pilotId]);
     }
 
@@ -224,12 +290,28 @@ final class SquadronStore
     public function fallenOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT name, pilot_rank, missions_flown, missions_succeeded, air_combats, victories, ground_successes, aircraft_lost FROM fallen_pilots WHERE base_id = :base_id ORDER BY id',
+            'SELECT fallen_pilots.name, fallen_pilots.pilot_rank, fallen_pilots.missions_flown, fallen_pilots.missions_succeeded, fallen_pilots.air_combats, fallen_pilots.victories,
+                    fallen_pilots.ground_successes, fallen_pilots.aircraft_lost, COALESCE(kinds.fighter_victories, 0) AS fighter_victories, COALESCE(kinds.bomber_victories, 0) AS bomber_victories
+             FROM fallen_pilots LEFT JOIN fallen_pilot_victories AS kinds ON kinds.fallen_pilot_id = fallen_pilots.id WHERE fallen_pilots.base_id = :base_id ORDER BY fallen_pilots.id',
             ['base_id' => $baseId],
         );
 
         return array_map(
-            static fn (array $row): FallenPilot => new FallenPilot((string) $row['name'], (int) $row['pilot_rank'], self::recordFrom($row)),
+            static fn (array $row): FallenPilot => new FallenPilot(
+                (string) $row['name'],
+                (int) $row['pilot_rank'],
+                new PilotRecord(
+                    (int) $row['missions_flown'],
+                    (int) $row['missions_succeeded'],
+                    (int) $row['air_combats'],
+                    (int) $row['victories'],
+                    (int) $row['ground_successes'],
+                    (int) $row['aircraft_lost'],
+                    [],
+                    (int) $row['fighter_victories'],
+                    (int) $row['bomber_victories'],
+                ),
+            ),
             $rows,
         );
     }
@@ -395,6 +477,16 @@ final class SquadronStore
      */
     private static function recordFrom(array $row, array $victoriesOver = []): PilotRecord
     {
+        $fighterVictories = 0;
+        $bomberVictories = 0;
+        foreach ($victoriesOver as $enemy => $victories) {
+            if (EnemyType::from($enemy)->isFighter()) {
+                $fighterVictories += $victories;
+            } else {
+                $bomberVictories += $victories;
+            }
+        }
+
         return new PilotRecord(
             (int) $row['missions_flown'],
             (int) $row['missions_succeeded'],
@@ -403,6 +495,8 @@ final class SquadronStore
             (int) $row['ground_successes'],
             (int) $row['aircraft_lost'],
             $victoriesOver,
+            $fighterVictories,
+            $bomberVictories,
         );
     }
 

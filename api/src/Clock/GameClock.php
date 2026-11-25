@@ -8,15 +8,14 @@ use DateTimeImmutable;
 use DateTimeZone;
 
 /**
- * The game time of an instance: the seconds gone by since the battle began, which never stops. The battle began on 10 May 1940
- * on the day the instance was created, and the hour of the game is the real hour in Paris, whatever the clock of the server: the date follows the battle and starts it again.
+ * The game time of an instance: the seconds gone by since it was created, which never stops. The month, the day and the hour of the game are the real ones in Paris, whatever the clock of the server;
+ * the year is 1940 on the day the instance was created, one more each 1 January, and 1940 again after 1944.
  */
 final readonly class GameClock
 {
-    private const BATTLE_DAY = '1940-05-10';
-    // The battle of France lasts from 10 May to 24 June 1940, and the calendar of the game starts again after it.
-    private const BATTLE_DAYS = 46;
-    private const DATE_FORMAT = 'Y-m-d';
+    private const FIRST_YEAR = 1940;
+    private const YEARS = 5;
+    private const LAST_DAY_OF_COMMON_FEBRUARY = 28;
     private const TIME_FORMAT = '\TH:i:s';
     private const TIME_ZONE = 'Europe/Paris';
 
@@ -32,12 +31,36 @@ final readonly class GameClock
      */
     public function toArray(): array
     {
-        $timeZone = new DateTimeZone(self::TIME_ZONE);
-        $start = (new DateTimeImmutable('@' . $this->startEpoch))->setTimezone($timeZone);
-        $now = (new DateTimeImmutable('@' . ($this->startEpoch + $this->gameSeconds)))->setTimezone($timeZone);
-        $daysSinceStart = $start->setTime(0, 0)->diff($now->setTime(0, 0))->days;
-        $gameDay = (new DateTimeImmutable(self::BATTLE_DAY, $timeZone))->modify('+' . ($daysSinceStart % self::BATTLE_DAYS) . ' days');
+        $now = $this->parisTime($this->startEpoch + $this->gameSeconds);
 
-        return ['gameTime' => $gameDay->format(self::DATE_FORMAT) . $now->format(self::TIME_FORMAT)];
+        return ['gameTime' => $this->gameDateOf($now) . $now->format(self::TIME_FORMAT)];
+    }
+
+    /**
+     * @param int $epoch a moment of the life of the instance, in seconds since 1970
+     * @return string the day of the game that the moment falls on, like 1941-03-02
+     */
+    public function dateOf(int $epoch): string
+    {
+        return $this->gameDateOf($this->parisTime($epoch));
+    }
+
+    private function gameDateOf(DateTimeImmutable $moment): string
+    {
+        $yearsSinceStart = (int) $moment->format('Y') - (int) $this->parisTime($this->startEpoch)->format('Y');
+        $year = self::FIRST_YEAR + $yearsSinceStart % self::YEARS;
+        $month = (int) $moment->format('n');
+        $day = (int) $moment->format('j');
+        // The 29 February of a real leap year has no day in a year of the game that is not one.
+        if (!checkdate($month, $day, $year)) {
+            $day = self::LAST_DAY_OF_COMMON_FEBRUARY;
+        }
+
+        return sprintf('%04d-%02d-%02d', $year, $month, $day);
+    }
+
+    private function parisTime(int $epoch): DateTimeImmutable
+    {
+        return (new DateTimeImmutable('@' . $epoch))->setTimezone(new DateTimeZone(self::TIME_ZONE));
     }
 }

@@ -1,7 +1,6 @@
 /** A note of the theme: when it starts and how long it lasts, in beats from the start of the loop, and its MIDI number (69 is the A of 440 Hz). */
 export type Note = { start: number; length: number; midi: number }
 
-export const BEATS_PER_MINUTE = 120
 export const BEATS_PER_BAR = 4
 
 type Bar = {

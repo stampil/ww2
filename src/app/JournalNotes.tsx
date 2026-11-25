@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import type { BaseEvent, CampEvent, ExplosionEvent, GiftEvent, LandingEvent, MissionReport, RaidedEvent } from './useBase'
+import type { BaseEvent, CampEvent, ExplosionEvent, GiftEvent, LandingEvent, LifeEvent, MissionReport, RaidedEvent } from './useBase'
 
 // The resources an aircraft can unload, in the order the journal lists them.
 const LOADS = ['supplies', 'fuel', 'ammunition', 'materials'] as const
@@ -80,7 +80,18 @@ function RaidedItem({ event }: { event: RaidedEvent }) {
   )
 }
 
-/** A page of the journal that tells no flight: an aircraft that exploded on the runway, a gift from another base, an aircraft that landed with a load, a camp taken or let go, or a raid on the camp. */
+function LifeItem({ event }: { event: LifeEvent }) {
+  const { t } = useTranslation()
+
+  return (
+    <li>
+      <strong>{t('base.event.life')}</strong>
+      <span>{t(`base.event.lifeTopics.${event.topic}`, { pilot: event.pilotName ?? t('base.event.lifeSomeone') })}</span>
+    </li>
+  )
+}
+
+/** A page of the journal that tells no flight: an aircraft that exploded on the runway, a gift from another base, an aircraft that landed with a load, a camp taken or let go, a raid on the camp, or a happening of the life of the camp. */
 export function JournalNote({ event }: { event: Exclude<BaseEvent, MissionReport> }) {
   if (event.kind === 'gift') {
     return <GiftItem event={event} />
@@ -93,6 +104,9 @@ export function JournalNote({ event }: { event: Exclude<BaseEvent, MissionReport
   }
   if (event.kind === 'raided') {
     return <RaidedItem event={event} />
+  }
+  if (event.kind === 'life') {
+    return <LifeItem event={event} />
   }
   return <ExplosionItem event={event} />
 }

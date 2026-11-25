@@ -20,6 +20,7 @@ import GameWindow from './GameWindow'
 import Guide from './Guide'
 import { guideStepOf, markedBuildingOf, speaksInWindowOf } from './guideSteps'
 import GuideWelcome from './GuideWelcome'
+import MilestonePopins from './MilestonePopins'
 import HangarPanel from './HangarPanel'
 import HeadquartersPanel from './HeadquartersPanel'
 import Hud from './Hud'
@@ -457,6 +458,8 @@ function BaseScreen({ player }: { player: Player }) {
         )}
 
         {isJournalOpen && <JournalBook site={base.site} onDismiss={() => setIsJournalOpen(false)} />}
+
+        <MilestonePopins key={base.baseId} events={base.events} />
 
         {isRosterOpen && <SquadronRoster pilots={base.squadron.pilots} fallen={base.roster.fallen} onDismiss={() => setIsRosterOpen(false)} />}
 

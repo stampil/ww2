@@ -6,7 +6,6 @@ namespace Ww2\Base;
 
 use Ww2\Clock\GameClockStore;
 use Ww2\Squadron\Aircraft;
-use Ww2\Squadron\Pilot;
 use Ww2\Squadron\SquadronStore;
 use Ww2\World\Bases;
 
@@ -33,6 +32,7 @@ final class BaseOverview
         private readonly Attacks $attacks,
         private readonly SupplyIncome $income,
         private readonly Garrison $garrison,
+        private readonly LifeEvents $lifeEvents,
     ) {
     }
 
@@ -43,10 +43,20 @@ final class BaseOverview
     {
         $clock = $this->clocks->of($baseId);
         $this->income->settle($baseId, $clock->gameSeconds);
+        $this->lifeEvents->settle($baseId);
         $hangar = $this->hangar->describe($baseId, $clock);
         $roster = $this->roster->describe($baseId, $clock);
         $headquarters = $this->headquarters->describe($baseId, $clock);
         $stationings = $this->stationings->describe($baseId, $clock);
+        $assignments = $this->squadrons->assignmentsOf($baseId);
+        $pilots = [];
+        foreach ($this->squadrons->pilotsOf($baseId) as $pilot) {
+            $assigned = [];
+            foreach ($assignments[$pilot->id] ?? [] as $assignment) {
+                $assigned[] = ['site' => $this->sites->siteOf($assignment['baseId'])->value, 'since' => $clock->dateOf($assignment['epoch'])];
+            }
+            $pilots[] = $pilot->toArray() + ['assignments' => $assigned];
+        }
         $borrowed = [];
         foreach ($this->garrison->guestsAt($baseId, $clock->gameSeconds) as $guest) {
             $borrowed[] = $guest->aircraft->toArray(time()) + [
@@ -82,7 +92,7 @@ final class BaseOverview
             'roster' => $roster,
             'stationings' => $stationings,
             'squadron' => [
-                'pilots' => array_map(static fn (Pilot $pilot): array => $pilot->toArray(), $this->squadrons->pilotsOf($baseId)),
+                'pilots' => $pilots,
                 'aircraft' => array_map(static fn (Aircraft $aircraft): array => $aircraft->toArray(time()), $this->squadrons->aircraftOf($baseId)),
                 'borrowed' => $borrowed,
             ],

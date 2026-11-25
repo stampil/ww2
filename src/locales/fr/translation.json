@@ -264,13 +264,16 @@
       "memorialEmpty": "Personne n'est tombé pour l'instant.",
       "pilot": "Pilote",
       "missions": "Missions",
-      "victoriesShort": "Victoires",
+      "fightersShort": "Chasseurs",
+      "bombersShort": "Bombardiers",
       "ratio": "Ratio",
       "ace": "As",
       "missionsFlown": "Missions",
       "missionsSucceeded": "Missions réussies",
       "airCombats": "Combats aériens",
       "victories": "Victoires aériennes",
+      "fighterVictories": "Dont sur des chasseurs",
+      "bomberVictories": "Dont sur des bombardiers",
       "groundSuccesses": "Attaques au sol réussies",
       "aircraftLost": "Avions perdus",
       "marks": "Avions abattus",
@@ -279,6 +282,8 @@
       "noVictory": "Aucune victoire",
       "medals": "Médailles",
       "noMedal": "Aucune médaille.",
+      "assignments": "Affectations",
+      "assignedSince": "{{site}}, depuis le {{date}}",
       "skills": "Aptitudes"
     },
     "categories": {
@@ -286,10 +291,24 @@
       "bomber": "Bombardier"
     }
   },
+  "milestone": {
+    "ace": {
+      "title": "{{name}} est un as !",
+      "text": "Cinq victoires sur des chasseurs ennemis : {{name}} entre dans la légende de l'escadrille. La précision et la résistance progressent."
+    },
+    "promotion": {
+      "title": "Promotion",
+      "text": "{{name}} est promu {{rank}}. La précision et la résistance progressent."
+    },
+    "death": {
+      "title": "{{name}} est tombé",
+      "text": "{{name}} ne rentrera pas. Son nom est inscrit au mémorial de l'escadrille."
+    }
+  },
   "guide": {
     "welcome": {
       "title": "Bienvenue, commandant",
-      "hint": "10 mai 1940",
+      "hint": "Ta première journée",
       "text": "L'Allemagne attaque à l'ouest. Tu commandes cette base aérienne et son escadrille de D.520. La bataille ne s'arrête jamais : chaque avion ennemi abattu compte dans ton score. Tu tiens le journal de l'escadrille : chaque retour de mission y écrit une page. Je te guide pour la première journée.",
       "begin": "Faire le tutoriel",
       "decline": "Ne pas le faire"
@@ -735,6 +754,22 @@
       "explosionAlone": "Un {{aircraft}} en feu a explosé sur la piste.",
       "explosionKilled": "Un {{aircraft}} en feu a explosé sur la piste ; {{pilot}} est tué.",
       "explosionSafe": "Un {{aircraft}} en feu a explosé sur la piste ; {{pilot}} a été évacué.",
+      "life": "Vie du camp",
+      "lifeSomeone": "un camarade",
+      "lifeTopics": {
+        "0": "{{pilot}} a passé la soirée à réparer la radio du mess : elle grésille encore, mais elle marche.",
+        "1": "Un cultivateur du voisinage a apporté des œufs à l'escadrille ; le cuisinier en a fait une omelette pour tout le monde.",
+        "2": "La pluie a trempé les tentes cette nuit ; les mécaniciens ont tout fait sécher au soleil du matin.",
+        "3": "{{pilot}} a écrit à sa famille ; la lettre partira avec le prochain camion du courrier.",
+        "4": "Un convoi de ravitaillement s'est arrêté au camp ; le chauffeur a donné des nouvelles du front.",
+        "5": "Le chien de la base a de nouveau volé une saucisse au mess ; personne n'a voulu le punir.",
+        "6": "{{pilot}} a gagné aux cartes la ration de chocolat de toute la table.",
+        "7": "Le vent a couché la manche à air ; les mécaniciens l'ont relevée avant la première patrouille.",
+        "8": "Une partie de football improvisée a opposé les mécaniciens aux pilotes ; les mécaniciens ont gagné.",
+        "9": "Un orage a éclaté au-dessus du camp ; l'escadrille l'a regardé depuis le hangar, un café à la main.",
+        "10": "{{pilot}} a trouvé un harmonica dans un sac du magasin et en joue le soir devant les tentes.",
+        "11": "L'officier de garde a fait le tour des avions à l'aube ; il n'a rien dit, mais il a serré la main de chaque mécanicien."
+      },
       "gift": "Don",
       "giftResource": "{{from}} ({{site}}) : {{quantity}} {{resource}}.",
       "giftPilot": "{{from}} ({{site}}) : le pilote {{name}}.",

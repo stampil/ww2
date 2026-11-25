@@ -8,7 +8,7 @@ use Ww2\Mission\EnemyType;
 
 /**
  * What a pilot has done: the missions flown and the ones that succeeded, the air combats fought, the victories over enemy aircraft, the ground attacks that succeeded and the aircraft lost.
- * The rank follows the missions that succeeded; the medals and the title of ace follow the victories, and the victories are kept by the type of the enemy.
+ * The rank follows the missions that succeeded; the medals follow the victories and the title of ace the victories over fighters, and the victories are kept by the type of the enemy.
  */
 final readonly class PilotRecord
 {
@@ -22,6 +22,7 @@ final readonly class PilotRecord
 
     /**
      * @param array<string, int> $victoriesOver the victories over each type of enemy, by the name of the type; the victories of before the types were kept are in the total only
+     * @param int $fighterVictories the victories over fighters and over bombers, as far as the type of the enemy was kept
      */
     public function __construct(
         public int $missionsFlown = 0,
@@ -31,6 +32,8 @@ final readonly class PilotRecord
         public int $groundSuccesses = 0,
         public int $aircraftLost = 0,
         public array $victoriesOver = [],
+        public int $fighterVictories = 0,
+        public int $bomberVictories = 0,
     ) {
     }
 
@@ -84,11 +87,11 @@ final readonly class PilotRecord
 
     public function isAce(): bool
     {
-        return $this->victories >= self::ACE_VICTORIES;
+        return $this->fighterVictories >= self::ACE_VICTORIES;
     }
 
     /**
-     * @return array{missionsFlown: int, missionsSucceeded: int, airCombats: int, victories: int, groundSuccesses: int, aircraftLost: int, medals: int, isAce: bool, victoriesOver: list<array{enemy: string, victories: int}>}
+     * @return array{missionsFlown: int, missionsSucceeded: int, airCombats: int, victories: int, fighterVictories: int, bomberVictories: int, groundSuccesses: int, aircraftLost: int, medals: int, isAce: bool, victoriesOver: list<array{enemy: string, victories: int}>}
      */
     public function toArray(): array
     {
@@ -102,6 +105,8 @@ final readonly class PilotRecord
             'missionsSucceeded' => $this->missionsSucceeded,
             'airCombats' => $this->airCombats,
             'victories' => $this->victories,
+            'fighterVictories' => $this->fighterVictories,
+            'bomberVictories' => $this->bomberVictories,
             'groundSuccesses' => $this->groundSuccesses,
             'aircraftLost' => $this->aircraftLost,
             'medals' => $this->medals(),

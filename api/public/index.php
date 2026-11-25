@@ -21,6 +21,7 @@ use Ww2\Base\Battle;
 use Ww2\Base\BattleStore;
 use Ww2\Base\CampStore;
 use Ww2\Base\Garrison;
+use Ww2\Base\LifeEvents;
 use Ww2\Base\EventLog;
 use Ww2\Base\Gifts;
 use Ww2\Base\Hangar;
@@ -104,7 +105,7 @@ $stationings = new Stationings($database, $baseStore, $baseFounder, $stationingS
 $missionGenerator = new MissionGenerator();
 $attacks = new Attacks($bases, $camps, $garrison, $holdings, $activity, $stationings, $missionGenerator, $squadrons, $events, $clocks);
 $headquarters = new Headquarters($database, $baseStore, $missions, $squadrons, $clocks, $hangarStore, $events, $battleStore, $missionGenerator, new WeatherForecast(), new MissionResolver(), $alerts, $stationingStore, $camps, $attacks, $bases, $garrison);
-$overview = new BaseOverview($baseStore, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $squadrons, $events, $clocks, $bases, $stationings, $camps, $attacks, new SupplyIncome($database, $baseStore, $bases, $sitePlaces), $garrison);
+$overview = new BaseOverview($baseStore, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $squadrons, $events, $clocks, $bases, $stationings, $camps, $attacks, new SupplyIncome($database, $baseStore, $bases, $sitePlaces), $garrison, new LifeEvents($database, $events, $squadrons));
 $gifts = new Gifts($database, $baseStore, $squadrons, $missions, $hangarStore, $bases, $events, $stationingStore, $clocks);
 $baseController = new BaseController($overview, $warehouse, $workshop, $headquarters, $hangar, $roster, $upgrades, $battle, $alerts, $bases, $session, $gifts, $stationings, $holdings, $events, new Rebuilding($database, $baseStore, $camps), $activity);
 $worldController = new WorldController($bases, $overview, $session, $holdings);

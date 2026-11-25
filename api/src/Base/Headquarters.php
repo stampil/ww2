@@ -18,6 +18,7 @@ use Ww2\Mission\MissionType;
 use Ww2\Mission\WeatherForecast;
 use Ww2\Squadron\Aircraft;
 use Ww2\Squadron\AircraftCategory;
+use Ww2\Squadron\PilotProgress;
 use Ww2\Squadron\PilotRecord;
 use Ww2\Squadron\SquadronStore;
 use Ww2\World\Bases;
@@ -170,14 +171,18 @@ final class Headquarters
                 $flyable[$aircraftId] = $guest->aircraft;
             }
             $report = $this->resolver->resolve($flight, $this->squadrons->pilotsById($baseId), $flyable, $duels);
-            $this->applyReport($baseId, $report, $gameSeconds, $this->alerts->enemiesOf($baseId, $missionId, $this->world->clanOfBase($baseId)));
+            $progress = $this->applyReport($baseId, $report, $gameSeconds, $this->alerts->enemiesOf($baseId, $missionId, $this->world->clanOfBase($baseId)));
             $attack = $this->attacks->resolve($baseId, $flight, $report, $gameSeconds);
             $this->missions->remove($missionId);
             $spotted = false;
             if ($report->success && $report->type === MissionType::Reconnaissance) {
                 $spotted = $this->spotMission($baseId);
             }
-            $this->events->record($baseId, $report->toArray() + ['spottedMission' => $spotted, 'targetSite' => $flight->targetSite, 'attack' => $attack]);
+            $entry = $report->toArray();
+            foreach ($report->crews as $place => $crew) {
+                $entry['crews'][$place] += $progress[$crew->pilotId]->toArray();
+            }
+            $this->events->record($baseId, $entry + ['spottedMission' => $spotted, 'targetSite' => $flight->targetSite, 'attack' => $attack]);
         });
     }
 
@@ -266,11 +271,13 @@ final class Headquarters
 
     /**
      * @param array<int, EnemyType> $enemies the enemy each aircraft of the flight met, by the id of the aircraft
+     * @return array<int, PilotProgress> what the flight made of each pilot of the crews, by the id of the pilot
      */
-    private function applyReport(int $baseId, MissionReport $report, int $gameSeconds, array $enemies): void
+    private function applyReport(int $baseId, MissionReport $report, int $gameSeconds, array $enemies): array
     {
+        $progress = [];
         foreach ($report->crews as $crew) {
-            $this->squadrons->recordFlight($crew->pilotId, PilotRecord::ofFlight($report->type->isAirCombat(), $report->type->isGroundStrike(), $crew->succeeded, $crew->aircraftLost, $enemies[$crew->aircraftId]));
+            $progress[$crew->pilotId] = $this->squadrons->recordFlight($crew->pilotId, PilotRecord::ofFlight($report->type->isAirCombat(), $report->type->isGroundStrike(), $crew->succeeded, $crew->aircraftLost, $enemies[$crew->aircraftId]));
             if ($crew->pilotKilled) {
                 $this->squadrons->bury($crew->pilotId);
             } else {
@@ -301,6 +308,8 @@ final class Headquarters
             }
             $this->battles->addKills($baseId, $kills);
         }
+
+        return $progress;
     }
 
     /**

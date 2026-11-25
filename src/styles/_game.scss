@@ -1845,18 +1845,27 @@ $notebook-edge-height: 60;
 
   th,
   td {
-    padding: 0.1rem 0.4rem;
+    padding: 0.1rem 0.25rem;
     border-bottom: 1px solid rgba($frame, 0.4);
     font-weight: 400;
     text-align: right;
+
+    @include from('medium') {
+      padding: 0.1rem 0.4rem;
+    }
   }
 
   thead th {
     color: $gold;
-    font-size: 0.7rem;
+    font-size: 0.62rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
+
+    @include from('medium') {
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+    }
   }
 
   th:first-child {
@@ -2051,6 +2060,27 @@ $dossier-foot-height: 34;
 .medal-none {
   margin: 0;
   color: $muted-text;
+}
+
+// The illustrated popin of a promotion, a new ace or a death.
+.milestone-picture {
+  display: block;
+  width: 100%;
+  max-height: 55vh;
+  border: 2px solid $outline;
+  object-fit: cover;
+}
+
+.milestone-text {
+  margin: 0.6rem 0 0;
+  color: $text;
+  font-size: 0.9rem;
+}
+
+.assignment-list {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.8rem;
 }
 
 // What a raid does to a camp: the defense it has left, and the buildings that stay destroyed until they are built again.

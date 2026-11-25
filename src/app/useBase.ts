@@ -73,6 +73,9 @@ export type PilotRecord = {
   missionsSucceeded: number
   airCombats: number
   victories: number
+  /** The victories over fighters and over bombers; the title of ace counts the first. */
+  fighterVictories: number
+  bomberVictories: number
   groundSuccesses: number
   aircraftLost: number
   medals: number
@@ -80,6 +83,8 @@ export type PilotRecord = {
   /** The victories over each type of enemy; those won before the types were kept are in `victories` only. */
   victoriesOver: { enemy: EnemyType; victories: number }[]
 }
+/** The camps a pilot has been assigned to, the first first, and the day of the game they were assigned. */
+export type PilotAssignment = { site: string; since: string }
 export type Pilot = {
   id: number
   name: string
@@ -89,6 +94,7 @@ export type Pilot = {
   effectiveAccuracy: number
   effectiveResilience: number
   record: PilotRecord
+  assignments: PilotAssignment[]
 }
 /** A pilot of the base who died, as the memorial keeps them. */
 export type FallenPilot = { name: string; rank: number; record: PilotRecord }
@@ -167,6 +173,9 @@ export type MissionReport = {
     burning: boolean
     aircraftLost: boolean
     pilotKilled: boolean
+    /** The rank the flight promoted the pilot to, and whether it made them an ace; absent from the reports kept before they were told. */
+    promotedTo?: number | null
+    becameAce?: boolean
     /** The gauges of the pilot after the flight; absent from the reports kept before the journal told them. */
     fatigue?: number
     stress?: number
@@ -190,10 +199,12 @@ export type GiftEvent = {
 export type LandingEvent = { kind: 'landing'; id: number; from: string; site: string; aircraftName: string; fuel: number; ammunition: number; materials?: number; supplies?: number }
 /** The base took a camp, or let one go, when an aircraft landed on it or the last one left. */
 export type CampEvent = { kind: 'campTaken'; id: number; site: string } | { kind: 'campLost'; id: number; site: string; capturedBy?: string }
+/** A little happening of the life of the camp, numbered among those the journal can tell, with a pilot of the camp it may name. */
+export type LifeEvent = { kind: 'life'; id: number; topic: number; pilotName: string | null }
 /** A raid by another player hurt the camp: who flew it, how much defense it cost, the building it destroyed and whether an aircraft was lost. */
 export type RaidedEvent = { kind: 'raided'; id: number; site: string; by: string; defenseLost: number; building: string | null; aircraftLost: boolean }
 /** What happened at the base, with the game time it happened at, which the events kept before the journal dated them do not have; the newest event comes first. */
-export type BaseEvent = (MissionReport | ExplosionEvent | GiftEvent | LandingEvent | CampEvent | RaidedEvent) & { gameTime?: string }
+export type BaseEvent = (MissionReport | ExplosionEvent | GiftEvent | LandingEvent | CampEvent | RaidedEvent | LifeEvent) & { gameTime?: string }
 
 export type UpgradeName = 'hangar' | 'workshop' | 'warehouse'
 /** What the command points buy for a building; the cost is null at the top level. */

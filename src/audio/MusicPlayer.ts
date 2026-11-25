@@ -1,4 +1,6 @@
-import { BEATS_PER_MINUTE, bassNotes, drumHits, harmonyNotes, LOOP_BEATS, MELODY, stabNotes } from './theme'
+import { DEFAULT_MOOD, MOODS } from './moods'
+import type { Mood, MoodSettings } from './moods'
+import { bassNotes, drumHits, harmonyNotes, LOOP_BEATS, MELODY, stabNotes } from './theme'
 import type { Note } from './theme'
 
 type Voice = {
@@ -20,6 +22,13 @@ const SEMITONES_PER_OCTAVE = 12
 const MASTER_GAIN = 0.6
 const LOOKAHEAD_SECONDS = 2
 const CHECK_MILLISECONDS = 500
+const MOOD_FADE_SECONDS = 0.3
+const MOOD_DISCONNECT_MILLISECONDS = 3000
+// The notes the march lowers to turn minor, as pitch classes: the third (D), the sixth (G) and the seventh (A) of B flat.
+const MINOR_LOWERED_PITCH_CLASSES = [2, 7, 9]
+const MINOR_LOWERING_SEMITONES = 1
+// The legato of the parts that are not the tune: their notes keep their length.
+const NO_LEGATO = 1
 const STOP_FADE_SECONDS = 0.05
 const STOP_MILLISECONDS = 150
 const NOISE_SECONDS = 1
@@ -54,6 +63,12 @@ function hertzOf(midi: number): number {
   return A4_HERTZ * 2 ** ((midi - A4_MIDI) / SEMITONES_PER_OCTAVE)
 }
 
+/** The note as the mood plays it: lowered a semitone if it is one the minor mode lowers, then moved up or down. */
+function pitchOf(midi: number, mood: MoodSettings): number {
+  const lowered = mood.isMinor && MINOR_LOWERED_PITCH_CLASSES.includes(midi % SEMITONES_PER_OCTAVE) ? midi - MINOR_LOWERING_SEMITONES : midi
+  return lowered + mood.transposeSemitones
+}
+
 /** Whether the player has not turned the music off; it is on until they do. */
 function wantsMusic(): boolean {
   try {
@@ -79,8 +94,13 @@ function rememberChoice(wantsIt: boolean): void {
 export class MusicPlayer {
   private context: AudioContext | undefined
   private master: GainNode | undefined
+  // What the loops of the mood being played go through: it fades out when another mood takes over.
+  private bus: GainNode | undefined
   private timer: number | undefined
   private nextLoopSeconds = 0
+  private playedMood: Mood = DEFAULT_MOOD
+  // The moods asked for, the last one first to be heard: when it is taken back, the one before plays again.
+  private readonly askedMoods: Mood[] = []
   private isWaitingForGesture = false
   private readonly listeners = new Set<() => void>()
 
@@ -140,10 +160,22 @@ export class MusicPlayer {
     master.gain.value = MASTER_GAIN
     master.connect(context.destination)
     this.master = master
+    this.bus = this.newBus(context)
     this.nextLoopSeconds = context.currentTime + END_MARGIN_SECONDS
-    this.scheduleDueLoops(context, master)
-    this.timer = window.setInterval(() => this.scheduleDueLoops(context, master), CHECK_MILLISECONDS)
+    this.scheduleDueLoops(context)
+    this.timer = window.setInterval(() => this.scheduleDueLoops(context), CHECK_MILLISECONDS)
     this.notify()
+  }
+
+  /** Asks for a mood of the theme until the returned function is called; the last mood asked for is the one played. */
+  pushMood(mood: Mood): () => void {
+    this.askedMoods.push(mood)
+    this.followAskedMoods()
+
+    return () => {
+      this.askedMoods.splice(this.askedMoods.lastIndexOf(mood), 1)
+      this.followAskedMoods()
+    }
   }
 
   stop(): void {
@@ -153,17 +185,45 @@ export class MusicPlayer {
     }
     window.clearInterval(this.timer)
     this.context = undefined
+    this.bus = undefined
     this.notify()
     this.master!.gain.setTargetAtTime(0, context.currentTime, STOP_FADE_SECONDS)
     window.setTimeout(() => void context.close(), STOP_MILLISECONDS)
   }
 
   /** Puts the next loop in the audio graph once it is about to start. */
-  private scheduleDueLoops(context: AudioContext, destination: AudioNode): void {
+  private scheduleDueLoops(context: AudioContext): void {
+    const mood = MOODS[this.playedMood]
     while (this.nextLoopSeconds < context.currentTime + LOOKAHEAD_SECONDS) {
-      renderLoop(context, destination, this.nextLoopSeconds)
-      this.nextLoopSeconds += (LOOP_BEATS * SECONDS_PER_MINUTE) / BEATS_PER_MINUTE
+      renderLoop(context, this.bus!, this.nextLoopSeconds, mood)
+      this.nextLoopSeconds += (LOOP_BEATS * SECONDS_PER_MINUTE) / mood.beatsPerMinute
     }
+  }
+
+  private newBus(context: AudioContext): GainNode {
+    const bus = context.createGain()
+    bus.connect(this.master!)
+
+    return bus
+  }
+
+  /** Plays the mood asked for last, or the march when none is asked for: the loops of the mood before fade out and the new mood starts from its fanfare. */
+  private followAskedMoods(): void {
+    const wanted = this.askedMoods[this.askedMoods.length - 1] ?? DEFAULT_MOOD
+    if (wanted === this.playedMood) {
+      return
+    }
+    this.playedMood = wanted
+    const context = this.context
+    if (context === undefined) {
+      return
+    }
+    const previousBus = this.bus!
+    previousBus.gain.setTargetAtTime(0, context.currentTime, MOOD_FADE_SECONDS)
+    window.setTimeout(() => previousBus.disconnect(), MOOD_DISCONNECT_MILLISECONDS)
+    this.bus = this.newBus(context)
+    this.nextLoopSeconds = context.currentTime + END_MARGIN_SECONDS
+    this.scheduleDueLoops(context)
   }
 
   private notify(): void {
@@ -171,21 +231,34 @@ export class MusicPlayer {
   }
 }
 
-/** Schedules every note and drum hit of one loop of the theme, from a time on the clock of the context. */
-export function renderLoop(context: BaseAudioContext, destination: AudioNode, startSeconds: number): void {
-  const secondsPerBeat = SECONDS_PER_MINUTE / BEATS_PER_MINUTE
-  const playNotes = (notes: Note[], voice: Voice): void => {
+/** Schedules every note and drum hit of one loop of the theme in a mood, from a time on the clock of the context. */
+export function renderLoop(context: BaseAudioContext, destination: AudioNode, startSeconds: number, mood: MoodSettings): void {
+  const secondsPerBeat = SECONDS_PER_MINUTE / mood.beatsPerMinute
+  const playNotes = (notes: Note[], voice: Voice, legato: number): void => {
+    const brightVoice = { ...voice, cutoffHertz: voice.cutoffHertz * mood.brightness }
     for (const note of notes) {
-      playNote(context, destination, voice, startSeconds + note.start * secondsPerBeat, note.length * secondsPerBeat, hertzOf(note.midi))
+      playNote(context, destination, brightVoice, startSeconds + note.start * secondsPerBeat, note.length * secondsPerBeat * legato, hertzOf(pitchOf(note.midi, mood)))
     }
   }
-  playNotes(MELODY, LEAD)
-  playNotes(harmonyNotes(), HARMONY)
-  playNotes(stabNotes(), STABS)
-  playNotes(bassNotes(), BASS)
-  const noise = noiseBuffer(context)
+  playNotes(MELODY, LEAD, mood.legato)
+  if (mood.parts.harmony) {
+    playNotes(harmonyNotes(), HARMONY, mood.legato)
+  }
+  if (mood.parts.stabs) {
+    playNotes(stabNotes(), STABS, NO_LEGATO)
+  }
+  if (mood.parts.bass) {
+    playNotes(bassNotes(), BASS, NO_LEGATO)
+  }
+  if (mood.parts.drums === 'none') {
+    return
+  }
   const hits = drumHits()
   hits.kick.forEach((beat) => playKick(context, destination, startSeconds + beat * secondsPerBeat))
+  if (mood.parts.drums === 'kick') {
+    return
+  }
+  const noise = noiseBuffer(context)
   hits.snare.forEach((beat) => playNoise(context, destination, noise, startSeconds + beat * secondsPerBeat, SNARE_SECONDS, SNARE_GAIN, SNARE_HIGH_PASS_HERTZ))
   hits.ghost.forEach((beat) => playNoise(context, destination, noise, startSeconds + beat * secondsPerBeat, GHOST_SECONDS, GHOST_GAIN, SNARE_HIGH_PASS_HERTZ))
   hits.crash.forEach((beat) => playNoise(context, destination, noise, startSeconds + beat * secondsPerBeat, CRASH_SECONDS, CRASH_GAIN, CRASH_HIGH_PASS_HERTZ))

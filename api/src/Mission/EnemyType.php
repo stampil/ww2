@@ -19,6 +19,11 @@ enum EnemyType: string
     case Amiot143 = 'amiot143';
     case Leo451 = 'leo451';
 
+    public function isFighter(): bool
+    {
+        return $this === self::Bf109 || $this === self::VichyD520 || $this === self::FrenchD520;
+    }
+
     /**
      * The enemy of an alert: among those that a side meets in that kind of alert, the one the number of the alert picks.
      */

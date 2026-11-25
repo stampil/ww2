@@ -264,13 +264,16 @@
       "memorialEmpty": "No one has fallen yet.",
       "pilot": "Pilot",
       "missions": "Missions",
-      "victoriesShort": "Victories",
+      "fightersShort": "Fighters",
+      "bombersShort": "Bombers",
       "ratio": "Ratio",
       "ace": "Ace",
       "missionsFlown": "Missions",
       "missionsSucceeded": "Missions succeeded",
       "airCombats": "Air combats",
       "victories": "Air victories",
+      "fighterVictories": "Of which over fighters",
+      "bomberVictories": "Of which over bombers",
       "groundSuccesses": "Ground attacks succeeded",
       "aircraftLost": "Aircraft lost",
       "marks": "Aircraft shot down",
@@ -279,6 +282,8 @@
       "noVictory": "No victory",
       "medals": "Medals",
       "noMedal": "No medal.",
+      "assignments": "Assignments",
+      "assignedSince": "{{site}}, since {{date}}",
       "skills": "Skills"
     },
     "categories": {
@@ -286,10 +291,24 @@
       "bomber": "Bomber"
     }
   },
+  "milestone": {
+    "ace": {
+      "title": "{{name}} is an ace!",
+      "text": "Five victories over enemy fighters: {{name}} enters the legend of the squadron. Accuracy and resilience improve."
+    },
+    "promotion": {
+      "title": "Promotion",
+      "text": "{{name}} is promoted to {{rank}}. Accuracy and resilience improve."
+    },
+    "death": {
+      "title": "{{name}} has fallen",
+      "text": "{{name}} will not come back. The name is written in the memorial of the squadron."
+    }
+  },
   "guide": {
     "welcome": {
       "title": "Welcome, commander",
-      "hint": "10 May 1940",
+      "hint": "Your first day",
       "text": "Germany is attacking in the west. You command this air base and its squadron of D.520s. The battle never ends: each enemy aircraft you shoot down counts in your score. You keep the squadron's journal: each return from a mission writes a page in it. I will guide you through the first day.",
       "begin": "Take the tutorial",
       "decline": "No tutorial"
@@ -735,6 +754,22 @@
       "explosionAlone": "A burning {{aircraft}} exploded on the runway.",
       "explosionKilled": "A burning {{aircraft}} exploded on the runway; {{pilot}} is killed.",
       "explosionSafe": "A burning {{aircraft}} exploded on the runway; {{pilot}} was evacuated.",
+      "life": "Life of the camp",
+      "lifeSomeone": "a comrade",
+      "lifeTopics": {
+        "0": "{{pilot}} spent the evening mending the radio of the mess: it still crackles, but it works.",
+        "1": "A farmer from the neighbourhood brought eggs to the squadron; the cook made an omelette for everyone.",
+        "2": "The rain soaked the tents last night; the mechanics dried everything in the morning sun.",
+        "3": "{{pilot}} wrote to the family; the letter will go with the next mail truck.",
+        "4": "A supply convoy stopped at the camp; the driver brought news from the front.",
+        "5": "The dog of the base stole a sausage from the mess again; nobody wanted to punish it.",
+        "6": "{{pilot}} won the chocolate ration of the whole table at cards.",
+        "7": "The wind knocked down the windsock; the mechanics put it back up before the first patrol.",
+        "8": "An improvised game of football pitted the mechanics against the pilots; the mechanics won.",
+        "9": "A storm broke over the camp; the squadron watched it from the hangar, coffee in hand.",
+        "10": "{{pilot}} found a harmonica in a sack from the store and plays it in the evening in front of the tents.",
+        "11": "The officer of the guard walked round the aircraft at dawn; he said nothing, but shook the hand of every mechanic."
+      },
       "gift": "Gift",
       "giftResource": "{{from}} ({{site}}): {{quantity}} {{resource}}.",
       "giftPilot": "{{from}} ({{site}}): the pilot {{name}}.",

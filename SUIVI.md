@@ -11,7 +11,10 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+**Q6 — La résistance du pilote joue dans le 50 % de la DCA** (« 50,3 % et 50,1 % sur 20 000 tirages, quelle que soit la résistance, a ben fait jouer la resistance tien, oui », 25/11, en réponse à mon compte rendu). Lu : tu ne veux pas d'un 50 % identique pour tous : la résistance du pilote doit changer sa chance de mourir quand la DCA détruit son avion (plus de résistance, moins de morts). Ce que j'ai fait par erreur : un tirage de 50 % sans lien avec la résistance (je l'avais écrit comme tel au suivi, et tu l'as relevé). Ce qui existe (relu) : la résistance d'un pilote neuf est tirée entre 40 et 70, les promotions la montent jusqu'à 100, la fatigue au-delà de la limite la fait baisser (résistance effective) ; pour les autres pertes d'avion le pilote meurt si un tirage de 1 à 100 dépasse sa résistance effective : 60 % de morts à 40, 45 % à 55 (la moyenne d'un pilote neuf), 30 % à 70, 0 % à 100. Seul le repos forcé de 10 min pour le pilote sauvé ne change pas. Valeurs de ma main, à trancher :
+- **A** : la même règle que les autres pertes (mort si le tirage dépasse la résistance effective) : 60 % de morts à 40, 45 % à 55, 30 % à 70, 0 % à 100 ; le 50 % de ton message devient « 45 % en moyenne ».
+- **B (ma reco)** : 50 % pour un pilote de résistance 55 (la moyenne d'un pilote neuf), un point de moins pour chaque point de résistance en plus : 65 % de morts à 40, 50 % à 55, 35 % à 70, 5 % à 100 (borné de 0 à 100) ; la résistance effective compte, un pilote fatigué meurt plus.
+- **C** : 50 % à 55, un demi-point par point de résistance : 57,5 % à 40, 50 % à 55, 42,5 % à 70, 27,5 % à 100 : même un pilote parfait peut mourir.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -55,7 +58,9 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : tout est fait.
+| N° | Instruction | Go |
+|---|---|---|
+| Q6 | La résistance du pilote joue dans la chance de mourir quand la DCA détruit son avion | attend ta réponse A, B ou C |
 
 ## Mis de côté
 

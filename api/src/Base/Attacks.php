@@ -206,7 +206,7 @@ final class Attacks
         if ($aircraftIds === [] || $this->random->getInt(1, self::PERCENT) > self::AIRCRAFT_DESTROYED_PERCENT) {
             return false;
         }
-        $this->squadrons->removeAircraft($aircraftIds[$this->random->getInt(0, count($aircraftIds) - 1)]);
+        $this->squadrons->destroyAircraft($aircraftIds[$this->random->getInt(0, count($aircraftIds) - 1)]);
 
         return true;
     }

@@ -230,11 +230,25 @@ final class BaseController
     /**
      * @return array<string, mixed>
      * @throws UnauthorizedException when nobody is signed in
+     * @throws BadRequestException when the order is not understood
      */
-    public function assembleAircraft(): array
+    public function rebuildAircraft(ServerRequestInterface $request): array
     {
         $baseId = $this->ownBaseId();
-        $this->carryOut(fn () => $this->workshop->assembleAircraft($baseId));
+        $wreckId = JsonRequestBody::integers($request, 'wreckId')['wreckId'];
+        $this->carryOut(fn () => $this->hangar->rebuild($baseId, $wreckId));
+
+        return $this->overview->of($baseId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws UnauthorizedException when nobody is signed in
+     */
+    public function recruitMechanic(): array
+    {
+        $baseId = $this->ownBaseId();
+        $this->carryOut(fn () => $this->workshop->recruitMechanic($baseId));
 
         return $this->overview->of($baseId);
     }

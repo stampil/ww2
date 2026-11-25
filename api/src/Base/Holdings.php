@@ -7,6 +7,7 @@ namespace Ww2\Base;
 use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
 use Ww2\Mission\MissionStore;
+use Ww2\Squadron\SquadronFounder;
 use Ww2\Squadron\SquadronStore;
 use Ww2\World\Bases;
 
@@ -26,6 +27,7 @@ final class Holdings
         private readonly EventLog $events,
         private readonly Garrison $garrison,
         private readonly MissionStore $missions,
+        private readonly SquadronFounder $squadronFounder,
     ) {
     }
 
@@ -39,6 +41,7 @@ final class Holdings
         foreach ($this->garrison->atCamp($campId, $gameSeconds) as $aircraftId) {
             $this->squadrons->removeAircraft($aircraftId);
         }
+        $this->squadrons->clearWrecks($campId);
         $this->missions->removeAllOf($campId);
         $this->stationings->sendGuestsHome($campId);
         if ($holderId !== null) {
@@ -46,6 +49,7 @@ final class Holdings
         }
         $this->bases->assign($campId, $captorId);
         $this->baseFounder->foundEmpty($campId);
+        $this->squadronFounder->foundMechanics($campId);
         $this->stationings->add($landing);
         $this->events->record($landing->originBaseId, ['kind' => 'campTaken', 'site' => $this->bases->siteOf($campId)->value]);
     }
@@ -88,6 +92,7 @@ final class Holdings
             if ($nextHolderId !== null) {
                 $this->bases->assign($campId, $nextHolderId);
                 $this->baseFounder->foundEmpty($campId);
+                $this->squadronFounder->foundMechanics($campId);
                 $this->events->record($this->bases->idOf($nextHolderId), ['kind' => 'campTaken', 'site' => $this->bases->siteOf($campId)->value]);
             }
         });

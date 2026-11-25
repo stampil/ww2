@@ -77,7 +77,7 @@ final class Gifts
             if (in_array($aircraftId, $this->hangarStore->groundedAircraftIds($fromBaseId), true)) {
                 throw new BaseException(BaseError::AircraftGrounded);
             }
-            if (count($this->squadrons->aircraftOf($toBaseId)) >= Hangar::PLACES) {
+            if ($this->squadrons->placesTakenAt($toBaseId) >= Hangar::PLACES) {
                 throw new BaseException(BaseError::HangarFull);
             }
             $this->squadrons->moveAircraft($aircraftId, $toBaseId);

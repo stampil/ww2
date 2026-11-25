@@ -212,6 +212,8 @@
   },
   "squadron": {
     "aircraftNumber": "no. {{number}}",
+    "serviceDays_one": "{{count}} day of service",
+    "serviceDays_other": "{{count}} days of service",
     "signInHint": "Sign in to see your squadron.",
     "pilots": "Pilots",
     "aircraft": "Aircraft",
@@ -695,10 +697,13 @@
       "text": "This building is no use until it is built again.",
       "button": "Rebuild ({{cost}} materials)"
     },
-    "assemble": {
-      "title": "Assemble an aircraft",
-      "text": "A lost aircraft is replaced with one part of each, already made: engine, wings, fuselage and armament.",
-      "button": "Assemble an aircraft"
+    "staff": {
+      "title": "Mechanics",
+      "mechanic": "Mechanic {{number}}",
+      "skill": "Skill",
+      "recruit": "Recruit a mechanic",
+      "cost": "{{cost}} supplies, skill drawn at random",
+      "button": "Recruit"
     },
     "income": "Supplies from the front: {{count}} a minute",
     "upgrade": {
@@ -720,7 +725,10 @@
       "unknownDamage": "Damage unknown: the aircraft must be inspected before it is repaired.",
       "repair": "Repair ({{time}})",
       "repairing": "Being repaired: {{time}}",
-      "onFire": "On fire: explodes in {{time}}"
+      "onFire": "On fire: explodes in {{time}}",
+      "destroyed": "Destroyed",
+      "rebuild": "Rebuild ({{time}})",
+      "rebuilding": "Rebuilding: {{time}}"
     },
     "event": {
       "explosion": "Explosion on the runway",
@@ -857,6 +865,7 @@
       "insufficientMaterials": "Not enough materials.",
       "workshopBusy": "Every bench is taken.",
       "noMechanicFree": "No mechanic is free.",
+      "tooManyMechanics": "The workshop cannot house more mechanics.",
       "unknownMission": "This mission is no longer available.",
       "unknownAlert": "This call no longer exists.",
       "alertNotDue": "This call has not come yet.",

@@ -24,10 +24,10 @@ const BUSH_WIDTH_RANGE_METERS = 1.2
 const RANDOM_RESOLUTION = 1000
 const FULL_TURN_RADIANS = 2 * Math.PI
 
-/** A flat rectangle of a terrain texture, repeated to fill it, in the color of that terrain until the picture is loaded. */
-function texturedPlane(url: string, colorUntilLoaded: number, widthMeters: number, lengthMeters: number, tileMeters: number): THREE.Mesh {
+/** A flat rectangle of a terrain texture, repeated to fill it, in the color of that terrain until the picture is loaded, which `loaded` settles on. */
+function texturedPlane(url: string, colorUntilLoaded: number, widthMeters: number, lengthMeters: number, tileMeters: number): { mesh: THREE.Mesh; loaded: Promise<void> } {
   const material = new THREE.MeshBasicMaterial({ color: colorUntilLoaded, side: THREE.DoubleSide })
-  new THREE.TextureLoader().load(url, (texture) => {
+  const loaded = new THREE.TextureLoader().loadAsync(url).then((texture) => {
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping
     texture.repeat.set(widthMeters / tileMeters, lengthMeters / tileMeters)
@@ -36,7 +36,7 @@ function texturedPlane(url: string, colorUntilLoaded: number, widthMeters: numbe
     material.color.set(0xffffff)
     material.needsUpdate = true
   })
-  return new THREE.Mesh(new THREE.PlaneGeometry(widthMeters, lengthMeters), material)
+  return { mesh: new THREE.Mesh(new THREE.PlaneGeometry(widthMeters, lengthMeters), material), loaded }
 }
 
 /** A number from -1 up to 1 drawn from the seeded random. */
@@ -64,14 +64,21 @@ function scatteredBushes(layoutSeed: number): BushPlacement[] {
 /** The ground an aircraft of the hangar stands on: the grass and the concrete of the terrain, with a few bushes of the game around it, placed by the seed. */
 export class ParkingPad {
   readonly object = new THREE.Group()
+  /** Settles once the grass, the concrete and the bushes are all drawn. */
+  readonly ready: Promise<void>
 
   /** `restHeightMeters` is how high the middle of the aircraft stands above the ground at rest, which the pad is lowered by. */
   constructor(layoutSeed: number, restHeightMeters: number) {
     this.object.position.z = -restHeightMeters
-    this.object.add(texturedPlane(GRASS_URL, GRASS_COLOR_UNTIL_LOADED, GRASS_SIZE_METERS, GRASS_SIZE_METERS, GRASS_TILE_METERS))
-    const pad = texturedPlane(CONCRETE_URL, CONCRETE_COLOR_UNTIL_LOADED, PAD_WIDTH_METERS, PAD_LENGTH_METERS, CONCRETE_TILE_METERS)
-    pad.position.z = PAD_LIFT_METERS
-    this.object.add(pad)
-    this.object.add(new Bushes(scatteredBushes(layoutSeed)).object)
+    const grass = texturedPlane(GRASS_URL, GRASS_COLOR_UNTIL_LOADED, GRASS_SIZE_METERS, GRASS_SIZE_METERS, GRASS_TILE_METERS)
+    const concrete = texturedPlane(CONCRETE_URL, CONCRETE_COLOR_UNTIL_LOADED, PAD_WIDTH_METERS, PAD_LENGTH_METERS, CONCRETE_TILE_METERS)
+    concrete.mesh.position.z = PAD_LIFT_METERS
+    const bushes = new Bushes(scatteredBushes(layoutSeed))
+    this.object.add(grass.mesh, concrete.mesh, bushes.object)
+    this.ready = this.untilAllLoaded([grass.loaded, concrete.loaded, bushes.ready])
+  }
+
+  private async untilAllLoaded(loads: Promise<void>[]): Promise<void> {
+    await Promise.all(loads)
   }
 }

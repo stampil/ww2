@@ -270,7 +270,7 @@ final class Headquarters
                 $this->squadrons->updatePilotGauges($crew->pilotId, $crew->fatigue, $crew->stress);
             }
             if ($crew->aircraftLost) {
-                $this->squadrons->removeAircraft($crew->aircraftId);
+                $this->squadrons->destroyAircraft($crew->aircraftId);
                 continue;
             }
             $this->squadrons->setAircraftDurability($crew->aircraftId, $crew->durability);

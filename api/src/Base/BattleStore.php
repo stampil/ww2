@@ -15,6 +15,8 @@ final class BattleStore
     private const GAME_TABLES = [
         'pilots',
         'fallen_pilots',
+        'aircraft_wrecks',
+        'mechanics',
         'aircraft',
         'missions',
         'base_events',

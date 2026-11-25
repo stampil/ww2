@@ -4,7 +4,9 @@ import Icon from './Icon'
 import GoodsPicture from './GoodsPicture'
 import OrderButton from './OrderButton'
 import Pane from './Pane'
-import { assembleShortage, productionShortage } from './shortages'
+import Gauge from './Gauge'
+import { GAUGE_MAX } from './gaugeMax'
+import { productionShortage, recruitMechanicShortage } from './shortages'
 import type { Base, Part, UpgradeInfo, UpgradeName } from './useBase'
 import UpgradeCard from './UpgradeCard'
 
@@ -13,15 +15,17 @@ type Props = {
   jobs: Base['workshop']['jobs']
   /** The materials the camp has, which the parts are made of. */
   materials: number
+  /** The supplies the camp has, which a new mechanic is paid from. */
+  supplies: number
   onProduce: (part: Part, withMechanic: boolean) => Promise<string | null>
-  onAssemble: () => Promise<string | null>
+  onRecruitMechanic: () => Promise<string | null>
   upgrade: UpgradeInfo
   commandPoints: number
   onUpgrade: (upgrade: UpgradeName) => Promise<string | null>
 }
 
-/** The spare parts the workshop can make, with or without a mechanic, the aircraft that the four parts make up, and the ones being made. */
-function WorkshopPanel({ workshop, jobs, materials, onProduce, onAssemble, upgrade, commandPoints, onUpgrade }: Props) {
+/** The spare parts the workshop can make, with or without a mechanic, the mechanics, who can be recruited, and the parts being made. */
+function WorkshopPanel({ workshop, jobs, materials, supplies, onProduce, onRecruitMechanic, upgrade, commandPoints, onUpgrade }: Props) {
   const { t } = useTranslation()
 
   return (
@@ -65,12 +69,39 @@ function WorkshopPanel({ workshop, jobs, materials, onProduce, onAssemble, upgra
           <UpgradeCard info={upgrade} commandPoints={commandPoints} onBuy={onUpgrade} />
         </ul>
       </Pane>
-      <Pane title={t('base.assemble.title')}>
-        <p className="note">{t('base.assemble.text')}</p>
-        <OrderButton onOrder={onAssemble} reasonKey={assembleShortage(workshop)}>
-          <Icon name="aircraft" />
-          {t('base.assemble.button')}
-        </OrderButton>
+      <Pane title={t('base.staff.title')}>
+        <ul className="cards">
+          {workshop.mechanics.map((mechanic, index) => (
+            <li key={mechanic.id} className="card">
+              <div className="card-head">
+                <span className="portrait" aria-hidden="true">
+                  <Icon name="mechanic" />
+                </span>
+                <div>
+                  <strong>{t('base.staff.mechanic', { number: index + 1 })}</strong>
+                </div>
+              </div>
+              <Gauge label={t('base.staff.skill')} value={mechanic.skill} max={GAUGE_MAX} higherIsBetter />
+            </li>
+          ))}
+          <li className="card">
+            <div className="card-head">
+              <span className="portrait" aria-hidden="true">
+                <Icon name="recruit" />
+              </span>
+              <div>
+                <strong>{t('base.staff.recruit')}</strong>
+                <span>{t('base.staff.cost', { cost: workshop.mechanicRecruitment.cost })}</span>
+              </div>
+            </div>
+            <div className="card-actions">
+              <OrderButton onOrder={onRecruitMechanic} reasonKey={recruitMechanicShortage(workshop, supplies)}>
+                <Icon name="recruit" />
+                {t('base.staff.button')}
+              </OrderButton>
+            </div>
+          </li>
+        </ul>
       </Pane>
       {jobs.length > 0 && (
         <Pane title={t('base.running')}>

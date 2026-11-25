@@ -40,6 +40,7 @@ enum BaseError: string
     case PilotResting = 'pilotResting';
     case NothingToRest = 'nothingToRest';
     case TooManyPilots = 'tooManyPilots';
+    case TooManyMechanics = 'tooManyMechanics';
     case UpgradeAtMaximum = 'upgradeAtMaximum';
     case InsufficientCommandPoints = 'insufficientCommandPoints';
     case NoBase = 'noBase';

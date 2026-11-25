@@ -9,12 +9,14 @@ use Ww2\Clock\GameClockStore;
 use Ww2\Database\Database;
 use Ww2\Mission\MissionStore;
 use Ww2\Squadron\Aircraft;
+use Ww2\Squadron\AircraftWreck;
 use Ww2\Squadron\Pilot;
 use Ww2\Squadron\SquadronStore;
 
 /**
  * The hangar and the runway: an aircraft back damaged is inspected by a free mechanic before its damage is known and repaired;
  * a repair takes a free mechanic and a spare part for each destroyed module. An aircraft on fire that is not repaired in time explodes.
+ * A destroyed aircraft keeps its place as a wreck, which a free mechanic and one part of each sort rebuild in a day, less the skill of the staff.
  */
 final class Hangar
 {
@@ -23,6 +25,10 @@ final class Hangar
     private const INSPECTION_SECONDS = 20;
     private const HULL_SECONDS_PER_POINT = 1;
     private const MODULE_SECONDS = 30;
+    private const REBUILD_SECONDS = 86400;
+    // The staff cuts the rebuild by its average skill, in percent, up to this much.
+    private const MAX_REBUILD_REDUCTION_PERCENT = 50;
+    private const PERCENT = 100;
 
     public function __construct(
         private readonly Database $database,
@@ -42,7 +48,7 @@ final class Hangar
      * its destroyed modules and the length of its repair are not known (null).
      *
      * @param GameClock $clock the clock of the base, read once for the whole answer
-     * @return array{aircraft: list<array{aircraftId: int, needsInspection: bool, inspectionDurationSeconds: int, inspectionSeconds: int|null, destroyedModules: list<string>|null, repairDurationSeconds: int|null, repairSeconds: int|null, fireSeconds: int|null}>}
+     * @return array{aircraft: list<array{aircraftId: int, needsInspection: bool, inspectionDurationSeconds: int, inspectionSeconds: int|null, destroyedModules: list<string>|null, repairDurationSeconds: int|null, repairSeconds: int|null, fireSeconds: int|null}>, wrecks: list<array<string, mixed>>}
      */
     public function describe(int $baseId, GameClock $clock): array
     {
@@ -67,7 +73,66 @@ final class Hangar
             ];
         }
 
-        return ['aircraft' => $states];
+        $rebuilds = $this->hangar->rebuildsOf($baseId);
+        $wrecks = [];
+        foreach ($this->squadrons->wrecksOf($baseId) as $wreck) {
+            $wrecks[] = $this->describeWreck($baseId, $wreck, $rebuilds[$wreck->id] ?? null, $clock);
+        }
+
+        return ['aircraft' => $states, 'wrecks' => $wrecks];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function describeWreck(int $baseId, AircraftWreck $wreck, ?int $finishGameSecond, GameClock $clock): array
+    {
+        return [
+            'wreckId' => $wreck->id,
+            'number' => $wreck->number,
+            'livery' => $wreck->livery->value,
+            'model' => $wreck->model->toArray(),
+            'serviceDays' => $wreck->serviceDays(time()),
+            'rebuildDurationSeconds' => $this->rebuildDuration($baseId),
+            'rebuildSeconds' => $finishGameSecond === null ? null : max(0, $finishGameSecond - $clock->gameSeconds),
+        ];
+    }
+
+    /**
+     * Starts the rebuild of a destroyed aircraft, which takes a free mechanic and one spare part of each sort.
+     *
+     * @throws BaseException when the wreck is not the base's or is being rebuilt already, or when no mechanic is free or a spare part is missing
+     */
+    public function rebuild(int $baseId, int $wreckId): void
+    {
+        $this->database->transaction(function () use ($baseId, $wreckId): void {
+            $this->bases->lockResources($baseId);
+            $this->camps->assertStanding($baseId, Building::Hangar);
+            $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
+            $wreckIds = array_map(static fn (AircraftWreck $wreck): int => $wreck->id, $this->squadrons->wrecksOf($baseId));
+            if (!in_array($wreckId, $wreckIds, true)) {
+                throw new BaseException(BaseError::UnknownAircraft);
+            }
+            if (isset($this->hangar->rebuildsOf($baseId)[$wreckId])) {
+                throw new BaseException(BaseError::AircraftUnderRepair);
+            }
+            if ($this->mechanics->freeAt($baseId, $gameSeconds) < 1) {
+                throw new BaseException(BaseError::NoMechanicFree);
+            }
+            foreach (SparePart::cases() as $part) {
+                if (!$this->bases->useReadyPart($baseId, $part, $gameSeconds)) {
+                    throw new BaseException(BaseError::MissingSparePart);
+                }
+            }
+            $this->hangar->startRebuild($wreckId, $gameSeconds + $this->rebuildDuration($baseId));
+        });
+    }
+
+    private function rebuildDuration(int $baseId): int
+    {
+        $reduction = min(self::MAX_REBUILD_REDUCTION_PERCENT, $this->mechanics->averageSkillAt($baseId));
+
+        return intdiv(self::REBUILD_SECONDS * (self::PERCENT - $reduction), self::PERCENT);
     }
 
     /**
@@ -164,6 +229,11 @@ final class Hangar
                     $this->explode($baseId, $aircraft[$aircraftId], $fire['pilotId']);
                 }
             }
+            foreach ($this->hangar->rebuildsOf($baseId) as $wreckId => $finishGameSecond) {
+                if ($finishGameSecond <= $gameSeconds) {
+                    $this->squadrons->restoreAircraft($wreckId);
+                }
+            }
         });
     }
 
@@ -184,6 +254,11 @@ final class Hangar
                 return true;
             }
         }
+        foreach ($this->hangar->rebuildsOf($baseId) as $finishGameSecond) {
+            if ($finishGameSecond <= $gameSeconds) {
+                return true;
+            }
+        }
 
         return false;
     }
@@ -192,7 +267,7 @@ final class Hangar
     {
         $pilot = $this->pilotAboard($baseId, $pilotId);
         $this->events->record($baseId, ['kind' => 'explosion', 'aircraftName' => $aircraft->model->name, 'pilotName' => $pilot?->name]);
-        $this->squadrons->removeAircraft($aircraft->id);
+        $this->squadrons->destroyAircraft($aircraft->id);
     }
 
     private function pilotAboard(int $baseId, ?int $pilotId): ?Pilot

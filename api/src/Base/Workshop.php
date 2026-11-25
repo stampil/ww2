@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace Ww2\Base;
 
+use Random\Randomizer;
 use Ww2\Clock\GameClock;
 use Ww2\Clock\GameClockStore;
-use Ww2\Squadron\SquadronFounder;
+use Ww2\Squadron\Mechanic;
 use Ww2\Squadron\SquadronStore;
 use Ww2\Database\Database;
 
 /**
- * The workshop: a few benches, which the upgrades add to, that make spare parts for the aircraft, helped by mechanics who halve the time.
+ * The workshop: a few benches, which the upgrades add to, that make spare parts for the aircraft, helped by mechanics who halve the time, and where mechanics are recruited.
  * Its times run on the game clock.
  */
 final class Workshop
 {
     private const BASE_BENCHES = 2;
     private const MECHANIC_TIME_DIVISOR = 2;
+    private const MECHANIC_COST = 300;
+    public const MAX_MECHANICS = 6;
+    private const MIN_MECHANIC_SKILL = 20;
+    private const MAX_MECHANIC_SKILL = 60;
 
     public function __construct(
         private readonly Database $database,
@@ -27,30 +32,27 @@ final class Workshop
         private readonly Upgrades $upgrades,
         private readonly CampStore $camps,
         private readonly SquadronStore $squadrons,
-        private readonly SquadronFounder $squadronFounder,
+        private readonly Randomizer $random = new Randomizer(),
     ) {
     }
 
     /**
-     * Builds a new aircraft out of the four parts the workshop has made, one of each, to replace one that was lost.
+     * Hires a mechanic, whose skill is drawn, for supplies, up to the number of mechanics the base can house.
      *
-     * @throws BaseException when the workshop is destroyed, the hangar is full, or a part is missing
+     * @throws BaseException when the supplies run short or the base has all the mechanics it can house
      */
-    public function assembleAircraft(int $baseId): void
+    public function recruitMechanic(int $baseId): void
     {
         $this->database->transaction(function () use ($baseId): void {
-            $this->bases->lockResources($baseId);
-            $this->camps->assertStanding($baseId, Building::Workshop);
-            if (count($this->squadrons->aircraftOf($baseId)) >= Hangar::PLACES) {
-                throw new BaseException(BaseError::HangarFull);
+            $resources = $this->bases->lockResources($baseId);
+            if (count($this->squadrons->mechanicsOf($baseId)) >= self::MAX_MECHANICS) {
+                throw new BaseException(BaseError::TooManyMechanics);
             }
-            $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
-            foreach (SparePart::cases() as $part) {
-                if (!$this->bases->useReadyPart($baseId, $part, $gameSeconds)) {
-                    throw new BaseException(BaseError::MissingSparePart);
-                }
+            if ($resources->supplies < self::MECHANIC_COST) {
+                throw new BaseException(BaseError::InsufficientSupplies);
             }
-            $this->squadronFounder->addStartingAircraft($baseId);
+            $this->bases->spendSupplies($baseId, self::MECHANIC_COST);
+            $this->squadrons->addMechanic($baseId, $this->random->getInt(self::MIN_MECHANIC_SKILL, self::MAX_MECHANIC_SKILL));
         });
     }
 
@@ -81,7 +83,7 @@ final class Workshop
 
     /**
      * @param GameClock $clock the clock of the base, read once for the whole answer
-     * @return array{benches: int, freeMechanics: int, parts: list<array{part: string, materialCost: int, seconds: int}>, jobs: list<array<string, int|string|bool>>, readyParts: array<string, int>}
+     * @return array{benches: int, freeMechanics: int, mechanics: list<array{id: int, skill: int}>, mechanicRecruitment: array{cost: int, max: int}, parts: list<array{part: string, materialCost: int, seconds: int}>, jobs: list<array<string, int|string|bool>>, readyParts: array<string, int>}
      */
     public function describe(int $baseId, GameClock $clock): array
     {
@@ -94,6 +96,8 @@ final class Workshop
         return [
             'benches' => $this->benchesOf($baseId),
             'freeMechanics' => $this->mechanics->freeAt($baseId, $clock->gameSeconds),
+            'mechanics' => array_map(static fn (Mechanic $mechanic): array => $mechanic->toArray(), $this->squadrons->mechanicsOf($baseId)),
+            'mechanicRecruitment' => ['cost' => self::MECHANIC_COST, 'max' => self::MAX_MECHANICS],
             'parts' => $parts,
             'jobs' => array_map(static fn (ProductionJob $job): array => $job->toArray(), $running),
             'readyParts' => $this->bases->readyParts($baseId, $clock->gameSeconds),

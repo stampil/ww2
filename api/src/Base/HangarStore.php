@@ -78,6 +78,44 @@ final class HangarStore
         return $repairs;
     }
 
+    public function startRebuild(int $wreckId, int $finishGameSecond): void
+    {
+        $this->database->execute(
+            'INSERT INTO aircraft_rebuilds (wreck_id, finish_game_second) VALUES (:wreck_id, :finish_game_second)',
+            ['wreck_id' => $wreckId, 'finish_game_second' => $finishGameSecond],
+        );
+    }
+
+    /**
+     * @return array<int, int> the game second at which each rebuild is done, by the id of the wreck
+     */
+    public function rebuildsOf(int $baseId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT aircraft_rebuilds.wreck_id, aircraft_rebuilds.finish_game_second
+             FROM aircraft_rebuilds JOIN aircraft_wrecks ON aircraft_wrecks.id = aircraft_rebuilds.wreck_id WHERE aircraft_wrecks.base_id = :base_id',
+            ['base_id' => $baseId],
+        );
+        $rebuilds = [];
+        foreach ($rows as $row) {
+            $rebuilds[(int) $row['wreck_id']] = (int) $row['finish_game_second'];
+        }
+
+        return $rebuilds;
+    }
+
+    public function runningRebuildCount(int $baseId, int $gameSeconds): int
+    {
+        $count = 0;
+        foreach ($this->rebuildsOf($baseId) as $finishGameSecond) {
+            if ($finishGameSecond > $gameSeconds) {
+                $count += 1;
+            }
+        }
+
+        return $count;
+    }
+
     public function runningRepairCount(int $baseId, int $gameSeconds): int
     {
         $count = 0;

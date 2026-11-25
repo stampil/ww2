@@ -34,9 +34,18 @@ export function productionShortage(workshop: Base['workshop'], materialCost: num
   return null
 }
 
-export function assembleShortage(workshop: Base['workshop']): string | null {
-  const isEveryPartReady = workshop.parts.every((part) => workshop.readyParts[part.part] > 0)
-  return isEveryPartReady ? null : refusalKey('missingSparePart')
+export function rebuildAircraftShortage(workshop: Base['workshop']): string | null {
+  if (workshop.freeMechanics < 1) {
+    return refusalKey('noMechanicFree')
+  }
+  return workshop.parts.every((part) => workshop.readyParts[part.part] > 0) ? null : refusalKey('missingSparePart')
+}
+
+export function recruitMechanicShortage(workshop: Base['workshop'], supplies: number): string | null {
+  if (workshop.mechanics.length >= workshop.mechanicRecruitment.max) {
+    return refusalKey('tooManyMechanics')
+  }
+  return supplies < workshop.mechanicRecruitment.cost ? refusalKey('insufficientSupplies') : null
 }
 
 export function inspectShortage(workshop: Base['workshop']): string | null {

@@ -74,6 +74,13 @@ final class SquadronStore
              WHERE aircraft.base_id = :base_id AND aircraft_liveries.aircraft_id IS NULL',
             ['livery' => $livery->value, 'base_id' => $baseId],
         );
+        $this->database->execute(
+            'INSERT INTO aircraft_commissions (aircraft_id, commissioned_epoch)
+             SELECT aircraft.id, UNIX_TIMESTAMP() FROM aircraft
+             LEFT JOIN aircraft_commissions ON aircraft_commissions.aircraft_id = aircraft.id
+             WHERE aircraft.base_id = :base_id AND aircraft_commissions.aircraft_id IS NULL',
+            ['base_id' => $baseId],
+        );
     }
 
     /**
@@ -238,6 +245,104 @@ final class SquadronStore
     }
 
     /**
+     * Destroys an aircraft: it leaves the squadron but keeps its place in the hangar, as a wreck with its number, its livery and its day of making.
+     */
+    public function destroyAircraft(int $aircraftId): void
+    {
+        $this->database->execute(
+            'INSERT INTO aircraft_wrecks (base_id, model_id, livery, number, commissioned_epoch)
+             SELECT aircraft.base_id, aircraft.model_id, aircraft_liveries.livery, aircraft_numbers.number, aircraft_commissions.commissioned_epoch
+             FROM aircraft
+             JOIN aircraft_liveries ON aircraft_liveries.aircraft_id = aircraft.id
+             JOIN aircraft_numbers ON aircraft_numbers.aircraft_id = aircraft.id
+             JOIN aircraft_commissions ON aircraft_commissions.aircraft_id = aircraft.id
+             WHERE aircraft.id = :id',
+            ['id' => $aircraftId],
+        );
+        $this->removeAircraft($aircraftId);
+    }
+
+    /**
+     * Puts a wreck back in the squadron as an aircraft in one piece, with the number, the livery and the day of making it had.
+     */
+    public function restoreAircraft(int $wreckId): void
+    {
+        $this->database->execute(
+            'INSERT INTO aircraft (base_id, model_id, durability)
+             SELECT wrecks.base_id, wrecks.model_id, models.durability FROM aircraft_wrecks AS wrecks
+             JOIN aircraft_models AS models ON models.id = wrecks.model_id WHERE wrecks.id = :id',
+            ['id' => $wreckId],
+        );
+        $aircraftId = (int) $this->database->fetchAll('SELECT LAST_INSERT_ID() AS id')[0]['id'];
+        $this->database->execute(
+            'INSERT INTO aircraft_numbers (aircraft_id, number) SELECT :aircraft_id, number FROM aircraft_wrecks WHERE id = :id',
+            ['aircraft_id' => $aircraftId, 'id' => $wreckId],
+        );
+        $this->database->execute(
+            'INSERT INTO aircraft_liveries (aircraft_id, livery) SELECT :aircraft_id, livery FROM aircraft_wrecks WHERE id = :id',
+            ['aircraft_id' => $aircraftId, 'id' => $wreckId],
+        );
+        $this->database->execute(
+            'INSERT INTO aircraft_commissions (aircraft_id, commissioned_epoch) SELECT :aircraft_id, commissioned_epoch FROM aircraft_wrecks WHERE id = :id',
+            ['aircraft_id' => $aircraftId, 'id' => $wreckId],
+        );
+        $this->database->execute('DELETE FROM aircraft_wrecks WHERE id = :id', ['id' => $wreckId]);
+    }
+
+    public function clearWrecks(int $baseId): void
+    {
+        $this->database->execute('DELETE FROM aircraft_wrecks WHERE base_id = :base_id', ['base_id' => $baseId]);
+    }
+
+    /**
+     * @return list<AircraftWreck> the wrecks of the base, the first destroyed first
+     */
+    public function wrecksOf(int $baseId): array
+    {
+        $rows = $this->database->fetchAll(
+            'SELECT wrecks.id, wrecks.livery, wrecks.number, wrecks.commissioned_epoch, models.id AS model_id, models.code, models.name, models.category,
+                    models.durability, models.maneuverability, models.fuel_capacity, models.ammunition_capacity
+             FROM aircraft_wrecks AS wrecks JOIN aircraft_models AS models ON models.id = wrecks.model_id
+             WHERE wrecks.base_id = :base_id ORDER BY wrecks.id',
+            ['base_id' => $baseId],
+        );
+
+        return array_map(
+            fn (array $row): AircraftWreck => new AircraftWreck(
+                (int) $row['id'],
+                $this->modelFrom([...$row, 'id' => $row['model_id']]),
+                Livery::from((string) $row['livery']),
+                (int) $row['number'],
+                (int) $row['commissioned_epoch'],
+            ),
+            $rows,
+        );
+    }
+
+    /**
+     * @return int how many places of the hangar are taken: the aircraft that stand there and the wrecks that wait to be rebuilt
+     */
+    public function placesTakenAt(int $baseId): int
+    {
+        return count($this->aircraftOf($baseId)) + count($this->wrecksOf($baseId));
+    }
+
+    /**
+     * @return list<Mechanic> the mechanics of the base
+     */
+    public function mechanicsOf(int $baseId): array
+    {
+        $rows = $this->database->fetchAll('SELECT id, skill FROM mechanics WHERE base_id = :base_id ORDER BY id', ['base_id' => $baseId]);
+
+        return array_map(static fn (array $row): Mechanic => new Mechanic((int) $row['id'], (int) $row['skill']), $rows);
+    }
+
+    public function addMechanic(int $baseId, int $skill): void
+    {
+        $this->database->execute('INSERT INTO mechanics (base_id, skill) VALUES (:base_id, :skill)', ['base_id' => $baseId, 'skill' => $skill]);
+    }
+
+    /**
      * @return list<Pilot>
      */
     public function pilotsOf(int $baseId): array
@@ -333,12 +438,13 @@ final class SquadronStore
     public function aircraftOf(int $baseId): array
     {
         $rows = $this->database->fetchAll(
-            'SELECT aircraft.id, aircraft.durability AS current_durability, aircraft_numbers.number, aircraft_liveries.livery, models.id AS model_id, models.code, models.name, models.category,
+            'SELECT aircraft.id, aircraft.durability AS current_durability, aircraft_numbers.number, aircraft_liveries.livery, aircraft_commissions.commissioned_epoch, models.id AS model_id, models.code, models.name, models.category,
                     models.durability, models.maneuverability, models.fuel_capacity, models.ammunition_capacity
              FROM aircraft
              JOIN aircraft_models AS models ON models.id = aircraft.model_id
              JOIN aircraft_numbers ON aircraft_numbers.aircraft_id = aircraft.id
              JOIN aircraft_liveries ON aircraft_liveries.aircraft_id = aircraft.id
+             JOIN aircraft_commissions ON aircraft_commissions.aircraft_id = aircraft.id
              WHERE aircraft.base_id = :base_id
              ORDER BY aircraft.id',
             ['base_id' => $baseId],
@@ -351,6 +457,7 @@ final class SquadronStore
                 Livery::from((string) $row['livery']),
                 (int) $row['current_durability'],
                 (int) $row['number'],
+                (int) $row['commissioned_epoch'],
             ),
             $rows,
         );

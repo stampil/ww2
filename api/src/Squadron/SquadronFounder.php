@@ -15,6 +15,8 @@ final class SquadronFounder
     private const AIRCRAFT_COUNT = 3;
     /** @var list<int> the rank of each starting pilot: a sub-lieutenant, two staff sergeants, a sergeant */
     private const PILOT_RANKS = [4, 2, 2, 1];
+    private const STARTING_MECHANICS = 2;
+    private const STARTING_MECHANIC_SKILL = 40;
 
     public function __construct(private readonly SquadronStore $squadrons, private readonly PilotGenerator $pilots)
     {
@@ -22,12 +24,26 @@ final class SquadronFounder
 
     public function found(int $baseId): void
     {
+        $this->foundMechanics($baseId);
         $clan = $this->squadrons->clanOf($baseId);
         foreach (self::PILOT_RANKS as $rank) {
             $this->squadrons->addPilot($baseId, $this->pilots->generate($rank, $clan));
         }
         for ($count = 0; $count < self::AIRCRAFT_COUNT; $count += 1) {
             $this->addStartingAircraft($baseId);
+        }
+    }
+
+    /**
+     * Gives a base that has no mechanics its starting ones: a camp taken by landing on it that was never founded comes with none.
+     */
+    public function foundMechanics(int $baseId): void
+    {
+        if ($this->squadrons->mechanicsOf($baseId) !== []) {
+            return;
+        }
+        for ($count = 0; $count < self::STARTING_MECHANICS; $count += 1) {
+            $this->squadrons->addMechanic($baseId, self::STARTING_MECHANIC_SKILL);
         }
     }
 

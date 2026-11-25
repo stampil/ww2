@@ -74,7 +74,7 @@ final class BaseOverview
             'stationings' => $stationings,
             'squadron' => [
                 'pilots' => array_map(static fn (Pilot $pilot): array => $pilot->toArray(), $this->squadrons->pilotsOf($baseId)),
-                'aircraft' => array_map(static fn (Aircraft $aircraft): array => $aircraft->toArray(), $this->squadrons->aircraftOf($baseId)),
+                'aircraft' => array_map(static fn (Aircraft $aircraft): array => $aircraft->toArray(time()), $this->squadrons->aircraftOf($baseId)),
             ],
             'events' => $this->events->latest($baseId),
             'upgrades' => $this->upgrades->describe($baseId),

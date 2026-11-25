@@ -71,6 +71,7 @@ function BaseScreen({ player }: { player: Player }) {
     jobs,
     flights,
     hangarAircraft,
+    hangarWrecks,
     rests,
     away,
     guests,
@@ -80,7 +81,8 @@ function BaseScreen({ player }: { player: Player }) {
     launchMission,
     attackCamp,
     rebuild,
-    assembleAircraft,
+    rebuildAircraft,
+    recruitMechanic,
     startAlert,
     playAlert,
     finishAlert,
@@ -376,8 +378,9 @@ function BaseScreen({ player }: { player: Player }) {
                 workshop={base.workshop}
                 jobs={jobs}
                 materials={base.resources.materials}
+                supplies={base.resources.supplies}
                 onProduce={produce}
-                onAssemble={assembleAircraft}
+                onRecruitMechanic={recruitMechanic}
                 upgrade={upgradeOf('workshop')}
                 commandPoints={base.resources.commandPoints}
                 onUpgrade={buyUpgrade}
@@ -397,6 +400,7 @@ function BaseScreen({ player }: { player: Player }) {
               <HangarPanel
                 squadron={base.squadron}
                 hangarAircraft={hangarAircraft}
+                wrecks={hangarWrecks}
                 busyAircraftIds={busy.aircraftIds}
                 away={away}
                 guests={guests}
@@ -404,6 +408,7 @@ function BaseScreen({ player }: { player: Player }) {
                 onRecall={recallStationing}
                 onInspect={inspectAircraft}
                 onRepair={repairAircraft}
+                onRebuild={rebuildAircraft}
                 upgrade={upgradeOf('hangar')}
                 commandPoints={base.resources.commandPoints}
                 onUpgrade={buyUpgrade}

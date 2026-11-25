@@ -212,6 +212,8 @@
   },
   "squadron": {
     "aircraftNumber": "n°{{number}}",
+    "serviceDays_one": "{{count}} jour de service",
+    "serviceDays_other": "{{count}} jours de service",
     "signInHint": "Connecte-toi pour voir ton escadrille.",
     "pilots": "Pilotes",
     "aircraft": "Avions",
@@ -695,10 +697,13 @@
       "text": "Ce bâtiment ne sert plus tant qu'il n'est pas reconstruit.",
       "button": "Reconstruire ({{cost}} matériaux)"
     },
-    "assemble": {
-      "title": "Assembler un avion",
-      "text": "Un avion perdu se remplace avec une pièce de chaque, déjà fabriquée : moteur, ailes, fuselage et armement.",
-      "button": "Assembler un avion"
+    "staff": {
+      "title": "Mécaniciens",
+      "mechanic": "Mécanicien {{number}}",
+      "skill": "Compétence",
+      "recruit": "Recruter un mécanicien",
+      "cost": "{{cost}} de ravitaillement, compétence tirée au sort",
+      "button": "Recruter"
     },
     "income": "Ravitaillement du front : {{count}} par minute",
     "upgrade": {
@@ -720,7 +725,10 @@
       "unknownDamage": "Dégâts inconnus : l'avion doit être inspecté avant d'être réparé.",
       "repair": "Réparer ({{time}})",
       "repairing": "En réparation : {{time}}",
-      "onFire": "En feu : explose dans {{time}}"
+      "onFire": "En feu : explose dans {{time}}",
+      "destroyed": "Détruit",
+      "rebuild": "Reconstruire ({{time}})",
+      "rebuilding": "Reconstruction : {{time}}"
     },
     "event": {
       "explosion": "Explosion sur la piste",
@@ -857,6 +865,7 @@
       "insufficientMaterials": "Pas assez de matériaux.",
       "workshopBusy": "Tous les établis sont pris.",
       "noMechanicFree": "Aucun mécanicien n'est libre.",
+      "tooManyMechanics": "L'atelier ne peut pas loger plus de mécaniciens.",
       "unknownMission": "Cette mission n'est plus disponible.",
       "unknownAlert": "Cet appel n'existe plus.",
       "alertNotDue": "Cet appel n'est pas encore arrivé.",

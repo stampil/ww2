@@ -98,6 +98,8 @@ export type Aircraft = {
   number: number
   durability: number
   livery: Livery
+  /** How many days of Paris it has served since it was made. */
+  serviceDays: number
   model: { name: string; category: string; durability: number; maneuverability: number; fuelCapacity: number; ammunitionCapacity: number }
 }
 export type Squadron = { pilots: Pilot[]; aircraft: Aircraft[] }
@@ -116,6 +118,8 @@ export type HangarAircraft = {
   repairSeconds: number | null
   fireSeconds: number | null
 }
+/** A destroyed aircraft, which keeps its place in the hangar until it is rebuilt: the seconds left of its rebuild, null while it waits. */
+export type Wreck = Pick<Aircraft, 'number' | 'livery' | 'serviceDays' | 'model'> & { wreckId: number; rebuildDurationSeconds: number; rebuildSeconds: number | null }
 export type Rest = { pilotId: number; remainingSeconds: number }
 
 /** What a mission did to each crew, and what it paid. */
@@ -249,6 +253,9 @@ export type Base = {
   workshop: {
     benches: number
     freeMechanics: number
+    /** The staff: each mechanic with a skill, from 0 to 100, that shortens the rebuild of an aircraft. */
+    mechanics: { id: number; skill: number }[]
+    mechanicRecruitment: { cost: number; max: number }
     parts: { part: Part; materialCost: number; seconds: number }[]
     jobs: { id: number; part: Part; remainingSeconds: number; hasMechanic: boolean }[]
     readyParts: Record<Part, number>
@@ -256,7 +263,7 @@ export type Base = {
   headquarters: { weather: { windSpeed: number }; offers: Offer[]; flights: Flight[] }
   roster: { rests: Rest[]; recruitment: { cost: number; maxPilots: number }; fallen: FallenPilot[] }
   stationings: { away: AwayAircraft[]; guests: GuestAircraft[] }
-  hangar: { aircraft: HangarAircraft[] }
+  hangar: { aircraft: HangarAircraft[]; wrecks: Wreck[] }
   squadron: Squadron
   events: BaseEvent[]
   upgrades: UpgradeInfo[]
@@ -318,6 +325,16 @@ function hasHangarCountdownEnded(received: HangarAircraft[], shown: HangarAircra
     const repairEnded = (received[place].repairSeconds ?? 0) > 0 && shown[place].repairSeconds === 0
     const fireEnded = (received[place].fireSeconds ?? 0) > 0 && shown[place].fireSeconds === 0
     if (inspectionEnded || repairEnded || fireEnded) {
+      return true
+    }
+  }
+  return false
+}
+
+/** Whether a rebuild whose countdown had time left when the API sent it has run out since. */
+function hasRebuildEnded(received: Wreck[], shown: Wreck[]): boolean {
+  for (let place = 0; place < shown.length; place += 1) {
+    if ((received[place].rebuildSeconds ?? 0) > 0 && shown[place].rebuildSeconds === 0) {
       return true
     }
   }
@@ -393,6 +410,7 @@ export function useBase(player: Player | null) {
   const receivedJobs = base?.workshop.jobs ?? []
   const receivedFlights = base?.headquarters.flights ?? []
   const receivedHangar = base?.hangar.aircraft ?? []
+  const receivedWrecks = base?.hangar.wrecks ?? []
   const receivedRests = base?.roster.rests ?? []
   const receivedAway = base?.stationings.away ?? []
   const receivedGuests = base?.stationings.guests ?? []
@@ -410,13 +428,15 @@ export function useBase(player: Player | null) {
     repairSeconds: remainingAfter(state.repairSeconds, elapsedSeconds),
     fireSeconds: remainingAfter(state.fireSeconds, elapsedSeconds),
   }))
+  const hangarWrecks = receivedWrecks.map((wreck) => ({ ...wreck, rebuildSeconds: remainingAfter(wreck.rebuildSeconds, elapsedSeconds) }))
   const hasEndedCountdown =
     hasEnded(receivedJobs, jobs) ||
     hasEnded(receivedFlights, flights) ||
     hasEnded(receivedRests, rests) ||
     hasEnded(receivedAway, away) ||
     hasEnded(receivedGuests, guests) ||
-    hasHangarCountdownEnded(receivedHangar, hangarAircraft)
+    hasHangarCountdownEnded(receivedHangar, hangarAircraft) ||
+    hasRebuildEnded(receivedWrecks, hangarWrecks)
   const gameTime = base === null ? null : gameTimeAfter(base, elapsedSeconds)
 
   useEffect(() => {
@@ -446,8 +466,12 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/buildings/rebuild`, { building }))
   }
 
-  async function assembleAircraft(): Promise<string | null> {
-    return receive(await request(`${BASE_URL}/workshop/assemble`, {}))
+  async function rebuildAircraft(wreckId: number): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/hangar/rebuild`, { wreckId }))
+  }
+
+  async function recruitMechanic(): Promise<string | null> {
+    return receive(await request(`${BASE_URL}/workshop/mechanics/recruit`, {}))
   }
 
   async function startAlert(alertId: number): Promise<string | null> {
@@ -525,6 +549,7 @@ export function useBase(player: Player | null) {
     jobs,
     flights,
     hangarAircraft,
+    hangarWrecks,
     rests,
     away,
     guests,
@@ -534,7 +559,8 @@ export function useBase(player: Player | null) {
     launchMission,
     attackCamp,
     rebuild,
-    assembleAircraft,
+    rebuildAircraft,
+    recruitMechanic,
     startAlert,
     playAlert,
     finishAlert,

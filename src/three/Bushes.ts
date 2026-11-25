@@ -12,9 +12,11 @@ export type BushPlacement = { x: number; y: number; widthMeters: number; turnRad
 /** The 3D bushes: the Quaternius bush (CC0), drawn once for every placement. Shown once loaded. */
 export class Bushes {
   readonly object = new THREE.Group()
+  /** Settles once the bushes are drawn. */
+  readonly ready: Promise<void>
 
   constructor(private readonly placements: BushPlacement[]) {
-    void this.load()
+    this.ready = this.load()
   }
 
   private async load(): Promise<void> {

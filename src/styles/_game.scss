@@ -520,6 +520,11 @@ button.base-sprite {
   }
 }
 
+// A destroyed aircraft keeps its card in the hangar, greyed, until it is rebuilt.
+.card[data-wreck='true'] {
+  filter: grayscale(0.8);
+}
+
 // The calls of the flights in the air: toasts at the lower left of the screen, over everything but the windows.
 .mission-toasts {
   @include flex($direction: column, $gap: 0.5rem);
@@ -1177,15 +1182,30 @@ button.base-sprite {
 }
 
 .aircraft-picture {
+  position: relative;
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
   border: 2px solid $outline;
   background: radial-gradient(circle at 50% 45%, #4b5a3a, $outline);
-  cursor: grab;
 
-  &[data-flying='true'] {
-    cursor: default;
+  &[data-scene-shown='true'] {
+    cursor: grab;
+
+    img {
+      visibility: hidden;
+    }
+
+    .aircraft-scene {
+      visibility: visible;
+    }
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   canvas {
@@ -1193,6 +1213,13 @@ button.base-sprite {
     width: 100%;
     height: 100%;
   }
+}
+
+// The 3D scene is laid out under the picture from the start, so that it has a size to draw at, and shows once it is drawn.
+.aircraft-scene {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
 }
 
 .stats {

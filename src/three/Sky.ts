@@ -30,16 +30,6 @@ export type SkyLayout = {
   wrapHalfLengthMeters: number
 }
 
-/** Many small clouds going by on one side of an aircraft in flight. */
-export const FLIGHT_SKY: SkyLayout = {
-  cloudCount: 16,
-  cloudScale: 1,
-  depthRangeMeters: { from: -90, to: -8 },
-  isMirrored: false,
-  heightRangeMeters: { from: -10, to: 14 },
-  wrapHalfLengthMeters: 90,
-}
-
 /** A few large clouds low on the horizon, on both sides of an aircraft on the ground and far from it, so that none comes between it and its camera. */
 export const OVERHEAD_SKY: SkyLayout = {
   cloudCount: 6,

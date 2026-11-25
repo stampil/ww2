@@ -11,7 +11,12 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+**Inspection : l'image devient la vue 3D, qui descend, fait le tour de l'avion, puis rend la main** (« en inspection quand l'image est remplacer par la vue 3d, fait une anim que sa descend ala vue pour afficher le profil, et tu lui fait faire un tour complet de l'appareil. et apres tu rend la main sur le fait qu'on puisse manipuler la vue », 25/11). Compris : dans le Hangar, quand on ordonne l'inspection d'un avion au sol, sa carte remplace l'image par la vue 3D (aujourd'hui de dessus, tout de suite glissable). Au lieu de cela : la vue 3D prend la place de l'image à l'identique (de dessus), puis (1) la caméra descend de la vue de dessus jusqu'à la vue de profil, (2) elle fait un tour complet de l'avion, (3) elle rend la main : la vue devient glissable comme aujourd'hui. Pendant (1) et (2) on ne peut pas la tourner. Mes valeurs, à corriger : descente de 1,5 s jusqu'à 85° de la verticale (le plus bas que la vue laisse aller, presque à l'horizon, jamais sous le terrain), côté droit de l'avion, nez vers la droite comme sur l'image de l'avion en vol ; tour de 6 s à cette hauteur, revenant à son point de départ ; 7,5 s en tout, pendant les 20 s de l'inspection. Le tour compte à partir du moment où la vue 3D a remplacé l'image (pas pendant le chargement du modèle). Ne touche que l'avion au sol en inspection : l'image de l'avion en vol reste une image, et les autres vues 3D (accueil, avions de la vitrine) ne changent pas. Si le système demande moins de mouvement (`prefers-reduced-motion`), pas d'animation : la vue est rendue glissable tout de suite, comme aujourd'hui, comme le font déjà le journal et le personnel d'entretien.
+
+1. **Peut-on couper l'animation ?** Option A, ma reco : un toucher, un clic ou un glissement sur la vue arrête l'animation et rend la main aussitôt, à l'endroit où la caméra est : on n'attend pas les 7,5 s quand on veut regarder, et il y a une carte par avion. Option B : l'animation va toujours jusqu'au bout avant de rendre la main.
+2. **Où reste la vue quand la main est rendue ?** Option A, ma reco : au profil, là où le tour s'est fini, et l'on tourne à partir de là. Option B : la caméra remonte à la vue de dessus du départ avant de rendre la main.
+
+À savoir, sans question : la vue 3D d'une carte est refaite quand le niveau de dégâts, le numéro ou la livrée de l'avion change, par exemple à la fin d'une réparation, et elle repart alors de dessus comme aujourd'hui : l'animation se jouera de nouveau à ce moment-là, sauf mot contraire.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -40,7 +45,9 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : tout est fait.
+| N° | Instruction | Go |
+|---|---|---|
+| 1 | Inspection : la vue 3D descend au profil, fait le tour de l'avion, puis rend la main (25/11, voir la section 2) | non : attend tes réponses aux deux questions et ton « go » |
 
 ## Mis de côté
 

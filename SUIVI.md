@@ -11,7 +11,14 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+**Recommencer la partie seulement si le jeu est bloqué** (« ne propose de recomencer la partie que si tu detecte que le jeu est bloqué ( plus d'argent pour acheter ressource pour faire décoller un avion) », puis « Go, tes reco », 25/11). Compris : le bouton « Recommencer la partie », en bas de la fenêtre de la tour et toujours là aujourd'hui (il ouvre « Repartir de zéro ? »), n'apparaît plus que lorsque le jeu est bloqué. La fenêtre de fin de bataille (victoire ou défaite) et son bouton « Nouvelle bataille » ne changent pas. Tes recos prises : le blocage compte aussi les avions cloués au sol qu'on ne peut plus remettre en état (matériaux), la proposition se voit dans la fenêtre de la tour avec une phrase qui dit pourquoi et par un marqueur d'alerte sur la tour, le calcul se fait dans le navigateur seulement (aucune route de plus).
+
+1. **Le front envoie du ravitaillement tout seul : qu'est-ce qui est « bloqué » ?** Je n'avais pas lu `SupplyIncome` en posant la question : chaque camp reçoit de lui-même, par minute de jeu, de 10 (près du front) à 40 (à l'arrière) de ravitaillement, tant que le joueur est là. L'argent ne peut donc jamais manquer pour de bon : au pire, une reconnaissance (1 avion, 30 à 50 de carburant à 1 de ravitaillement l'unité) se paie en 5 minutes à 10 par minute. Trois lectures de « bloqué » :
+   - **A, ma reco : au moment même.** Proposé tant que rien n'est en cours, qu'aucun vol ne peut partir avec ce que le camp a (stock + ravitaillement) et qu'aucun avion au sol ne peut être réparé ; la phrase dit en combien de minutes le front paie le vol le moins cher (« le prochain vol est payé dans 4 min »), et la proposition disparaît dès que ça paie. Un camp à sec la voit quelques minutes, jamais plus.
+   - **B : seulement si l'attente dépasse une durée que tu fixes** (10 minutes, par exemple). Vu le revenu de 10 à 40 par minute, l'attente d'un vol est d'au plus 5 minutes : le bouton ne se verrait presque jamais.
+   - **C : jamais par l'argent.** Le jeu ne se bloque pas par manque de ravitaillement, donc le bouton est retiré hors fin de bataille ; seule la défaite propose de recommencer.
+
+À savoir, sans question : (a) hors blocage, plus aucun bouton ne repart de zéro ni ne rejoue le tutoriel (le bouton date du 17/11, « fait un bouton reini pour repartir la partie de zero ») ; (b) un allié peut aussi t'envoyer du ravitaillement, donc la proposition est un conseil, jamais une obligation.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -38,7 +45,9 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : tout est fait.
+| N° | Instruction | Go |
+|---|---|---|
+| 1 | Recommencer la partie seulement si le jeu est bloqué (25/11, voir la section 2) | go donné pour tes recos ; attend ta réponse à la question 1 (le revenu de ravitaillement change ce que « bloqué » veut dire) |
 
 ## Mis de côté
 

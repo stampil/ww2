@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { dueAlerts, isAlertStarted } from './flights'
 import Icon from './Icon'
@@ -20,6 +20,8 @@ type Props = {
   onOpen: (alertId: number) => void
   /** True while the control tower is open, where the flights under way are: the player is busy with them. */
   isTowerOpen: boolean
+  /** True while the window of a mini-game is open: the player is on a mission. */
+  isPlaying: boolean
 }
 
 /** The texts of the toast and of the window of a mini-game: the grid duel, the strafing run of a ground attack, the photos of a reconnaissance, the flak to dodge on the way to an enemy camp, or the dogfight from the cockpit. */
@@ -37,42 +39,59 @@ function namespaceOf(alert: FlightAlert, flight: Flight): 'duel' | 'strafe' | 'p
 }
 
 /**
- * The calls of the flights in the air, as toasts over the game: one for each mini-game that waits for the player, which a click opens.
- * A call that has not been taken goes away after thirty seconds, its bar running down, and its mini-game is lost: the flight is received as if it had not been played.
- * Taking another call, or opening the control tower, stops the countdown of the other calls: they stay until they are taken.
+ * The calls of the flights in the air, as toasts over the game: one for each mini-game that waits for the player, which a click opens, and lost after thirty seconds, its bar running down.
+ * The bars stand still while the player is in a mini-game, those of the calls that come meanwhile too, and go on where they stopped; opening the control tower stops those on the screen for good.
  */
-function MissionToasts({ clan, flights, squadron, onOpen, isTowerOpen }: Props) {
+function MissionToasts({ clan, flights, squadron, onOpen, isTowerOpen, isPlaying }: Props) {
   const { t } = useTranslation()
   const due = dueAlerts(flights)
   const dueKey = due.map(({ alert }) => alert.id).join(',')
   const [stoppedIds, setStoppedIds] = useState<number[]>([])
-  const [deadlines, setDeadlines] = useState<Record<number, number>>({})
-  const [now, setNow] = useState(() => Date.now())
+  const [remainingMilliseconds, setRemainingMilliseconds] = useState<Record<number, number>>({})
   const nationality = t(`strafe.nationalities.${TARGET_NATIONALITIES[clan]}`)
+  // What the countdown reads between two renders: whether the player is in a mini-game, and which calls are counting down.
+  const isPlayingRef = useRef(isPlaying)
+  const countingIdsRef = useRef<number[]>([])
+  isPlayingRef.current = isPlaying
+  countingIdsRef.current = due.filter(({ alert }) => !isAlertStarted(alert) && !stoppedIds.includes(alert.id)).map(({ alert }) => alert.id)
 
-  // A call gets its deadline the first time it is seen, from how long ago it showed; the later readings of the server do not move it.
+  // A call gets its time the first time it is seen, from how long ago it showed; the later readings of the server do not move it.
   useEffect(() => {
-    const moment = Date.now()
-    setNow(moment)
-    setDeadlines((current) => {
+    setRemainingMilliseconds((current) => {
       const next = { ...current }
       for (const { alert } of dueAlerts(flights)) {
-        next[alert.id] ??= moment + (TOAST_SECONDS - alert.lateSeconds) * MILLISECONDS_PER_SECOND
+        next[alert.id] ??= (TOAST_SECONDS - alert.lateSeconds) * MILLISECONDS_PER_SECOND
       }
       return next
     })
   }, [flights])
 
+  // The time of a call runs down by what has gone by between two ticks, except while the player is in a mini-game.
   useEffect(() => {
     if (dueKey === '') {
       return
     }
-    const timer = window.setInterval(() => setNow(Date.now()), TICK_MILLISECONDS)
+    let lastTickMilliseconds = Date.now()
+    const timer = window.setInterval(() => {
+      const moment = Date.now()
+      const elapsedMilliseconds = moment - lastTickMilliseconds
+      lastTickMilliseconds = moment
+      if (isPlayingRef.current) {
+        return
+      }
+      setRemainingMilliseconds((current) => {
+        const next = { ...current }
+        for (const alertId of countingIdsRef.current) {
+          next[alertId] = Math.max(0, current[alertId] - elapsedMilliseconds)
+        }
+        return next
+      })
+    }, TICK_MILLISECONDS)
 
     return () => window.clearInterval(timer)
   }, [dueKey])
 
-  const remainingSeconds = (alert: FlightAlert) => ((deadlines[alert.id] ?? now + (TOAST_SECONDS - alert.lateSeconds) * MILLISECONDS_PER_SECOND) - now) / MILLISECONDS_PER_SECOND
+  const remainingSeconds = (alert: FlightAlert) => (remainingMilliseconds[alert.id] ?? (TOAST_SECONDS - alert.lateSeconds) * MILLISECONDS_PER_SECOND) / MILLISECONDS_PER_SECOND
   const shown = due.filter(({ alert }) => isAlertStarted(alert) || stoppedIds.includes(alert.id) || remainingSeconds(alert) > 0)
   const shownKey = shown.map(({ alert }) => alert.id).join(',')
 
@@ -82,11 +101,6 @@ function MissionToasts({ clan, flights, squadron, onOpen, isTowerOpen }: Props) 
       setStoppedIds((current) => [...new Set([...current, ...shownKey.split(',').map(Number)])])
     }
   }, [isTowerOpen, shownKey])
-
-  function take(alertId: number): void {
-    setStoppedIds((current) => [...new Set([...current, ...shown.map(({ alert }) => alert.id).filter((id) => id !== alertId)])])
-    onOpen(alertId)
-  }
 
   if (shown.length === 0) {
     return null
@@ -101,7 +115,7 @@ function MissionToasts({ clan, flights, squadron, onOpen, isTowerOpen }: Props) 
         const isCountingDown = !isStarted && !stoppedIds.includes(alert.id)
         const namespace = namespaceOf(alert, flight)
         return (
-          <button key={alert.id} type="button" className="mission-toast" onClick={() => take(alert.id)}>
+          <button key={alert.id} type="button" className="mission-toast" onClick={() => onOpen(alert.id)}>
             <Icon name="warning" />
             <span>{t(isStarted ? `${namespace}.toastResume` : `${namespace}.toast`, { pilot: pilot.name, nationality })}</span>
             <strong>{t(isStarted ? 'duel.resume' : `${namespace}.take`)}</strong>

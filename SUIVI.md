@@ -8,6 +8,7 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 | Il me faut | Ça débloque |
 |---|---|
+| Ton « généré » de chacune des trois illustrations de la ligne 21 (AS, promotion, mort), prompts donnés le 25/11, carte de référence envoyée | Les trois popins illustrées. |
 
 ## 2. Questions à lever
 
@@ -74,7 +75,7 @@ Message du 25/11 : « ajoute se suivi : » puis, dans l'ordre, les lignes ci-des
 | 18 | « dans hangar et piste, on doit pouvoir zommer a la molette ou avec ecartement des doigt, et dezoomer a la molette inverse et ppincement des doigt. » | Zoom à la molette et au pincement dans la vue de l'avion du Hangar et sur la carte de l'aérodrome. | attend ton go |
 | 19 | « une fois sur le taxi la verriere s'ouvre, sur la piste la verriere se ferme ( decolage comme atterrisage ) » | La verrière de chaque avion de la base s'ouvre quand il roule sur une voie de circulation et se ferme sur la piste, au décollage comme à l'atterrissage (l'animation de la verrière est dans le modèle). | attend ton go |
 | 20 | « dans les popin de mission, fait une barre de progression du decompte du temps avant qu'elle disparaisse. toute clique sur une autre et mission en cours interrompt ce compte a rebours. » | Une barre de progression de 30 s dans chaque popin d'alerte ; le mini-jeu est perdu à la fin ; le compte à rebours s'arrête au clic sur une autre popin ou une mission en cours. | attend ton go |
-| 21 | « le fait de passer AS ou d'etre grader, ou de mourrir affiche une popin illuster de l'evenement, avec musqiue dynamuique en fonction. » | Trois popins illustrées (AS, promotion, mort), chacune avec sa variante de musique ; trois images à faire générer, un prompt à la fois, au go. | attend ton go |
+| 21 | « le fait de passer AS ou d'etre grader, ou de mourrir affiche une popin illuster de l'evenement, avec musqiue dynamuique en fonction. » | Trois popins illustrées (AS, promotion, mort), chacune avec sa variante de musique ; trois images, une par événement et sans nationalité (objets seulement, aucun insigne), donc les mêmes pour les deux camps : prompts donnés le 25/11 (« fait les prop image immediatement et tu les enchaine, je veux la ref et le prompt en meme temps »), chacun attend ton « généré ». | prompts donnés, attend tes « généré » puis ton go |
 | 22 | « comme pour wings enrichi le diary avec des pseudo evenement dans tableau de chasse distingue les victoire aerienne des bombardier des chasseurs. AS ne sera que pour les chasseurs. » | Le journal reçoit des événements de la vie du camp (un tous les 6 heures réelles, textes de ma main) ; le tableau de chasse sépare les victoires sur bombardiers et sur chasseurs ; l'AS ne compte que celles sur chasseurs. | attend ton go |
 | 23 | « passer AS ou augmenter de grade ameliore les aptitude. » | Précision et résistance montent à l'AS et à chaque promotion (valeurs de ma main). | attend ton go |
 | 24 | « dans la fiche pilote rajoute les date d'affectation de camps. » | La fiche liste les camps où le pilote a été affecté et depuis quand. | attend ton go |

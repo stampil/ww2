@@ -11,7 +11,19 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+**Q1 — Décollage : le 3e avion s'aligne direct depuis la voie** (« le 3ieme avion quand il se glisse entreles 2 sur la piste, il fait pas gauche pour revenir sur la droit, il s'aligne direct a partir du taxi, pas de 360 », 25/11). Lu : aujourd'hui le 3e descend la voie de circulation (venue du nord) jusqu'à la jonction (100 m), repart de 12 m vers l'ouest, la gauche de l'écran, jusqu'à sa place du milieu (88 m), puis pivote de 180° sur place pour faire face à l'est : le pas à gauche puis le retour à droite que tu vois. Tu veux qu'il s'engage sur la piste, nez à l'est, directement depuis la voie, sans ce demi-tour. Vérifié dans le code : sa place (88 m) est à l'ouest de la jonction (100 m) ; un avion qui arrive de la voie ne peut pas s'arrêter à l'ouest d'elle nez à l'est sans faire demi-tour. Pour s'aligner direct, sa place doit être à l'est de la jonction, au bout d'une courbe de raccord. Le 1er, qui va au bout de la piste puis pivote, ne change pas ; le 2e, qui tourne au même endroit dans le même sens, prendrait la même courbe (sinon son coin vif jurerait à côté : lecture de ma main).
+- **A (ma reco)** : courbe de rayon 20 m (une demi-tuile, valeur de ma main) qui finit à 120 m ; le 3e (milieu) y a sa place ; le 2e (devant) passe de 146 à 178 m ; le 1er reste tout au bout (30 m). Écart 1er–3e : 90 m au lieu de 58.
+- **B** : tout le groupe se décale, écarts égaux de 58 m : 1er à 62 m, 3e à 120 m, 2e à 178 m. Le 1er n'est plus tout au bout de la piste (62 m du bout au lieu de 30).
+
+**Q2 — DCA trop violente** (« la dca est un shoula trop violante, 3 avion detruis sur 3 », 25/11). Lu : « un shoula » = un peu ; la DCA d'un camp ennemi est trop dure, trois avions sur trois perdus. Ce que le code fait (relu) : deux coups détruisent un avion (le premier le fait fumer, le second le détruit) ; la DCA tire de 2 à 6 obus par seconde, selon la distance du camp au plus proche camp de l'attaquant ; elle est sauvage au début (erreur de visée de 16 m) et se cale en 6 s sur un avion qui tient sa ligne (1,5 m) ; l'obus touche à 4,5 m ; le mini-jeu dure 20 s. Appel non joué : deux tirs, chacun touche à 8 % par obus par seconde (48 % au plus à 6 obus/s) ; à 2 obus/s : 16 % par tir, 3 % de destruction ; à 6 obus/s : 23 % de destruction. Non su : si tu les as jouées ou laissées passer, la base ne le garde pas (les alertes sont effacées à la réception).
+- **A (ma reco)** : moins d'obus : 1 à 4 par seconde (au lieu de 2 à 6), valeurs de ma main ; vaut pour le mini-jeu joué et pour l'appel non joué ; deux constantes du serveur.
+- **B** : il faut trois coups pour détruire (le 3e détruit) ; touche le serveur, le mini-jeu et ses effets de fumée.
+- **C** : l'obus touche plus près : rayon de 3 m au lieu de 4,5 m (mini-jeu joué seulement : l'appel non joué ne change pas).
+
+**Q3 — Un avion détruit par la DCA : un avion en moins, son pilote mort** (« un avion detruis par dca c un avion en moins pour la mission et la mort du pilote, si les 3 avions sont out, mission echec de raid et mort des 3 », 25/11). Lu : une règle à appliquer, que le code ne fait pas aujourd'hui, et qui donne du poids à Q2. Ce que le code fait (relu) : l'avion détruit par la DCA est perdu, mais son pilote ne meurt que s'il rate un tirage contre sa résistance (pas d'office) ; l'avion ne sort pas de la mission : sur un raid ou une attaque au sol l'appel du mini-jeu qui vient après arrive quand même pour lui et son résultat compte (seule la prise de camp retire l'avion perdu de ses combats) ; la DCA n'entre pas dans la réussite de la mission, qui peut donc réussir avec trois avions détruits. Règle voulue (ma lecture) : (1) le pilote d'un avion détruit par la DCA meurt d'office ; (2) l'avion sort de la mission : plus d'appel pour lui, la réussite se juge sur les avions qui restent ; (3) tous les avions détruits : mission échouée (aucun gain) et les trois pilotes morts. La DCA ne tire que sur une attaque de camp (attaque au sol, raid, prise) : tu écris « raid ».
+- **A (ma reco)** : les trois règles pour toute attaque de camp.
+- **B** : les trois règles pour le raid seulement ; attaque au sol et prise gardent la règle d'aujourd'hui.
+Attention : la mort d'office s'applique aussi à un appel de DCA non joué (30 s sans clic) : à 6 obus/s, 23 % de destruction, donc de mort, par avion. C'est une raison de plus de faire Q2.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -50,7 +62,11 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : tout est fait.
+| N° | Instruction | Go |
+|---|---|---|
+| Q1 | Le 3e avion du départ groupé s'aligne direct depuis la voie, sans demi-tour | attend ta réponse A ou B |
+| Q2 | DCA moins violente | attend ta réponse A, B ou C |
+| Q3 | Avion détruit par la DCA : pilote mort, avion hors mission, tous détruits = échec | attend ta réponse A ou B |
 
 ## Mis de côté
 

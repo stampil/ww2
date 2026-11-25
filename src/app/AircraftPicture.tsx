@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { assetUrl } from '../assetUrl'
 import { AircraftPreviewScene } from '../three/AircraftPreviewScene'
 import type { Livery } from '../three/liveries'
+import { prefersReducedMotion } from './reducedMotion'
 
 type Props = {
   /** On a mission the aircraft is in the air and cannot be inspected: it shows as an aircraft in flight and never becomes 3D. */
@@ -16,7 +17,7 @@ type Props = {
 
 /**
  * The aircraft of a card of the hangar: a JPEG picture, of an aircraft in flight on a mission, and from above on the ground with the damage it really has.
- * When it is inspected the picture stays until the 3D scene is drawn, which owns a WebGL scene, freed when the card goes, then gives way to it.
+ * When it is inspected the picture stays until the 3D scene is drawn (it owns a WebGL scene, freed with the card), then gives way to it, and the camera makes its tour before the player can turn it.
  */
 function AircraftPicture({ isFlying, isInteractive, damageLevel, tailNumber, livery }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -34,6 +35,9 @@ function AircraftPicture({ isFlying, isInteractive, damageLevel, tailNumber, liv
       requestAnimationFrame(() => {
         if (!isCancelled) {
           setIsSceneShown(true)
+          if (!prefersReducedMotion()) {
+            scene.startTour()
+          }
         }
       }),
     )

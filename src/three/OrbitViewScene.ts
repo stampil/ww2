@@ -29,13 +29,13 @@ export type OrbitView = {
 export abstract class OrbitViewScene {
   protected readonly renderer: THREE.WebGLRenderer
   protected readonly scene = new THREE.Scene()
-  private readonly camera: THREE.PerspectiveCamera
-  private readonly controls: OrbitControls
+  protected readonly camera: THREE.PerspectiveCamera
+  protected readonly controls: OrbitControls
   private readonly resizeObserver: ResizeObserver
   private previousMilliseconds = performance.now()
 
   constructor(
-    private readonly container: HTMLElement,
+    protected readonly container: HTMLElement,
     view: OrbitView,
   ) {
     this.renderer = createRenderer(container, true)

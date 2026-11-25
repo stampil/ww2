@@ -28,6 +28,8 @@ type Props = {
   recruitment: Base['roster']['recruitment']
   busy: BusyCrews
   unavailable: BusyCrews
+  /** The minutes the supplies the front sends take to pay for the cheapest step toward a flight while the camp is stuck, null while it is not. */
+  blockedMinutes: number | null
   /** Asks to open the journal of the base. */
   onOpenJournal: () => void
   /** Asks to open the roster of the squadron. */
@@ -44,7 +46,7 @@ type Props = {
 }
 
 /** The flights under way, the journal, the missions on the table, and the pilots, who can rest and be joined by new ones. */
-function ControlTowerPanel({ squadron, resources, weather, offers, flights, rests, away, recruitment, busy, unavailable, onOpenJournal, onOpenRoster, onLaunch, onReceive, onRest, onRecruit, onStartOver, recipients, onGivePilot }: Props) {
+function ControlTowerPanel({ squadron, resources, weather, offers, flights, rests, away, recruitment, busy, unavailable, blockedMinutes, onOpenJournal, onOpenRoster, onLaunch, onReceive, onRest, onRecruit, onStartOver, recipients, onGivePilot }: Props) {
   const { t } = useTranslation()
   const rankName = useRankName()
   const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
@@ -140,11 +142,14 @@ function ControlTowerPanel({ squadron, resources, weather, offers, flights, rest
           </li>
         </ul>
       </Pane>
-      <div className="game-tools">
-        <button type="button" onClick={onStartOver}>
-          {t('reset.button')}
-        </button>
-      </div>
+      {blockedMinutes !== null && (
+        <div className="game-tools">
+          <p>{t('reset.blocked', { minutes: blockedMinutes })}</p>
+          <button type="button" onClick={onStartOver}>
+            {t('reset.button')}
+          </button>
+        </div>
+      )}
     </>
   )
 }

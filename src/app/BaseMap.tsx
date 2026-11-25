@@ -22,10 +22,10 @@ const AIRCRAFT_WIDTH_TILES = 1.4
 export type StandStatus = 'ready' | 'damaged' | 'inspecting' | 'repairing' | 'burning'
 export type ParkedAircraft = { id: number; number: number; stand: Cell; status: StandStatus; livery: Livery }
 /** Something that needs the player at a building: a marker over it, which opens it. */
-export type MapAlert = { kind: 'mission' | 'fire' | 'guide'; building: BuildingName; label: string }
+export type MapAlert = { kind: 'mission' | 'fire' | 'guide' | 'blocked'; building: BuildingName; label: string }
 
 const STATUS_ICONS: Record<Exclude<StandStatus, 'ready'>, IconName> = { damaged: 'warning', inspecting: 'reconnaissance', repairing: 'repair', burning: 'fire' }
-const ALERT_ICONS: Record<MapAlert['kind'], IconName> = { mission: 'warning', fire: 'fire', guide: 'upgrade' }
+const ALERT_ICONS: Record<MapAlert['kind'], IconName> = { mission: 'warning', fire: 'fire', guide: 'upgrade', blocked: 'supplies' }
 
 type Props = {
   plan: TerrainPlan

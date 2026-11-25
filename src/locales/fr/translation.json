@@ -366,7 +366,9 @@
     "title": "Repartir de zéro ?",
     "text": "Cette base est effacée : l'escadrille, les ressources, les améliorations, les missions et les avions abattus repartent de zéro, et le tutoriel est proposé de nouveau. Cela ne peut pas se défaire.",
     "confirm": "Oui, tout effacer",
-    "cancel": "Non, garder ma partie"
+    "cancel": "Non, garder ma partie",
+    "blocked": "Plus de quoi faire décoller un avion : le ravitaillement envoyé par le front comble le manque dans {{minutes}} min.",
+    "blockedAlert": "Plus de quoi décoller"
   },
   "stick": {
     "label": "Manche de pilotage"

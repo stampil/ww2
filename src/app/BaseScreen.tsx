@@ -13,6 +13,7 @@ import ControlTowerPanel from './ControlTowerPanel'
 import DogfightWindow from './DogfightWindow'
 import GroundAttackWindow from './GroundAttackWindow'
 import type { GroundRunProps } from './GroundRunWindow'
+import { minutesBeforeFlight } from './blockage'
 import { busyCrews, findAlert, unavailableCrews } from './flights'
 import { useStands } from './useStands'
 import { damageLevelOf } from '../three/damageStages'
@@ -250,6 +251,7 @@ function BaseScreen({ player }: { player: Player }) {
 
   const plan = TERRAIN_PLANS[base.terrainPlan]
   const unavailable = unavailableCrews(busy, rests, hangarAircraft)
+  const blockedMinutes = minutesBeforeFlight(base, { flights, rests, away, jobs, hangarAircraft, hangarWrecks, unavailable })
   const upgradeOf = (building: UpgradeName) => base.upgrades.find((candidate) => candidate.upgrade === building)!
   const servicedAircraftIds = hangarAircraft.filter((state) => state.inspectionSeconds !== null || state.repairSeconds !== null).map((state) => state.aircraftId)
   const burningAircraftIds = hangarAircraft.filter((state) => state.fireSeconds !== null).map((state) => state.aircraftId)
@@ -282,6 +284,9 @@ function BaseScreen({ player }: { player: Player }) {
   }
   if (hangarAircraft.some((state) => state.fireSeconds !== null)) {
     alerts.push({ kind: 'fire', building: 'hangar', label: t('base.fireAlert') })
+  }
+  if (blockedMinutes !== null) {
+    alerts.push({ kind: 'blocked', building: 'controlTower', label: t('reset.blockedAlert') })
   }
 
   const duel = duelAlertId === null ? undefined : findAlert(flights, duelAlertId)
@@ -372,6 +377,7 @@ function BaseScreen({ player }: { player: Player }) {
                 recruitment={base.roster.recruitment}
                 busy={busy}
                 unavailable={unavailable}
+                blockedMinutes={blockedMinutes}
                 onOpenJournal={() => setIsJournalOpen(true)}
                 onOpenRoster={() => setIsRosterOpen(true)}
                 onLaunch={launch}

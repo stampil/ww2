@@ -366,7 +366,9 @@
     "title": "Start from scratch?",
     "text": "This base is wiped: the squadron, the resources, the upgrades, the missions and the enemy aircraft shot down all start again from zero, and the tutorial is offered to you again. This cannot be undone.",
     "confirm": "Yes, erase everything",
-    "cancel": "No, keep my game"
+    "cancel": "No, keep my game",
+    "blocked": "Not enough to get an aircraft off the ground: the supplies the front sends will cover the gap in {{minutes}} min.",
+    "blockedAlert": "Nothing left to take off with"
   },
   "stick": {
     "label": "Control stick"

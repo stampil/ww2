@@ -843,8 +843,16 @@ button.base-sprite {
 }
 
 .game-tools {
-  @include flex($justify: flex-end);
+  @include flex($justify: flex-end, $align: center, $gap: 0.75rem);
+  flex-wrap: wrap;
   margin: 0.5rem 0;
+
+  p {
+    flex: 1 1 14rem;
+    margin: 0;
+    color: $muted-text;
+    font-size: 0.85rem;
+  }
 }
 
 .reset-confirm {

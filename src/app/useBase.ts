@@ -169,6 +169,8 @@ export type MissionReport = {
   /** The camp an attack was sent against, and what it did; absent from the reports of the other missions. */
   targetSite?: string | null
   attack?: AttackResult | null
+  /** The pilot of the base who writes the pages of a flight that brought nobody back; absent when someone came back, and from the reports kept before it was. */
+  reporterName?: string
   crews: {
     pilotName: string
     aircraftName: string

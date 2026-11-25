@@ -1776,6 +1776,10 @@ $notebook-edge-height: 60;
   position: relative;
   margin-top: -1px;
   perspective: 1400px;
+
+  &[data-can-turn='true'] {
+    cursor: pointer;
+  }
 }
 
 .journal-leaf {

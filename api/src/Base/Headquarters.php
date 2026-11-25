@@ -196,8 +196,30 @@ final class Headquarters
             foreach ($report->crews as $place => $crew) {
                 $entry['crews'][$place] += $progress[$crew->pilotId]->toArray();
             }
+            $reporter = $this->reporterOf($baseId, $report, $missionId);
+            if ($reporter !== null) {
+                $entry['reporterName'] = $reporter;
+            }
             $this->events->record($baseId, $entry + ['bonusSupplies' => $bonusSupplies, 'spottedMission' => $spotted, 'targetSite' => $flight->targetSite, 'attack' => $attack]);
         });
+    }
+
+    /**
+     * The name of the pilot who writes the journal pages of a flight that brought nobody back: one of those who stayed at the base, drawn by the mission; null when someone came back, or none is left.
+     */
+    private function reporterOf(int $baseId, MissionReport $report, int $missionId): ?string
+    {
+        foreach ($report->crews as $crew) {
+            if (!$crew->pilotKilled) {
+                return null;
+            }
+        }
+        $pilots = $this->squadrons->pilotsOf($baseId);
+        if ($pilots === []) {
+            return null;
+        }
+
+        return $pilots[$missionId % count($pilots)]->name;
     }
 
     /**

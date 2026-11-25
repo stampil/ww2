@@ -560,12 +560,40 @@
         "On a perdu {{lost}}. Je n'arrive pas à l'écrire sans que la plume tremble.",
         "{{lost}} ne reviendra pas. Sa place au mess restera vide.",
         "Pour {{lost}}, il faudra écrire à la famille. Ce n'est pas à moi de le faire, mais j'y pense déjà."
-      ],
-      "several": [
-        "On a perdu {{lost}}. Je n'arrive pas à l'écrire sans que la plume tremble.",
-        "{{lost}} ne reviendront pas. Leurs places au mess resteront vides.",
-        "Pour {{lost}}, il faudra écrire aux familles. Ce n'est pas à moi de le faire, mais j'y pense déjà."
       ]
+    },
+    "fallen": {
+      "comrade": {
+        "opening": [
+          "Cette page devait être celle de {{lost}}. Je l'écris à sa place, puisqu'il n'est pas rentré.",
+          "{{lost}} tenait son carnet pour cette mission. C'est moi qui prends la plume : il ne reviendra pas l'écrire.",
+          "Il faut bien que quelqu'un raconte ce qui est arrivé à {{lost}}, et je l'ai vu de mes yeux."
+        ],
+        "situation": {
+          "success": [
+            "Il avait fait ce que la mission demandait quand son {{aircraft}} a été touché. Je l'ai vu descendre sans pouvoir rien faire.",
+            "La mission était remplie pour lui, et c'est au retour que son {{aircraft}} a pris le coup fatal. Je suis resté sur son aile jusqu'au bout.",
+            "Il avait fini son travail. Puis le {{aircraft}} a décroché, et je n'ai pas vu de parachute."
+          ],
+          "failure": [
+            "Son {{aircraft}} a été touché avant qu'il ait pu finir. Je l'ai vu descendre sans pouvoir rien faire.",
+            "Il n'a pas pu mener sa mission à son terme : le {{aircraft}} a pris trop de coups. Je suis resté sur son aile aussi longtemps que j'ai pu.",
+            "Tout est allé trop vite. Le {{aircraft}} a décroché, et je n'ai pas vu de parachute."
+          ]
+        }
+      },
+      "ground": {
+        "opening": [
+          "Je n'étais pas dans l'avion, mais c'est à moi d'écrire pour {{lost}}, qui n'est pas rentré.",
+          "Je suis resté au sol ce jour-là. Quelqu'un devait tenir la page de {{lost}} : ce sera moi.",
+          "Personne n'est revenu pour écrire cette page. Je prends la plume pour {{lost}}, au moins pour que son nom y soit."
+        ],
+        "situation": [
+          "On a guetté le {{aircraft}} de {{lost}} sur la piste jusqu'à la nuit. Il n'est pas revenu.",
+          "Le {{aircraft}} n'est jamais réapparu au-dessus du terrain. On a fini par arrêter de regarder le ciel.",
+          "On a attendu {{lost}} sur la piste, le {{aircraft}} en tête : rien. Le ciel est resté vide."
+        ]
+      }
     },
     "state": {
       "stressed": [

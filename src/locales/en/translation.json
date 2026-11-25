@@ -560,12 +560,40 @@
         "We lost {{lost}}. I cannot write it without the pen shaking.",
         "{{lost}} will not be coming back. A place at the mess will stay empty.",
         "Someone will have to write to the family of {{lost}}. It is not for me to do, but I am already thinking of it."
-      ],
-      "several": [
-        "We lost {{lost}}. I cannot write it without the pen shaking.",
-        "{{lost}} will not be coming back. Their places at the mess will stay empty.",
-        "Someone will have to write to the families of {{lost}}. It is not for me to do, but I am already thinking of it."
       ]
+    },
+    "fallen": {
+      "comrade": {
+        "opening": [
+          "This page was meant to be {{lost}}'s. I am writing it in his place, since he did not come back.",
+          "{{lost}} kept the book for this mission. I am taking up the pen: he will not be back to write it.",
+          "Somebody has to tell what happened to {{lost}}, and I saw it with my own eyes."
+        ],
+        "situation": {
+          "success": [
+            "He had done what the mission asked when his {{aircraft}} was hit. I watched him go down and could do nothing.",
+            "For him the mission was done, and it was on the way home that his {{aircraft}} took the fatal blow. I stayed on his wing to the end.",
+            "He had finished his work. Then the {{aircraft}} stalled, and I saw no parachute."
+          ],
+          "failure": [
+            "His {{aircraft}} was hit before he could finish. I watched him go down and could do nothing.",
+            "He could not see his mission through: the {{aircraft}} took too many hits. I stayed on his wing as long as I could.",
+            "It all went too fast. The {{aircraft}} stalled, and I saw no parachute."
+          ]
+        }
+      },
+      "ground": {
+        "opening": [
+          "I was not in the aircraft, but it falls to me to write for {{lost}}, who did not come back.",
+          "I stayed on the ground that day. Somebody had to keep the page of {{lost}}: it will be me.",
+          "Nobody came back to write this page. I take up the pen for {{lost}}, at least so that his name is on it."
+        ],
+        "situation": [
+          "We watched for {{lost}}'s {{aircraft}} on the runway until nightfall. It did not come back.",
+          "The {{aircraft}} never showed over the field again. In the end we stopped looking at the sky.",
+          "We waited for {{lost}} on the runway, the {{aircraft}} first in line: nothing. The sky stayed empty."
+        ]
+      }
     },
     "state": {
       "stressed": [

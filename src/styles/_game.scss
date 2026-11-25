@@ -20,6 +20,10 @@ $khaki-dark: #977b53;
 $go: #35aa46;
 $go-dark: #228536;
 $alarm: #c94e36;
+// The average color of public/textures/herbe.png, which is also what lies beyond the grass of the 3D base (GRASS_COLOR of AirfieldScene).
+$grass: #6d7231;
+// How far the edges of the map fade into the grass of the page, short of the ring of grass that every plan has round it.
+$map-fade: 5%;
 $title-font: 'Saira Stencil One', 'DM Sans', sans-serif;
 // The paper and the ink of the journal, and the handwriting of its pages.
 $paper: #d9c9a0;
@@ -155,23 +159,27 @@ $mono-font: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 .page-shell[data-game='true'] {
   height: 100dvh;
   min-height: 0;
+  padding-inline: 0;
   overflow: hidden;
 
   .topbar {
     min-height: 3.2rem;
-    padding-block: 0.3rem;
+    padding: 0.3rem var(--page-gutter);
+    background: var(--paper);
   }
 
   .game-page {
     @include flex($direction: column);
     flex: 1;
     min-height: 0;
-    padding: 0.4rem 0;
+    padding: 0.4rem var(--page-gutter);
   }
 }
 
+// The page of the game is the grass the map lies on.
 body:has(.page-shell[data-game='true']) {
   overflow: hidden;
+  background: $grass;
 }
 
 .base.game {
@@ -286,13 +294,14 @@ body:has(.page-shell[data-game='true']) {
   font-family: $mono-font;
 }
 
+// The map has no frame: its edges fade into the grass of the page.
 .base-map-viewport {
   width: min(100cqw, calc(100cqh * var(--columns) / var(--rows)));
   overflow: hidden;
-  border: 2px solid $outline;
-  box-shadow:
-    0 0 0 2px $frame,
-    0 0 0 4px $outline;
+  mask-image:
+    linear-gradient(to right, transparent, #000 $map-fade, #000 calc(100% - #{$map-fade}), transparent),
+    linear-gradient(to bottom, transparent, #000 $map-fade, #000 calc(100% - #{$map-fade}), transparent);
+  mask-composite: intersect;
 }
 
 .base-map {

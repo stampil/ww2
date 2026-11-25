@@ -41,12 +41,13 @@ a {
 }
 
 .page-shell {
+  --page-gutter: 1.25rem;
   @include flex($direction: column);
   min-height: 100vh;
-  padding-inline: 1.25rem;
+  padding-inline: var(--page-gutter);
 
   @include from('medium') {
-    padding-inline: clamp(1.25rem, 6vw, 6.5rem);
+    --page-gutter: clamp(1.25rem, 6vw, 6.5rem);
   }
 }
 

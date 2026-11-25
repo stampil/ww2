@@ -52,8 +52,9 @@ final class MissionResolver
      * @param array<int, Aircraft> $aircraft the aircraft of the flight, by id
      * @param array<int, DogfightOutcome> $duels how the dogfights of the flight that were played to their end ended, by the id of the aircraft
      * @param array<int, int> $flakHits how many times the flak hit each aircraft of the flight, by the id of the aircraft
+     * @param list<int> $lostInCombat the aircraft that lost a combat of a capture, which are lost whatever else happened to them
      */
-    public function resolve(Flight $flight, array $pilots, array $aircraft, array $duels = [], array $flakHits = []): MissionReport
+    public function resolve(Flight $flight, array $pilots, array $aircraft, array $duels = [], array $flakHits = [], array $lostInCombat = []): MissionReport
     {
         $successes = [];
         $unplayed = [];
@@ -73,7 +74,7 @@ final class MissionResolver
 
         $outcomes = [];
         foreach ($flight->crews as $crew) {
-            $outcomes[] = $this->outcomeOf($flight->mission, $pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']], $successes[$crew['aircraftId']], $flakHits[$crew['aircraftId']] ?? 0);
+            $outcomes[] = $this->outcomeOf($flight->mission, $pilots[$crew['pilotId']], $aircraft[$crew['aircraftId']], $successes[$crew['aircraftId']], $flakHits[$crew['aircraftId']] ?? 0, in_array($crew['aircraftId'], $lostInCombat, true));
         }
         $success = !in_array(false, $successes, true);
 
@@ -89,6 +90,12 @@ final class MissionResolver
         );
     }
 
+    /** Whether that many hits of flak destroy an aircraft. */
+    public function isShotDownByFlak(int $flakHits): bool
+    {
+        return $flakHits >= self::FLAK_HITS_TO_DESTROY;
+    }
+
     /**
      * One roll for the crews that played no mini-game: their average strength against the risk of the mission.
      *
@@ -96,7 +103,7 @@ final class MissionResolver
      * @param array<int, Pilot> $pilots
      * @param array<int, Aircraft> $aircraft
      */
-    private function rolledSuccess(Flight $flight, array $crews, array $pilots, array $aircraft): bool
+    public function rolledSuccess(Flight $flight, array $crews, array $pilots, array $aircraft): bool
     {
         $totalStrength = 0.0;
         foreach ($crews as $crew) {
@@ -142,11 +149,11 @@ final class MissionResolver
         return min($ratios);
     }
 
-    private function outcomeOf(Mission $mission, Pilot $pilot, Aircraft $aircraft, bool $success, int $flakHits): CrewOutcome
+    private function outcomeOf(Mission $mission, Pilot $pilot, Aircraft $aircraft, bool $success, int $flakHits, bool $lostInCombat): CrewOutcome
     {
         $damagePerRisk = $success ? self::MAX_DAMAGE_PER_RISK_ON_SUCCESS : self::MAX_DAMAGE_PER_RISK_ON_FAILURE;
         $vanished = !$success && $this->random->getInt(1, self::PERCENT) <= self::FAILED_FLIGHT_LOSS_PERCENT;
-        $shotDown = $flakHits >= self::FLAK_HITS_TO_DESTROY;
+        $shotDown = $this->isShotDownByFlak($flakHits) || $lostInCombat;
         $durability = $vanished || $shotDown ? 0 : max(0, $aircraft->durability - $this->random->getInt(0, $damagePerRisk * $mission->risk) - $flakHits * self::FLAK_HIT_DAMAGE);
         $aircraftLost = $durability === 0;
         $pilotKilled = $aircraftLost && $this->random->getInt(1, self::PERCENT) > $pilot->effectiveResilience();

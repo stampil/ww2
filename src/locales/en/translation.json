@@ -125,8 +125,11 @@
     "raidSend_one": "Send {{count}} aircraft on a raid ({{time}} there and back)",
     "raidSend_other": "Send {{count}} aircraft on a raid ({{time}} there and back)",
     "captureTitle": "Camp capture",
-    "captureText": "An aircraft attacks the camp, then lands on it: if it succeeds, the camp is yours with what it holds. The defense of the camp must be at zero.",
-    "captureSend": "Send the aircraft to take the camp ({{time}})",
+    "captureText": "Your aircraft attack the camp: each aircraft standing on it is an air combat to win, and a combat lost loses the aircraft. When no defender is left the camp is yours and your remaining aircraft land on it.",
+    "defenders": "Aircraft on the ground: {{defenders}}",
+    "captureCount": "Aircraft in the capture",
+    "captureSend_one": "Send {{count}} aircraft to take the camp ({{time}})",
+    "captureSend_other": "Send {{count}} aircraft to take the camp ({{time}})",
     "nobodyFree": "No aircraft or no pilot is free."
   },
   "wind": {
@@ -962,7 +965,6 @@
       "invalidTarget": "This camp cannot be attacked.",
       "campProtected": "This player has just arrived: their camp is protected for a while.",
       "campSpared": "This camp has already been raided three times this hour: it is spared.",
-      "defenseHolds": "The defense of the camp still holds: raid it first.",
       "lastBase": "This is the only base of this player: it cannot be taken.",
       "buildingDestroyed": "This building is destroyed: rebuild it first.",
       "buildingStanding": "This building is not destroyed.",

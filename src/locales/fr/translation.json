@@ -125,8 +125,11 @@
     "raidSend_one": "Envoyer {{count}} avion en raid ({{time}} aller et retour)",
     "raidSend_other": "Envoyer {{count}} avions en raid ({{time}} aller et retour)",
     "captureTitle": "Prise de camp",
-    "captureText": "Un avion attaque le camp puis s'y pose : s'il réussit, le camp est à toi avec ce qu'il garde. La défense du camp doit être à zéro.",
-    "captureSend": "Envoyer l'avion prendre le camp ({{time}})",
+    "captureText": "Tes avions attaquent le camp : chaque avion qui y est posé est un combat aérien à gagner, et un combat perdu perd l'avion. Quand plus aucun défenseur ne reste, le camp est à toi et tes avions restants s'y posent.",
+    "defenders": "Avions au sol : {{defenders}}",
+    "captureCount": "Avions de la prise",
+    "captureSend_one": "Envoyer {{count}} avion prendre le camp ({{time}})",
+    "captureSend_other": "Envoyer {{count}} avions prendre le camp ({{time}})",
     "nobodyFree": "Aucun avion ou aucun pilote libre."
   },
   "wind": {
@@ -962,7 +965,6 @@
       "invalidTarget": "Ce camp ne peut pas être attaqué.",
       "campProtected": "Ce joueur vient d'arriver : son camp est protégé quelque temps.",
       "campSpared": "Ce camp a déjà subi trois raids cette heure : il est épargné.",
-      "defenseHolds": "La défense du camp tient encore : fais d'abord des raids.",
       "lastBase": "C'est la seule base de ce joueur : elle ne se prend pas.",
       "buildingDestroyed": "Ce bâtiment est détruit : reconstruis-le d'abord.",
       "buildingStanding": "Ce bâtiment n'est pas détruit.",

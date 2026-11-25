@@ -22,6 +22,9 @@ enum MissionType: string
     case Raid = 'raid';
     case CampCapture = 'campCapture';
 
+    /** As many aircraft as a camp can send to take another: as many as a hangar holds. */
+    private const MAX_CAPTURE_AIRCRAFT = 6;
+
     /**
      * @param list<AircraftCategory> $categories the categories of the aircraft a squadron has
      */
@@ -67,7 +70,7 @@ enum MissionType: string
             self::GroundAttack => $this->fighterProfile(new IntegerRange(2, 3)),
             self::FighterCombat => $this->fighterProfile(new IntegerRange(1, 2), self::ACE_ONE_IN),
             self::Raid => $this->attackProfile(new IntegerRange(1, 3), new IntegerRange(2, 3), new IntegerRange(60, 60), new IntegerRange(40, 40), 2),
-            self::CampCapture => $this->attackProfile(new IntegerRange(1, 1), new IntegerRange(3, 3), new IntegerRange(60, 60), new IntegerRange(30, 30), 4),
+            self::CampCapture => $this->attackProfile(new IntegerRange(1, self::MAX_CAPTURE_AIRCRAFT), new IntegerRange(3, 3), new IntegerRange(60, 60), new IntegerRange(30, 30), 4),
         };
     }
 

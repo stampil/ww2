@@ -22,7 +22,7 @@ use Ww2\World\Clan;
 
 /**
  * The calls to the player during a flight, the toasts of the mini-games: an interception of bombers calls for one dogfight on the grid per aircraft, an air combat
- * one dogfight from the cockpit, a ground attack, a raid or a capture one strafing run, a reconnaissance one run of photos, at a game second drawn between a quarter and three quarters of the flight. Played or not, the flight is received as usual.
+ * one dogfight from the cockpit, a capture one dogfight from the cockpit for each aircraft that defends the camp, a ground attack or a raid one strafing run, a reconnaissance one run of photos, at a game second drawn between a quarter and three quarters of the flight. Played or not, the flight is received as usual.
  */
 final class Alerts
 {
@@ -55,8 +55,9 @@ final class Alerts
      * @param list<Pilot> $pilots the pilots of the flight, each flying the aircraft at the same place of the next list
      * @param list<Aircraft> $aircraft
      * @param int $flakShellsPerSecond how many shells a second the guns of the camp the flight goes against fire, for each aircraft: none when it goes against no camp
+     * @param int $captureDefenders how many aircraft the camp a capture goes against has on the ground: the capture has a combat for each, flown by the aircraft in turn
      */
-    public function schedule(Mission $mission, array $pilots, array $aircraft, int $launchGameSecond, int $flakShellsPerSecond): void
+    public function schedule(Mission $mission, array $pilots, array $aircraft, int $launchGameSecond, int $flakShellsPerSecond, int $captureDefenders): void
     {
         $kind = match ($mission->type) {
             MissionType::AirCombat => AlertKind::Dogfight,
@@ -75,6 +76,14 @@ final class Alerts
         }
         $earliest = intdiv($mission->durationSeconds * self::EARLIEST_PERCENT, self::PERCENT);
         $latest = intdiv($mission->durationSeconds * self::LATEST_PERCENT, self::PERCENT);
+        if ($mission->type === MissionType::CampCapture) {
+            for ($combat = 0; $combat < $captureDefenders; $combat += 1) {
+                $due = $launchGameSecond + $earliest + intdiv(($latest - $earliest) * ($combat + 1), $captureDefenders + 1);
+                $this->store->add($mission->id, $aircraft[$combat % count($aircraft)]->id, $kind, $due, self::NO_MOVES);
+            }
+
+            return;
+        }
         foreach ($aircraft as $place => $flown) {
             $moves = $kind === AlertKind::Dogfight ? $this->dogfight->movesFor($flown->model->maneuverability, $pilots[$place]->rank) : self::NO_MOVES;
             $this->store->add($mission->id, $flown->id, $kind, $launchGameSecond + $this->random->getInt($earliest, $latest), $moves);
@@ -93,6 +102,21 @@ final class Alerts
         }
 
         return $byMission;
+    }
+
+    /**
+     * @return list<array{aircraftId: int, outcome: DogfightOutcome|null}> the combats of a capture in the order they come, each with the aircraft that flies it and how it ended, null if it was not played
+     */
+    public function combatsOf(int $baseId, int $missionId): array
+    {
+        $combats = [];
+        foreach ($this->store->of($baseId) as $alert) {
+            if ($alert->missionId === $missionId && $alert->kind === AlertKind::Cockpit) {
+                $combats[] = ['aircraftId' => $alert->aircraftId, 'outcome' => $alert->outcome()];
+            }
+        }
+
+        return $combats;
     }
 
     /**

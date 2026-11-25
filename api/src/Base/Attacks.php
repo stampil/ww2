@@ -17,7 +17,7 @@ use Ww2\World\SitePlaces;
 
 /**
  * Raids and captures against the camps of players of the other side: which camps can be attacked, what an attack is, and what it does to the camp when its squadron is received.
- * A raid wears the defense of the camp down and destroys a building and sometimes an aircraft; a capture, once the defense is down, takes the camp. The figures are mine.
+ * A raid wears the defense of the camp down and destroys a building and sometimes an aircraft; a capture is a combat against each aircraft that stands on the camp, and takes it if none is left. The figures are mine.
  */
 final class Attacks
 {
@@ -71,7 +71,7 @@ final class Attacks
     }
 
     /**
-     * @return list<array{baseId: int, site: string, holder: string, defense: int, flightSeconds: int, raidRefusal: string|null, captureRefusal: string|null}> the camps of players of the other side in the world, with what refuses an attack on each
+     * @return list<array{baseId: int, site: string, holder: string, defense: int, defenders: int, flightSeconds: int, raidRefusal: string|null, captureRefusal: string|null}> the camps of players of the other side in the world, with what refuses an attack on each
      */
     public function targetsOf(int $baseId, int $gameSeconds): array
     {
@@ -85,6 +85,7 @@ final class Attacks
                 'site' => $this->bases->siteOf($camp['id'])->value,
                 'holder' => $this->bases->holderNameOf($camp['id']),
                 'defense' => $this->camps->defenseOf($camp['id'], $gameSeconds),
+                'defenders' => $this->defendersOf($camp['id'], $gameSeconds),
                 'flightSeconds' => $this->stationings->flightSecondsBetween($baseId, $camp['id']),
                 'raidRefusal' => $this->refusalOf($baseId, $camp['id'], MissionType::Raid, $gameSeconds)?->value,
                 'captureRefusal' => $this->refusalOf($baseId, $camp['id'], MissionType::CampCapture, $gameSeconds)?->value,
@@ -92,6 +93,14 @@ final class Attacks
         }
 
         return $targets;
+    }
+
+    /**
+     * @return int how many aircraft stand on the ground at a camp and defend it: each calls for a combat when it is attacked to be taken
+     */
+    public function defendersOf(int $campId, int $gameSeconds): int
+    {
+        return count($this->garrison->onGround($campId, $gameSeconds));
     }
 
     /**
@@ -119,16 +128,20 @@ final class Attacks
 
     /**
      * What an attack did, once its squadron is back: nothing if it failed or the camp can no longer be attacked, else the damage of a raid or the new holder of a captured camp.
-     * The caller holds the transaction.
+     * A capture does not depend on the success of the mission but on its combats: it takes the camp when no defender is left. The caller holds the transaction.
      *
+     * @param CaptureFight|null $fight how the combats of a capture went, null for the other missions
      * @return array<string, mixed>|null null for a mission that is not an attack
      */
-    public function resolve(int $baseId, Flight $flight, MissionReport $report, int $gameSeconds): ?array
+    public function resolve(int $baseId, Flight $flight, MissionReport $report, int $gameSeconds, ?CaptureFight $fight): ?array
     {
         if ($flight->targetBaseId === null) {
             return null;
         }
         $type = $flight->mission->type;
+        if ($type === MissionType::CampCapture) {
+            return $this->capture($baseId, $flight->targetBaseId, $report, $gameSeconds, $fight);
+        }
         if (!$report->success) {
             return ['result' => 'repelled'];
         }
@@ -137,9 +150,7 @@ final class Attacks
             return ['result' => 'calledOff', 'reason' => $refusal->value];
         }
 
-        return $type === MissionType::Raid
-            ? $this->raid($flight->targetBaseId, count($report->crews), $baseId, $gameSeconds)
-            : $this->capture($baseId, $flight->targetBaseId, $report, $gameSeconds);
+        return $this->raid($flight->targetBaseId, count($report->crews), $baseId, $gameSeconds);
     }
 
     private function refusalOf(int $baseId, int $targetBaseId, MissionType $type, int $gameSeconds): ?BaseError
@@ -157,9 +168,6 @@ final class Attacks
             $isSpared = $this->activity->isAbsent($holderId) && $this->camps->raidsSince($targetBaseId, $gameSeconds - self::SECONDS_PER_HOUR) >= self::MAX_RAIDS_PER_HOUR;
 
             return $isSpared ? BaseError::CampSpared : null;
-        }
-        if ($this->camps->defenseOf($targetBaseId, $gameSeconds) > 0) {
-            return BaseError::DefenseHolds;
         }
         if (count($this->bases->idsOf($holderId)) === 1) {
             return BaseError::LastBase;
@@ -194,17 +202,39 @@ final class Attacks
     /**
      * @return array<string, mixed>
      */
-    private function capture(int $attackerBaseId, int $campId, MissionReport $report, int $gameSeconds): array
+    private function capture(int $attackerBaseId, int $campId, MissionReport $report, int $gameSeconds, CaptureFight $fight): array
     {
-        $crew = $report->crews[0];
-        if ($crew->aircraftLost || $crew->pilotKilled) {
+        $refusal = $this->refusalOf($attackerBaseId, $campId, MissionType::CampCapture, $gameSeconds);
+        if ($refusal !== null) {
+            return ['result' => 'calledOff', 'reason' => $refusal->value];
+        }
+        $this->destroyDefenders($campId, $gameSeconds, $fight->kills);
+        if ($this->defendersOf($campId, $gameSeconds) > 0) {
+            return ['result' => 'repelled'];
+        }
+        $landings = [];
+        foreach ($report->crews as $crew) {
+            if (!$crew->aircraftLost && !$crew->pilotKilled) {
+                $landings[] = new Stationing($crew->aircraftId, $crew->pilotId, $attackerBaseId, $campId, new Cargo(0, 0, 0, 0), $gameSeconds, null);
+            }
+        }
+        if ($landings === []) {
             return ['result' => 'noLanding'];
         }
-        $landing = new Stationing($crew->aircraftId, $crew->pilotId, $attackerBaseId, $campId, new Cargo(0, 0, 0, 0), $gameSeconds, null);
-        $this->holdings->seize($campId, $this->bases->holderIdOf($attackerBaseId), $landing, $gameSeconds);
+        $this->holdings->seize($campId, $this->bases->holderIdOf($attackerBaseId), $landings, $gameSeconds);
         $this->camps->setDefense($campId, self::CAPTURED_DEFENSE, $gameSeconds);
 
         return ['result' => 'captured'];
+    }
+
+    /**
+     * Destroys that many of the aircraft that stand on the ground at a camp: those the attackers shot down.
+     */
+    private function destroyDefenders(int $campId, int $gameSeconds, int $count): void
+    {
+        foreach (array_slice($this->garrison->onGround($campId, $gameSeconds), 0, $count) as $aircraftId) {
+            $this->squadrons->destroyAircraft($aircraftId);
+        }
     }
 
     private function destroyBuilding(int $campId): ?Building

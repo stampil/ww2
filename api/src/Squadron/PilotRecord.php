@@ -39,8 +39,10 @@ final readonly class PilotRecord
 
     /**
      * What one flight adds to the record of a pilot: a victory over the enemy they met for each air combat that succeeded.
+     *
+     * @param EnemyType|null $enemy the enemy of the pilot's combat, null when they had none: only the air combats, which always have one, count a victory over it
      */
-    public static function ofFlight(bool $airCombat, bool $groundStrike, bool $succeeded, bool $aircraftLost, EnemyType $enemy): self
+    public static function ofFlight(bool $airCombat, bool $groundStrike, bool $succeeded, bool $aircraftLost, ?EnemyType $enemy): self
     {
         $isVictory = $airCombat && $succeeded;
 

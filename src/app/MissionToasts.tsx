@@ -6,7 +6,7 @@ import { TARGET_NATIONALITIES } from './targetNationality'
 import type { Clan, Flight, FlightAlert, MissionType, Squadron } from './useBase'
 
 // The missions whose mini-game is a strafing run over enemy vehicles.
-const STRAFING_TYPES: MissionType[] = ['groundAttack', 'raid', 'campCapture']
+const STRAFING_TYPES: MissionType[] = ['groundAttack', 'raid']
 // How long a call waits for the player before it goes away and its mini-game is lost, and how often the bar is redrawn.
 const TOAST_SECONDS = 30
 const TICK_MILLISECONDS = 250

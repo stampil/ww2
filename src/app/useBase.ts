@@ -217,8 +217,8 @@ export type UpgradeInfo = { upgrade: UpgradeName; level: number; maxLevel: numbe
 /** The battle of the base, which never ends: the enemy aircraft the player shot down, as a score. */
 export type Battle = { kills: number }
 
-/** An enemy camp that can be attacked, with its defense, the flight there and what refuses a raid or a capture now, if anything. */
-export type AttackTarget = { baseId: number; site: string; holder: string; defense: number; flightSeconds: number; raidRefusal: string | null; captureRefusal: string | null }
+/** An enemy camp that can be attacked, with its defense, the aircraft on the ground that defend it, the flight there and what refuses a raid or a capture now, if anything. */
+export type AttackTarget = { baseId: number; site: string; holder: string; defense: number; defenders: number; flightSeconds: number; raidRefusal: string | null; captureRefusal: string | null }
 /** What raids did to the camp: its defense, and the buildings that are destroyed until they are built again for `rebuildCost` materials. */
 export type CampState = { defense: number; destroyed: string[]; rebuildCost: number }
 

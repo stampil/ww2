@@ -44,9 +44,11 @@ import WorkshopPanel from './WorkshopPanel'
 const GROUND_RUN_WINDOWS: Partial<Record<MissionType, ComponentType<GroundRunProps>>> = {
   groundAttack: GroundAttackWindow,
   raid: GroundAttackWindow,
-  campCapture: GroundAttackWindow,
   reconnaissance: ReconnaissanceWindow,
 }
+
+// The missions whose mini-game is a dogfight flown from the cockpit: an air combat, and the combats of a capture, one for each aircraft that defends the camp.
+const COCKPIT_COMBAT_TYPES: MissionType[] = ['fighterCombat', 'campCapture']
 
 function standStatusOf(state: HangarAircraft, aircraft: Aircraft): StandStatus {
   if (state.fireSeconds !== null) {
@@ -447,7 +449,7 @@ function BaseScreen({ player }: { player: Player }) {
             onClose={() => setDuelAlertId(null)}
           />
         )}
-        {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && duel.flight.type === 'fighterCombat' && (
+        {duelCrew !== undefined && duel !== undefined && duel.alert.kind === 'cockpit' && COCKPIT_COMBAT_TYPES.includes(duel.flight.type) && (
           <CockpitCombatWindow
             alert={duel.alert}
             livery={duelCrew.aircraft.livery}

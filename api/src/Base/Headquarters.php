@@ -51,6 +51,7 @@ final class Headquarters
         private readonly Attacks $attacks,
         private readonly Bases $world,
         private readonly Garrison $garrison,
+        private readonly CaptureCombats $captures,
     ) {
     }
 
@@ -88,7 +89,7 @@ final class Headquarters
     public function launch(int $baseId, int $missionId, array $pilotIds, array $aircraftIds, int $fuelPerAircraft, int $ammunitionPerAircraft): void
     {
         $this->database->transaction(function () use ($baseId, $missionId, $pilotIds, $aircraftIds, $fuelPerAircraft, $ammunitionPerAircraft): void {
-            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $fuelPerAircraft, $ammunitionPerAircraft, mayUseGuests: true, flakShellsPerSecond: 0);
+            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $fuelPerAircraft, $ammunitionPerAircraft, mayUseGuests: true, flakShellsPerSecond: 0, captureDefenders: 0);
         });
     }
 
@@ -103,7 +104,8 @@ final class Headquarters
     {
         $this->database->transaction(function () use ($baseId, $targetBaseId, $type, $pilotIds, $aircraftIds): void {
             $this->bases->lockResources($baseId);
-            $this->attacks->assertTarget($baseId, $targetBaseId, $type, $this->clocks->of($baseId)->gameSeconds);
+            $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
+            $this->attacks->assertTarget($baseId, $targetBaseId, $type, $gameSeconds);
             $aircraftCount = count($aircraftIds);
             $profile = $type->profile();
             if ($aircraftCount < $profile->aircraftCount->min || $aircraftCount > $profile->aircraftCount->max) {
@@ -111,7 +113,7 @@ final class Headquarters
             }
             $mission = $this->attacks->missionFor($baseId, $targetBaseId, $type, $aircraftCount);
             $missionId = $this->missions->addAttack($baseId, $mission, $targetBaseId);
-            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $mission->fuelPerAircraft, $mission->ammunitionPerAircraft, mayUseGuests: false, flakShellsPerSecond: $this->attacks->flakShellsPerSecond($baseId, $targetBaseId));
+            $this->depart($baseId, $missionId, $pilotIds, $aircraftIds, $mission->fuelPerAircraft, $mission->ammunitionPerAircraft, mayUseGuests: false, flakShellsPerSecond: $this->attacks->flakShellsPerSecond($baseId, $targetBaseId), captureDefenders: $type === MissionType::CampCapture ? $this->attacks->defendersOf($targetBaseId, $gameSeconds) : 0);
         });
     }
 
@@ -120,8 +122,9 @@ final class Headquarters
      * @param list<int> $aircraftIds
      * @param bool $mayUseGuests whether the aircraft of other bases standing at the camp may fly: not an attack, whose aircraft land on the camp it takes
      * @param int $flakShellsPerSecond how many shells a second the guns of the camp an attack goes against fire at each aircraft, none for a mission that goes against no camp
+     * @param int $captureDefenders how many aircraft stand on the ground at the camp a capture goes against, which calls for a combat each
      */
-    private function depart(int $baseId, int $missionId, array $pilotIds, array $aircraftIds, int $fuelPerAircraft, int $ammunitionPerAircraft, bool $mayUseGuests, int $flakShellsPerSecond): void
+    private function depart(int $baseId, int $missionId, array $pilotIds, array $aircraftIds, int $fuelPerAircraft, int $ammunitionPerAircraft, bool $mayUseGuests, int $flakShellsPerSecond, int $captureDefenders): void
     {
         $resources = $this->bases->lockResources($baseId);
         $this->camps->assertStanding($baseId, Building::Headquarters);
@@ -148,7 +151,7 @@ final class Headquarters
         foreach ($pilotIds as $pilotId) {
             $crewPilots[] = $ownedPilots[$pilotId];
         }
-        $this->alerts->schedule($mission, $crewPilots, $aircraft, $gameSeconds, $flakShellsPerSecond);
+        $this->alerts->schedule($mission, $crewPilots, $aircraft, $gameSeconds, $flakShellsPerSecond, $captureDefenders);
     }
 
     /**
@@ -171,10 +174,19 @@ final class Headquarters
             foreach ($this->garrison->guestsAt($baseId, $gameSeconds) as $aircraftId => $guest) {
                 $flyable[$aircraftId] = $guest->aircraft;
             }
-            $report = $this->resolver->resolve($flight, $this->squadrons->pilotsById($baseId), $flyable, $duels, $this->alerts->flakHitsOf($baseId, $missionId));
+            $pilots = $this->squadrons->pilotsById($baseId);
+            $flakHits = $this->alerts->flakHitsOf($baseId, $missionId);
+            $fight = null;
+            if ($flight->mission->type === MissionType::CampCapture) {
+                $fight = $this->captures->fight($flight, $pilots, $flyable, $this->alerts->combatsOf($baseId, $missionId), $flakHits);
+                foreach ($flight->crews as $crew) {
+                    $duels[$crew['aircraftId']] = $fight->outcome();
+                }
+            }
+            $report = $this->resolver->resolve($flight, $pilots, $flyable, $duels, $flakHits, $fight?->lostAircraftIds ?? []);
             $bonusSupplies = $this->alerts->bonusSuppliesOf($missionId);
             $progress = $this->applyReport($baseId, $report, $gameSeconds, $this->alerts->enemiesOf($baseId, $missionId, $this->world->clanOfBase($baseId)), $bonusSupplies);
-            $attack = $this->attacks->resolve($baseId, $flight, $report, $gameSeconds);
+            $attack = $this->attacks->resolve($baseId, $flight, $report, $gameSeconds, $fight);
             $this->missions->remove($missionId);
             $spotted = false;
             if ($report->success && $report->type === MissionType::Reconnaissance) {
@@ -272,7 +284,7 @@ final class Headquarters
     }
 
     /**
-     * @param array<int, EnemyType> $enemies the enemy each aircraft of the flight met, by the id of the aircraft
+     * @param array<int, EnemyType> $enemies the enemy each aircraft of the flight met, by the id of the aircraft, missing for one that met none
      * @param int $bonusSupplies what the mini-games destroyed beside what the mission asked for pays, on top of the mission
      * @return array<int, PilotProgress> what the flight made of each pilot of the crews, by the id of the pilot
      */
@@ -280,7 +292,7 @@ final class Headquarters
     {
         $progress = [];
         foreach ($report->crews as $crew) {
-            $progress[$crew->pilotId] = $this->squadrons->recordFlight($crew->pilotId, PilotRecord::ofFlight($report->type->isAirCombat(), $report->type->isGroundStrike(), $crew->succeeded, $crew->aircraftLost, $enemies[$crew->aircraftId]));
+            $progress[$crew->pilotId] = $this->squadrons->recordFlight($crew->pilotId, PilotRecord::ofFlight($report->type->isAirCombat(), $report->type->isGroundStrike(), $crew->succeeded, $crew->aircraftLost, $enemies[$crew->aircraftId] ?? null));
             if ($crew->pilotKilled) {
                 $this->squadrons->bury($crew->pilotId);
             } else {

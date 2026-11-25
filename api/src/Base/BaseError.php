@@ -56,7 +56,6 @@ enum BaseError: string
     case InvalidTarget = 'invalidTarget';
     case CampProtected = 'campProtected';
     case CampSpared = 'campSpared';
-    case DefenseHolds = 'defenseHolds';
     case LastBase = 'lastBase';
     case BuildingDestroyed = 'buildingDestroyed';
     case BuildingStanding = 'buildingStanding';

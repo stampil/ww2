@@ -32,10 +32,12 @@ final class Holdings
     }
 
     /**
-     * Takes a camp from its holder by force, for the player whose aircraft has landed on it: the aircraft on the camp are lost and its missions with them, those of the holder that are away go home,
+     * Takes a camp from its holder by force, for the player whose aircraft have landed on it, which stay there: the aircraft on the camp are lost and its missions with them, those of the holder that are away go home,
      * and the camp keeps its stores, its pilots and its buildings, which are the new holder's. The caller holds the transaction.
+     *
+     * @param non-empty-list<Stationing> $landings the aircraft that landed, each with its pilot, all from bases of the captor
      */
-    public function seize(int $campId, int $captorId, Stationing $landing, int $gameSeconds): void
+    public function seize(int $campId, int $captorId, array $landings, int $gameSeconds): void
     {
         $holderId = $this->bases->lockedHolderIdOf($campId);
         foreach ($this->garrison->atCamp($campId, $gameSeconds) as $aircraftId) {
@@ -45,13 +47,15 @@ final class Holdings
         $this->missions->removeAllOf($campId);
         $this->stationings->sendGuestsHome($campId);
         if ($holderId !== null) {
-            $this->giveUp($campId, $holderId, ['capturedBy' => $this->bases->holderNameOf($landing->originBaseId)]);
+            $this->giveUp($campId, $holderId, ['capturedBy' => $this->bases->holderNameOf($landings[0]->originBaseId)]);
         }
         $this->bases->assign($campId, $captorId);
         $this->baseFounder->foundEmpty($campId);
         $this->squadronFounder->foundMechanics($campId);
-        $this->stationings->add($landing);
-        $this->events->record($landing->originBaseId, ['kind' => 'campTaken', 'site' => $this->bases->siteOf($campId)->value]);
+        foreach ($landings as $landing) {
+            $this->stationings->add($landing);
+        }
+        $this->events->record($landings[0]->originBaseId, ['kind' => 'campTaken', 'site' => $this->bases->siteOf($campId)->value]);
     }
 
     /**

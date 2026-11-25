@@ -11,7 +11,13 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+**Un seul mécanicien au départ, trois au plus par camp** (« on ne peut avoir que 3 mecanicien dans un camps, fait commencer avec 1 seul », 25/11). Compris : (a) un camp ne loge plus que 3 mécaniciens (6 aujourd'hui, `Workshop::MAX_MECHANICS`) ; (b) un camp neuf démarre avec 1 mécanicien (2 aujourd'hui, `SquadronFounder::STARTING_MECHANICS`, compétence de départ 40 inchangée), y compris après « Recommencer la partie » et pour un camp pris par un atterrissage, qui passent par le même chiffre. Le recrutement reste à 300 de ravitaillement, compétence tirée de 20 à 60 : monter de 1 à 3 coûte donc 600. L'interface n'a aucun de ces chiffres en dur (elle lit le maximum que le serveur envoie).
+
+1. **Et les camps déjà fondés ?** Ils ont 2 mécaniciens au moins (la migration 057 en a donné 2 aux camps qui n'en avaient pas) et certains en ont recruté jusqu'à 6.
+   - **A, ma reco : inchangés.** Ceux qui en ont plus de 3 les gardent (le recrutement est refusé tant qu'ils sont à 3 ou plus), ceux qui en ont 2 aussi ; seuls les camps fondés après cette modification partent avec 1. Rien n'est retiré à personne.
+   - **B : ramenés à la règle par une migration.** Un camp à 2 mécaniciens passe à 1, un camp à plus de 3 passe à 3, un camp à 3 reste à 3 ; les derniers mécaniciens recrutés sont retirés, et les 300 de ravitaillement payés ne sont pas rendus.
+
+À savoir, sans question : avec un seul mécanicien, tout ce qui en prend un se fait l'un après l'autre : inspection, réparation, reconstruction d'une épave, pièce fabriquée « avec un mécanicien » ; tant qu'il est pris, le serveur refuse le reste (« Aucun mécanicien n'est libre. », que les boutons disent déjà). Une pièce fabriquée sans mécanicien ne le prend pas, mais dure deux fois plus longtemps. La règle de blocage du 25/11 n'en dépend pas.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -39,7 +45,9 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : tout est fait.
+| N° | Instruction | Go |
+|---|---|---|
+| 1 | Un seul mécanicien au départ, trois au plus par camp (25/11, voir la section 2) | non : attend ta réponse à la question 1 et ton « go » |
 
 ## Mis de côté
 

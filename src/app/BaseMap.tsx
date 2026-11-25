@@ -8,6 +8,7 @@ import Icon from './Icon'
 import type { IconName } from './iconPaths'
 import MaintenanceCrews from './MaintenanceCrews'
 import ServiceVehicles from './ServiceVehicles'
+import ZoomableView from './ZoomableView'
 import type { BuildingName, Cell, PlacedSprite, TerrainPlan } from '../plans/terrainPlan'
 import type { Livery } from '../three/liveries'
 import { paintTiles } from '../three/patchImage'
@@ -86,83 +87,85 @@ function BaseMap({ plan, servicedAircraftIds, burningAircraftIds, refuelingAircr
 
   return (
     <div className="base-map-viewport" style={gridSize}>
-      <div className="base-map" role="group" aria-label={t('base.map')} data-three={aircraftSprite !== null} data-camera-away={isCameraAway}>
-        <canvas className="base-map-canvas" ref={canvasRef} />
-        {aircraftSprite !== null && (
-          <AirfieldView
-            plan={plan}
-            departures={departures}
-            arrivals={arrivals}
-            emergences={emergences}
-            aircraftWidthTiles={AIRCRAFT_WIDTH_TILES}
-            parked={parkedAircraft.map((aircraft) => ({ stand: aircraft.stand, livery: aircraft.livery }))}
-            ruins={plan.sprites.filter((sprite) => sprite.building !== undefined && destroyedBuildings.includes(sprite.building)).map((sprite) => sprite.sprite)}
-            shadowImage={aircraftSprite}
-            onDeparted={onDeparted}
-            onLanded={onLanded}
-            onCameraAway={setIsCameraAway}
-            onFramed={setGroundTransform}
-          />
-        )}
-        <div className="base-map-overlay" style={groundTransform === '' ? undefined : { transform: groundTransform }}>
-          {plan.sprites.map((sprite) => {
-            const building = sprite.building
-            if (building === undefined) {
-              return <img key={sprite.sprite} className="base-sprite" src={spriteUrl(sprite)} alt="" draggable={false} style={placement(sprite)} />
-            }
-            return (
-              <button
-                key={sprite.sprite}
-                type="button"
-                className="base-sprite"
-                style={placement(sprite)}
-                data-destroyed={destroyedBuildings.includes(building)}
-                aria-pressed={openBuilding === building}
-                aria-label={t(`base.building.${building}.name`)}
-                onClick={() => onSelect(building)}
-              >
-                <img src={spriteUrl(sprite)} alt="" draggable={false} />
-              </button>
-            )
-          })}
-          {aircraftSprite !== null &&
-            parkedAircraft.map((aircraft) => (
-              <button
-                key={aircraft.id}
-                type="button"
-                className="map-aircraft"
-                data-status={aircraft.status}
-                style={standPlacement(aircraft.stand)}
-                aria-label={t('base.hangar.parked')}
-                onClick={() => onSelect('hangar')}
-              >
-                {aircraft.status !== 'ready' && (
-                  <span className="map-aircraft-badge">
-                    <Icon name={STATUS_ICONS[aircraft.status]} />
-                  </span>
-                )}
-              </button>
-            ))}
-          {alerts.map((alert) => {
-            const sprite = plan.sprites.find((candidate) => candidate.building === alert.building)!
-            return (
-              <button
-                key={alert.kind}
-                type="button"
-                className="map-alert"
-                data-kind={alert.kind}
-                style={placement(sprite)}
-                aria-label={alert.label}
-                onClick={() => onSelect(alert.building)}
-              >
-                <Icon name={ALERT_ICONS[alert.kind]} />
-              </button>
-            )
-          })}
-          <MaintenanceCrews plan={plan} servicedAircraftIds={servicedAircraftIds} parkedAircraft={parkedAircraft} />
-          <ServiceVehicles plan={plan} parkedAircraft={parkedAircraft} burningAircraftIds={burningAircraftIds} refuelingAircraftIds={refuelingAircraftIds} onRefueled={onRefueled} />
+      <ZoomableView>
+        <div className="base-map" role="group" aria-label={t('base.map')} data-three={aircraftSprite !== null} data-camera-away={isCameraAway}>
+          <canvas className="base-map-canvas" ref={canvasRef} />
+          {aircraftSprite !== null && (
+            <AirfieldView
+              plan={plan}
+              departures={departures}
+              arrivals={arrivals}
+              emergences={emergences}
+              aircraftWidthTiles={AIRCRAFT_WIDTH_TILES}
+              parked={parkedAircraft.map((aircraft) => ({ stand: aircraft.stand, livery: aircraft.livery }))}
+              ruins={plan.sprites.filter((sprite) => sprite.building !== undefined && destroyedBuildings.includes(sprite.building)).map((sprite) => sprite.sprite)}
+              shadowImage={aircraftSprite}
+              onDeparted={onDeparted}
+              onLanded={onLanded}
+              onCameraAway={setIsCameraAway}
+              onFramed={setGroundTransform}
+            />
+          )}
+          <div className="base-map-overlay" style={groundTransform === '' ? undefined : { transform: groundTransform }}>
+            {plan.sprites.map((sprite) => {
+              const building = sprite.building
+              if (building === undefined) {
+                return <img key={sprite.sprite} className="base-sprite" src={spriteUrl(sprite)} alt="" draggable={false} style={placement(sprite)} />
+              }
+              return (
+                <button
+                  key={sprite.sprite}
+                  type="button"
+                  className="base-sprite"
+                  style={placement(sprite)}
+                  data-destroyed={destroyedBuildings.includes(building)}
+                  aria-pressed={openBuilding === building}
+                  aria-label={t(`base.building.${building}.name`)}
+                  onClick={() => onSelect(building)}
+                >
+                  <img src={spriteUrl(sprite)} alt="" draggable={false} />
+                </button>
+              )
+            })}
+            {aircraftSprite !== null &&
+              parkedAircraft.map((aircraft) => (
+                <button
+                  key={aircraft.id}
+                  type="button"
+                  className="map-aircraft"
+                  data-status={aircraft.status}
+                  style={standPlacement(aircraft.stand)}
+                  aria-label={t('base.hangar.parked')}
+                  onClick={() => onSelect('hangar')}
+                >
+                  {aircraft.status !== 'ready' && (
+                    <span className="map-aircraft-badge">
+                      <Icon name={STATUS_ICONS[aircraft.status]} />
+                    </span>
+                  )}
+                </button>
+              ))}
+            {alerts.map((alert) => {
+              const sprite = plan.sprites.find((candidate) => candidate.building === alert.building)!
+              return (
+                <button
+                  key={alert.kind}
+                  type="button"
+                  className="map-alert"
+                  data-kind={alert.kind}
+                  style={placement(sprite)}
+                  aria-label={alert.label}
+                  onClick={() => onSelect(alert.building)}
+                >
+                  <Icon name={ALERT_ICONS[alert.kind]} />
+                </button>
+              )
+            })}
+            <MaintenanceCrews plan={plan} servicedAircraftIds={servicedAircraftIds} parkedAircraft={parkedAircraft} />
+            <ServiceVehicles plan={plan} parkedAircraft={parkedAircraft} burningAircraftIds={burningAircraftIds} refuelingAircraftIds={refuelingAircraftIds} onRefueled={onRefueled} />
+          </div>
         </div>
-      </div>
+      </ZoomableView>
     </div>
   )
 }

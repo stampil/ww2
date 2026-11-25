@@ -15,13 +15,14 @@ const FILL_LIGHT_INTENSITY = 0.8
 const FILL_POSITION = new THREE.Vector3(30, -20, -10)
 const FRAMING_SCALE = 0.8
 
-/** `maxPolarAngleDegrees` is how far from straight above the camera may be dragged; leave it out to let it go all the way round. */
+/** `maxPolarAngleDegrees` is how far from straight above the camera may be dragged; leave it out to let it go all the way round. `zoomRangeMeters` lets the wheel and two fingers bring the camera nearer to the subject or further, between those distances; leave it out and the camera stays where it starts. */
 export type OrbitView = {
   cameraStart: THREE.Vector3
   target: THREE.Vector3
   farMeters: number
   isDraggable: boolean
   maxPolarAngleDegrees?: number
+  zoomRangeMeters?: { min: number; max: number }
 }
 
 /** A subject alone on a clear background, turned in every direction by dragging unless its view is fixed. Owns its WebGL canvas. */
@@ -44,7 +45,11 @@ export abstract class OrbitViewScene {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     this.controls.target.copy(view.target)
     this.controls.enabled = view.isDraggable
-    this.controls.enableZoom = false
+    this.controls.enableZoom = view.zoomRangeMeters !== undefined
+    if (view.zoomRangeMeters !== undefined) {
+      this.controls.minDistance = view.zoomRangeMeters.min
+      this.controls.maxDistance = view.zoomRangeMeters.max
+    }
     this.controls.enablePan = false
     if (view.maxPolarAngleDegrees !== undefined) {
       this.controls.maxPolarAngle = THREE.MathUtils.degToRad(view.maxPolarAngleDegrees)

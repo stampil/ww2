@@ -16,6 +16,7 @@ const GROUND_VIEW: OrbitView = {
   farMeters: 600,
   isDraggable: true,
   maxPolarAngleDegrees: 85,
+  zoomRangeMeters: { min: 10, max: 45 },
 }
 // The terrain fades into the haze of the horizon between these distances from the camera, before it ends.
 const HAZE_NEAR_METERS = 80

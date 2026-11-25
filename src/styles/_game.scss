@@ -299,6 +299,20 @@ body:has(.page-shell[data-game='true']) {
   position: relative;
 }
 
+// The map can be zoomed with the wheel and two fingers, and dragged once zoomed: a finger that is not on a zoomed map still scrolls the page.
+.zoom-viewport {
+  overflow: hidden;
+  touch-action: pan-y;
+
+  &[data-zoomed='true'] {
+    touch-action: none;
+  }
+}
+
+.zoom-content {
+  transform-origin: 0 0;
+}
+
 .base-map-canvas {
   display: block;
   width: 100%;
@@ -1332,6 +1346,24 @@ button.base-sprite {
   display: block;
   width: 100%;
   height: auto;
+}
+
+// The front line between the two sides, over the picture and under the camps, which still take the clicks.
+.world-front {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  polyline {
+    fill: none;
+    stroke: $alarm;
+    stroke-width: 3;
+    stroke-dasharray: 14 8;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
 }
 
 .world-camp {

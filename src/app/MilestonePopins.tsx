@@ -5,8 +5,8 @@ import { assetUrl } from '../assetUrl'
 import { useClan, useRankName } from './ClanContext'
 import CrashPicture from './CrashPicture'
 import GameWindow from './GameWindow'
-import { useMood } from './useMood'
-import type { Mood } from '../audio/moods'
+import { useJingle } from './useJingle'
+import type { Jingle } from '../audio/MusicPlayer'
 import type { Livery } from '../three/liveries'
 import type { BaseEvent, Clan } from './useBase'
 
@@ -68,14 +68,14 @@ function wordsOf(milestone: Milestone, t: TFunction, rankName: (rank: number) =>
   }
 }
 
-/** The music each milestone plays: triumphant for a promotion or a new ace, sorrowful for an aircraft that is lost, melodramatic for a pilot who dies. */
-const MOODS_OF: Record<Milestone['kind'], Mood> = { ace: 'triumph', promotion: 'triumph', crash: 'sorrow', death: 'melodrama' }
+/** The jingle each milestone plays: the one of a success for a promotion or a new ace, the one of a failure for an aircraft that is lost or a pilot who dies. */
+const JINGLES_OF: Record<Milestone['kind'], Jingle> = { ace: 'success', promotion: 'success', crash: 'failure', death: 'failure' }
 
 function MilestonePopin({ milestone, onClose }: { milestone: Milestone; onClose: () => void }) {
   const { t } = useTranslation()
   const clan = useClan()
   const rankName = useRankName()
-  useMood(MOODS_OF[milestone.kind])
+  useJingle(JINGLES_OF[milestone.kind])
   const { title, text } = wordsOf(milestone, t, rankName)
 
   return (

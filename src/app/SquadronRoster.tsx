@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useRankName } from './ClanContext'
 import GameWindow from './GameWindow'
 import PilotSheet from './PilotSheet'
-import { useMood } from './useMood'
+import { useJingle } from './useJingle'
 import type { FallenPilot, Pilot, PilotRecord } from './useBase'
 
 type Props = {
@@ -26,7 +26,7 @@ function SquadronRoster({ pilots, fallen, onDismiss }: Props) {
   const rankName = useRankName()
   const [view, setView] = useState<View>('squadron')
   const [selectedId, setSelectedId] = useState<number | null>(null)
-  useMood(view === 'memorial' ? 'melodrama' : null)
+  useJingle(view === 'memorial' ? 'failure' : null)
   const ranked = [...pilots].sort(byMerit)
   const selected = ranked.find((pilot) => pilot.id === selectedId) ?? ranked[0]
   const percent = new Intl.NumberFormat(i18n.language, { style: 'percent' })

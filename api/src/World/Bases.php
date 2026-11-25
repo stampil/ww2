@@ -336,23 +336,59 @@ final class Bases
     }
 
     /**
-     * Starts a new instance with its sites laid out, and the camps that the AI holds given to the AI, each with stocks and a squadron. The caller holds the transaction.
+     * Starts a new instance with its sites laid out, and the camps that the AI holds given to the AI. The caller holds the transaction.
      *
      * @return int the id of the new instance
      */
     private function createInstance(): int
     {
         $instanceId = $this->instances->create();
+        $this->giveAiItsCamps($instanceId);
+
+        return $instanceId;
+    }
+
+    /**
+     * Gives the AI its camps in an instance that was made before the AI existed: the two holders, and the same share of the camps of each side as in a new instance, among those that are free.
+     * Looking is one query; the instance is locked while it is done, so that two requests do not do it twice.
+     */
+    public function populateIfBare(int $instanceId): void
+    {
+        if ($this->hasAiHolders($instanceId)) {
+            return;
+        }
+        $this->database->transaction(function () use ($instanceId): void {
+            $this->database->fetchAll('SELECT id FROM instances WHERE id = :id FOR UPDATE', ['id' => $instanceId]);
+            if (!$this->hasAiHolders($instanceId)) {
+                $this->giveAiItsCamps($instanceId);
+            }
+        });
+    }
+
+    private function hasAiHolders(int $instanceId): bool
+    {
+        return $this->database->fetchAll('SELECT 1 FROM ai_holders WHERE instance_id = :instance_id LIMIT 1', ['instance_id' => $instanceId]) !== [];
+    }
+
+    /**
+     * Makes the holders of the AI and gives them the camps drawn for them, each with stocks and a squadron, leaving a camp that a person holds to the person. The caller holds the transaction.
+     */
+    private function giveAiItsCamps(int $instanceId): void
+    {
         $holderIds = $this->aiCamps->createHolders($instanceId);
         foreach ($this->aiCamps->draw() as $hold) {
-            $rows = $this->database->fetchAll('SELECT id FROM bases WHERE instance_id = :instance_id AND site = :site', ['instance_id' => $instanceId, 'site' => $hold['site']->value]);
+            $rows = $this->database->fetchAll(
+                'SELECT id FROM bases WHERE instance_id = :instance_id AND site = :site AND player_id IS NULL',
+                ['instance_id' => $instanceId, 'site' => $hold['site']->value],
+            );
+            if ($rows === []) {
+                continue;
+            }
             $baseId = (int) $rows[0]['id'];
             $this->assign($baseId, $holderIds[$hold['clan']->value]);
             $this->squadronFounder->found($baseId);
             $this->baseFounder->found($baseId);
         }
-
-        return $instanceId;
     }
 
     /**

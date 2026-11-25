@@ -64,7 +64,9 @@ final class Holdings
             return;
         }
         $gameSeconds = $this->clocks->of($baseId)->gameSeconds;
-        foreach ($this->bases->campsOf($this->bases->instanceOf($baseId)) as $camp) {
+        $instanceId = $this->bases->instanceOf($baseId);
+        $this->bases->populateIfBare($instanceId);
+        foreach ($this->bases->campsOf($instanceId) as $camp) {
             $this->settleCamp($camp['id'], $camp['holderId'], $gameSeconds);
         }
     }

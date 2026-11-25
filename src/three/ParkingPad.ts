@@ -39,6 +39,11 @@ function texturedPlane(url: string, colorUntilLoaded: number, widthMeters: numbe
   return { mesh: new THREE.Mesh(new THREE.PlaneGeometry(widthMeters, lengthMeters), material), loaded }
 }
 
+/** The grass of the terrain, 600 m across, which `loaded` settles on once its picture is in. */
+export function grassGround(): { mesh: THREE.Mesh; loaded: Promise<void> } {
+  return texturedPlane(GRASS_URL, GRASS_COLOR_UNTIL_LOADED, GRASS_SIZE_METERS, GRASS_SIZE_METERS, GRASS_TILE_METERS)
+}
+
 /** A number from -1 up to 1 drawn from the seeded random. */
 function signedFractionOf(random: SeededRandom): number {
   return random.integer(-RANDOM_RESOLUTION, RANDOM_RESOLUTION) / RANDOM_RESOLUTION
@@ -70,7 +75,7 @@ export class ParkingPad {
   /** `restHeightMeters` is how high the middle of the aircraft stands above the ground at rest, which the pad is lowered by. */
   constructor(layoutSeed: number, restHeightMeters: number) {
     this.object.position.z = -restHeightMeters
-    const grass = texturedPlane(GRASS_URL, GRASS_COLOR_UNTIL_LOADED, GRASS_SIZE_METERS, GRASS_SIZE_METERS, GRASS_TILE_METERS)
+    const grass = grassGround()
     const concrete = texturedPlane(CONCRETE_URL, CONCRETE_COLOR_UNTIL_LOADED, PAD_WIDTH_METERS, PAD_LENGTH_METERS, CONCRETE_TILE_METERS)
     concrete.mesh.position.z = PAD_LIFT_METERS
     const bushes = new Bushes(scatteredBushes(layoutSeed))

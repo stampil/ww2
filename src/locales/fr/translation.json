@@ -300,6 +300,11 @@
       "title": "Promotion",
       "text": "{{name}} est promu {{rank}}. La précision et la résistance progressent."
     },
+    "crash": {
+      "title": "{{aircraft}} perdu",
+      "textKilled": "Le {{aircraft}} de {{name}} s'est écrasé loin du camp. {{name}} n'a pas pu sauter à temps.",
+      "textBailed": "Le {{aircraft}} de {{name}} s'est écrasé loin du camp. {{name}} a sauté à temps et rejoint le camp à pied."
+    },
     "death": {
       "title": "{{name}} est tombé",
       "text": "{{name}} ne rentrera pas. Son nom est inscrit au mémorial de l'escadrille."

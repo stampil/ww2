@@ -236,6 +236,7 @@ function BaseScreen({ player }: { player: Player }) {
     const receiveErrorCode = await receiveSquadron(missionId)
     if (receiveErrorCode === null) {
       setOpenBuilding(null)
+      setIsJournalOpen(true)
       if (aircraftSprite !== null && !prefersReducedMotion()) {
         setLandingIds((current) => [...current, ...crewAircraftIds])
       }

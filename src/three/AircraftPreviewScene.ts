@@ -24,7 +24,7 @@ const HAZE_FAR_METERS = 260
 const PAD_LAYOUT_SEED = 1940
 
 /** Starts loading the livery of the aircraft and puts it on the aircraft when it arrives; `loaded` settles then. */
-function loadLivery(maxAnisotropy: number, aircraft: AircraftModel3D, wornLivery: Livery): { liveries: LiveryTextures; loaded: Promise<void> } {
+export function loadLivery(maxAnisotropy: number, aircraft: AircraftModel3D, wornLivery: Livery): { liveries: LiveryTextures; loaded: Promise<void> } {
   let liveries!: LiveryTextures
   const loaded = new Promise<void>((resolve) => {
     liveries = new LiveryTextures(

@@ -12,7 +12,8 @@ use Ww2\Squadron\Pilot;
 
 /**
  * Works out the result of a flight: a crew that played its dogfight succeeds if it shot the enemy down; the other crews share one roll, the
- * strength of the crews against the risk of the mission. Then each aircraft takes damage, which destroys modules and may set it on fire, and each pilot tires.
+ * strength of the crews against the risk of the mission. Then each aircraft takes damage, which destroys modules and may set it on fire, and each pilot tires;
+ * an aircraft of a crew that failed may not come back at all.
  * The figures are mine.
  */
 final class MissionResolver
@@ -36,6 +37,8 @@ final class MissionResolver
     private const GAUGE_MAX = 100;
     private const DAMAGE_PER_MODULE_HIT = 10;
     private const FIRE_DURABILITY_PERCENT = 25;
+    // A failed mission may cost the aircraft altogether: it does not come back.
+    private const FAILED_FLIGHT_LOSS_PERCENT = 10;
 
     public function __construct(private readonly Randomizer $random = new Randomizer())
     {
@@ -138,7 +141,8 @@ final class MissionResolver
     private function outcomeOf(Mission $mission, Pilot $pilot, Aircraft $aircraft, bool $success): CrewOutcome
     {
         $damagePerRisk = $success ? self::MAX_DAMAGE_PER_RISK_ON_SUCCESS : self::MAX_DAMAGE_PER_RISK_ON_FAILURE;
-        $durability = max(0, $aircraft->durability - $this->random->getInt(0, $damagePerRisk * $mission->risk));
+        $vanished = !$success && $this->random->getInt(1, self::PERCENT) <= self::FAILED_FLIGHT_LOSS_PERCENT;
+        $durability = $vanished ? 0 : max(0, $aircraft->durability - $this->random->getInt(0, $damagePerRisk * $mission->risk));
         $aircraftLost = $durability === 0;
         $pilotKilled = $aircraftLost && $this->random->getInt(1, self::PERCENT) > $pilot->effectiveResilience();
         $hits = min(count(SparePart::cases()), intdiv($aircraft->durability - $durability, self::DAMAGE_PER_MODULE_HIT));

@@ -11,11 +11,14 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+Deux questions, sur la ligne 30 (ma recommandation ; un « go » les prend telles quelles) :
+
+1. **Que deviennent les humeurs de la musique ?** Le MP3 devient la musique générale. Les trois autres (mémorial, rapport réussi, rapport échoué, popins) sont aujourd'hui des variantes de la fanfare générée par code. Reco : le MP3 joue partout par défaut ; quand une humeur est demandée (mémorial, page d'un rapport, popin), c'est la variante générée par code qui la remplace, et le MP3 reprend quand elle finit. Autres voies : le MP3 seul partout (les humeurs sautent), ou les humeurs deviennent des réglages du MP3 (ralenti et voilé pour la tristesse, plus clair et plus vif pour le triomphe).
+2. **Quelle mention au `CREDITS.md` ?** Le dépôt est public : le MP3 y part avec. Le fichier porte l'étiquette « milkyFirefly33 » comme artiste. Reco : « Musique générale : "Marching Snare Drums Edit (No Voice Intro)", milkyFirefly33, générée par IA », sans nommer le générateur ni la licence tant que tu ne me les donnes pas (je n'invente rien) ; dis-moi s'il faut les ajouter.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
-- **Valeurs de ma main pour la longue liste du 25/11** (à corriger à l'usage) : échec d'une mission : 10 % de chances que l'avion ne rentre pas, le pilote mourant alors avec le tirage de résistance qui existe déjà pour un avion perdu ; flak : un premier coup retire 25 points de durabilité et laisse une fumée, le second détruit l'avion (le pilote mourant par le même tirage) ; tente détruite : +15 de ravitaillement, groupe de barils : +10, photo de reconnaissance au-delà des 3 requises : +15, en plus du gain de la mission.
+- **Valeurs de ma main pour la longue liste du 25/11** (à corriger à l'usage) : flak : un premier coup retire 25 points de durabilité et laisse une fumée, le second détruit l'avion (le pilote mourant par le même tirage) ; tente détruite : +15 de ravitaillement, groupe de barils : +10, photo de reconnaissance au-delà des 3 requises : +15, en plus du gain de la mission.
 - **Camps de l'IA sur le serveur qui tourne** (« force le serveur a faire un hard reset / update de ses caps, celui qui tourne en se moment n'a pas d'IA ») : lu comme : peupler d'IA les instances déjà créées, à 35 % des camps de chaque côté, en ne prenant que des camps libres (jamais le camp d'un joueur), automatiquement à la première lecture du monde qui suit l'envoi, pour que le site publié se mette à jour sans que personne n'ait à lancer quoi que ce soit.
 - **Ligne de front** (« fait une ligne defront sur la carte dynamique en fonction des camps pris ») : lue comme la frontière entre les camps tenus par chaque côté : les points à égale distance du camp allié et du camp de l'Axe les plus proches, en tirets sur la carte, recalculée quand un camp change de main ; les camps libres sont ignorés. La flak en dépend : elle tire d'autant plus qu'on est loin de cette ligne, de l'autre côté.
 - **Zoom** : à la molette et au pincement, dans la vue de l'avion du Hangar (`ground` et `flight`) et sur la carte de l'aérodrome (« piste »), avec un zoom minimum et maximum de ma main.
@@ -36,12 +39,10 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Message du 25/11 : « ajoute se suivi : » puis, dans l'ordre, les lignes ci-dessous (tes mots exacts). Ordre proposé pour dépiler : **D** le journal au retour et l'échec de mission (7, 8), **E** le monde (11, 12, 13, 14), **F** le zoom (18), **G** le reste (26, 28).
+Message du 25/11 : « ajoute se suivi : » puis, dans l'ordre, les lignes ci-dessous (tes mots exacts). Ordre proposé pour dépiler : **E** le monde (11, 12, 13, 14), **F** le zoom (18), **G** le reste (26, 28).
 
 | N° | Instruction (tes mots) | Ce que j'en comprends | Go |
 |---|---|---|---|
-| 7 | « a chaue retour de mission des ue l'avion est rappelable a l'atterisage tu fait popé son journal de bord. » | Lu (reco prise) : le journal s'ouvre juste après « Autoriser à atterrir », à la page de ce vol. | go donné |
-| 8 | « en cas d'echec de mission il y a une faible chance que l'avion ne rentre pas, tu fait une anim terrain herbe sans camps, avec l'avion qui se crash et explose. » | Sur une mission échouée, 10 % de chances que l'avion ne rentre pas ; une scène 3D d'herbe sans camp montre l'avion qui s'écrase et explose à la réception. | go donné |
 | 11 | « force le serveur a faire un hard reset / update de ses caps, celui qui tourne en se moment n'a pas d'IA » | Les instances déjà créées reçoivent leurs camps d'IA (camps libres seulement, jamais celui d'un joueur), automatiquement au premier appel qui suit l'envoi. | go donné |
 | 12 | « fait une ligne defront sur la carte dynamique en fonction des camps pris. » | Une ligne de front en tirets sur la carte de France, recalculée quand un camp change de main (lecture plus haut). | go donné |
 | 13 | « pour prendre un camps adverse, il faut  envoyer auant d'avion qu'on veux, mais cela genere autant de combat aerien que d'avion ennemi restant, si on parvient a detruire l'avion advrese sa décompte, sinon sa compte comme perte. a la fin le camps revient au vainqueur et les avion auto stationne dessus en attendant nouvel ordre. » | Refonte de la prise de camp : autant d'avions qu'on veut, autant de combats joués que de défenseurs restants ; un défenseur abattu se décompte, sinon l'avion attaquant est perdu ; à la fin le camp change de main et les avions qui restent s'y stationnent seuls. Lu (reco prise) : les raids restent tels quels ; la prise ne demande plus de défense à zéro. | go donné |
@@ -49,6 +50,7 @@ Message du 25/11 : « ajoute se suivi : » puis, dans l'ordre, les lignes ci-des
 | 18 | « dans hangar et piste, on doit pouvoir zommer a la molette ou avec ecartement des doigt, et dezoomer a la molette inverse et ppincement des doigt. » | Zoom à la molette et au pincement dans la vue de l'avion du Hangar et sur la carte de l'aérodrome. | go donné |
 | 26 | « la destruction tente et tonneau rapporte de l'argent en + bonus mission » | Chaque tente et chaque groupe de barils détruits dans l'attaque au sol rapportent du ravitaillement en plus du gain de la mission (valeurs de ma main). | go donné |
 | 28 | « je sai pas si c fait aussi, mais pour les photo, toute photo supplémentaire qui valide la mission donne bonus argent » | Pas fait : le serveur ne reçoit que « gagné » ou « échappé » d'un mini-jeu au sol, jamais le nombre de photos ni de cibles détruites. Lu : sur une reconnaissance réussie (au moins 3 photos sur 5, détection sous la limite), chaque photo au-delà des 3 requises rapporte du ravitaillement en plus du gain de la mission, 2 au plus puisqu'il y a 5 cibles (valeur de ma main plus haut). Même tuyau que la ligne 26 : le navigateur envoie son décompte, le serveur le borne et le paie. Groupe G, avec la ligne 26. | attend ton go |
+| 30 | « télécahrge le mp3 que j'ai généré par ia, et integre le comme musique général du jeu » | Le fichier est dans `~/Téléchargements` : « Marching Snare Drums Edit (No Voice Intro).mp3 » (3 288 109 octets, 2 min 57, 128 kbit/s stéréo 48 kHz, étiquette artiste « milkyFirefly33 », avec une pochette). Lu : il est copié dans `public/audio/` (pochette retirée sans recompresser) et joue en boucle comme musique générale, sous l'interrupteur « Musique » existant, à la place de la fanfare générée par code ; il part avec le dépôt public et sur l'hébergement (3,3 Mo à envoyer une fois). Questions 1 et 2. | attend ton go |
 
 
 ## Mis de côté

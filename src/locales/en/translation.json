@@ -300,6 +300,11 @@
       "title": "Promotion",
       "text": "{{name}} is promoted to {{rank}}. Accuracy and resilience improve."
     },
+    "crash": {
+      "title": "{{aircraft}} lost",
+      "textKilled": "The {{aircraft}} of {{name}} crashed far from the camp. {{name}} could not bail out in time.",
+      "textBailed": "The {{aircraft}} of {{name}} crashed far from the camp. {{name}} bailed out in time and is making their way back to the camp."
+    },
     "death": {
       "title": "{{name}} has fallen",
       "text": "{{name}} will not come back. The name is written in the memorial of the squadron."

@@ -14,7 +14,7 @@ use Ww2\Squadron\Pilot;
  * Works out the result of a flight: a crew that played its dogfight succeeds if it shot the enemy down; the other crews share one roll, the
  * strength of the crews against the risk of the mission. Then each aircraft takes damage, which destroys modules and may set it on fire, and each pilot tires;
  * an aircraft of a crew that failed may not come back at all.
- * An aircraft that the flak destroys is out of the flight and its pilot is killed half of the time; the flight succeeds if the crews that are left do, and fails when none is.
+ * An aircraft that the flak destroys is out of the flight and its pilot may be killed; the flight succeeds if the crews that are left do, and fails when none is.
  * The figures are mine.
  */
 final class MissionResolver
@@ -41,8 +41,9 @@ final class MissionResolver
     // A hit of the flak takes this much durability, and the second hit destroys the aircraft.
     private const FLAK_HIT_DAMAGE = 25;
     private const FLAK_HITS_TO_DESTROY = 2;
-    // The pilot of an aircraft that the flak destroys is killed this often, and bails out the rest of the time.
+    // The pilot of an aircraft that the flak destroys is killed this often if their resilience is the average one of a new pilot, and bails out the rest of the time.
     private const FLAK_PILOT_DEATH_PERCENT = 50;
+    private const AVERAGE_PILOT_RESILIENCE = 55;
     // A failed mission may cost the aircraft altogether: it does not come back.
     private const FAILED_FLIGHT_LOSS_PERCENT = 10;
 
@@ -158,11 +159,13 @@ final class MissionResolver
         return min($ratios);
     }
 
-    /** A pilot whose aircraft the flak destroys is killed by a toss; one whose aircraft is lost some other way is killed unless a roll against their resilience saves them. */
+    /** A pilot whose aircraft the flak destroys is killed at even odds if their resilience is the average one, a point less likely for each point of resilience above it and a point likelier for each below; one whose aircraft is lost some other way is killed unless a roll against their resilience saves them. */
     private function isPilotKilled(bool $shotDownByFlak, bool $aircraftLost, Pilot $pilot): bool
     {
         if ($shotDownByFlak) {
-            return $this->random->getInt(1, self::PERCENT) <= self::FLAK_PILOT_DEATH_PERCENT;
+            $deathPercent = self::FLAK_PILOT_DEATH_PERCENT + self::AVERAGE_PILOT_RESILIENCE - $pilot->effectiveResilience();
+
+            return $this->random->getInt(1, self::PERCENT) <= $deathPercent;
         }
 
         return $aircraftLost && $this->random->getInt(1, self::PERCENT) > $pilot->effectiveResilience();

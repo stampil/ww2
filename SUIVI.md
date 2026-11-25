@@ -11,10 +11,11 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-**Durée du fondu (ligne 35)** : 1 s entre deux morceaux, 0,5 s sous un jingle (la durée du fondu de sortie des jingles aujourd'hui). Ma recommandation : oui à ces deux durées, le fondu de montée ayant la même durée que celui de descente. Dis-moi si tu les veux plus longues ou plus courtes.
+Aucune question en suspens.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
+- **Fondu entre les musiques** (ligne 35, « Go, tes reco », 25/11) : un morceau qui en remplace un autre le fait en fondu enchaîné d'une seconde : celui qui part baisse jusqu'à zéro pendant que l'autre monte de zéro à son volume, puis celui qui part est mis en pause où il en est. Sous un jingle, le fond baisse en une demi-seconde, et remonte en une demi-seconde quand le jingle s'en va, pendant que le jingle baisse. Un écran ouvert puis fermé en moins d'une seconde repart du volume du moment : aucun morceau ne reste à mi-volume.
 - **Prime de photo** (ligne 28, « go pour tout j'ai dit », 25/11) : une photo de plus que les 3 requises rapporte 15 de ravitaillement en plus du gain de la mission (2 au plus : il y a 5 cibles), payée à l'avion dont la reconnaissance a réussi (3 photos au moins et sous la limite de détection) ; elle s'ajoute à la prime « bord de route » du journal, dont le texte la dit. Le serveur la borne à 2 par mini-jeu et la refuse sur un mini-jeu perdu.
 - **Musiques des écrans** (ligne 32, « go pour tout j'ai dit », 25/11) : « Briefing Tactique » joue là où l'on prépare un vol (la préparation d'une mission de la tour et l'attaque d'un camp sur la carte), « Combat Aérien » dans les deux mini-jeux de combat (la grille et le cockpit), « Journal Intime » dans le journal de bord, où le jingle de la page joue par-dessus et la musique du journal reprend ensuite, et « Hangar & Entretien » dans les fenêtres du Hangar et de l'Atelier (« Oui, tes reco », 25/11). Chaque morceau remplace la musique générale tant que son écran est ouvert, la générale reprend où elle s'était arrêtée, et un morceau ne se charge que la première fois qu'il est demandé (10,9 Mo en tout, leur pochette retirée, sans être réencodés). Si deux écrans sont ouverts, le dernier ouvert est entendu. Ni la DCA, ni l'attaque au sol, ni la reconnaissance.
 - **Flak : obus en point noir et vraie fumée noire** (lignes 33 et 34, « Go, tes reco », 25/11) : l'anneau rouge est remplacé par un gros point noir rond, l'obus lui-même, qui grossit pendant les 0,9 s d'approche (de 0,6 m à 6,3 m de diamètre, lentement puis vite) à l'endroit et à la hauteur de l'éclatement, puis éclate en un éclair orange de 0,12 s et un nuage de 14 à 22 bouffées noires à gris très sombre, déchiquetées, de 10 à 16 m en fin de vie, qui gonflent en moins d'une seconde, restent environ 3 s en s'éclaircissant et ne défilent qu'avec le décor ; dessinés par code, aucune image à générer. La zone de touche (4,5 m) et le moment de l'éclatement ne changent pas, le nuage reste à la hauteur de l'avion et ne le cache pas.
@@ -37,11 +38,7 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Reste **35**, qui attend ton go.
-
-| N° | Instruction (tes mots) | Ce que j'en comprends | Go |
-|---|---|---|---|
-| 35 | « e générale en pause et lance le morceau t'arriverai pas a faire une sorte de fondu ? » | Aujourd'hui, quand un écran prend la place de la musique générale (ou l'inverse, ou d'un écran à l'autre), l'un se coupe net et l'autre démarre net. Lu : un fondu enchaîné. Le morceau qui part baisse jusqu'à zéro pendant que le suivant monte de zéro à son volume sur la même durée ; celui qui part n'est mis en pause qu'une fois à zéro et garde sa place, comme aujourd'hui. Sous un jingle, le fond baisse puis remonte de la même façon, au lieu de se couper. Piège prévu : un écran ouvert puis fermé en moins d'une seconde ne doit laisser aucun morceau à mi-volume, donc chaque fondu en cours repart de son volume du moment. Je ne pourrai pas l'entendre : je le vérifierai sur les volumes des morceaux, lus pendant le fondu. | attend ton go |
+Rien : tout est fait.
 
 ## Mis de côté
 

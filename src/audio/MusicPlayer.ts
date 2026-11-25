@@ -10,7 +10,8 @@ const SCREEN_FILES: Record<ScreenTrack, string> = { briefing: 'audio/music-brief
 const JINGLE_FILES: Record<Jingle, string> = { success: 'audio/jingle-success.mp3', failure: 'audio/jingle-failure.mp3' }
 const GENERAL_VOLUME = 0.5
 const JINGLE_VOLUME = 0.8
-const FADE_MILLISECONDS = 500
+const JINGLE_FADE_MILLISECONDS = 500
+const TRACK_FADE_MILLISECONDS = 1000
 const FADE_STEP_MILLISECONDS = 50
 const CHOICE_KEY = 'french-touch-music'
 const CHOICE_OFF = 'off'
@@ -39,7 +40,7 @@ function rememberChoice(wantsIt: boolean): void {
  * Plays the music of the game, a track that goes round and round, and over it the jingle of a success or of a failure while something asks for one: the track waits, the jingle plays
  * until what asked for it is gone (it fades out then) or until it ends, and the track goes on from where it stopped. A screen can ask for a track of its own, which takes the place of the
  * general one until the screen is gone; the general track waits where it is, and a track is only loaded when it is first asked for. Browsers allow sound only after a gesture of the player,
- * so the music starts at the first click or key, unless the player has turned it off; their choice is kept.
+ * so the music starts at the first click or key, unless the player has turned it off; their choice is kept. Tracks change over with a fade: the one that goes fades out as the one that comes fades in.
  */
 export class MusicPlayer {
   private general: HTMLAudioElement | undefined
@@ -118,6 +119,8 @@ export class MusicPlayer {
     if (this.general === undefined) {
       return
     }
+    this.fades.forEach((timer) => window.clearInterval(timer))
+    this.fades.clear()
     this.general.pause()
     this.screens.forEach((track) => track.pause())
     Object.values(this.jingles!).forEach((jingle) => jingle.pause())
@@ -163,7 +166,7 @@ export class MusicPlayer {
       }
       audio.volume = JINGLE_VOLUME
     })
-    audio.addEventListener('ended', () => void (this.screenTrack() ?? this.general)?.play())
+    audio.addEventListener('ended', () => this.resumeBackground())
 
     return audio
   }
@@ -173,40 +176,53 @@ export class MusicPlayer {
     if (general === undefined) {
       return
     }
-    this.followJingle()
-    this.followBackground(general)
+    const hasJingleChanged = this.followJingle()
+    this.followBackground(general, hasJingleChanged)
   }
 
-  /** Plays the jingle asked for last, fading out the one that played before it; none when none is asked for. */
-  private followJingle(): void {
+  /** Plays the jingle asked for last, fading out the one that played before it, none when none is asked for; tells whether the jingle played is another now. */
+  private followJingle(): boolean {
     const wanted = this.askedJingles[this.askedJingles.length - 1] ?? null
     if (wanted === this.playedJingle) {
-      return
+      return false
     }
     if (this.playedJingle !== null) {
-      this.fadeOut(this.jingles![this.playedJingle])
+      this.fadeTo(this.jingles![this.playedJingle], 0, JINGLE_FADE_MILLISECONDS)
     }
     this.playedJingle = wanted
-    if (wanted === null) {
-      return
+    if (wanted !== null) {
+      const jingle = this.jingles![wanted]
+      this.stopFade(jingle)
+      jingle.currentTime = 0
+      jingle.volume = JINGLE_VOLUME
+      void jingle.play()
     }
-    const jingle = this.jingles![wanted]
-    window.clearInterval(this.fades.get(jingle))
-    jingle.currentTime = 0
-    jingle.volume = JINGLE_VOLUME
-    void jingle.play()
+
+    return true
   }
 
-  /** The track of the screen asked for last, or the general one, plays unless a jingle does; the others wait where they are. */
-  private followBackground(general: HTMLAudioElement): void {
+  /**
+   * The track of the screen asked for last, or the general one, plays unless a jingle does; the others fade out and wait where they are, as the one that plays fades in.
+   * The fade lasts as long as a track's, or as a jingle's when a jingle has just come or gone.
+   */
+  private followBackground(general: HTMLAudioElement, hasJingleChanged: boolean): void {
     const background = this.screenTrack() ?? general
+    const milliseconds = hasJingleChanged || this.playedJingle !== null ? JINGLE_FADE_MILLISECONDS : TRACK_FADE_MILLISECONDS
     for (const track of [general, ...this.screens.values()]) {
-      if (track !== background || this.playedJingle !== null) {
-        track.pause()
+      if ((track !== background || this.playedJingle !== null) && !track.paused) {
+        this.fadeTo(track, 0, milliseconds)
       }
     }
     if (this.playedJingle === null) {
-      void background.play()
+      this.fadeIn(background, milliseconds)
+    }
+  }
+
+  /** The jingle that played is over: the track under it comes back. */
+  private resumeBackground(): void {
+    const background = this.screenTrack() ?? this.general
+    if (background !== undefined) {
+      this.fadeIn(background, JINGLE_FADE_MILLISECONDS)
     }
   }
 
@@ -227,14 +243,34 @@ export class MusicPlayer {
     return track
   }
 
-  private fadeOut(audio: HTMLAudioElement): void {
-    const step = audio.volume / (FADE_MILLISECONDS / FADE_STEP_MILLISECONDS)
+  /** Brings a track up to its volume from where it is, from silence if it was not playing. */
+  private fadeIn(track: HTMLAudioElement, milliseconds: number): void {
+    if (track.paused) {
+      track.volume = 0
+    }
+    void track.play()
+    this.fadeTo(track, GENERAL_VOLUME, milliseconds)
+  }
+
+  private stopFade(audio: HTMLAudioElement): void {
+    window.clearInterval(this.fades.get(audio))
+    this.fades.delete(audio)
+  }
+
+  /** Moves the volume of a track to a target in this time, from where it is; a track that comes to silence is paused where it stands. */
+  private fadeTo(audio: HTMLAudioElement, target: number, milliseconds: number): void {
+    this.stopFade(audio)
+    const step = (target - audio.volume) / (milliseconds / FADE_STEP_MILLISECONDS)
     const timer = window.setInterval(() => {
-      audio.volume = Math.max(0, audio.volume - step)
-      if (audio.volume === 0) {
-        window.clearInterval(timer)
-        audio.pause()
+      if (Math.abs(target - audio.volume) <= Math.abs(step)) {
+        audio.volume = target
+        this.stopFade(audio)
+        if (target === 0) {
+          audio.pause()
+        }
+        return
       }
+      audio.volume += step
     }, FADE_STEP_MILLISECONDS)
     this.fades.set(audio, timer)
   }

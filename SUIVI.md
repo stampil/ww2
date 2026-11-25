@@ -11,7 +11,7 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+**Durée du fondu (ligne 35)** : 1 s entre deux morceaux, 0,5 s sous un jingle (la durée du fondu de sortie des jingles aujourd'hui). Ma recommandation : oui à ces deux durées, le fondu de montée ayant la même durée que celui de descente. Dis-moi si tu les veux plus longues ou plus courtes.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -37,7 +37,11 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : la liste du 25/11 est faite.
+Reste **35**, qui attend ton go.
+
+| N° | Instruction (tes mots) | Ce que j'en comprends | Go |
+|---|---|---|---|
+| 35 | « e générale en pause et lance le morceau t'arriverai pas a faire une sorte de fondu ? » | Aujourd'hui, quand un écran prend la place de la musique générale (ou l'inverse, ou d'un écran à l'autre), l'un se coupe net et l'autre démarre net. Lu : un fondu enchaîné. Le morceau qui part baisse jusqu'à zéro pendant que le suivant monte de zéro à son volume sur la même durée ; celui qui part n'est mis en pause qu'une fois à zéro et garde sa place, comme aujourd'hui. Sous un jingle, le fond baisse puis remonte de la même façon, au lieu de se couper. Piège prévu : un écran ouvert puis fermé en moins d'une seconde ne doit laisser aucun morceau à mi-volume, donc chaque fondu en cours repart de son volume du moment. Je ne pourrai pas l'entendre : je le vérifierai sur les volumes des morceaux, lus pendant le fondu. | attend ton go |
 
 ## Mis de côté
 

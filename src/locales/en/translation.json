@@ -9,8 +9,7 @@
     "apiDown": "The game server is unavailable."
   },
   "home": {
-    "play": "Play",
-    "poc": "POC"
+    "play": "Play"
   },
   "game": {
     "title": "The game"

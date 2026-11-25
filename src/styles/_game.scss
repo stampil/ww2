@@ -849,6 +849,10 @@ button.base-sprite {
   &[data-outcome='escaped'] strong {
     color: $alarm;
   }
+
+  .crash-picture {
+    width: min(24rem, 70vw);
+  }
 }
 
 .game-tools {

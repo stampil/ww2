@@ -32,6 +32,8 @@ final class Headquarters
     private const MISSIONS_ON_TABLE = 3;
     private const SPOTTED_REWARD_PERCENT = 150;
     private const FIRE_SECONDS = 180;
+    // A pilot who bailed out of an aircraft that the flak destroyed rests this long, as one sent to rest does.
+    private const BAILED_OUT_REST_SECONDS = 600;
 
     public function __construct(
         private readonly Database $database,
@@ -319,6 +321,9 @@ final class Headquarters
                 $this->squadrons->bury($crew->pilotId);
             } else {
                 $this->squadrons->updatePilotGauges($crew->pilotId, $crew->fatigue, $crew->stress);
+                if ($crew->shotDownByFlak) {
+                    $this->squadrons->startRest($crew->pilotId, $gameSeconds + self::BAILED_OUT_REST_SECONDS);
+                }
             }
             if ($crew->aircraftLost) {
                 $this->squadrons->destroyAircraft($crew->aircraftId);

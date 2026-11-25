@@ -26,6 +26,7 @@ final readonly class CrewOutcome
         public bool $burning,
         public bool $aircraftLost,
         public bool $pilotKilled,
+        public bool $shotDownByFlak,
         public int $fatigue,
         public int $stress,
     ) {
@@ -34,7 +35,7 @@ final readonly class CrewOutcome
     /**
      * The destroyed modules are left out: only an inspection of the aircraft tells them. The gauges of the pilot after the flight are what the journal tells of how the pilot feels.
      *
-     * @return array{pilotName: string, aircraftName: string, succeeded: bool, damage: int, burning: bool, aircraftLost: bool, pilotKilled: bool, fatigue: int, stress: int}
+     * @return array{pilotName: string, aircraftName: string, succeeded: bool, damage: int, burning: bool, aircraftLost: bool, pilotKilled: bool, shotDownByFlak: bool, fatigue: int, stress: int}
      */
     public function toArray(): array
     {
@@ -46,6 +47,7 @@ final readonly class CrewOutcome
             'burning' => $this->burning,
             'aircraftLost' => $this->aircraftLost,
             'pilotKilled' => $this->pilotKilled,
+            'shotDownByFlak' => $this->shotDownByFlak,
             'fatigue' => $this->fatigue,
             'stress' => $this->stress,
         ];

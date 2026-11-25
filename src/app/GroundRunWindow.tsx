@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { windDirectionOf } from '../three/GroundRunScene'
 import type { GroundRunScene, RunEnd, RunOutcome, TargetNationality } from '../three/GroundRunScene'
 import type { Livery } from '../three/liveries'
+import CrashPicture from './CrashPicture'
 import GameWindow from './GameWindow'
 import { TARGET_NATIONALITIES } from './targetNationality'
 import { useAircraftSprite } from './useAircraftSprite'
@@ -126,6 +127,7 @@ function GroundRunWindow<Status>({ alert, clan, livery, windSpeed, namespace, hi
         {!(isReady && aircraftSprite !== null) && <p className="cockpit-message">{t(`${namespace}.starting`)}</p>}
         {outcome !== null && (
           <div className="cockpit-result" data-outcome={outcome}>
+            {namespace === 'flak' && outcome === 'escaped' && <CrashPicture livery={livery} />}
             <strong>{t(`${namespace}.${outcome}`)}</strong>
             <button type="button" className="go" onClick={onClose}>
               {t('duel.continue')}

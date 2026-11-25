@@ -163,7 +163,7 @@
     "hits": "Touches : {{count}} sur {{total}}",
     "starting": "Mise en route…",
     "won": "Tu as passé la DCA !",
-    "escaped": "Ton avion est détruit."
+    "escaped": "Ton avion est détruit. Le journal dira si le pilote a pu sauter à temps."
   },
   "photo": {
     "title": "Reconnaissance photo",
@@ -553,6 +553,10 @@
       "lost": [
         "J'ai dû sauter. Le {{aircraft}} est parti en flammes dans un champ, et j'ai atterri sous la soie, les jambes en coton.",
         "L'avion est perdu, c'est sûr. J'ai ouvert la verrière, j'ai sauté, et je n'ai rien senti avant d'être au sol."
+      ],
+      "flak": [
+        "La DCA a touché le {{aircraft}} en plein vol. J'ai sauté à temps, et je l'ai vu s'écraser pendant que je descendais sous la soie.",
+        "Un obus a coupé le {{aircraft}} en deux. J'ai eu le temps d'ouvrir la verrière et de sauter, les jambes en coton."
       ]
     },
     "loss": {
@@ -560,6 +564,11 @@
         "On a perdu {{lost}}. Je n'arrive pas à l'écrire sans que la plume tremble.",
         "{{lost}} ne reviendra pas. Sa place au mess restera vide.",
         "Pour {{lost}}, il faudra écrire à la famille. Ce n'est pas à moi de le faire, mais j'y pense déjà."
+      ],
+      "flak": [
+        "La DCA a touché le {{aircraft}} de {{lost}}, et il n'a pas pu sauter à temps. Je n'arrive pas à l'écrire sans que la plume tremble.",
+        "{{lost}} n'a pas eu le temps de sauter : la DCA a eu son {{aircraft}}. Sa place au mess restera vide.",
+        "Pas de parachute pour {{lost}} : la DCA a coupé son {{aircraft}} avant qu'il puisse quitter l'habitacle. Il faudra écrire à la famille."
       ]
     },
     "fallen": {
@@ -580,7 +589,12 @@
             "Il n'a pas pu mener sa mission à son terme : le {{aircraft}} a pris trop de coups. Je suis resté sur son aile aussi longtemps que j'ai pu.",
             "Tout est allé trop vite. Le {{aircraft}} a décroché, et je n'ai pas vu de parachute."
           ]
-        }
+        },
+        "flak": [
+          "Nous survolions le camp ennemi, et les obus éclataient tout autour de nous. Je n'ai pas pu détourner les yeux de l'avion de {{lost}}.",
+          "La DCA tirait sans arrêt. Je suis resté près de l'aile de {{lost}} aussi longtemps que j'ai pu.",
+          "Tout est allé très vite au-dessus du camp : la fumée, les éclats, le {{aircraft}} qui piquait vers le sol."
+        ]
       },
       "ground": {
         "opening": [

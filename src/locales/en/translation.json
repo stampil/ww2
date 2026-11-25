@@ -163,7 +163,7 @@
     "hits": "Hits: {{count}} of {{total}}",
     "starting": "Starting…",
     "won": "You got through the flak!",
-    "escaped": "Your aircraft is destroyed."
+    "escaped": "Your aircraft is destroyed. The journal will tell whether the pilot jumped in time."
   },
   "photo": {
     "title": "Photo reconnaissance",
@@ -553,6 +553,10 @@
       "lost": [
         "I had to jump. The {{aircraft}} went down in flames in a field, and I landed under the silk, legs like jelly.",
         "The aircraft is lost, that much is certain. I opened the canopy, jumped, and felt nothing until I was on the ground."
+      ],
+      "flak": [
+        "The flak hit the {{aircraft}} in mid-air. I jumped in time, and watched it crash while I came down under the silk.",
+        "A shell cut the {{aircraft}} in two. I had time to open the canopy and jump, legs like jelly."
       ]
     },
     "loss": {
@@ -560,6 +564,11 @@
         "We lost {{lost}}. I cannot write it without the pen shaking.",
         "{{lost}} will not be coming back. A place at the mess will stay empty.",
         "Someone will have to write to the family of {{lost}}. It is not for me to do, but I am already thinking of it."
+      ],
+      "flak": [
+        "The flak hit the {{aircraft}} of {{lost}}, and he could not jump in time. I cannot write it without the pen shaking.",
+        "{{lost}} had no time to jump: the flak got his {{aircraft}}. A place at the mess will stay empty.",
+        "No parachute for {{lost}}: the flak cut his {{aircraft}} down before he could leave the cockpit. Someone will have to write to the family."
       ]
     },
     "fallen": {
@@ -580,7 +589,12 @@
             "He could not see his mission through: the {{aircraft}} took too many hits. I stayed on his wing as long as I could.",
             "It all went too fast. The {{aircraft}} stalled, and I saw no parachute."
           ]
-        }
+        },
+        "flak": [
+          "We were over the enemy camp, and shells were bursting all around us. I could not take my eyes off the aircraft of {{lost}}.",
+          "The flak never stopped firing. I stayed close to the wing of {{lost}} for as long as I could.",
+          "It all went very fast over the camp: the smoke, the splinters, the {{aircraft}} diving for the ground."
+        ]
       },
       "ground": {
         "opening": [

@@ -14,7 +14,7 @@ use Ww2\Squadron\Pilot;
  * Works out the result of a flight: a crew that played its dogfight succeeds if it shot the enemy down; the other crews share one roll, the
  * strength of the crews against the risk of the mission. Then each aircraft takes damage, which destroys modules and may set it on fire, and each pilot tires;
  * an aircraft of a crew that failed may not come back at all.
- * An aircraft that the flak destroys is out of the flight; the flight succeeds if the crews that are left do, and fails when none is.
+ * An aircraft that the flak destroys is out of the flight and its pilot is killed half of the time; the flight succeeds if the crews that are left do, and fails when none is.
  * The figures are mine.
  */
 final class MissionResolver
@@ -41,6 +41,8 @@ final class MissionResolver
     // A hit of the flak takes this much durability, and the second hit destroys the aircraft.
     private const FLAK_HIT_DAMAGE = 25;
     private const FLAK_HITS_TO_DESTROY = 2;
+    // The pilot of an aircraft that the flak destroys is killed this often, and bails out the rest of the time.
+    private const FLAK_PILOT_DEATH_PERCENT = 50;
     // A failed mission may cost the aircraft altogether: it does not come back.
     private const FAILED_FLIGHT_LOSS_PERCENT = 10;
 
@@ -156,14 +158,25 @@ final class MissionResolver
         return min($ratios);
     }
 
+    /** A pilot whose aircraft the flak destroys is killed by a toss; one whose aircraft is lost some other way is killed unless a roll against their resilience saves them. */
+    private function isPilotKilled(bool $shotDownByFlak, bool $aircraftLost, Pilot $pilot): bool
+    {
+        if ($shotDownByFlak) {
+            return $this->random->getInt(1, self::PERCENT) <= self::FLAK_PILOT_DEATH_PERCENT;
+        }
+
+        return $aircraftLost && $this->random->getInt(1, self::PERCENT) > $pilot->effectiveResilience();
+    }
+
     private function outcomeOf(Mission $mission, Pilot $pilot, Aircraft $aircraft, bool $success, int $flakHits, bool $lostInCombat): CrewOutcome
     {
         $damagePerRisk = $success ? self::MAX_DAMAGE_PER_RISK_ON_SUCCESS : self::MAX_DAMAGE_PER_RISK_ON_FAILURE;
         $vanished = !$success && $this->random->getInt(1, self::PERCENT) <= self::FAILED_FLIGHT_LOSS_PERCENT;
-        $shotDown = $this->isShotDownByFlak($flakHits) || $lostInCombat;
+        $shotDownByFlak = $this->isShotDownByFlak($flakHits);
+        $shotDown = $shotDownByFlak || $lostInCombat;
         $durability = $vanished || $shotDown ? 0 : max(0, $aircraft->durability - $this->random->getInt(0, $damagePerRisk * $mission->risk) - $flakHits * self::FLAK_HIT_DAMAGE);
         $aircraftLost = $durability === 0;
-        $pilotKilled = $aircraftLost && $this->random->getInt(1, self::PERCENT) > $pilot->effectiveResilience();
+        $pilotKilled = $this->isPilotKilled($shotDownByFlak, $aircraftLost, $pilot);
         $hits = min(count(SparePart::cases()), intdiv($aircraft->durability - $durability, self::DAMAGE_PER_MODULE_HIT));
         $destroyedModules = $aircraftLost ? [] : array_slice($this->random->shuffleArray(SparePart::cases()), 0, $hits);
         $burning = !$aircraftLost && $durability * self::PERCENT <= $aircraft->model->durability * self::FIRE_DURABILITY_PERCENT;
@@ -189,6 +202,7 @@ final class MissionResolver
             $burning,
             $aircraftLost,
             $pilotKilled,
+            $shotDownByFlak,
             min(self::GAUGE_MAX, $fatigue),
             min(self::GAUGE_MAX, $stress),
         );

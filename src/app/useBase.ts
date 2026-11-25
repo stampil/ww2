@@ -180,6 +180,8 @@ export type MissionReport = {
     burning: boolean
     aircraftLost: boolean
     pilotKilled: boolean
+    /** Whether the flak destroyed the aircraft, which the journal tells; absent from the reports kept before it was told. */
+    shotDownByFlak?: boolean
     /** The rank the flight promoted the pilot to, and whether it made them an ace; absent from the reports kept before they were told. */
     promotedTo?: number | null
     becameAce?: boolean

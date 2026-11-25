@@ -22,7 +22,7 @@ type Crew = MissionReport['crews'][number]
 type Say = (key: string, values?: Record<string, string>) => string
 /** The part of the day a page is written in; `unknown` for the pages kept before the journal dated them. */
 type DayPart = 'morning' | 'afternoon' | 'evening' | 'night' | 'unknown'
-type DamageState = 'none' | 'light' | 'heavy' | 'burning' | 'lost'
+type DamageState = 'none' | 'light' | 'heavy' | 'burning' | 'lost' | 'flak'
 
 /** A page of the journal: its paragraphs, and the pilot who wrote it, who is none when nobody was left to write it. */
 export type JournalPage = { paragraphs: string[]; signature: string | null }
@@ -46,7 +46,7 @@ function dayPartOf(gameTime: Date | null): DayPart {
 
 function damageStateOf(crew: Crew): DamageState {
   if (crew.aircraftLost) {
-    return 'lost'
+    return crew.shotDownByFlak === true ? 'flak' : 'lost'
   }
   if (crew.burning) {
     return 'burning'
@@ -66,18 +66,20 @@ function damageStateOf(crew: Crew): DamageState {
  */
 function fallenPage(report: MissionReport, lost: Crew, say: Say, random: SeededRandom): JournalPage {
   const values = { lost: lost.pilotName, aircraft: lost.aircraftName }
+  const lossKey = lost.shotDownByFlak === true ? 'journal.loss.flak' : 'journal.loss.one'
   const comrades = report.crews.filter((crew) => !crew.pilotKilled)
   if (comrades.length > 0) {
     const outcome = (lost.succeeded ?? report.success) ? 'success' : 'failure'
+    const situationKey = lost.shotDownByFlak === true ? 'journal.fallen.comrade.flak' : `journal.fallen.comrade.situation.${outcome}`
 
     return {
-      paragraphs: [say('journal.fallen.comrade.opening', values), say(`journal.fallen.comrade.situation.${outcome}`, values), say('journal.loss.one', values)],
+      paragraphs: [say('journal.fallen.comrade.opening', values), say(situationKey, values), say(lossKey, values)],
       signature: random.pickOne(comrades).pilotName,
     }
   }
   if (report.reporterName !== undefined) {
     return {
-      paragraphs: [say('journal.fallen.ground.opening', values), say('journal.fallen.ground.situation', values), say('journal.loss.one', values)],
+      paragraphs: [say('journal.fallen.ground.opening', values), say('journal.fallen.ground.situation', values), say(lossKey, values)],
       signature: report.reporterName,
     }
   }

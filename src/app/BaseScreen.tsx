@@ -112,6 +112,7 @@ function BaseScreen({ player }: { player: Player }) {
   const [errorCode, setErrorCode] = useState<string | null>(null)
   const [departures, setDepartures] = useState<Departure[]>([])
   const [landingIds, setLandingIds] = useState<number[]>([])
+  const [waitingLandingIds, setWaitingLandingIds] = useState<number[]>([])
   const [emergingIds, setEmergingIds] = useState<number[]>([])
   const [refuelingIds, setRefuelingIds] = useState<number[]>([])
   const landingIdsRef = useRef<number[]>([])
@@ -142,12 +143,20 @@ function BaseScreen({ player }: { player: Player }) {
       setEmergingIds((current) => [...current, ...emergedIds])
     }
   }, [emergedIds, canAnimate])
+  // The aircraft that came back land once the journal that tells of their flight is closed, not behind it.
+  useEffect(() => {
+    if (!isJournalOpen && waitingLandingIds.length > 0) {
+      setLandingIds((current) => [...current, ...waitingLandingIds])
+      setWaitingLandingIds([])
+    }
+  }, [isJournalOpen, waitingLandingIds])
   // What is going on in one base means nothing in another: the windows and the animations start again when the player looks at a different base.
   const baseId = base?.baseId
   useEffect(() => {
     setOpenBuilding(null)
     setDepartures([])
     setLandingIds([])
+    setWaitingLandingIds([])
     setEmergingIds([])
     setDuelAlertId(null)
   }, [baseId])
@@ -170,6 +179,7 @@ function BaseScreen({ player }: { player: Player }) {
     setDuelAlertId(null)
     setDepartures([])
     setLandingIds([])
+    setWaitingLandingIds([])
     setEmergingIds([])
     const resetErrorCode = await resetGame()
     if (resetErrorCode === null) {
@@ -243,7 +253,7 @@ function BaseScreen({ player }: { player: Player }) {
       setOpenBuilding(null)
       setIsJournalOpen(true)
       if (aircraftSprite !== null && !prefersReducedMotion()) {
-        setLandingIds((current) => [...current, ...crewAircraftIds])
+        setWaitingLandingIds((current) => [...current, ...crewAircraftIds])
       }
     }
     return receiveErrorCode
@@ -262,6 +272,9 @@ function BaseScreen({ player }: { player: Player }) {
   for (const aircraft of base.squadron.aircraft) {
     const standNumber = stands.get(aircraft.id)
     if (standNumber === undefined) {
+      continue
+    }
+    if (waitingLandingIds.includes(aircraft.id)) {
       continue
     }
     const stand = plan.stands[standNumber]

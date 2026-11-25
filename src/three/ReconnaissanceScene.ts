@@ -115,6 +115,11 @@ export class ReconnaissanceScene extends GroundRunScene<PhotoStatus> {
     return this.detection < DETECTION_LIMIT && this.photos >= PHOTO_REQUIRED ? 'won' : 'escaped'
   }
 
+  /** A reconnaissance that was lost pays no photo, whatever it took. */
+  protected extraPhotos(): number {
+    return this.outcome() === 'won' ? Math.max(0, this.photos - PHOTO_REQUIRED) : 0
+  }
+
   protected currentStatus(): PhotoStatus {
     return { photos: this.photos, detection: this.detection }
   }

@@ -168,7 +168,7 @@
   },
   "photo": {
     "title": "Photo reconnaissance",
-    "hint": "You fly over enemy ground: the camera of your aircraft takes by itself the target it keeps in its frame for a moment. Take {{required}} photos of {{total}} without being spotted: each tower you fly over raises the detection by {{percent}} %, and at 100 % you are spotted.",
+    "hint": "You fly over enemy ground: the camera of your aircraft takes by itself the target it keeps in its frame for a moment. Take {{required}} photos of {{total}} without being spotted: each tower you fly over raises the detection by {{percent}} %, and at 100 % you are spotted. Each photo beyond the {{required}} pays a bonus.",
     "controls": "Steer with the left and right arrow keys, or with the stick under the view: the photo is taken by itself.",
     "toast": "Enemy ground under the aircraft: {{pilot}} can photograph it.",
     "toastResume": "Reconnaissance under way: {{pilot}}.",
@@ -858,7 +858,7 @@
       "pilot": "Pilot",
       "aircraft": "Aircraft",
       "aircraftOption": "{{name}} no. {{number}}, durability {{durability}}",
-      "bonus": "bonus: +{{supplies}} supplies for what stood beside the road",
+      "bonus": "bonus: +{{supplies}} supplies for what stood beside the road and the extra photos",
       "borrowedAircraftOption": "{{name}} no. {{number}}, durability {{durability}}, guest of {{holder}}",
       "fuelLoad": "Fuel per aircraft",
       "ammunitionLoad": "Ammunition per aircraft",

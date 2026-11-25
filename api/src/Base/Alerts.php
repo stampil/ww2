@@ -200,7 +200,7 @@ final class Alerts
      * Keeps the result of a dogfight flown from the cockpit, which the browser has played.
      *
      * @param array<string, int> $bonuses what the player destroyed beside what the mission asks for, by the value of the kind: it pays when the squadron is received
-     * @throws BaseException when the base has no such alert, it is not a cockpit dogfight, it was not started, it is over, or more was destroyed than a run holds
+     * @throws BaseException when the base has no such alert, it is not a cockpit dogfight, it was not started, it is over, more was claimed than a run holds, or photos are claimed on a run that was lost
      */
     public function finish(int $baseId, int $alertId, DogfightOutcome $outcome, array $bonuses): void
     {
@@ -208,6 +208,9 @@ final class Alerts
             if ($bonuses[$kind->value] < 0 || $bonuses[$kind->value] > $kind->maxPerRun()) {
                 throw new BaseException(BaseError::InvalidQuantity);
             }
+        }
+        if ($bonuses[BonusKind::Photo->value] > 0 && $outcome !== DogfightOutcome::Won) {
+            throw new BaseException(BaseError::InvalidQuantity);
         }
         $this->database->transaction(function () use ($baseId, $alertId, $outcome, $bonuses): void {
             $this->bases->lockResources($baseId);

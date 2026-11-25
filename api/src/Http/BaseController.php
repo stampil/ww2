@@ -338,9 +338,9 @@ final class BaseController
     public function finishAlert(ServerRequestInterface $request): array
     {
         $baseId = $this->ownBaseId();
-        $destroyed = JsonRequestBody::integers($request, 'alertId', 'tents', 'barrels');
+        $destroyed = JsonRequestBody::integers($request, 'alertId', 'tents', 'barrels', 'photos');
         $outcome = DogfightOutcome::tryFrom(JsonRequestBody::texts($request, 'outcome')['outcome']) ?? throw new BadRequestException('invalidBody');
-        $bonuses = [BonusKind::Tent->value => $destroyed['tents'], BonusKind::Barrels->value => $destroyed['barrels']];
+        $bonuses = [BonusKind::Tent->value => $destroyed['tents'], BonusKind::Barrels->value => $destroyed['barrels'], BonusKind::Photo->value => $destroyed['photos']];
         $this->carryOut(fn () => $this->alerts->finish($baseId, $destroyed['alertId'], $outcome, $bonuses));
 
         return $this->overview->of($baseId);

@@ -5,6 +5,7 @@ import GameWindow from './GameWindow'
 import type { DuelBomber } from '../three/DogfightScene'
 import type { Livery } from '../three/liveries'
 import type { FlightAlert, Maneuver } from './useBase'
+import { useScreenMusic } from './useScreenMusic'
 
 const MANEUVERS: Maneuver[] = ['accelerate', 'turnLeft', 'turnRight', 'slipLeft', 'slipRight']
 
@@ -23,6 +24,7 @@ type Props = {
  */
 function DogfightWindow({ alert, livery, onStart, onPlay, onClose }: Props) {
   const { t } = useTranslation()
+  useScreenMusic('combat')
   const [isPlaying, setIsPlaying] = useState(false)
   const state = alert.state
   // The server gives a bomber to the alerts that are played on the grid.

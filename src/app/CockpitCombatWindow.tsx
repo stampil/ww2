@@ -5,6 +5,7 @@ import type { CockpitEnemy, CockpitOutcome, CockpitStatus } from '../three/Cockp
 import type { Livery } from '../three/liveries'
 import GameWindow from './GameWindow'
 import { useEngineSound } from './useEngineSound'
+import { useScreenMusic } from './useScreenMusic'
 import type { FlightAlert } from './useBase'
 import VirtualStick from './VirtualStick'
 
@@ -51,6 +52,7 @@ function CockpitCombatWindow({ alert, livery, maneuverability, accuracy, risk, o
   // The server gives a fighter to the alerts that are flown from the cockpit.
   const enemy = alert.enemy as CockpitEnemy
   useEngineSound(isReady)
+  useScreenMusic('combat')
 
   useEffect(() => {
     let isCurrent = true

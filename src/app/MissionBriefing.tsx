@@ -8,6 +8,7 @@ import Pane from './Pane'
 import { crewShortage, freeCrewOf, loadShortage } from './shortages'
 import { isBorrowed } from './useBase'
 import type { Base, Offer, Squadron } from './useBase'
+import { useScreenMusic } from './useScreenMusic'
 
 type Props = {
   offer: Offer
@@ -48,6 +49,7 @@ function chosenIds(choices: (number | null)[]): number[] {
 /** Where a mission is prepared: a pilot and an aircraft for each place, the load of each aircraft, and the launch. */
 function MissionBriefing({ offer, squadron, resources, busy, onLaunch }: Props) {
   const { t } = useTranslation()
+  useScreenMusic('briefing')
   const rankName = useRankName()
   const { freePilots, freeAircraft } = freeCrewOf(offer, squadron, busy)
   const places = placesUpTo(offer.aircraftCount)

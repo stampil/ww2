@@ -16,7 +16,7 @@ export type VehicleKind = 'truck' | 'tanker' | 'armored-car' | 'light-tank' | 'm
 /** What a run can destroy beside the road, which pays on top of the mission. */
 export type RoadsideKind = 'barrels' | 'tent'
 /** How a run ended, what it destroyed beside the road, and how many times the aircraft was hit. */
-export type RunEnd = { outcome: RunOutcome; roadsideDestroyed: RoadsideKind[]; hits: number }
+export type RunEnd = { outcome: RunOutcome; roadsideDestroyed: RoadsideKind[]; extraPhotos: number; hits: number }
 
 /** What a run can show on the ground: the vehicles of a convoy, an ambulance of the Red Cross, and a fuel dump and a tent beside the road. */
 export type TargetKind = VehicleKind | 'ambulance' | 'barrels' | 'tent'
@@ -224,6 +224,11 @@ export abstract class GroundRunScene<Status> {
     return []
   }
 
+  /** How many photos the run took beyond the ones it needs: none, unless it is a reconnaissance. */
+  protected extraPhotos(): number {
+    return 0
+  }
+
   protected abstract currentStatus(): Status
 
   /** Begins the animation, once the subclass has set up what it plays with. */
@@ -392,7 +397,7 @@ export abstract class GroundRunScene<Status> {
     this.endPauseSeconds += deltaSeconds
     if (this.endPauseSeconds > END_PAUSE_SECONDS) {
       this.hasEnded = true
-      this.onEnd({ outcome: this.outcome(), roadsideDestroyed: this.roadsideDestroyed(), hits: this.hitsTaken() })
+      this.onEnd({ outcome: this.outcome(), roadsideDestroyed: this.roadsideDestroyed(), extraPhotos: this.extraPhotos(), hits: this.hitsTaken() })
     }
   }
 

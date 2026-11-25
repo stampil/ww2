@@ -445,7 +445,7 @@ function BaseScreen({ player }: { player: Player }) {
             livery={duelCrew.aircraft.livery}
             windSpeed={duel.flight.windSpeed}
             onStart={(alertId) => order(startAlert(alertId))}
-            onFinish={(alertId, end) => order(duel.alert.kind === 'flak' ? finishFlak(alertId, end.hits) : finishAlert(alertId, end.outcome, end.roadsideDestroyed))}
+            onFinish={(alertId, end) => order(duel.alert.kind === 'flak' ? finishFlak(alertId, end.hits) : finishAlert(alertId, end.outcome, end.roadsideDestroyed, end.extraPhotos))}
             onClose={() => setDuelAlertId(null)}
           />
         )}

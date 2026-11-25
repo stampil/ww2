@@ -509,10 +509,10 @@ export function useBase(player: Player | null) {
     return receive(await request(`${BASE_URL}/alerts/play`, { alertId, maneuver }))
   }
 
-  async function finishAlert(alertId: number, outcome: DogfightOutcome, roadsideDestroyed: RoadsideKind[] = []): Promise<string | null> {
+  async function finishAlert(alertId: number, outcome: DogfightOutcome, roadsideDestroyed: RoadsideKind[] = [], photos = 0): Promise<string | null> {
     const tents = roadsideDestroyed.filter((kind) => kind === 'tent').length
     const barrels = roadsideDestroyed.filter((kind) => kind === 'barrels').length
-    return receive(await request(`${BASE_URL}/alerts/finish`, { alertId, outcome, tents, barrels }))
+    return receive(await request(`${BASE_URL}/alerts/finish`, { alertId, outcome, tents, barrels, photos }))
   }
 
   async function finishFlak(alertId: number, hits: number): Promise<string | null> {

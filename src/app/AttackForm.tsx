@@ -7,6 +7,7 @@ import Icon from './Icon'
 import OrderButton from './OrderButton'
 import type { AttackKind, AttackTarget, Squadron } from './useBase'
 import { useCrewChoice } from './useCrewChoice'
+import { useScreenMusic } from './useScreenMusic'
 
 // How many aircraft a raid and a capture take at most, as on the server.
 const MAX_RAID_AIRCRAFT = 3
@@ -26,6 +27,7 @@ type Props = {
 /** The two ways to attack an enemy camp: a raid by a few aircraft, which wears its defense down, and a capture by as many aircraft as the hangar holds, which fight one combat for each aircraft that defends the camp and take it if they win them all. */
 function AttackForm({ squadron, unavailable, target, onAttack }: Props) {
   const { t } = useTranslation()
+  useScreenMusic('briefing')
   const crew = useCrewChoice(squadron, unavailable)
   const [raidCount, setRaidCount] = useState(1)
   const [captureCount, setCaptureCount] = useState(1)

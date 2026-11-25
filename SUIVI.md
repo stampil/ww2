@@ -13,7 +13,7 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 Aucune question en suspens.
 
-**Une icône de haut-parleur pour la musique** (« fait une icone de haut parleur pir couper ou remetrela musique », 25/11). Compris, sans question : le bouton « ♪ Musique » de la barre du haut (texte rouge quand la musique joue) est remplacé par un bouton à icône de haut-parleur : avec des ondes quand la musique est mise, barré quand elle est coupée. Même place, même effet : couper ou remettre, choix gardé d'une visite à l'autre, les sons de moteur suivent l'interrupteur comme aujourd'hui, le premier clic dans la page lance toujours la musique et le bouton n'en est pas un. Il a un nom pour les lecteurs d'écran (« Couper la musique » et « Remettre la musique », FR et EN) et une zone de toucher d'au moins 48 px. Les deux tracés viennent des icônes Material (Apache 2.0, déjà créditées), repris tels quels du paquet `@material-design-icons/svg` comme les autres.
+**Le lien POC hors de la barre du haut** (« ne met pasle POC en lien dnas le header », 25/11). Compris, sans question : le lien « POC » de la barre du haut, qui ouvre la page `#/poc` (les modèles 3D de tous les avions, le test de terrain, le décollage), disparaît, sur toutes les pages où la barre est montrée. C'est le seul lien vers cette page dans le jeu : elle n'est plus atteinte que par son adresse `#/poc`, qui continue de marcher. Le texte du lien et le style qu'il était seul à avoir sont retirés avec lui.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -49,7 +49,7 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 | N° | Instruction | Go |
 |---|---|---|
-| 1 | Une icône de haut-parleur pour couper ou remettre la musique (25/11, voir la section 2) | non : attend ton « go » |
+| 1 | Le lien POC hors de la barre du haut (25/11, voir la section 2) | non : attend ton « go » |
 
 ## Mis de côté
 

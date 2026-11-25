@@ -3,10 +3,10 @@ import { assetUrl } from '../assetUrl'
 /** The jingles that play over the general music: the one of a success and the one of a failure. */
 export type Jingle = 'success' | 'failure'
 /** The screens that have a track of their own, which takes the place of the general music while they are open. */
-export type ScreenTrack = 'briefing' | 'combat' | 'journal'
+export type ScreenTrack = 'briefing' | 'combat' | 'journal' | 'maintenance'
 
 const GENERAL_FILE = 'audio/music-general.mp3'
-const SCREEN_FILES: Record<ScreenTrack, string> = { briefing: 'audio/music-briefing.mp3', combat: 'audio/music-combat.mp3', journal: 'audio/music-journal.mp3' }
+const SCREEN_FILES: Record<ScreenTrack, string> = { briefing: 'audio/music-briefing.mp3', combat: 'audio/music-combat.mp3', journal: 'audio/music-journal.mp3', maintenance: 'audio/music-maintenance.mp3' }
 const JINGLE_FILES: Record<Jingle, string> = { success: 'audio/jingle-success.mp3', failure: 'audio/jingle-failure.mp3' }
 const GENERAL_VOLUME = 0.5
 const JINGLE_VOLUME = 0.8

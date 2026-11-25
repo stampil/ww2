@@ -10,6 +10,7 @@ import OrderButton from './OrderButton'
 import Pane from './Pane'
 import { inspectShortage, rebuildAircraftShortage, repairShortage } from './shortages'
 import type { AwayAircraft, Base, GuestAircraft, HangarAircraft, Part, Recipient, Squadron, UpgradeInfo, UpgradeName, Wreck } from './useBase'
+import { useScreenMusic } from './useScreenMusic'
 import UpgradeCard from './UpgradeCard'
 
 const PARTS: Part[] = ['engine', 'wings', 'fuselage', 'armament']
@@ -40,6 +41,7 @@ type Props = {
 /** The aircraft of the squadron in a picture, which turns to 3D once the aircraft is inspected, with their modules; one back damaged is inspected to show its damage, then repaired, if a mechanic and the spare parts are there. The aircraft stationed at another base can be recalled, and those stationed here are listed. */
 function HangarPanel({ squadron, hangarAircraft, wrecks, busyAircraftIds, away, guests, workshop, onRecall, onInspect, onRepair, onRebuild, upgrade, commandPoints, onUpgrade, recipients, onGiveAircraft }: Props) {
   const { t } = useTranslation()
+  useScreenMusic('maintenance')
   const ownRecipients = recipients.filter((recipient) => recipient.kinship === 'own')
   const [inspectedIds, setInspectedIds] = useState<number[]>([])
 

@@ -8,6 +8,7 @@ import Gauge from './Gauge'
 import { GAUGE_MAX } from './gaugeMax'
 import { productionShortage, recruitMechanicShortage } from './shortages'
 import type { Base, Part, UpgradeInfo, UpgradeName } from './useBase'
+import { useScreenMusic } from './useScreenMusic'
 import UpgradeCard from './UpgradeCard'
 
 type Props = {
@@ -27,6 +28,7 @@ type Props = {
 /** The spare parts the workshop can make, with or without a mechanic, the mechanics, who can be recruited, and the parts being made. */
 function WorkshopPanel({ workshop, jobs, materials, supplies, onProduce, onRecruitMechanic, upgrade, commandPoints, onUpgrade }: Props) {
   const { t } = useTranslation()
+  useScreenMusic('maintenance')
 
   return (
     <>

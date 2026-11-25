@@ -11,7 +11,17 @@ Les chantiers marqués « go donné » se codent dans l'ordre du tableau ; les a
 
 ## 2. Questions à lever
 
-Aucune question en suspens.
+**Le départ groupé : où se placent les trois avions** (« quand les avion se positionne pour le décollage, le premier en bout de piste, le 2ieme devant et le 3ieme au milieu, et ils empreinte tjrs le taxi way sans se chevaucher », 25/11). Relevé dans le code :
+- La piste du camp de départ fait 12 tuiles, soit 480 m, et l'on roule vers l'est depuis son bout ouest. Elle a trois jonctions de taxiway, à 100 m, 260 m et 380 m de ce bout ; les trois aires de parking du nord ont chacune leur taxiway qui descend à une jonction.
+- Aujourd'hui, les trois places sont en file serrée, à environ 58 m l'une de l'autre : 30 m (le premier arrivé, au début de la piste), 88 m et 146 m. La troisième est au-delà de la première jonction : l'avion qui la prend quitte le taxiway et coupe par l'herbe, 56 m au nord de la piste, pour ne pas traverser les autres. C'est ce que tu ne veux plus.
+
+Compris : les trois avions vont à trois places, toujours par les taxiways et la piste, jamais par l'herbe, sans jamais se chevaucher : celui qui a un taxiway ou une portion de piste devant lui attend à son parking que le précédent ait dégagé.
+
+1. **Où se placent les trois avions sur la piste ?** Option A, ma reco : le premier tout au bout de la piste, là où le roulage commence (30 m, comme aujourd'hui) ; le deuxième devant lui, à la première jonction (100 m) ; le troisième au milieu de la piste, à la jonction du milieu (260 m). Le premier et le deuxième arrivent par la première jonction, le troisième par la jonction du milieu, chacun par le taxiway qui y descend. Ils décollent du plus avancé (le troisième) au plus reculé (le premier), une demi-seconde entre chacun, comme aujourd'hui. Option B : la file serrée d'aujourd'hui, 30, 88 et 146 m, mais prise par la seule première jonction, le premier arrivé allant jusqu'à 146 m, le deuxième à 88 m, le troisième à 30 m : plus d'herbe ni de croisement, mais ni « devant » ni « au milieu » comme tu les décris.
+
+À savoir, sans question : seul le plan de départ existe aujourd'hui, avec ses trois jonctions ; la règle pour un plan qui en aurait moins sera à poser quand il existera.
+
+**Une icône de haut-parleur pour la musique** (« fait une icone de haut parleur pir couper ou remetrela musique », 25/11). Compris, sans question : le bouton « ♪ Musique » de la barre du haut (texte rouge quand la musique joue) est remplacé par un bouton à icône de haut-parleur : avec des ondes quand la musique est mise, barré quand elle est coupée. Même place, même effet : couper ou remettre, choix gardé d'une visite à l'autre, les sons de moteur suivent l'interrupteur comme aujourd'hui, le premier clic dans la page lance toujours la musique et le bouton n'en est pas un. Il a un nom pour les lecteurs d'écran (« Couper la musique » et « Remettre la musique », FR et EN) et une zone de toucher d'au moins 48 px. Les deux tracés viennent des icônes Material (Apache 2.0, déjà créditées), repris tels quels du paquet `@material-design-icons/svg` comme les autres.
 
 Lectures prises seul, sans question, à corriger si elles sont fausses :
 
@@ -44,7 +54,10 @@ Lectures prises seul, sans question, à corriger si elles sont fausses :
 
 ## 3. Le travail restant, dans l'ordre
 
-Rien : tout est fait.
+| N° | Instruction | Go |
+|---|---|---|
+| 1 | Le départ groupé : le premier en bout de piste, le deuxième devant, le troisième au milieu, toujours par les taxiways sans se chevaucher (25/11, voir la section 2) | non : attend ta réponse à la question 1 et ton « go » |
+| 2 | Une icône de haut-parleur pour couper ou remettre la musique (25/11, voir la section 2) | non : attend ton « go » |
 
 ## Mis de côté
 
